@@ -1,7 +1,7 @@
-// Publishing platform presets: provide defaults, but allow user-added platforms.
+// Publishing platform presets: provide defaults on first setup, then respect user removals/additions.
 (function () {
   const DEFAULT_PLATFORMS = ['巴哈小屋', '方格子'];
-  const PRESET_VERSION = 1;
+  const PRESET_VERSION = 2;
 
   function defaultConfig() {
     return {
@@ -13,7 +13,7 @@
 
   function uniqueNames(names) {
     const seen = new Set();
-    return names.map(name => String(name || '').trim()).filter(name => name && !seen.has(name) && seen.add(name));
+    return (names || []).map(name => String(name || '').trim()).filter(name => name && !seen.has(name) && seen.add(name));
   }
 
   function normalizePlatformState({ migrate = false } = {}) {
@@ -22,25 +22,20 @@
 
     const firstMigration = migrate && state.platformPresetVersion !== PRESET_VERSION;
     const oldConfigs = state.formatting.platforms;
-    const oldNames = uniqueNames([...platforms, ...Object.keys(oldConfigs)]);
+    const oldNames = uniqueNames([...platforms, ...Object.keys(oldConfigs)]).filter(name => name !== '巴哈姆特');
     const names = firstMigration
       ? [...DEFAULT_PLATFORMS]
-      : uniqueNames([...DEFAULT_PLATFORMS, ...oldNames.filter(name => !DEFAULT_PLATFORMS.includes(name))]);
+      : (state.platformPresetVersion >= PRESET_VERSION ? oldNames : uniqueNames([...DEFAULT_PLATFORMS, ...oldNames]));
 
     const next = {};
-    for (const name of names) {
-      next[name] = firstMigration
-        ? defaultConfig()
-        : { ...defaultConfig(), ...(oldConfigs[name] || {}) };
-    }
-
+    for (const name of names) next[name] = { ...defaultConfig(), ...(oldConfigs[name] || {}) };
     state.formatting.platforms = next;
     platforms.splice(0, platforms.length, ...names);
 
     for (const chapter of state.chapters || []) {
       for (const part of chapter.parts || []) {
         const prior = part.platformStatus || {};
-        part.platformStatus = Object.fromEntries(names.map(name => [name, firstMigration ? false : Boolean(prior[name])]));
+        part.platformStatus = Object.fromEntries(names.map(name => [name, Boolean(prior[name])]));
       }
     }
 
@@ -80,7 +75,7 @@
   function updateSettingsCopy() {
     const section = document.getElementById('platformFormatSettings')?.closest('.settings-section');
     const description = section?.querySelector('p');
-    if (description) description.textContent = '預設提供「巴哈小屋、方格子」，也可以自行新增發布平台；每個平台可個別設定段首、段落空行與場景分隔符。';
+    if (description) description.textContent = '初始提供「巴哈小屋、方格子」。兩者都可以移除，也可以自行新增其他平台；每個平台可個別設定排版。';
   }
 
   function refreshPlatformSurfaces() {
@@ -93,7 +88,6 @@
     updateSettingsCopy();
   }
 
-  // Keep the two defaults available without deleting user-created platforms.
   normalizePlatformState({ migrate: false });
 
   const baseRenderSuggestion = window.renderSuggestion;
@@ -110,15 +104,13 @@
     bindSelectors();
   };
 
-  // Existing workspaces that have not yet received the requested one-time cleanup
-  // are cleaned exactly once. After that, user-added platforms are preserved.
   const baseChooseOutputDirectory = StoryFlowIntegrations.chooseOutputDirectory;
   StoryFlowIntegrations.chooseOutputDirectory = async (...args) => {
     const result = await baseChooseOutputDirectory(...args);
     const needsMigration = state.platformPresetVersion !== PRESET_VERSION;
     normalizePlatformState({ migrate: true });
     refreshPlatformSurfaces();
-    if (needsMigration) saveState('平台設定已整理');
+    if (needsMigration) saveState('平台預設已建立');
     return result;
   };
 
