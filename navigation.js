@@ -1,7 +1,9 @@
 // Primary navigation for the single-page StoryFlow workspace.
 (function () {
   const nav = document.querySelector('.nav');
-  if (!nav) return;
+  const sidebar = document.querySelector('.sidebar');
+  const shell = document.querySelector('.app-shell');
+  if (!nav || !sidebar || !shell) return;
 
   const targets = {
     workspace: () => document.querySelector('.workspace-grid'),
@@ -29,8 +31,6 @@
     setActive(view);
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // Give keyboard/screen-reader users a real navigation destination without
-    // permanently changing the document tab order.
     const hadTabIndex = target.hasAttribute('tabindex');
     if (!hadTabIndex) target.setAttribute('tabindex', '-1');
     window.setTimeout(() => {
@@ -39,12 +39,36 @@
     }, 350);
   }
 
+  function ensureSidebarToggle() {
+    let toggle = document.getElementById('sidebarToggle');
+    if (toggle) return toggle;
+
+    toggle = document.createElement('button');
+    toggle.id = 'sidebarToggle';
+    toggle.className = 'sidebar-toggle';
+    toggle.type = 'button';
+    toggle.setAttribute('aria-label', '收合左側選單');
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.title = '收合選單';
+    toggle.innerHTML = '<span aria-hidden="true">‹</span>';
+    sidebar.appendChild(toggle);
+
+    toggle.addEventListener('click', () => {
+      const collapsed = shell.classList.toggle('sidebar-collapsed');
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.setAttribute('aria-label', collapsed ? '展開左側選單' : '收合左側選單');
+      toggle.title = collapsed ? '展開選單' : '收合選單';
+      toggle.innerHTML = `<span aria-hidden="true">${collapsed ? '›' : '‹'}</span>`;
+    });
+
+    return toggle;
+  }
+
   nav.addEventListener('click', event => {
     const button = event.target.closest('.nav-item');
     if (!button) return;
     const view = button.dataset.view;
 
-    // Settings keeps using the existing openSettings() handler.
     if (view === 'settings') {
       setActive('settings');
       return;
@@ -57,9 +81,8 @@
   const settingsDialog = document.getElementById('settingsDialog');
   settingsDialog?.addEventListener('close', () => setActive(lastNonSettingsView));
 
-  // Expose a tiny helper for other StoryFlow UI surfaces that may need to
-  // navigate to a primary section later.
   window.StoryFlowNavigate = goTo;
 
+  ensureSidebarToggle();
   setActive(document.querySelector('.nav-item.active')?.dataset.view || 'workspace');
 })();
