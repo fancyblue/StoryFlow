@@ -19,11 +19,11 @@
         <button class="nav-item active" data-view="workspace">✦ <span>工作台</span></button>
         <button class="nav-item" data-view="projects">▤ <span>作品</span></button>
         <button class="nav-item" data-view="publishing">↗ <span>發布</span></button>
-        <button class="nav-item" data-view="settings">⚙ <span>設定</span></button>
+        <button class="nav-item" id="settingsNav" data-view="settings">⚙ <span>設定</span></button>
       </nav>
       <div class="sidebar-note">
-        <strong>MVP</strong>
-        <span>Google Docs 匯入會在下一階段接上；目前可直接貼上原稿測試完整切篇流程。</span>
+        <strong>安全設計</strong>
+        <span>公開 GitHub 只放程式。原稿從你授權的 Google Docs 讀取，產出檔只寫入你主動選擇的本機資料夾。</span>
       </div>
     </aside>
 
@@ -39,6 +39,20 @@
           <button id="generateBtn" class="button primary">產生下一篇</button>
         </div>
       </header>
+
+      <section class="connection-bar" aria-label="連線狀態">
+        <div class="connection-item">
+          <span id="googleDot" class="status-dot"></span>
+          <div><strong>Google Docs</strong><small id="googleStatus">尚未登入</small></div>
+          <button id="googleLoginBtn" class="button tiny ghost">登入 Google</button>
+        </div>
+        <div class="connection-item">
+          <span id="folderDot" class="status-dot"></span>
+          <div><strong>產出資料夾</strong><small id="folderStatus">尚未連接</small></div>
+          <button id="folderBtn" class="button tiny ghost">選擇資料夾</button>
+        </div>
+        <button id="openSettingsBtn" class="button tiny ghost">整合設定</button>
+      </section>
 
       <section class="stats-grid">
         <article class="stat-card"><span>目前章節</span><strong id="chapterChars">0</strong><small>字</small></article>
@@ -64,17 +78,19 @@
             <div>
               <p class="eyebrow">MASTER DRAFT</p>
               <input id="chapterTitle" class="title-input" value="第一章" aria-label="章節名稱" />
+              <small id="sourceMeta" class="source-meta">尚未綁定 Google Docs</small>
             </div>
             <div class="source-actions">
               <button id="pasteSampleBtn" class="button tiny ghost">載入範例</button>
-              <button id="docsPlaceholderBtn" class="button tiny ghost">Google Docs</button>
+              <button id="importGoogleBtn" class="button tiny primary">選擇 Google Docs</button>
+              <button id="syncGoogleBtn" class="button tiny ghost" disabled>重新同步</button>
             </div>
           </div>
-          <div class="notice">原稿不會因切篇或網路排版而被修改。已發布的切點會被保護。</div>
-          <textarea id="draft" spellcheck="false" placeholder="貼上 Google Docs 的小說原稿……\n\n保留原稿中的空白行，StoryFlow 會把它視為較強的自然切點。"></textarea>
+          <div class="notice">原稿只作為 StoryFlow 的工作快照；切篇與網路排版不會修改 Google Docs。已確認的發布切點不會因重新同步而自動改動。</div>
+          <textarea id="draft" spellcheck="false" placeholder="從 Google Docs 匯入，或直接貼上小說原稿……\n\n保留原稿中的空白行，StoryFlow 會把它視為較強的自然切點。"></textarea>
           <div class="editor-footer">
             <span id="draftMeta">0 字 · 0 段</span>
-            <span>自動儲存於瀏覽器</span>
+            <span>工作狀態保存在目前瀏覽器</span>
           </div>
         </section>
 
@@ -104,7 +120,7 @@
             </div>
             <div id="suggestionReason" class="reason"></div>
             <div id="preview" class="preview"></div>
-            <button id="confirmBtn" class="button primary full">確認這一篇</button>
+            <button id="confirmBtn" class="button primary full">確認並存成 Markdown</button>
           </div>
         </aside>
       </section>
@@ -119,11 +135,21 @@
     </main>
   </div>
 
-  <dialog id="docsDialog">
-    <form method="dialog" class="dialog-card">
-      <h3>Google Docs 整合</h3>
-      <p>第一版先完成切篇與發布資料模型。下一階段會接 Google OAuth / Docs API，讓每個章節綁定一份文件並從上次同步處繼續。</p>
-      <button class="button primary">知道了</button>
+  <dialog id="settingsDialog">
+    <form method="dialog" class="dialog-card settings-dialog">
+      <div class="panel-head"><div><p class="eyebrow">INTEGRATIONS</p><h3>StoryFlow 整合設定</h3></div><button class="icon-button" value="cancel">×</button></div>
+      <div class="settings-section">
+        <strong>Google Picker API Key</strong>
+        <p>API Key 不寫入 GitHub，只保存在這台瀏覽器。請使用你已限制為 Google Picker API、並限制網站來源的金鑰。</p>
+        <input id="pickerApiKeyInput" class="text-input" type="password" autocomplete="off" placeholder="AIza..." />
+        <div class="settings-actions"><button id="savePickerKeyBtn" type="button" class="button primary">儲存在這台瀏覽器</button><button id="clearPickerKeyBtn" type="button" class="button ghost">清除</button></div>
+      </div>
+      <div class="settings-section">
+        <strong>產出資料夾</strong>
+        <p>建議選擇掛載在 Mac 上的 Google Drive / StoryFlow。瀏覽器只會寫入你主動授權的資料夾。</p>
+        <button id="settingsFolderBtn" type="button" class="button ghost">選擇／重新連接資料夾</button>
+      </div>
+      <div class="security-note"><strong>不會存進公開 GitHub：</strong>Google access token、文章正文、切篇 Markdown、API Key。</div>
     </form>
   </dialog>
 
@@ -141,7 +167,10 @@
     </article>
   </template>
 
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js" async defer></script>
   <script src="./config.js"></script>
+  <script src="./integrations.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
