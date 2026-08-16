@@ -97,7 +97,9 @@ const StoryFlowIntegrations = (() => {
 
   function initGoogle() {
     if (tokenClient) return;
-    if (!window.google?.accounts?.oauth2 || !window.STORYFLOW_CONFIG?.googleClientId) throw new Error('Google 登入元件尚未載入完成，請稍後再試。');
+    if (!window.google?.accounts?.oauth2 || !window.STORYFLOW_CONFIG?.googleClientId) {
+      throw new Error('Google 登入元件尚未載入完成，請稍後再試。');
+    }
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: window.STORYFLOW_CONFIG.googleClientId,
       scope: (window.STORYFLOW_CONFIG.googleScopes || []).join(' '),
@@ -158,57 +160,148 @@ const StoryFlowIntegrations = (() => {
     });
   }
 
-  function docsJsonToPlainText(doc) {
-    const lines = [];
-    for (const item of doc?.body?.content || []) {
-      if (item.paragraph) {
-        let text = '';
-        for (const element of item.paragraph.elements || []) {
-          if (element.textRun?.content) text += element.textRun.content;
-        }
-        lines.push(text.replace(/\n$/, ''));
-      } else if (item.table) {
-        for (const row of item.table.tableRows || []) {
-          for (const cell of row.tableCells || []) {
-            for (const cellItem of cell.content || []) {
-              if (!cellItem.paragraph) continue;
-              let text = '';
-              for (const element of cellItem.paragraph.elements || []) {
-                if (element.textRun?.content) text += element.textRun.content;
-              }
-              lines.push(text.replace(/\n$/, ''));
-            }
-          }
-        }
-      }
-    }
-    while (lines.length && lines[lines.length - 1] === '') lines.pop();
-    return lines.join('\n');
-  }
-
-  async function readGoogleDocText(fileId) {
+  async function authenticatedFetch(url) {
     if (!accessToken) await requestAccessToken();
-    const endpoint = `https://docs.googleapis.com/v1/documents/${encodeURIComponent(fileId)}`;
-    let response = await fetch(endpoint, { headers: { Authorization: `Bearer ${accessToken}` } });
+    let response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
     if (response.status === 401) {
       accessToken = null;
       await requestAccessToken();
-      response = await fetch(endpoint, { headers: { Authorization: `Bearer ${accessToken}` } });
+      response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
     }
-    if (!response.ok) throw new Error(`Google Docs 匯入失敗（${response.status}）。`);
-    return docsJsonToPlainText(await response.json());
+    return response;
   }
 
-  async function importGoogleDoc() {
+  async function fetchGoogleDocument(fileId) {
+    const endpoint = `https://docs.googleapis.com/v1/documents/${encodeURIComponent(fileId)}?includeTabsContent=true`;
+    const response = await authenticatedFetch(endpoint);
+    if (!response.ok) throw new Error(`Google Docs 讀取失敗（${response.status}）。`);
+    return response.json();
+  }
+
+  function escapeMarkdown(text) {
+    return String(text || '').replace(/([\\`])/g, '\\$1');
+  }
+
+  function styleText(text, style, warnings) {
+    let value = escapeMarkdown(text);
+    if (!value) return '';
+    if (style?.weightedFontFamily?.fontFamily) warnings.add('原稿含有字型設定；StoryFlow 會保留文字內容，但不保存字型。');
+    if (style?.strikethrough) value = `~~${value}~~`;
+    if (style?.bold && style?.italic) value = `***${value}***`;
+    else if (style?.bold) value = `**${value}**`;
+    else if (style?.italic) value = `*${value}*`;
+    if (style?.link?.url) value = `[${value}](${style.link.url})`;
+    return value;
+  }
+
+  function paragraphToBlock(paragraph, inlineObjects, warnings) {
+    const namedStyle = paragraph?.paragraphStyle?.namedStyleType || 'NORMAL_TEXT';
+    let markdown = '';
+    let plain = '';
+    for (const element of paragraph?.elements || []) {
+      if (element.textRun) {
+        const raw = element.textRun.content || '';
+        const text = raw.replace(/\n$/, '');
+        markdown += styleText(text, element.textRun.textStyle || {}, warnings);
+        plain += text;
+      } else if (element.inlineObjectElement) {
+        const objectId = element.inlineObjectElement.inlineObjectId;
+        const object = inlineObjects?.[objectId];
+        const title = object?.inlineObjectProperties?.embeddedObject?.title || '圖片';
+        markdown += `![${title}](storyflow-google-image:${objectId})`;
+        plain += '[圖片]';
+        warnings.add('原稿含有 Google Docs 內嵌圖片；目前會先保留圖片位置，圖片檔下載會在後續版本接上。');
+      }
+    }
+    const empty = plain.trim().length === 0 && markdown.trim().length === 0;
+    return { markdown: markdown.trimEnd(), plain: plain.trimEnd(), namedStyle, empty };
+  }
+
+  function blocksToDraft(blocks) {
+    const lines = [];
+    for (const block of blocks) {
+      if (block.empty) {
+        if (lines.length && lines[lines.length - 1] !== '') lines.push('');
+      } else if (!/^HEADING_[1-6]$/.test(block.namedStyle)) {
+        lines.push(block.markdown);
+      }
+    }
+    while (lines[0] === '') lines.shift();
+    while (lines[lines.length - 1] === '') lines.pop();
+    return lines.join('\n');
+  }
+
+  function chaptersFromTab(tab) {
+    const content = tab?.documentTab?.body?.content || [];
+    const inlineObjects = tab?.documentTab?.inlineObjects || {};
+    const warnings = new Set();
+    const blocks = [];
+    for (const structural of content) {
+      if (structural.paragraph) blocks.push(paragraphToBlock(structural.paragraph, inlineObjects, warnings));
+    }
+    const headingIndexes = [];
+    blocks.forEach((block, index) => {
+      if (block.namedStyle === 'HEADING_1' && !block.empty) headingIndexes.push(index);
+    });
+    if (!headingIndexes.length) {
+      return {
+        chapters: [{ title: tab.tabProperties?.title || '未命名章節', draft: blocksToDraft(blocks), headingOrdinal: null }],
+        warnings: [...warnings]
+      };
+    }
+    return {
+      chapters: headingIndexes.map((start, ordinal) => {
+        const end = headingIndexes[ordinal + 1] ?? blocks.length;
+        return {
+          title: blocks[start].plain.trim() || `第 ${ordinal + 1} 章`,
+          draft: blocksToDraft(blocks.slice(start + 1, end)),
+          headingOrdinal: ordinal
+        };
+      }),
+      warnings: [...warnings]
+    };
+  }
+
+  function flattenTabs(tabs, depth = 0, output = []) {
+    for (const tab of tabs || []) {
+      const parsed = chaptersFromTab(tab);
+      output.push({
+        id: tab.tabProperties?.tabId,
+        title: tab.tabProperties?.title || '未命名分頁',
+        index: tab.tabProperties?.index ?? output.length,
+        depth,
+        chapters: parsed.chapters,
+        warnings: parsed.warnings
+      });
+      flattenTabs(tab.childTabs || [], depth + 1, output);
+    }
+    return output;
+  }
+
+  async function inspectGoogleDoc() {
     const picked = await pickGoogleDoc();
-    const text = await readGoogleDocText(picked.id);
+    const document = await fetchGoogleDocument(picked.id);
     return {
       id: picked.id,
-      name: picked.name || 'Google Docs',
+      name: picked.name || document.title || 'Google Docs',
       url: picked.url || `https://docs.google.com/document/d/${picked.id}/edit`,
-      text,
-      markdown: text
+      title: document.title || picked.name || 'Google Docs',
+      tabs: flattenTabs(document.tabs || [])
     };
+  }
+
+  async function refreshChapterSource(source) {
+    if (!source?.id || !source?.tabId) throw new Error('這個章節沒有完整的 Google Docs 來源資訊。');
+    const document = await fetchGoogleDocument(source.id);
+    const tabs = flattenTabs(document.tabs || []);
+    const tab = tabs.find(item => item.id === source.tabId);
+    if (!tab) throw new Error('找不到原本的 Google Docs 分頁，可能已被刪除或重新建立。');
+    let chapter = null;
+    if (source.headingOrdinal != null) chapter = tab.chapters[source.headingOrdinal];
+    if (!chapter && source.headingTitle) chapter = tab.chapters.find(item => item.title === source.headingTitle);
+    if (!chapter && tab.chapters.length === 1) chapter = tab.chapters[0];
+    if (!chapter) throw new Error('找不到原本的章節 Heading，請重新匯入這個分頁。');
+    return { ...chapter, tabTitle: tab.title, warnings: tab.warnings };
   }
 
   return {
@@ -217,9 +310,8 @@ const StoryFlowIntegrations = (() => {
     ensureOutputPermission,
     savePart,
     requestAccessToken,
-    importGoogleDoc,
-    readGoogleDocText,
-    exportGoogleDocAsMarkdown: readGoogleDocText,
+    inspectGoogleDoc,
+    refreshChapterSource,
     pickerApiKey,
     setPickerApiKey,
     hasGoogleToken: () => Boolean(accessToken)
