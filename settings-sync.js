@@ -1,4 +1,5 @@
-// StoryFlow persistence lives in the selected Google Drive-mounted folder, not browser storage.
+// StoryFlow content persistence lives in the selected Google Drive-mounted folder.
+// The browser may remember only the folder handle so refreshes can reconnect automatically.
 (function () {
   let saveTimer = null;
   let applyingDriveState = false;
@@ -72,7 +73,7 @@
     saveTimer = setTimeout(() => persistAll(), 300);
   }
 
-  // Replace browser-local persistence. In-memory state is only the live UI working copy.
+  // Replace browser-local content persistence. In-memory state is only the live UI working copy.
   saveState = function saveStateToDrive(label = '準備同步') {
     els.saveState.textContent = label;
     schedulePersist();
@@ -157,7 +158,7 @@
         </div>
       </div>
       <div id="managedPlatformList" class="managed-platform-list"></div>
-      <div class="portable-settings-note">平台、排版、工作進度與 API Key 都保存在你選的 StoryFlow 資料夾；瀏覽器不保存 StoryFlow 資料。</div>`;
+      <div class="portable-settings-note">文章、平台設定與工作進度都只保存在 StoryFlow 資料夾；瀏覽器只記住資料夾連線 handle，方便重新整理後自動接回。</div>`;
     settingsList.insertAdjacentElement('beforebegin', manager);
     document.getElementById('addPlatformBtn').onclick = addPlatformFromInput;
     document.getElementById('newPlatformName').addEventListener('keydown', event => {
@@ -209,7 +210,9 @@
     });
   }
 
-  // Folder selection becomes the session entry point because no directory handle is stored in-browser.
+  // Folder selection reuses the remembered handle when permission needs to be
+  // renewed. If the folder is already connected, an explicit click opens the
+  // picker so the user can intentionally switch folders.
   const baseChooseOutputDirectory = StoryFlowIntegrations.chooseOutputDirectory;
   StoryFlowIntegrations.chooseOutputDirectory = async (...args) => {
     const result = await baseChooseOutputDirectory(...args);
@@ -247,8 +250,26 @@
     };
   }, 0);
 
-  // Remove any legacy browser residue left by earlier test versions.
+  async function restoreRememberedConnections() {
+    try {
+      const folder = await StoryFlowIntegrations.restoreOutputDirectory();
+      await refreshFolderStatus();
+      if (folder.connected) await loadDriveData();
+    } catch (error) {
+      console.warn('StoryFlow folder auto-restore failed', error);
+    }
+
+    try {
+      const restoredGoogle = await StoryFlowIntegrations.restoreGoogleAccess();
+      if (restoredGoogle) await loginGoogleStatusOnly();
+    } catch (error) {
+      console.warn('Google session auto-restore failed', error);
+    }
+  }
+
+  // Remove legacy content caches while preserving the connection-only database.
   StoryFlowIntegrations.purgeLegacyBrowserStorage();
   ensurePlatformManager();
   renderPlatformManager();
+  setTimeout(restoreRememberedConnections, 0);
 })();
