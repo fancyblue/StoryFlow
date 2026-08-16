@@ -86,8 +86,8 @@
               <button id="syncGoogleBtn" class="button tiny ghost" disabled>重新同步</button>
             </div>
           </div>
-          <div class="notice">原稿只作為 StoryFlow 的工作快照；切篇與網路排版不會修改 Google Docs。已確認的發布切點不會因重新同步而自動改動。</div>
-          <textarea id="draft" spellcheck="false" placeholder="從 Google Docs 匯入，或直接貼上小說原稿……\n\n保留原稿中的空白行，StoryFlow 會把它視為較強的自然切點。"></textarea>
+          <div class="notice">Google Docs 的 Heading 1 會作為章節名稱，不會進入正文；分頁會先讓你選擇。粗體、斜體、刪除線與連結會轉成 Markdown。字型不保存，若偵測到會提醒。</div>
+          <textarea id="draft" spellcheck="false" placeholder="從 Google Docs 匯入，或直接貼上小說原稿……\n\n原稿中的真正空白段落會成為較強的場景切點。"></textarea>
           <div class="editor-footer">
             <span id="draftMeta">0 字 · 0 段</span>
             <span>工作狀態保存在目前瀏覽器</span>
@@ -106,7 +106,7 @@
           <div id="suggestionEmpty" class="empty-state">
             <div class="empty-icon">✂</div>
             <strong>準備下一篇</strong>
-            <span>StoryFlow 會從上次已確認的位置繼續，優先選擇自然段落或空白行。</span>
+            <span>StoryFlow 會從上次已確認的位置繼續，普通段落可切；原稿空白段落會被視為更自然的切點。</span>
           </div>
 
           <div id="suggestionCard" class="suggestion hidden">
@@ -128,16 +128,24 @@
       <section class="panel publishing-panel">
         <div class="panel-head">
           <div><p class="eyebrow">PUBLISHING QUEUE</p><h2>發布篇與平台狀態</h2></div>
-          <span class="muted">第一階段採半自動發布</span>
+          <span class="muted">每個平台可使用不同段首縮排</span>
         </div>
         <div id="partsList" class="parts-list"></div>
       </section>
     </main>
   </div>
 
+  <dialog id="tabDialog">
+    <form method="dialog" class="dialog-card tab-dialog">
+      <div class="panel-head"><div><p class="eyebrow">GOOGLE DOCS</p><h3 id="tabDialogTitle">選擇要匯入的分頁</h3></div><button class="icon-button" value="cancel">×</button></div>
+      <p class="muted">StoryFlow 會列出文件所有分頁與子分頁，再以 Heading 1 分成章節。</p>
+      <div id="tabList" class="tab-list"></div>
+    </form>
+  </dialog>
+
   <dialog id="settingsDialog">
     <form method="dialog" class="dialog-card settings-dialog">
-      <div class="panel-head"><div><p class="eyebrow">INTEGRATIONS</p><h3>StoryFlow 整合設定</h3></div><button class="icon-button" value="cancel">×</button></div>
+      <div class="panel-head"><div><p class="eyebrow">SETTINGS</p><h3>StoryFlow 設定</h3></div><button class="icon-button" value="cancel">×</button></div>
       <div class="settings-section">
         <strong>Google Picker API Key</strong>
         <p>API Key 不寫入 GitHub，只保存在這台瀏覽器。請使用你已限制為 Google Picker API、並限制網站來源的金鑰。</p>
@@ -148,6 +156,13 @@
         <strong>產出資料夾</strong>
         <p>建議選擇掛載在 Mac 上的 Google Drive / StoryFlow。瀏覽器只會寫入你主動授權的資料夾。</p>
         <button id="settingsFolderBtn" type="button" class="button ghost">選擇／重新連接資料夾</button>
+      </div>
+      <div class="settings-section">
+        <strong>發布排版</strong>
+        <p>段首只有兩種實際格式：不縮排、全形兩格。平台可以覆寫預設值。</p>
+        <label class="field-label" for="defaultIndent">預設段首縮排</label>
+        <select id="defaultIndent" class="text-input"><option value="none">不縮排</option><option value="two">全形兩格</option></select>
+        <div id="platformFormatSettings" class="platform-settings"></div>
       </div>
       <div class="security-note"><strong>不會存進公開 GitHub：</strong>Google access token、文章正文、切篇 Markdown、API Key。</div>
     </form>
@@ -161,7 +176,8 @@
       </div>
       <div class="platforms"></div>
       <div class="part-actions">
-        <button class="button tiny ghost copy-btn">複製網路版</button>
+        <select class="copy-platform compact-select" aria-label="選擇複製平台"></select>
+        <button class="button tiny ghost copy-btn">複製平台版</button>
         <button class="button tiny ghost toggle-btn">標記已發布</button>
       </div>
     </article>
