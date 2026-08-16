@@ -16,8 +16,8 @@
 .chapter-group-label small { margin-top: 3px; color: #7c728f; font-size: 10px; }
 
 .inline-review {
-  margin: 14px 0;
-  padding-top: 14px;
+  margin: 18px 0;
+  padding-top: 16px;
   border-top: 1px solid var(--line);
 }
 .inline-review-head {
@@ -25,18 +25,51 @@
   justify-content: space-between;
   align-items: flex-end;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
-.inline-review-head h3 { margin: 0; font-size: 15px; }
-.review-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.review-column { min-width: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; }
-.review-column.current { border-color: #b8a7ff; background: #fcfbff; }
-.review-column-head { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.inline-review-head h3 { margin: 0; font-size: 17px; }
+.inline-review-actions { display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
+
+/* The smart-split panel is narrow. Stack the three checks vertically instead of squeezing them into three tiny columns. */
+.compact-review-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.review-column { min-width: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
+.review-column.current { border-color: #a78bfa; background: #fcfbff; box-shadow: 0 0 0 2px #f3f0ff inset; }
+.review-column-head { padding: 12px 14px; border-bottom: 1px solid var(--line); }
 .review-column-head span,
 .review-column-head strong { display: block; }
-.review-column-head span { color: var(--muted); font-size: 10px; }
-.review-column-head strong { margin-top: 3px; font-size: 12px; }
-.review-content { margin: 0; padding: 12px; max-height: 260px; overflow: auto; white-space: pre-wrap; word-break: break-word; font: inherit; font-size: 12px; line-height: 1.75; }
+.review-column-head span { color: var(--muted); font-size: 11px; font-weight: 700; }
+.review-column-head strong { margin-top: 4px; font-size: 15px; }
+.review-content {
+  margin: 0;
+  padding: 16px;
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.95;
+}
+
+.review-dialog { width: min(96vw, 1500px); max-width: none; }
+.review-dialog-card { width: min(96vw, 1500px); max-width: none; padding: 24px; }
+.review-dialog-note { margin-bottom: 14px; }
+.review-dialog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  height: min(70vh, 820px);
+}
+.review-dialog-grid .review-column { display:flex; flex-direction:column; min-height:0; }
+.review-dialog-grid .review-content {
+  max-height: none;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  font-size: 16px;
+  line-height: 2;
+  padding: 18px 20px;
+}
 
 .platform-preview-dialog-card { width: min(760px, calc(100vw - 28px)); max-width: 760px; }
 .platform-preview-content { max-height: 58vh; overflow: auto; white-space: pre-wrap; word-break: break-word; background: #fbfbfd; border: 1px solid var(--line); border-radius: 12px; padding: 18px; font: inherit; line-height: 1.85; }
@@ -44,6 +77,6 @@
 .reset-workspace-btn { color: #9f1239; }
 
 @media (max-width: 1180px) {
-  .review-grid { grid-template-columns: 1fr; }
-  .review-content { max-height: 220px; }
+  .review-dialog-grid { grid-template-columns: 1fr; height: auto; max-height: 78vh; overflow:auto; }
+  .review-dialog-grid .review-content { max-height: 320px; }
 }
