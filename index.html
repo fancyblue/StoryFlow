@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#111827" />
+  <title>StoryFlow — Creator Publishing Studio</title>
+  <meta name="description" content="StoryFlow turns long-form drafts into web-ready publishing parts and tracks multi-platform publishing progress." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">S</div>
+        <div><strong>StoryFlow</strong><span>Creator Studio</span></div>
+      </div>
+      <nav class="nav" aria-label="Primary">
+        <button class="nav-item active" data-view="workspace">✦ <span>工作台</span></button>
+        <button class="nav-item" data-view="projects">▤ <span>作品</span></button>
+        <button class="nav-item" data-view="publishing">↗ <span>發布</span></button>
+        <button class="nav-item" data-view="settings">⚙ <span>設定</span></button>
+      </nav>
+      <div class="sidebar-note">
+        <strong>MVP</strong>
+        <span>Google Docs 匯入會在下一階段接上；目前可直接貼上原稿測試完整切篇流程。</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">STORYFLOW / WORKSPACE</p>
+          <h1>內容發布工作台</h1>
+        </div>
+        <div class="top-actions">
+          <span id="saveState" class="save-state">已儲存</span>
+          <button id="saveBtn" class="button ghost">儲存</button>
+          <button id="generateBtn" class="button primary">產生下一篇</button>
+        </div>
+      </header>
+
+      <section class="stats-grid">
+        <article class="stat-card"><span>目前章節</span><strong id="chapterChars">0</strong><small>字</small></article>
+        <article class="stat-card"><span>已確認發布範圍</span><strong id="publishedChars">0</strong><small>字</small></article>
+        <article class="stat-card"><span>尚未處理</span><strong id="remainingChars">0</strong><small>字</small></article>
+        <article class="stat-card"><span>已建立發布篇</span><strong id="partCount">0</strong><small>篇</small></article>
+      </section>
+
+      <section class="workspace-grid">
+        <aside class="panel source-panel">
+          <div class="panel-head">
+            <div><p class="eyebrow">SOURCE</p><h2>作品與章節</h2></div>
+            <button id="newChapterBtn" class="icon-button" title="新增章節">＋</button>
+          </div>
+          <label class="field-label" for="projectTitle">作品名稱</label>
+          <input id="projectTitle" class="text-input" value="未命名作品" />
+          <div class="chapter-list" id="chapterList"></div>
+          <button id="addChapterBtn" class="button full ghost">＋ 新增章節</button>
+        </aside>
+
+        <section class="panel editor-panel">
+          <div class="panel-head editor-head">
+            <div>
+              <p class="eyebrow">MASTER DRAFT</p>
+              <input id="chapterTitle" class="title-input" value="第一章" aria-label="章節名稱" />
+            </div>
+            <div class="source-actions">
+              <button id="pasteSampleBtn" class="button tiny ghost">載入範例</button>
+              <button id="docsPlaceholderBtn" class="button tiny ghost">Google Docs</button>
+            </div>
+          </div>
+          <div class="notice">原稿不會因切篇或網路排版而被修改。已發布的切點會被保護。</div>
+          <textarea id="draft" spellcheck="false" placeholder="貼上 Google Docs 的小說原稿……\n\n保留原稿中的空白行，StoryFlow 會把它視為較強的自然切點。"></textarea>
+          <div class="editor-footer">
+            <span id="draftMeta">0 字 · 0 段</span>
+            <span>自動儲存於瀏覽器</span>
+          </div>
+        </section>
+
+        <aside class="panel splitter-panel">
+          <div class="panel-head"><div><p class="eyebrow">SMART SPLIT</p><h2>下一篇</h2></div></div>
+          <div class="range-grid">
+            <label>偏好最少<input id="minChars" type="number" min="300" step="100" value="1000" /></label>
+            <label>偏好最多<input id="maxChars" type="number" min="500" step="100" value="3000" /></label>
+          </div>
+          <label class="field-label" for="sceneMarker">場景分隔符</label>
+          <input id="sceneMarker" class="text-input" value="＊＊＊" />
+
+          <div id="suggestionEmpty" class="empty-state">
+            <div class="empty-icon">✂</div>
+            <strong>準備下一篇</strong>
+            <span>StoryFlow 會從上次已確認的位置繼續，優先選擇自然段落或空白行。</span>
+          </div>
+
+          <div id="suggestionCard" class="suggestion hidden">
+            <div class="suggestion-title-row">
+              <div><span id="suggestionName">第一章（1）</span><strong id="suggestionChars">0 字</strong></div>
+              <span id="suggestionStatus" class="pill">建議</span>
+            </div>
+            <div class="boundary-control">
+              <button id="shrinkBtn" class="button ghost tiny">← 少一段</button>
+              <button id="expandBtn" class="button ghost tiny">多一段 →</button>
+            </div>
+            <div id="suggestionReason" class="reason"></div>
+            <div id="preview" class="preview"></div>
+            <button id="confirmBtn" class="button primary full">確認這一篇</button>
+          </div>
+        </aside>
+      </section>
+
+      <section class="panel publishing-panel">
+        <div class="panel-head">
+          <div><p class="eyebrow">PUBLISHING QUEUE</p><h2>發布篇與平台狀態</h2></div>
+          <span class="muted">第一階段採半自動發布</span>
+        </div>
+        <div id="partsList" class="parts-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="docsDialog">
+    <form method="dialog" class="dialog-card">
+      <h3>Google Docs 整合</h3>
+      <p>第一版先完成切篇與發布資料模型。下一階段會接 Google OAuth / Docs API，讓每個章節綁定一份文件並從上次同步處繼續。</p>
+      <button class="button primary">知道了</button>
+    </form>
+  </dialog>
+
+  <template id="partTemplate">
+    <article class="part-row">
+      <div class="part-main">
+        <strong class="part-name"></strong>
+        <span class="part-info"></span>
+      </div>
+      <div class="platforms"></div>
+      <div class="part-actions">
+        <button class="button tiny ghost copy-btn">複製網路版</button>
+        <button class="button tiny ghost toggle-btn">標記已發布</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="./app.js"></script>
+</body>
+</html>
