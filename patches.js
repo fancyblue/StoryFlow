@@ -4,28 +4,19 @@
 (function () {
   let reviewSelection = null;
 
-  function ensureReviewPanel() {
-    if ($('reviewPanel')) return;
-    const workspace = document.querySelector('.workspace-grid');
-    if (!workspace) return;
-    const section = document.createElement('section');
-    section.id = 'reviewPanel';
-    section.className = 'panel review-panel hidden';
-    section.innerHTML = `
-      <div class="panel-head review-head">
-        <div><p class="eyebrow">CONTENT CHECK</p><h2>內容對照</h2></div>
-        <div class="review-head-actions">
-          <span class="muted">上一篇／這一篇／章節全文並排核對</span>
-          <button id="closeReviewBtn" class="button tiny ghost" type="button">收起</button>
-        </div>
+  function reviewMarkup() {
+    return `
+      <div class="inline-review-head">
+        <div><p class="eyebrow">CONTENT CHECK</p><h3>切篇確認</h3></div>
+        <span class="muted">確認上一篇／這一篇／章節全文，再存成 Markdown</span>
       </div>
-      <div class="review-grid">
+      <div class="review-grid compact-review-grid">
         <article class="review-column">
           <div class="review-column-head"><span>上一篇</span><strong id="reviewPreviousTitle">—</strong></div>
           <pre id="reviewPrevious" class="review-content"></pre>
         </article>
         <article class="review-column current">
-          <div class="review-column-head"><span>這一篇</span><strong id="reviewCurrentTitle">—</strong></div>
+          <div class="review-column-head"><span>這一篇（尚未存檔）</span><strong id="reviewCurrentTitle">—</strong></div>
           <pre id="reviewCurrent" class="review-content"></pre>
         </article>
         <article class="review-column">
@@ -33,14 +24,24 @@
           <pre id="reviewFull" class="review-content"></pre>
         </article>
       </div>`;
-    workspace.insertAdjacentElement('afterend', section);
-    $('closeReviewBtn').onclick = () => section.classList.add('hidden');
+  }
+
+  function ensureInlineReview() {
+    if ($('inlineReview')) return;
+    const card = $('suggestionCard');
+    const confirmBtn = $('confirmBtn');
+    if (!card || !confirmBtn) return;
+    const review = document.createElement('section');
+    review.id = 'inlineReview';
+    review.className = 'inline-review hidden';
+    review.innerHTML = reviewMarkup();
+    confirmBtn.insertAdjacentElement('beforebegin', review);
   }
 
   function showReview({ currentPart = null, currentSuggestion = null } = {}) {
-    ensureReviewPanel();
-    const panel = $('reviewPanel');
-    if (!panel) return;
+    ensureInlineReview();
+    const review = $('inlineReview');
+    if (!review) return;
     const chapter = activeChapter();
     const parts = chapter.parts || [];
 
@@ -57,9 +58,6 @@
     } else if (currentPart) {
       const index = parts.findIndex(part => part.id === currentPart.id);
       previous = index > 0 ? parts[index - 1] : null;
-    } else if (parts.length) {
-      current = parts[parts.length - 1];
-      previous = parts.length > 1 ? parts[parts.length - 2] : null;
     }
 
     $('reviewPreviousTitle').textContent = previous?.title || '沒有上一篇';
@@ -68,8 +66,64 @@
     $('reviewCurrent').textContent = current?.raw || '按「產生下一篇」後會在這裡顯示。';
     $('reviewFullTitle').textContent = chapter.title;
     $('reviewFull').textContent = chapter.draft || '目前章節沒有內容。';
-    panel.classList.remove('hidden');
+    review.classList.remove('hidden');
     reviewSelection = current?.id || (currentSuggestion ? '__suggestion__' : null);
+  }
+
+  function ensurePlatformPreviewDialog() {
+    if ($('platformPreviewDialog')) return;
+    const dialog = document.createElement('dialog');
+    dialog.id = 'platformPreviewDialog';
+    dialog.innerHTML = `
+      <div class="dialog-card platform-preview-dialog-card">
+        <div class="panel-head">
+          <div><p class="eyebrow">PUBLISH PREVIEW</p><h3 id="platformPreviewTitle">發布預覽</h3></div>
+          <button id="closePlatformPreview" class="icon-button" type="button">×</button>
+        </div>
+        <p id="platformPreviewMeta" class="muted"></p>
+        <pre id="platformPreviewContent" class="platform-preview-content"></pre>
+        <div class="platform-preview-actions">
+          <button id="confirmPlatformCopy" class="button primary" type="button">確認並複製</button>
+          <button id="cancelPlatformCopy" class="button ghost" type="button">取消</button>
+        </div>
+      </div>`;
+    document.body.appendChild(dialog);
+    $('closePlatformPreview').onclick = () => dialog.close();
+    $('cancelPlatformCopy').onclick = () => dialog.close();
+  }
+
+  function previewPlatformCopy(part, platform) {
+    ensurePlatformPreviewDialog();
+    const dialog = $('platformPreviewDialog');
+    const text = platformFormat(part.raw, platform);
+    $('platformPreviewTitle').textContent = `${part.title} · ${platform}`;
+    $('platformPreviewMeta').textContent = '以下就是按下確認後會複製到剪貼簿的內容。';
+    $('platformPreviewContent').textContent = text;
+    $('confirmPlatformCopy').onclick = async () => {
+      await navigator.clipboard.writeText(text);
+      dialog.close();
+      notify(`已確認並複製 ${platform} 版本`);
+    };
+    dialog.showModal();
+  }
+
+  function ensureResetAction() {
+    if ($('resetWorkspaceBtn')) return;
+    const actions = document.querySelector('.top-actions');
+    if (!actions) return;
+    const button = document.createElement('button');
+    button.id = 'resetWorkspaceBtn';
+    button.type = 'button';
+    button.className = 'button ghost reset-workspace-btn';
+    button.textContent = '清除測試資料';
+    button.title = '清除文章、切篇與發布狀態；保留 Google Picker API Key 與輸出資料夾授權';
+    button.onclick = () => {
+      const ok = confirm('要清除 StoryFlow 目前介面上的文章、切篇與發布狀態嗎？\n\nGoogle Picker API Key 與輸出資料夾授權會保留；已經寫入 Google Drive 的 Markdown 檔不會刪除。');
+      if (!ok) return;
+      ['storyflow.state.v1', 'storyflow.state.v2', 'storyflow.state.v3', 'storyflow.state.v4'].forEach(key => localStorage.removeItem(key));
+      location.reload();
+    };
+    actions.insertBefore(button, $('saveBtn'));
   }
 
   // 1) If the entire chapter is emitted as one part, keep the chapter title as-is.
@@ -111,11 +165,13 @@
     };
   };
 
-  // Make the review panel follow the current smart-split suggestion automatically.
+  // Smart split review belongs to the unsaved suggestion, immediately before confirmation.
   const baseRenderSuggestion = window.renderSuggestion;
   window.renderSuggestion = function renderSuggestionPatched() {
+    ensureInlineReview();
     baseRenderSuggestion();
     if (suggestion) showReview({ currentSuggestion: suggestion });
+    else $('inlineReview')?.classList.add('hidden');
   };
 
   // 2) Treat each Google Docs tab as a separate managed section instead of replacing all chapters.
@@ -208,12 +264,7 @@
       const source = chapter.source;
       const key = source?.tabId ? `${source.id || 'doc'}::${source.tabId}` : '__manual__';
       if (!map.has(key)) {
-        const group = {
-          key,
-          label: source?.tabTitle || '手動章節',
-          docName: source?.name || '',
-          chapters: []
-        };
+        const group = { key, label: source?.tabTitle || '手動章節', docName: source?.name || '', chapters: [] };
         map.set(key, group);
         groups.push(group);
       }
@@ -238,14 +289,13 @@
           reviewSelection = null;
           saveState();
           renderAll();
-          $('reviewPanel')?.classList.add('hidden');
         };
         els.chapterList.appendChild(button);
       }
     }
   };
 
-  // 4) Every confirmed/published part gets a one-click preview button.
+  // 4) Publishing is a separate verification step: preview the exact platform output before copying.
   const baseRenderParts = window.renderParts;
   window.renderParts = function renderPartsPatched() {
     baseRenderParts();
@@ -255,20 +305,18 @@
       const part = chapter.parts[index];
       if (!part) return;
       const actions = row.querySelector('.part-actions');
-      if (!actions || actions.querySelector('.preview-part-btn')) return;
-      const previewBtn = document.createElement('button');
-      previewBtn.type = 'button';
-      previewBtn.className = 'button tiny ghost preview-part-btn';
-      previewBtn.textContent = '預覽對照';
-      previewBtn.onclick = () => showReview({ currentPart: part });
-      actions.prepend(previewBtn);
+      const select = row.querySelector('.copy-platform');
+      const copyBtn = row.querySelector('.copy-btn');
+      if (!actions || !select || !copyBtn) return;
+      copyBtn.textContent = '預覽平台版';
+      copyBtn.onclick = () => previewPlatformCopy(part, select.value);
       row.classList.toggle('review-selected', reviewSelection === part.id);
     });
   };
 
-  // Existing click handlers captured previous function objects; point them at the patched flow.
   $('generateBtn').onclick = suggestNextPart;
-
-  ensureReviewPanel();
+  ensureInlineReview();
+  ensurePlatformPreviewDialog();
+  ensureResetAction();
   renderAll();
 })();
