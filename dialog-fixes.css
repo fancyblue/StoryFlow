@@ -1,0 +1,39 @@
+/* Keep every modal usable while its content scrolls. */
+dialog {
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+}
+
+dialog > .dialog-card,
+dialog > form.dialog-card {
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+dialog .dialog-card > .panel-head:first-child,
+dialog form.dialog-card > .panel-head:first-child {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  margin: -4px -4px 14px;
+  padding: 4px 4px 12px;
+  background: rgba(255,255,255,.97);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+dialog .dialog-card > .panel-head:first-child .icon-button,
+dialog form.dialog-card > .panel-head:first-child .icon-button {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 700px) {
+  dialog {
+    max-height: calc(100dvh - 12px);
+  }
+  dialog > .dialog-card,
+  dialog > form.dialog-card {
+    max-height: calc(100dvh - 12px);
+  }
+}
