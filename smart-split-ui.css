@@ -1,40 +1,47 @@
-/* Smart Split: compact controls, but never squeeze the section title against them. */
+/* Smart Split: clear hierarchy. Title first, preferences second, article content last. */
 .splitter-panel > .panel-head {
-  display:grid;
-  grid-template-columns:auto minmax(0,1fr);
-  align-items:center;
-  gap:12px 18px;
-  margin-bottom:10px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:12px;
   padding-bottom:12px;
   border-bottom:1px solid var(--line);
 }
 .splitter-panel > .panel-head > div:first-child { min-width:0; }
-.splitter-panel > .panel-head .eyebrow { margin:0; font-size:11px; white-space:nowrap; }
+.splitter-panel > .panel-head .eyebrow { margin:0 0 5px; font-size:11px; }
+.splitter-panel > .panel-head h2 { margin:0; font-size:18px; line-height:1.35; }
 .smart-split-header-actions {
   display:flex;
-  align-items:flex-end;
+  align-items:center;
   justify-content:flex-end;
-  gap:10px;
-  flex-wrap:wrap;
-  min-width:0;
-}
-.smart-split-header-actions #openSplitReviewBtn {
+  gap:8px;
   flex:0 0 auto;
-  white-space:nowrap;
 }
+.smart-split-header-actions #openSplitReviewBtn { white-space:nowrap; }
 .smart-split-header-actions #openSplitReviewBtn[hidden] { display:none !important; }
 
+/* Preferences are deliberately not part of the heading row. */
 .splitter-panel .smart-split-mini-settings {
   display:flex;
   align-items:flex-end;
-  margin:0;
-  padding:0;
-  gap:8px;
-  border:0;
-  background:transparent;
-  width:auto;
-  min-width:0;
+  gap:10px;
+  width:100%;
+  margin:0 0 12px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:#fbfbfd;
   flex-wrap:wrap;
+}
+.smart-split-settings-label {
+  align-self:center;
+  margin-right:4px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.04em;
+  white-space:nowrap;
 }
 .splitter-panel .smart-split-mini-settings .range-grid {
   display:flex;
@@ -46,53 +53,66 @@
 .splitter-panel .scene-marker-compact {
   display:flex;
   flex-direction:column;
-  gap:3px;
-  width:76px;
-  min-width:76px;
-  font-size:9px;
-  line-height:1.15;
+  gap:4px;
+  width:92px;
+  min-width:92px;
+  font-size:10px;
+  line-height:1.2;
   white-space:nowrap;
   color:var(--muted);
 }
 .splitter-panel .smart-split-mini-settings .range-grid input,
 .splitter-panel .scene-marker-compact #sceneMarker {
-  width:76px;
-  min-height:30px;
-  padding:4px 7px;
+  width:92px;
+  min-height:34px;
+  padding:6px 9px;
   margin:0;
-  font-size:11px;
-  border-radius:8px;
+  font-size:12px;
+  border-radius:9px;
 }
 
-/* Format controls form a distinct row, like the review dialog. */
+/* Preview format is a small utility row; the disabled duplicate settings are noise here. */
 .splitter-panel .suggestion-platform-bar {
-  display:grid;
-  grid-template-columns:minmax(150px,190px) 1fr;
+  display:flex;
+  align-items:flex-end;
   gap:10px;
-  align-items:center;
-  margin:8px 0 10px;
-  padding:8px 10px;
-  border-radius:10px;
+  margin:0 0 12px;
+  padding:0;
+  border:0;
+  background:transparent;
 }
-.splitter-panel .suggestion-platform-bar .platform-select-field { width:auto; }
-.splitter-panel .suggestion-platform-settings { gap:8px; }
-.splitter-panel .suggestion-platform-settings label { min-width:100px; }
+.splitter-panel .suggestion-platform-bar .platform-select-field {
+  width:min(260px,100%);
+}
+.splitter-panel .suggestion-platform-bar .platform-select-field > span {
+  display:block;
+  margin-bottom:5px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:700;
+}
+.splitter-panel .suggestion-platform-bar select.text-input {
+  min-height:38px;
+  padding:7px 10px;
+  font-size:12px;
+}
+.splitter-panel .suggestion-platform-settings { display:none !important; }
 
 .splitter-panel .suggestion-title-row {
   align-items:center;
   gap:12px;
-  margin:8px 0 8px;
+  margin:4px 0 10px;
   padding:0 2px;
 }
 .suggestion-name-hidden { display:none !important; }
 .suggestion-title-input {
-  width:min(560px,72vw);
+  width:min(680px,82vw);
   max-width:100%;
   border:0;
   border-bottom:1px solid transparent;
   background:transparent;
   padding:3px 0 5px;
-  font-size:18px;
+  font-size:20px;
   font-weight:800;
   color:var(--text);
   outline:none;
@@ -101,7 +121,7 @@
 .suggestion-title-input:focus { border-bottom-color:#c4b5fd; }
 .splitter-panel #suggestionChars {
   display:inline-block;
-  margin-top:2px;
+  margin-top:3px;
   font-size:11px;
   font-weight:600;
   color:var(--muted);
@@ -111,16 +131,21 @@
 
 .split-preview-shell {
   position:relative;
-  margin-bottom:12px;
+  margin-bottom:14px;
 }
 .split-preview-shell .preview {
+  min-height:280px;
+  max-height:none;
   margin-bottom:0;
-  padding-top:54px !important;
+  padding:62px 28px 28px !important;
+  background:#fff;
+  font-size:16px;
+  line-height:1.95;
 }
 .preview-boundary-controls {
   position:absolute;
-  top:10px;
-  right:10px;
+  top:12px;
+  right:12px;
   z-index:2;
   margin:0 !important;
   display:flex !important;
@@ -128,8 +153,8 @@
   padding:5px;
   border:1px solid var(--line);
   border-radius:10px;
-  background:rgba(255,255,255,.96);
-  box-shadow:0 2px 8px rgba(17,24,39,.08);
+  background:rgba(255,255,255,.97);
+  box-shadow:0 2px 8px rgba(17,24,39,.07);
 }
 .preview-boundary-controls .button { padding:6px 9px; }
 
@@ -144,45 +169,28 @@
 .review-current-chars { color:var(--muted); font-size:11px; white-space:nowrap; }
 #reviewDialogMeta[hidden] { display:none !important; }
 
-@media (max-width:1180px) {
-  .splitter-panel > .panel-head {
-    grid-template-columns:1fr;
-    align-items:start;
-  }
-  .smart-split-header-actions {
-    justify-content:flex-start;
-    margin-left:0;
-  }
-}
-
 @media (max-width:980px) {
   .review-format-bar { grid-template-columns:1fr; }
   .review-boundary-controls { justify-content:flex-start; margin-left:0; }
 }
 
 @media (max-width:700px) {
-  .splitter-panel > .panel-head { gap:9px; }
-  .smart-split-header-actions {
-    width:100%;
-    overflow-x:auto;
-    flex-wrap:nowrap;
-    justify-content:flex-start;
-    padding-bottom:2px;
-  }
+  .splitter-panel > .panel-head { gap:10px; }
   .splitter-panel .smart-split-mini-settings {
-    overflow:visible;
-    flex:0 0 auto;
-    flex-wrap:nowrap;
+    align-items:stretch;
+    padding:9px 10px;
   }
+  .smart-split-settings-label { width:100%; margin:0 0 2px; }
+  .splitter-panel .smart-split-mini-settings .range-grid { flex:1 1 auto; }
   .splitter-panel .smart-split-mini-settings .range-grid label,
   .splitter-panel .scene-marker-compact {
-    width:68px;
-    min-width:68px;
+    width:78px;
+    min-width:78px;
   }
   .splitter-panel .smart-split-mini-settings .range-grid input,
-  .splitter-panel .scene-marker-compact #sceneMarker { width:68px; }
-  .splitter-panel .suggestion-platform-bar { grid-template-columns:1fr; }
-  .suggestion-title-input { width:100%; font-size:16px; }
+  .splitter-panel .scene-marker-compact #sceneMarker { width:78px; }
+  .splitter-panel .suggestion-platform-bar .platform-select-field { width:100%; }
+  .suggestion-title-input { width:100%; font-size:17px; }
   .preview-boundary-controls { top:8px; right:8px; }
-  .split-preview-shell .preview { padding-top:50px !important; }
+  .split-preview-shell .preview { min-height:220px; padding:54px 18px 20px !important; font-size:15px; }
 }
