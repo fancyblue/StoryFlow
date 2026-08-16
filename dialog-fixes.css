@@ -56,12 +56,13 @@ dialog form.dialog-card > .panel-head:first-child .icon-button,
   padding: 16px 22px 12px !important;
 }
 
-.settings-folder-connection {
+/* Settings mirrors the exact home-screen folder connection state. */
+#settingsDialog .settings-section:has(#settingsFolderBtn)::after {
+  content: '● 尚未連接 StoryFlow 資料夾';
   display: flex;
   align-items: center;
-  gap: 8px;
   width: fit-content;
-  margin: 0 0 12px;
+  margin: 12px 0 0;
   padding: 7px 10px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -70,8 +71,8 @@ dialog form.dialog-card > .panel-head:first-child .icon-button,
   font-size: 12px;
   font-weight: 700;
 }
-.settings-folder-connection .status-dot { flex: 0 0 auto; }
-.settings-folder-connection.connected {
+body:has(#folderDot.connected) #settingsDialog .settings-section:has(#settingsFolderBtn)::after {
+  content: '● StoryFlow 資料夾已連接';
   border-color: #bbf7d0;
   background: #f0fdf4;
   color: #166534;
