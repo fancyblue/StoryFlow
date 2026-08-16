@@ -1,35 +1,17 @@
-// Boundary engine v2: source paragraphs decide cuts; publication formatting is preview-only.
+// Boundary engine v3: one canonical paragraph model, one click handler, formatting only after the cut is chosen.
 (function () {
-  function sourceParagraphs(chapter = activeChapter()) {
-    const lines = String(chapter?.draft || '').replace(/\r\n/g, '\n').split('\n');
-    const blocks = [];
-    let pendingBlank = false;
-
-    for (const line of lines) {
-      if (!line.trim()) {
-        if (blocks.length) pendingBlank = true;
-        continue;
-      }
-      if (pendingBlank && blocks.length) blocks[blocks.length - 1].strongBoundaryAfter = true;
-      pendingBlank = false;
-      const raw = line.trimEnd();
-      blocks.push({
-        id: `source-paragraph-${blocks.length + 1}`,
-        raw,
-        chars: charCount(raw),
-        strongBoundaryAfter: false
-      });
-    }
-    return blocks;
+  function sourceBlocks() {
+    // Use the exact same parser that suggestNextPart/buildSuggestion use.
+    // This keeps start/end indexes stable and guarantees that publication blank lines never become paragraphs.
+    return parseBlocks(activeChapter()?.draft || '');
   }
 
-  function selectedReviewPlatform() {
+  function reviewPlatform() {
     return document.getElementById('reviewPlatformSelect')?.value || '';
   }
 
-  function formatOptions(platform) {
-    if (platform) return platformOptions(platform);
-    return {
+  function optionsFor(platform) {
+    return platform ? platformOptions(platform) : {
       indent: state.formatting.defaultIndent,
       paragraphSpacing: state.formatting.defaultParagraphSpacing,
       sceneSeparator: state.formatting.defaultSceneSeparator,
@@ -37,10 +19,10 @@
     };
   }
 
-  function formattedHighlightedChapterHTML() {
-    const blocks = sourceParagraphs();
+  function formattedFullChapterHTML() {
+    const blocks = sourceBlocks();
     if (!blocks.length) return '目前章節沒有內容。';
-    const options = formatOptions(selectedReviewPlatform());
+    const options = optionsFor(reviewPlatform());
     const start = suggestion?.start ?? -1;
     const end = suggestion?.end ?? -1;
     const out = [];
@@ -48,9 +30,7 @@
     blocks.forEach((block, index) => {
       if (index === start) out.push('<span class="range-boundary range-start">──── 這一篇開始 ────</span>\n');
       const line = escapeHtml(applyIndent(block.raw, options.indent));
-      out.push(index >= start && index < end
-        ? `<span class="current-range-highlight">${line}</span>`
-        : line);
+      out.push(index >= start && index < end ? `<span class="current-range-highlight">${line}</span>` : line);
       if (index === end - 1) out.push('\n<span class="range-boundary">──── 這一篇結束 ────</span>');
       if (index >= blocks.length - 1) return;
 
@@ -64,20 +44,20 @@
     return out.join('');
   }
 
-  function refreshReviewFromSource(scrollToStart = false) {
+  function refreshReview(scrollToStart = false) {
     if (!suggestion) return;
+    const chapter = activeChapter();
+    const platform = reviewPlatform();
+    const previous = chapter.parts?.length ? chapter.parts[chapter.parts.length - 1] : null;
     const full = document.getElementById('dialogReviewFull');
     const current = document.getElementById('dialogReviewCurrent');
-    const previous = document.getElementById('dialogReviewPrevious');
+    const previousBox = document.getElementById('dialogReviewPrevious');
     const chars = document.getElementById('reviewCurrentChars');
-    const chapter = activeChapter();
-    const platform = selectedReviewPlatform();
-    const prevPart = chapter.parts?.length ? chapter.parts[chapter.parts.length - 1] : null;
 
-    if (full) full.innerHTML = formattedHighlightedChapterHTML();
+    if (full) full.innerHTML = formattedFullChapterHTML();
     if (current) current.textContent = platform ? platformFormat(suggestion.raw, platform) : webFormat(suggestion.raw);
-    if (previous) previous.textContent = prevPart
-      ? (platform ? platformFormat(prevPart.raw, platform) : webFormat(prevPart.raw))
+    if (previousBox) previousBox.textContent = previous
+      ? (platform ? platformFormat(previous.raw, platform) : webFormat(previous.raw))
       : '這是本章第一篇。';
     if (chars) chars.textContent = `${suggestion.chars.toLocaleString()} 字`;
 
@@ -87,9 +67,9 @@
     }
   }
 
-  function adjustBySourceParagraph(delta) {
+  function adjust(delta) {
     if (!suggestion) return;
-    const blocks = sourceParagraphs();
+    const blocks = sourceBlocks();
     const titleInput = document.getElementById('suggestionTitleInput');
     const title = titleInput?.value?.trim() || suggestion.name;
     const nextEnd = Math.max(suggestion.start + 1, Math.min(blocks.length, suggestion.end + delta));
@@ -98,52 +78,57 @@
     suggestion = buildSuggestion(suggestion.start, nextEnd, blocks);
     suggestion.name = title;
     renderSuggestion();
-    const nextTitle = document.getElementById('suggestionTitleInput');
-    if (nextTitle) nextTitle.value = title;
+    const restoredTitle = document.getElementById('suggestionTitleInput');
+    if (restoredTitle) restoredTitle.value = title;
     suggestion.name = title;
-    refreshReviewFromSource(false);
+    refreshReview(false);
   }
 
-  function captureBoundaryButton(id, delta) {
-    const button = document.getElementById(id);
-    if (!button || button.dataset.boundaryV2 === '1') return;
-    button.dataset.boundaryV2 = '1';
+  function replaceAndBind(id, delta) {
+    const oldButton = document.getElementById(id);
+    if (!oldButton) return;
+    if (oldButton.dataset.boundaryV3 === '1') return;
+
+    // Replacing the node removes every legacy onclick/addEventListener handler from older patches.
+    const button = oldButton.cloneNode(true);
+    button.dataset.boundaryV3 = '1';
+    oldButton.replaceWith(button);
     button.addEventListener('click', event => {
       event.preventDefault();
-      event.stopImmediatePropagation();
-      adjustBySourceParagraph(delta);
-    }, true);
+      event.stopPropagation();
+      adjust(delta);
+    });
   }
 
-  function bindAll() {
-    captureBoundaryButton('shrinkBtn', -1);
-    captureBoundaryButton('expandBtn', 1);
-    captureBoundaryButton('reviewShrinkBtn', -1);
-    captureBoundaryButton('reviewExpandBtn', 1);
+  function bindControls() {
+    replaceAndBind('shrinkBtn', -1);
+    replaceAndBind('expandBtn', 1);
+    replaceAndBind('reviewShrinkBtn', -1);
+    replaceAndBind('reviewExpandBtn', 1);
 
     const select = document.getElementById('reviewPlatformSelect');
-    if (select && select.dataset.boundaryV2 !== '1') {
-      select.dataset.boundaryV2 = '1';
-      select.addEventListener('change', () => setTimeout(() => refreshReviewFromSource(false), 0));
+    if (select && select.dataset.boundaryV3 !== '1') {
+      select.dataset.boundaryV3 = '1';
+      select.addEventListener('change', () => refreshReview(false));
     }
 
     const open = document.getElementById('openSplitReviewBtn');
-    if (open && open.dataset.boundaryV2 !== '1') {
-      open.dataset.boundaryV2 = '1';
-      open.addEventListener('click', () => setTimeout(() => refreshReviewFromSource(true), 0));
+    if (open && open.dataset.boundaryV3 !== '1') {
+      open.dataset.boundaryV3 = '1';
+      open.addEventListener('click', () => setTimeout(() => refreshReview(true), 0));
     }
   }
 
   const previousRender = window.renderSuggestion;
-  window.renderSuggestion = function renderSuggestionBoundaryV2() {
+  window.renderSuggestion = function renderSuggestionBoundaryV3() {
     previousRender();
-    bindAll();
-    if (document.getElementById('reviewDialog')?.open) refreshReviewFromSource(false);
+    bindControls();
+    if (document.getElementById('reviewDialog')?.open) refreshReview(false);
   };
 
-  window.adjustSuggestion = adjustBySourceParagraph;
-  window.StoryFlowSourceParagraphs = sourceParagraphs;
-  window.StoryFlowRefreshReviewFromSource = refreshReviewFromSource;
+  window.adjustSuggestion = adjust;
+  window.StoryFlowSourceParagraphs = sourceBlocks;
+  window.StoryFlowRefreshReviewFromSource = refreshReview;
 
-  bindAll();
+  bindControls();
 })();
