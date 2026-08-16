@@ -1,11 +1,16 @@
-// Dedicated publishing dashboard: all confirmed articles, all platforms, one clear publishing workflow.
+// Dedicated publishing dashboard: compact newest-first list, expandable platform details.
 (function () {
   let deleteFolderHandle = null;
   let currentFilter = 'all';
+  let selectedPartKey = null;
 
   function safeName(value, fallback = 'untitled') {
     const cleaned = String(value || '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
     return cleaned || fallback;
+  }
+
+  function partKey(part) {
+    return part?.id || `${part?.title || 'part'}:${part?.startBlock ?? ''}:${part?.endBlock ?? ''}`;
   }
 
   function outputFor(part, platform) {
@@ -33,14 +38,19 @@
     return { key: 'partial', label: '部分發布', published, total };
   }
 
+  // Workspace data is appended chronologically. The publishing list is intentionally
+  // rendered in reverse so the most recently confirmed content is easiest to reach.
   function allEntries() {
     const entries = [];
-    state.chapters.forEach((chapter, chapterIndex) => {
-      (chapter.parts || []).forEach((part, partIndex) => {
+    for (let chapterIndex = state.chapters.length - 1; chapterIndex >= 0; chapterIndex -= 1) {
+      const chapter = state.chapters[chapterIndex];
+      const parts = chapter.parts || [];
+      for (let partIndex = parts.length - 1; partIndex >= 0; partIndex -= 1) {
+        const part = parts[partIndex];
         normalizePartStatus(part);
         entries.push({ chapter, chapterIndex, part, partIndex, status: statusFor(part) });
-      });
-    });
+      }
+    }
     return entries;
   }
 
@@ -94,7 +104,7 @@
           <div>
             <p class="eyebrow">STORYFLOW / PUBLISHING</p>
             <h1>發布</h1>
-            <p class="publishing-page-subtitle">管理已確認文章在各個平台的發布內容與狀態。</p>
+            <p class="publishing-page-subtitle">快速找到要發布的文章，再展開管理各平台。</p>
           </div>
           <div class="publishing-project-badge">
             <span>目前作品</span>
@@ -114,7 +124,7 @@
             <button class="publishing-filter" type="button" data-filter="partial">部分發布</button>
             <button class="publishing-filter" type="button" data-filter="complete">已完成</button>
           </div>
-          <span class="muted">每個平台的發布狀態彼此獨立。</span>
+          <span class="muted">最新確認的文章顯示在最上面。</span>
         </div>`;
       main.appendChild(publishingView);
       publishingView.appendChild(publishingPanel);
@@ -132,8 +142,8 @@
     publishingPanel.classList.add('publishing-dashboard-panel');
     const panelTitle = publishingPanel.querySelector('.panel-head h2');
     const panelNote = publishingPanel.querySelector('.panel-head .muted');
-    if (panelTitle) panelTitle.textContent = '已確認文章';
-    if (panelNote) panelNote.textContent = '直接在每篇文章下管理各平台，不需要先切換下拉選單。';
+    if (panelTitle) panelTitle.textContent = '文章清單';
+    if (panelNote) panelNote.textContent = '外層只顯示整體發布狀態；點選文章後再展開各平台細項。';
 
     return { workspaceView, publishingView, publishingPanel };
   }
@@ -257,6 +267,7 @@
     try {
       chapter.parts.splice(index);
       chapter.confirmedBlockCount = chapter.parts.length ? chapter.parts[chapter.parts.length - 1].endBlock : 0;
+      selectedPartKey = null;
       await deletePartFiles(chapter, affected);
       state.activeChapterId = chapter.id;
       suggestion = null;
@@ -287,49 +298,90 @@
         <button class="button tiny ghost platform-preview-btn" type="button">預覽／複製</button>
         <button class="button tiny ghost platform-status-btn ${published ? 'is-published' : ''}" type="button">${published ? '取消已發布' : '標註已發布'}</button>
       </div>`;
-    row.querySelector('.platform-preview-btn').addEventListener('click', () => previewPublish(part, platform));
-    row.querySelector('.platform-status-btn').addEventListener('click', () => togglePlatformPublished(part, platform));
+    row.querySelector('.platform-preview-btn').addEventListener('click', event => {
+      event.stopPropagation();
+      previewPublish(part, platform);
+    });
+    row.querySelector('.platform-status-btn').addEventListener('click', event => {
+      event.stopPropagation();
+      togglePlatformPublished(part, platform);
+    });
     return row;
   }
 
-  function createArticleCard(entry) {
+  function createArticleRow(entry) {
     const { chapter, part, partIndex, status } = entry;
+    const key = partKey(part);
+    const expanded = selectedPartKey === key;
     const card = document.createElement('article');
-    card.className = 'publish-article-card';
+    card.className = `publish-list-item ${expanded ? 'expanded' : ''}`;
+    card.dataset.partKey = key;
+
+    const statusCount = status.total ? ` · ${status.published}/${status.total}` : '';
     card.innerHTML = `
-      <div class="publish-article-head">
-        <div class="publish-article-title-block">
+      <div class="publish-list-summary" role="button" tabindex="0" aria-expanded="${expanded}">
+        <div class="publish-list-title-block">
           <span class="publish-chapter-name">${escapeHtml(chapter.title)}</span>
-          <div class="publish-article-title-row">
+          <div class="publish-list-title-row">
             <strong>${escapeHtml(part.title)}</strong>
             <span>${part.chars.toLocaleString()} 字</span>
           </div>
         </div>
-        <div class="publish-article-head-actions">
-          <span class="publish-overall-status ${status.key}">${status.label}${status.total ? ` · ${status.published}/${status.total}` : ''}</span>
+        <div class="publish-list-meta">
+          <span class="publish-overall-status ${status.key}">${status.label}${statusCount}</span>
+        </div>
+        <div class="publish-list-actions">
           <button class="button tiny ghost default-preview-btn" type="button">預覽預設設定</button>
+          <button class="button tiny ghost publish-delete-btn" type="button">刪除</button>
+          <span class="publish-expand-indicator" aria-hidden="true">${expanded ? '⌃' : '⌄'}</span>
         </div>
       </div>
-      <div class="publish-platform-list"></div>
-      <div class="publish-article-footer">
-        <span class="muted">發布狀態只記錄平台，不會改動原稿或已存 Markdown。</span>
-        <details class="publish-more">
-          <summary>更多</summary>
-          <div class="publish-more-menu">
-            <button class="publish-danger-action" type="button">刪除已確認文章</button>
-          </div>
-        </details>
+      <div class="publish-platform-details" ${expanded ? '' : 'hidden'}>
+        <div class="publish-platform-details-head">
+          <strong>發布平台</strong>
+          <span class="muted">各平台狀態彼此獨立</span>
+        </div>
+        <div class="publish-platform-list"></div>
       </div>`;
 
-    card.querySelector('.default-preview-btn').addEventListener('click', () => previewPublish(part, ''));
-    const platformList = card.querySelector('.publish-platform-list');
-    if (!platforms.length) {
-      platformList.innerHTML = '<div class="publish-no-platform"><strong>目前沒有發布平台</strong><span>請到設定新增發布平台後再管理發布狀態。</span><button class="button tiny ghost" type="button">前往設定</button></div>';
-      platformList.querySelector('button').addEventListener('click', () => openSettings());
-    } else {
-      platforms.forEach(platform => platformList.appendChild(createPlatformRow(entry, platform)));
+    const toggleExpanded = () => {
+      selectedPartKey = selectedPartKey === key ? null : key;
+      renderParts();
+    };
+
+    const summary = card.querySelector('.publish-list-summary');
+    summary.addEventListener('click', event => {
+      if (event.target.closest('button')) return;
+      toggleExpanded();
+    });
+    summary.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      toggleExpanded();
+    });
+
+    card.querySelector('.default-preview-btn').addEventListener('click', event => {
+      event.stopPropagation();
+      previewPublish(part, '');
+    });
+    card.querySelector('.publish-delete-btn').addEventListener('click', event => {
+      event.stopPropagation();
+      deleteConfirmedPart(chapter, partIndex);
+    });
+
+    if (expanded) {
+      const platformList = card.querySelector('.publish-platform-list');
+      if (!platforms.length) {
+        platformList.innerHTML = '<div class="publish-no-platform"><strong>目前沒有發布平台</strong><span>請到設定新增發布平台後再管理發布狀態。</span><button class="button tiny ghost" type="button">前往設定</button></div>';
+        platformList.querySelector('button').addEventListener('click', event => {
+          event.stopPropagation();
+          openSettings();
+        });
+      } else {
+        platforms.forEach(platform => platformList.appendChild(createPlatformRow(entry, platform)));
+      }
     }
-    card.querySelector('.publish-danger-action').addEventListener('click', () => deleteConfirmedPart(chapter, partIndex));
+
     return card;
   }
 
@@ -378,6 +430,8 @@
       ? entries
       : entries.filter(entry => entry.status.key === currentFilter);
 
+    if (selectedPartKey && !filtered.some(entry => partKey(entry.part) === selectedPartKey)) selectedPartKey = null;
+
     if (!entries.length) {
       els.partsList.innerHTML = '<div class="empty-state publishing-empty"><div class="empty-icon">↗</div><strong>還沒有已確認文章</strong><span>回到工作台完成 SMART SPLIT 並存成 Markdown 後，文章會自動出現在發布頁。</span></div>';
       return;
@@ -388,17 +442,7 @@
       return;
     }
 
-    let currentChapterId = null;
-    filtered.forEach(entry => {
-      if (entry.chapter.id !== currentChapterId) {
-        currentChapterId = entry.chapter.id;
-        const heading = document.createElement('div');
-        heading.className = 'publishing-chapter-heading';
-        heading.innerHTML = `<span>章節</span><strong>${escapeHtml(entry.chapter.title)}</strong>`;
-        els.partsList.appendChild(heading);
-      }
-      els.partsList.appendChild(createArticleCard(entry));
-    });
+    filtered.forEach(entry => els.partsList.appendChild(createArticleRow(entry)));
   };
 
   ensureViewStructure();
