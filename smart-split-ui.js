@@ -124,8 +124,15 @@
     const formatBar = document.getElementById('splitPlatformBar');
     if (!panel || !head) return;
 
-    const h2 = head.querySelector('h2');
-    if (h2) h2.remove();
+    // Keep a real section title. The previous compact version removed it and
+    // crowded all preferences into the heading row, which made the panel read
+    // like a toolbar instead of the primary editing surface.
+    const titleBlock = head.querySelector(':scope > div:first-child') || head.firstElementChild;
+    if (titleBlock && !titleBlock.querySelector('h2')) {
+      const h2 = document.createElement('h2');
+      h2.textContent = '切篇預覽';
+      titleBlock.appendChild(h2);
+    }
 
     let actions = document.getElementById('smartSplitHeaderActions');
     if (!actions) {
@@ -134,11 +141,21 @@
       actions.className = 'smart-split-header-actions';
       head.appendChild(actions);
     }
-    if (mini && mini.parentElement !== actions) actions.appendChild(mini);
     if (reviewBtn && reviewBtn.parentElement !== actions) actions.appendChild(reviewBtn);
     if (reviewBtn) {
       reviewBtn.hidden = !suggestion;
       reviewBtn.disabled = !suggestion;
+    }
+
+    // Preferences belong to their own row below the heading, not beside it.
+    if (mini) {
+      if (!mini.querySelector('.smart-split-settings-label')) {
+        const label = document.createElement('span');
+        label.className = 'smart-split-settings-label';
+        label.textContent = '切篇偏好';
+        mini.prepend(label);
+      }
+      if (head.nextElementSibling !== mini) head.insertAdjacentElement('afterend', mini);
     }
 
     if (card && titleRow && formatBar && formatBar.nextElementSibling !== titleRow) {
