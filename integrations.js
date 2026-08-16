@@ -97,9 +97,7 @@ const StoryFlowIntegrations = (() => {
 
   function initGoogle() {
     if (tokenClient) return;
-    if (!window.google?.accounts?.oauth2 || !window.STORYFLOW_CONFIG?.googleClientId) {
-      throw new Error('Google 登入元件尚未載入完成，請稍後再試。');
-    }
+    if (!window.google?.accounts?.oauth2 || !window.STORYFLOW_CONFIG?.googleClientId) throw new Error('Google 登入元件尚未載入完成，請稍後再試。');
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: window.STORYFLOW_CONFIG.googleClientId,
       scope: (window.STORYFLOW_CONFIG.googleScopes || []).join(' '),
@@ -160,9 +158,37 @@ const StoryFlowIntegrations = (() => {
     });
   }
 
-  async function exportGoogleDocAsMarkdown(fileId) {
+  function docsJsonToPlainText(doc) {
+    const lines = [];
+    for (const item of doc?.body?.content || []) {
+      if (item.paragraph) {
+        let text = '';
+        for (const element of item.paragraph.elements || []) {
+          if (element.textRun?.content) text += element.textRun.content;
+        }
+        lines.push(text.replace(/\n$/, ''));
+      } else if (item.table) {
+        for (const row of item.table.tableRows || []) {
+          for (const cell of row.tableCells || []) {
+            for (const cellItem of cell.content || []) {
+              if (!cellItem.paragraph) continue;
+              let text = '';
+              for (const element of cellItem.paragraph.elements || []) {
+                if (element.textRun?.content) text += element.textRun.content;
+              }
+              lines.push(text.replace(/\n$/, ''));
+            }
+          }
+        }
+      }
+    }
+    while (lines.length && lines[lines.length - 1] === '') lines.pop();
+    return lines.join('\n');
+  }
+
+  async function readGoogleDocText(fileId) {
     if (!accessToken) await requestAccessToken();
-    const endpoint = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/export?mimeType=${encodeURIComponent('text/markdown')}`;
+    const endpoint = `https://docs.googleapis.com/v1/documents/${encodeURIComponent(fileId)}`;
     let response = await fetch(endpoint, { headers: { Authorization: `Bearer ${accessToken}` } });
     if (response.status === 401) {
       accessToken = null;
@@ -170,7 +196,7 @@ const StoryFlowIntegrations = (() => {
       response = await fetch(endpoint, { headers: { Authorization: `Bearer ${accessToken}` } });
     }
     if (!response.ok) throw new Error(`Google Docs 匯入失敗（${response.status}）。`);
-    return response.text();
+    return docsJsonToPlainText(await response.json());
   }
 
   async function importGoogleDoc() {
@@ -179,7 +205,7 @@ const StoryFlowIntegrations = (() => {
       id: picked.id,
       name: picked.name || 'Google Docs',
       url: picked.url || `https://docs.google.com/document/d/${picked.id}/edit`,
-      markdown: await exportGoogleDocAsMarkdown(picked.id)
+      text: await readGoogleDocText(picked.id)
     };
   }
 
@@ -190,7 +216,7 @@ const StoryFlowIntegrations = (() => {
     savePart,
     requestAccessToken,
     importGoogleDoc,
-    exportGoogleDocAsMarkdown,
+    readGoogleDocText,
     pickerApiKey,
     setPickerApiKey,
     hasGoogleToken: () => Boolean(accessToken)
