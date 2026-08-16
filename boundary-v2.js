@@ -1,4 +1,4 @@
-// Canonical boundary engine: source scenes decide manual adjustments; publication formatting happens only after.
+// Canonical boundary engine: source scenes decide both initial cuts and manual adjustments; publication formatting happens only after.
 (function () {
   const CONTROL_DIRECTIONS = new Map([
     ['shrinkBtn', -1],
@@ -31,6 +31,60 @@
   function previousSceneEnd(start, currentEnd, blocks) {
     const ends = sceneEnds(blocks).filter(end => end > start && end < currentEnd);
     return ends.length ? ends[ends.length - 1] : currentEnd;
+  }
+
+  function charsBetween(blocks, start, end) {
+    return blocks.slice(start, end).reduce((sum, block) => sum + block.chars, 0);
+  }
+
+  // SMART SPLIT must never create its first/default cut inside a source scene.
+  // Choose only among real source scene ends (or the chapter tail). Character
+  // preferences rank those valid scene boundaries; they never manufacture a
+  // paragraph-level cut just to get closer to the preferred length.
+  function preferredSceneEnd(blocks, start) {
+    const candidates = sceneEnds(blocks).filter(end => end > start);
+    if (!candidates.length) return blocks.length;
+
+    const min = Number(state.minChars) || 1000;
+    const max = Number(state.maxChars) || 3000;
+    const target = (min + max) / 2;
+    const ranked = candidates.map(end => ({
+      end,
+      chars: charsBetween(blocks, start, end)
+    }));
+
+    const inRange = ranked.filter(item => item.chars >= min && item.chars <= max);
+    if (inRange.length) {
+      inRange.sort((a, b) => Math.abs(a.chars - target) - Math.abs(b.chars - target) || a.end - b.end);
+      return inRange[0].end;
+    }
+
+    const atLeastMin = ranked.filter(item => item.chars >= min);
+    if (atLeastMin.length) {
+      atLeastMin.sort((a, b) => Math.abs(a.chars - target) - Math.abs(b.chars - target) || a.end - b.end);
+      return atLeastMin[0].end;
+    }
+
+    // The remaining chapter is shorter than the preferred minimum. The only
+    // valid ending is therefore its final scene/chapter tail.
+    return ranked[ranked.length - 1].end;
+  }
+
+  function suggestAtSceneBoundary() {
+    const chapter = activeChapter();
+    const blocks = sourceBlocks();
+    const start = Math.min(Number(chapter?.confirmedBlockCount || 0), blocks.length);
+
+    if (start >= blocks.length) {
+      suggestion = null;
+      renderSuggestion();
+      notify(blocks.length ? '目前沒有新的未處理內容' : '請先匯入或貼上原稿');
+      return;
+    }
+
+    const end = preferredSceneEnd(blocks, start);
+    suggestion = buildSuggestion(start, end, blocks);
+    renderSuggestion();
   }
 
   function currentReviewPlatform() {
@@ -178,6 +232,10 @@
     syncControlState();
   };
 
+  // Replace the legacy character-first suggestion generator. From now on,
+  // automatic/default suggestions and manual +/- adjustments share the exact
+  // same source-scene model.
+  window.suggestNextPart = suggestAtSceneBoundary;
   window.adjustSuggestion = adjust;
   window.StoryFlowSourceParagraphs = sourceBlocks;
   window.StoryFlowSceneEnds = () => sceneEnds(sourceBlocks());
