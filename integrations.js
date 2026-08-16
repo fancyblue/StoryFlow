@@ -3,7 +3,6 @@ const StoryFlowIntegrations = (() => {
   const STORE_NAME = 'handles';
   const OUTPUT_KEY = 'output-directory';
   const PICKER_KEY_STORAGE = 'storyflow.googlePickerApiKey';
-
   let outputDirectoryHandle = null;
   let accessToken = null;
   let tokenClient = null;
@@ -12,9 +11,7 @@ const StoryFlowIntegrations = (() => {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, 1);
       request.onupgradeneeded = () => {
-        if (!request.result.objectStoreNames.contains(STORE_NAME)) {
-          request.result.createObjectStore(STORE_NAME);
-        }
+        if (!request.result.objectStoreNames.contains(STORE_NAME)) request.result.createObjectStore(STORE_NAME);
       };
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
@@ -26,7 +23,7 @@ const StoryFlowIntegrations = (() => {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
       tx.objectStore(STORE_NAME).put(handle, key);
-      tx.oncomplete = () => resolve();
+      tx.oncomplete = resolve;
       tx.onerror = () => reject(tx.error);
     });
   }
@@ -34,8 +31,7 @@ const StoryFlowIntegrations = (() => {
   async function loadHandle(key) {
     const db = await openDb();
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const request = tx.objectStore(STORE_NAME).get(key);
+      const request = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get(key);
       request.onsuccess = () => resolve(request.result || null);
       request.onerror = () => reject(request.error);
     });
@@ -45,8 +41,7 @@ const StoryFlowIntegrations = (() => {
     if (!handle) return false;
     const opts = { mode: 'readwrite' };
     if ((await handle.queryPermission(opts)) === 'granted') return true;
-    if (request && (await handle.requestPermission(opts)) === 'granted') return true;
-    return false;
+    return Boolean(request && (await handle.requestPermission(opts)) === 'granted');
   }
 
   async function restoreOutputDirectory() {
@@ -71,15 +66,11 @@ const StoryFlowIntegrations = (() => {
 
   async function ensureOutputPermission() {
     if (!outputDirectoryHandle) outputDirectoryHandle = await loadHandle(OUTPUT_KEY);
-    if (!outputDirectoryHandle) return false;
-    return verifyPermission(outputDirectoryHandle, true);
+    return outputDirectoryHandle ? verifyPermission(outputDirectoryHandle, true) : false;
   }
 
   function safeName(value, fallback = 'untitled') {
-    const cleaned = String(value || '')
-      .replace(/[\\/:*?"<>|]/g, '-')
-      .replace(/\s+/g, ' ')
-      .trim();
+    const cleaned = String(value || '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
     return cleaned || fallback;
   }
 
@@ -95,24 +86,20 @@ const StoryFlowIntegrations = (() => {
   }
 
   async function savePart({ projectTitle, chapter, part, metadata }) {
-    const allowed = await ensureOutputPermission();
-    if (!allowed) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
-
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
     const works = await getDirectory(outputDirectoryHandle, 'Works');
     const work = await getDirectory(works, projectTitle);
     const chapterDir = await getDirectory(work, chapter.title);
-
     await writeTextFile(chapterDir, `${part.title}.md`, part.formatted);
     await writeTextFile(chapterDir, 'metadata.json', JSON.stringify(metadata, null, 2));
     return `${outputDirectoryHandle.name}/Works/${safeName(projectTitle)}/${safeName(chapter.title)}`;
   }
 
-  function googleAvailable() {
-    return Boolean(window.google?.accounts?.oauth2 && window.gapi && window.STORYFLOW_CONFIG?.googleClientId);
-  }
-
   function initGoogle() {
-    if (!googleAvailable() || tokenClient) return;
+    if (tokenClient) return;
+    if (!window.google?.accounts?.oauth2 || !window.STORYFLOW_CONFIG?.googleClientId) {
+      throw new Error('Google 登入元件尚未載入完成，請稍後再試。');
+    }
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: window.STORYFLOW_CONFIG.googleClientId,
       scope: (window.STORYFLOW_CONFIG.googleScopes || []).join(' '),
@@ -121,8 +108,7 @@ const StoryFlowIntegrations = (() => {
   }
 
   function requestAccessToken() {
-    initGoogle();
-    if (!tokenClient) return Promise.reject(new Error('Google 登入元件尚未載入完成。'));
+    try { initGoogle(); } catch (error) { return Promise.reject(error); }
     return new Promise((resolve, reject) => {
       tokenClient.callback = (response) => {
         if (response.error) return reject(new Error(response.error_description || response.error));
@@ -139,30 +125,28 @@ const StoryFlowIntegrations = (() => {
 
   function setPickerApiKey(value) {
     const key = String(value || '').trim();
-    if (!key) localStorage.removeItem(PICKER_KEY_STORAGE);
-    else localStorage.setItem(PICKER_KEY_STORAGE, key);
+    if (key) localStorage.setItem(PICKER_KEY_STORAGE, key);
+    else localStorage.removeItem(PICKER_KEY_STORAGE);
     return key;
   }
 
   function loadPickerApi() {
     return new Promise((resolve, reject) => {
-      if (!window.gapi) return reject(new Error('Google API 元件尚未載入完成。'));
+      if (!window.gapi) return reject(new Error('Google Picker 元件尚未載入完成，請稍後再試。'));
       gapi.load('picker', { callback: resolve, onerror: () => reject(new Error('Google Picker 載入失敗。')) });
     });
   }
 
   async function pickGoogleDoc() {
     const key = pickerApiKey();
-    if (!key) throw new Error('請先在 StoryFlow 設定中輸入 Google Picker API Key。');
+    if (!key) throw new Error('請先在「整合設定」輸入 Google Picker API Key。');
     if (!accessToken) await requestAccessToken();
     await loadPickerApi();
-
     return new Promise((resolve, reject) => {
       const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
         .setMimeTypes('application/vnd.google-apps.document')
         .setIncludeFolders(false)
         .setSelectFolderEnabled(false);
-
       const picker = new google.picker.PickerBuilder()
         .setAppId(window.STORYFLOW_CONFIG.googleProjectNumber)
         .setOAuthToken(accessToken)
@@ -170,9 +154,8 @@ const StoryFlowIntegrations = (() => {
         .addView(view)
         .setCallback((data) => {
           if (data.action === google.picker.Action.PICKED) resolve(data.docs[0]);
-          if (data.action === google.picker.Action.CANCEL) reject(new Error('已取消選取文件。'));
-        })
-        .build();
+          else if (data.action === google.picker.Action.CANCEL) reject(new Error('已取消選取文件。'));
+        }).build();
       picker.setVisible(true);
     });
   }
@@ -180,11 +163,11 @@ const StoryFlowIntegrations = (() => {
   async function exportGoogleDocAsMarkdown(fileId) {
     if (!accessToken) await requestAccessToken();
     const endpoint = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/export?mimeType=${encodeURIComponent('text/markdown')}`;
-    const response = await fetch(endpoint, { headers: { Authorization: `Bearer ${accessToken}` } });
+    let response = await fetch(endpoint, { headers: { Authorization: `Bearer ${accessToken}` } });
     if (response.status === 401) {
       accessToken = null;
       await requestAccessToken();
-      return exportGoogleDocAsMarkdown(fileId);
+      response = await fetch(endpoint, { headers: { Authorization: `Bearer ${accessToken}` } });
     }
     if (!response.ok) throw new Error(`Google Docs 匯入失敗（${response.status}）。`);
     return response.text();
@@ -192,17 +175,12 @@ const StoryFlowIntegrations = (() => {
 
   async function importGoogleDoc() {
     const picked = await pickGoogleDoc();
-    const markdown = await exportGoogleDocAsMarkdown(picked.id);
     return {
       id: picked.id,
       name: picked.name || 'Google Docs',
       url: picked.url || `https://docs.google.com/document/d/${picked.id}/edit`,
-      markdown
+      markdown: await exportGoogleDocAsMarkdown(picked.id)
     };
-  }
-
-  function hasGoogleToken() {
-    return Boolean(accessToken);
   }
 
   return {
@@ -212,8 +190,9 @@ const StoryFlowIntegrations = (() => {
     savePart,
     requestAccessToken,
     importGoogleDoc,
+    exportGoogleDocAsMarkdown,
     pickerApiKey,
     setPickerApiKey,
-    hasGoogleToken
+    hasGoogleToken: () => Boolean(accessToken)
   };
 })();
