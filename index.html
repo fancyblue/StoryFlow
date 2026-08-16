@@ -106,7 +106,7 @@
           <div id="suggestionEmpty" class="empty-state">
             <div class="empty-icon">✂</div>
             <strong>準備下一篇</strong>
-            <span>StoryFlow 會從上次已確認的位置繼續，普通段落可切；原稿空白段落會被視為更自然的切點。</span>
+            <span>StoryFlow 會從上次已確認的位置繼續；未達偏好最少字數時會繼續往後找，原稿空白段落仍優先視為自然切點。</span>
           </div>
 
           <div id="suggestionCard" class="suggestion hidden">
@@ -128,7 +128,7 @@
       <section class="panel publishing-panel">
         <div class="panel-head">
           <div><p class="eyebrow">PUBLISHING QUEUE</p><h2>發布篇與平台狀態</h2></div>
-          <span class="muted">每個平台可使用不同段首縮排</span>
+          <span class="muted">每個平台可設定段首、段落空行與場景分隔符</span>
         </div>
         <div id="partsList" class="parts-list"></div>
       </section>
@@ -159,9 +159,13 @@
       </div>
       <div class="settings-section">
         <strong>發布排版</strong>
-        <p>段首只有兩種實際格式：不縮排、全形兩格。平台可以覆寫預設值。</p>
+        <p>可設定預設格式，也能針對各平台調整。段首只有「不縮排／全形兩格」。</p>
         <label class="field-label" for="defaultIndent">預設段首縮排</label>
         <select id="defaultIndent" class="text-input"><option value="none">不縮排</option><option value="two">全形兩格</option></select>
+        <div class="default-format-checks">
+          <label class="format-check"><input id="defaultParagraphSpacing" type="checkbox" checked /><span>預設段落間空一行</span></label>
+          <label class="format-check"><input id="defaultSceneSeparator" type="checkbox" checked /><span>預設顯示場景分隔符</span></label>
+        </div>
         <div id="platformFormatSettings" class="platform-settings"></div>
       </div>
       <div class="security-note"><strong>不會存進公開 GitHub：</strong>Google access token、文章正文、切篇 Markdown、API Key。</div>
