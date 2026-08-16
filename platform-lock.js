@@ -1,7 +1,7 @@
 // Publishing platform presets: provide defaults on first setup, then respect user removals/additions.
 (function () {
   const DEFAULT_PLATFORMS = ['巴哈小屋', '方格子'];
-  const PRESET_VERSION = 2;
+  const PRESET_VERSION = 1;
 
   function defaultConfig() {
     return {
@@ -19,26 +19,18 @@
   function normalizePlatformState({ migrate = false } = {}) {
     state.formatting ||= structuredClone(defaultState.formatting);
     state.formatting.platforms ||= {};
-
     const firstMigration = migrate && state.platformPresetVersion !== PRESET_VERSION;
     const oldConfigs = state.formatting.platforms;
     const oldNames = uniqueNames([...platforms, ...Object.keys(oldConfigs)]).filter(name => name !== '巴哈姆特');
-    const names = firstMigration
-      ? [...DEFAULT_PLATFORMS]
-      : (state.platformPresetVersion >= PRESET_VERSION ? oldNames : uniqueNames([...DEFAULT_PLATFORMS, ...oldNames]));
-
+    const names = firstMigration ? [...DEFAULT_PLATFORMS] : (state.platformPresetVersion === PRESET_VERSION ? oldNames : uniqueNames([...DEFAULT_PLATFORMS, ...oldNames]));
     const next = {};
     for (const name of names) next[name] = { ...defaultConfig(), ...(oldConfigs[name] || {}) };
     state.formatting.platforms = next;
     platforms.splice(0, platforms.length, ...names);
-
-    for (const chapter of state.chapters || []) {
-      for (const part of chapter.parts || []) {
-        const prior = part.platformStatus || {};
-        part.platformStatus = Object.fromEntries(names.map(name => [name, Boolean(prior[name])]));
-      }
+    for (const chapter of state.chapters || []) for (const part of chapter.parts || []) {
+      const prior = part.platformStatus || {};
+      part.platformStatus = Object.fromEntries(names.map(name => [name, Boolean(prior[name])]));
     }
-
     if (firstMigration) state.platformPresetVersion = PRESET_VERSION;
   }
 
@@ -83,26 +75,14 @@
     if (typeof renderFormattingSettings === 'function') renderFormattingSettings();
     if (typeof renderParts === 'function') renderParts();
     if (typeof renderPlatformManager === 'function') renderPlatformManager();
-    syncSelectors();
-    bindSelectors();
-    updateSettingsCopy();
+    syncSelectors(); bindSelectors(); updateSettingsCopy();
   }
 
   normalizePlatformState({ migrate: false });
-
   const baseRenderSuggestion = window.renderSuggestion;
-  window.renderSuggestion = function renderSuggestionPlatformPreset() {
-    baseRenderSuggestion();
-    syncSelectors();
-    bindSelectors();
-  };
-
+  window.renderSuggestion = function () { baseRenderSuggestion(); syncSelectors(); bindSelectors(); };
   const baseRenderParts = window.renderParts;
-  window.renderParts = function renderPartsPlatformPreset() {
-    baseRenderParts();
-    syncSelectors();
-    bindSelectors();
-  };
+  window.renderParts = function () { baseRenderParts(); syncSelectors(); bindSelectors(); };
 
   const baseChooseOutputDirectory = StoryFlowIntegrations.chooseOutputDirectory;
   StoryFlowIntegrations.chooseOutputDirectory = async (...args) => {
@@ -116,6 +96,5 @@
 
   document.getElementById('openSettingsBtn')?.addEventListener('click', () => setTimeout(refreshPlatformSurfaces, 0));
   document.getElementById('settingsNav')?.addEventListener('click', () => setTimeout(refreshPlatformSurfaces, 0));
-
   refreshPlatformSurfaces();
 })();
