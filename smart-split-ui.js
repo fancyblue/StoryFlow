@@ -136,6 +136,10 @@
     }
     if (mini && mini.parentElement !== actions) actions.appendChild(mini);
     if (reviewBtn && reviewBtn.parentElement !== actions) actions.appendChild(reviewBtn);
+    if (reviewBtn) {
+      reviewBtn.hidden = !suggestion;
+      reviewBtn.disabled = !suggestion;
+    }
 
     if (card && titleRow && formatBar && formatBar.nextElementSibling !== titleRow) {
       card.insertBefore(formatBar, titleRow);
