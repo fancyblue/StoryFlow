@@ -1,8 +1,6 @@
 // Boundary engine v3: one canonical paragraph model, one click handler, formatting only after the cut is chosen.
 (function () {
   function sourceBlocks() {
-    // Use the exact same parser that suggestNextPart/buildSuggestion use.
-    // This keeps start/end indexes stable and guarantees that publication blank lines never become paragraphs.
     return parseBlocks(activeChapter()?.draft || '');
   }
 
@@ -33,7 +31,6 @@
       out.push(index >= start && index < end ? `<span class="current-range-highlight">${line}</span>` : line);
       if (index === end - 1) out.push('\n<span class="range-boundary">──── 這一篇結束 ────</span>');
       if (index >= blocks.length - 1) return;
-
       if (block.strongBoundaryAfter && options.sceneSeparator) {
         const marker = escapeHtml(options.marker || state.sceneMarker || '＊＊＊');
         out.push(options.paragraphSpacing ? `\n\n${marker}\n\n` : `\n${marker}\n`);
@@ -87,17 +84,23 @@
   function replaceAndBind(id, delta) {
     const oldButton = document.getElementById(id);
     if (!oldButton) return;
-    if (oldButton.dataset.boundaryV3 === '1') return;
 
-    // Replacing the node removes every legacy onclick/addEventListener handler from older patches.
+    if (oldButton.dataset.boundaryV3 === '1') {
+      // Older UI layers reassign .onclick during render. Remove it every time.
+      oldButton.onclick = null;
+      return;
+    }
+
+    // Replacing the node drops every listener installed by older boundary patches.
     const button = oldButton.cloneNode(true);
+    button.onclick = null;
     button.dataset.boundaryV3 = '1';
     oldButton.replaceWith(button);
     button.addEventListener('click', event => {
       event.preventDefault();
-      event.stopPropagation();
+      event.stopImmediatePropagation();
       adjust(delta);
-    });
+    }, true);
   }
 
   function bindControls() {
