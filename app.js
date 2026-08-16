@@ -1,8 +1,12 @@
-const STORAGE_KEY = 'storyflow.state.v3';
+const STORAGE_KEY = 'storyflow.state.v4';
 const platforms = ['巴哈小屋', 'EP', '方格子', 'Matters', 'CxC', 'Penana'];
 
 function defaultPlatformFormatting() {
-  return Object.fromEntries(platforms.map(platform => [platform, { indent: 'inherit' }]));
+  return Object.fromEntries(platforms.map(platform => [platform, {
+    indent: 'inherit',
+    paragraphSpacing: true,
+    sceneSeparator: true
+  }]));
 }
 
 const defaultState = {
@@ -12,7 +16,12 @@ const defaultState = {
   minChars: 1000,
   maxChars: 3000,
   sceneMarker: '＊＊＊',
-  formatting: { defaultIndent: 'none', platforms: defaultPlatformFormatting() }
+  formatting: {
+    defaultIndent: 'none',
+    defaultParagraphSpacing: true,
+    defaultSceneSeparator: true,
+    platforms: defaultPlatformFormatting()
+  }
 };
 defaultState.activeChapterId = defaultState.chapters[0].id;
 
@@ -31,19 +40,29 @@ const els = {
   partsList: $('partsList'), saveState: $('saveState'), sourceMeta: $('sourceMeta'), syncGoogleBtn: $('syncGoogleBtn'),
   googleDot: $('googleDot'), googleStatus: $('googleStatus'), folderDot: $('folderDot'), folderStatus: $('folderStatus'),
   settingsDialog: $('settingsDialog'), pickerApiKeyInput: $('pickerApiKeyInput'), defaultIndent: $('defaultIndent'),
+  defaultParagraphSpacing: $('defaultParagraphSpacing'), defaultSceneSeparator: $('defaultSceneSeparator'),
   platformFormatSettings: $('platformFormatSettings'), tabDialog: $('tabDialog'), tabList: $('tabList'), tabDialogTitle: $('tabDialogTitle')
 };
 
 function loadState() {
-  for (const key of [STORAGE_KEY, 'storyflow.state.v2', 'storyflow.state.v1']) {
+  for (const key of [STORAGE_KEY, 'storyflow.state.v3', 'storyflow.state.v2', 'storyflow.state.v1']) {
     try {
       const parsed = JSON.parse(localStorage.getItem(key));
       if (parsed?.chapters?.length) {
         parsed.chapters.forEach(chapter => { chapter.source ||= null; chapter.parts ||= []; });
-        parsed.formatting ||= { defaultIndent: 'none', platforms: defaultPlatformFormatting() };
+        parsed.formatting ||= {};
         parsed.formatting.defaultIndent ||= 'none';
-        parsed.formatting.platforms ||= defaultPlatformFormatting();
-        platforms.forEach(platform => { parsed.formatting.platforms[platform] ||= { indent: 'inherit' }; });
+        if (typeof parsed.formatting.defaultParagraphSpacing !== 'boolean') parsed.formatting.defaultParagraphSpacing = true;
+        if (typeof parsed.formatting.defaultSceneSeparator !== 'boolean') parsed.formatting.defaultSceneSeparator = true;
+        parsed.formatting.platforms ||= {};
+        platforms.forEach(platform => {
+          const current = parsed.formatting.platforms[platform] || {};
+          parsed.formatting.platforms[platform] = {
+            indent: current.indent || 'inherit',
+            paragraphSpacing: typeof current.paragraphSpacing === 'boolean' ? current.paragraphSpacing : parsed.formatting.defaultParagraphSpacing,
+            sceneSeparator: typeof current.sceneSeparator === 'boolean' ? current.sceneSeparator : parsed.formatting.defaultSceneSeparator
+          };
+        });
         return parsed;
       }
     } catch (_) {}
@@ -103,23 +122,38 @@ function applyIndent(text, indent) {
   return `　　${clean}`;
 }
 
-function webFormat(text, marker = state.sceneMarker, indent = state.formatting.defaultIndent) {
+function webFormat(text, options = {}) {
+  const indent = options.indent ?? state.formatting.defaultIndent;
+  const paragraphSpacing = options.paragraphSpacing ?? state.formatting.defaultParagraphSpacing;
+  const sceneSeparator = options.sceneSeparator ?? state.formatting.defaultSceneSeparator;
+  const marker = options.marker ?? state.sceneMarker;
   const blocks = parseBlocks(text);
-  const output = [];
+  let output = '';
+
   blocks.forEach((block, index) => {
-    output.push(applyIndent(block.raw, indent));
-    if (block.strongBoundaryAfter && index < blocks.length - 1) output.push(marker);
+    output += applyIndent(block.raw, indent);
+    if (index >= blocks.length - 1) return;
+    if (block.strongBoundaryAfter && sceneSeparator) {
+      output += paragraphSpacing ? `\n\n${marker}\n\n` : `\n${marker}\n`;
+    } else {
+      output += paragraphSpacing ? '\n\n' : '\n';
+    }
   });
-  return output.join('\n\n');
+  return output;
 }
 
-function platformIndent(platform) {
-  const value = state.formatting.platforms?.[platform]?.indent || 'inherit';
-  return value === 'inherit' ? state.formatting.defaultIndent : value;
+function platformOptions(platform) {
+  const config = state.formatting.platforms?.[platform] || {};
+  return {
+    indent: config.indent === 'inherit' || !config.indent ? state.formatting.defaultIndent : config.indent,
+    paragraphSpacing: typeof config.paragraphSpacing === 'boolean' ? config.paragraphSpacing : state.formatting.defaultParagraphSpacing,
+    sceneSeparator: typeof config.sceneSeparator === 'boolean' ? config.sceneSeparator : state.formatting.defaultSceneSeparator,
+    marker: state.sceneMarker
+  };
 }
 
 function platformFormat(raw, platform) {
-  return webFormat(raw, state.sceneMarker, platformIndent(platform));
+  return webFormat(raw, platformOptions(platform));
 }
 
 function suggestNextPart() {
@@ -137,20 +171,26 @@ function suggestNextPart() {
   const max = Number(state.maxChars) || 3000;
   const target = (min + max) / 2;
   let end = start, chars = 0, bestEnd = null, bestScore = Infinity;
+
   while (end < blocks.length) {
     chars += blocks[end].chars;
     end += 1;
-    const distance = chars < min ? (min - chars) * 1.8 : Math.abs(chars - target);
-    const overflow = chars > max ? (chars - max) * 1.25 : 0;
-    const naturalBonus = blocks[end - 1]?.strongBoundaryAfter ? -320 : 0;
-    const score = distance + overflow + naturalBonus;
-    if (chars >= Math.max(400, min * 0.6) && score < bestScore) {
-      bestScore = score;
-      bestEnd = end;
+    const atChapterEnd = end >= blocks.length;
+    if (chars >= min || atChapterEnd) {
+      const distance = Math.abs(chars - target);
+      const overflow = chars > max ? (chars - max) * 1.35 : 0;
+      const underflow = chars < min ? (min - chars) * 3 : 0;
+      const naturalBonus = blocks[end - 1]?.strongBoundaryAfter ? -260 : 0;
+      const score = distance + overflow + underflow + naturalBonus;
+      if (score < bestScore) {
+        bestScore = score;
+        bestEnd = end;
+      }
     }
-    if (chars > max * 1.8) break;
+    if (chars > max * 1.8 && bestEnd != null) break;
   }
-  suggestion = buildSuggestion(start, bestEnd || Math.min(start + 1, blocks.length), blocks);
+
+  suggestion = buildSuggestion(start, bestEnd || blocks.length, blocks);
   renderSuggestion();
 }
 
@@ -173,9 +213,9 @@ function buildSuggestion(start, end, blocks = parseBlocks(activeChapter().draft)
     name: `${chapter.title}（${chapter.parts.length + 1}）`,
     status,
     reason: end >= blocks.length
-      ? '目前已到章節最新內容；可以確認，或等待原稿繼續增加。'
+      ? (chars < min ? '已到章節最新內容，因此允許低於偏好最少字數。' : '目前已到章節最新內容；可以確認，或等待原稿繼續增加。')
       : natural
-        ? '目前切點是原稿中的空白段落，優先視為自然場景切點。仍可手動往前或往後調整。'
+        ? '目前切點是原稿中的空白段落，且已達偏好最少字數。仍可手動往前或往後調整。'
         : '目前切點是一般段落結尾。你可以把後面的段落拉進來，即使超過偏好字數。'
   };
 }
@@ -205,7 +245,7 @@ function adjustSuggestion(delta) {
 
 function chapterMetadata(chapter) {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     projectTitle: state.projectTitle,
     chapter: chapter.title,
     source: chapter.source,
@@ -478,27 +518,48 @@ async function chooseFolder() {
   }
 }
 
+function checkboxControl(labelText, checked, onChange) {
+  const label = document.createElement('label');
+  label.className = 'format-check';
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.checked = checked;
+  input.onchange = () => onChange(input.checked);
+  const text = document.createElement('span');
+  text.textContent = labelText;
+  label.append(input, text);
+  return label;
+}
+
 function renderFormattingSettings() {
   els.defaultIndent.value = state.formatting.defaultIndent;
+  els.defaultParagraphSpacing.checked = state.formatting.defaultParagraphSpacing;
+  els.defaultSceneSeparator.checked = state.formatting.defaultSceneSeparator;
   els.platformFormatSettings.innerHTML = '';
   platforms.forEach(platform => {
-    const row = document.createElement('label');
+    const config = state.formatting.platforms[platform];
+    const row = document.createElement('div');
     row.className = 'platform-setting-row';
+    const name = document.createElement('strong');
+    name.textContent = platform;
+    const controls = document.createElement('div');
+    controls.className = 'platform-format-controls';
     const select = document.createElement('select');
     select.className = 'text-input';
-    select.innerHTML = '<option value="inherit">跟隨預設</option><option value="none">不縮排</option><option value="two">全形兩格</option>';
-    select.value = state.formatting.platforms[platform]?.indent || 'inherit';
-    select.onchange = () => {
-      state.formatting.platforms[platform] = { indent: select.value };
-      saveState('排版設定已更新');
-      if (suggestion) suggestion = buildSuggestion(suggestion.start, suggestion.end);
-      renderSuggestion();
-    };
-    const span = document.createElement('span');
-    span.textContent = platform;
-    row.append(span, select);
+    select.innerHTML = '<option value="inherit">段首跟隨預設</option><option value="none">段首不縮排</option><option value="two">段首全形兩格</option>';
+    select.value = config.indent || 'inherit';
+    select.onchange = () => { config.indent = select.value; saveState('排版設定已更新'); };
+    const spacing = checkboxControl('段落間空一行', config.paragraphSpacing, checked => { config.paragraphSpacing = checked; saveState('排版設定已更新'); });
+    const scene = checkboxControl('顯示場景分隔符', config.sceneSeparator, checked => { config.sceneSeparator = checked; saveState('排版設定已更新'); });
+    controls.append(select, spacing, scene);
+    row.append(name, controls);
     els.platformFormatSettings.appendChild(row);
   });
+}
+
+function refreshSuggestionFormatting() {
+  if (suggestion) suggestion = buildSuggestion(suggestion.start, suggestion.end);
+  renderSuggestion();
 }
 
 function openSettings() {
@@ -512,8 +573,10 @@ els.chapterTitle.addEventListener('input', event => { activeChapter().title = ev
 els.draft.addEventListener('input', event => { activeChapter().draft = event.target.value; suggestion = null; saveState(); renderStats(); });
 els.minChars.addEventListener('change', event => { state.minChars = Number(event.target.value); suggestion = null; saveState(); });
 els.maxChars.addEventListener('change', event => { state.maxChars = Number(event.target.value); suggestion = null; saveState(); });
-els.sceneMarker.addEventListener('input', event => { state.sceneMarker = event.target.value || '＊＊＊'; saveState(); if (suggestion) suggestion = buildSuggestion(suggestion.start, suggestion.end); renderSuggestion(); });
-els.defaultIndent.addEventListener('change', event => { state.formatting.defaultIndent = event.target.value; saveState('排版設定已更新'); if (suggestion) suggestion = buildSuggestion(suggestion.start, suggestion.end); renderSuggestion(); });
+els.sceneMarker.addEventListener('input', event => { state.sceneMarker = event.target.value || '＊＊＊'; saveState(); refreshSuggestionFormatting(); });
+els.defaultIndent.addEventListener('change', event => { state.formatting.defaultIndent = event.target.value; saveState('排版設定已更新'); refreshSuggestionFormatting(); });
+els.defaultParagraphSpacing.addEventListener('change', event => { state.formatting.defaultParagraphSpacing = event.target.checked; saveState('排版設定已更新'); refreshSuggestionFormatting(); });
+els.defaultSceneSeparator.addEventListener('change', event => { state.formatting.defaultSceneSeparator = event.target.checked; saveState('排版設定已更新'); refreshSuggestionFormatting(); });
 $('generateBtn').onclick = suggestNextPart;
 $('shrinkBtn').onclick = () => adjustSuggestion(-1);
 $('expandBtn').onclick = () => adjustSuggestion(1);
