@@ -1,16 +1,75 @@
 const StoryFlowIntegrations = (() => {
   const SETTINGS_FILENAME = 'settings.json';
   const WORKSPACE_FILENAME = 'workspace.json';
+  const CONNECTION_DB = 'storyflow-connections-v1';
+  const CONNECTION_STORE = 'handles';
+  const OUTPUT_HANDLE_KEY = 'storyflow-output-directory';
   let outputDirectoryHandle = null;
   let accessToken = null;
   let tokenClient = null;
   let pickerKey = '';
+
+  function openConnectionDb() {
+    return new Promise((resolve, reject) => {
+      if (!('indexedDB' in window)) return resolve(null);
+      const request = indexedDB.open(CONNECTION_DB, 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(CONNECTION_STORE)) db.createObjectStore(CONNECTION_STORE);
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async function readPersistedDirectoryHandle() {
+    try {
+      const db = await openConnectionDb();
+      if (!db) return null;
+      const handle = await new Promise((resolve, reject) => {
+        const tx = db.transaction(CONNECTION_STORE, 'readonly');
+        const request = tx.objectStore(CONNECTION_STORE).get(OUTPUT_HANDLE_KEY);
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => reject(request.error);
+      });
+      db.close();
+      return handle;
+    } catch (error) {
+      console.warn('StoryFlow could not restore the saved folder handle', error);
+      return null;
+    }
+  }
+
+  async function persistDirectoryHandle(handle) {
+    if (!handle) return;
+    try {
+      const db = await openConnectionDb();
+      if (!db) return;
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(CONNECTION_STORE, 'readwrite');
+        tx.objectStore(CONNECTION_STORE).put(handle, OUTPUT_HANDLE_KEY);
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+      db.close();
+    } catch (error) {
+      console.warn('StoryFlow could not remember the folder handle', error);
+    }
+  }
+
+  async function hydrateOutputDirectoryHandle() {
+    if (!outputDirectoryHandle) outputDirectoryHandle = await readPersistedDirectoryHandle();
+    return outputDirectoryHandle;
+  }
 
   async function purgeLegacyBrowserStorage() {
     try {
       ['storyflow.state.v1','storyflow.state.v2','storyflow.state.v3','storyflow.state.v4','storyflow.googlePickerApiKey']
         .forEach(key => localStorage.removeItem(key));
     } catch (_) {}
+    // Old experimental databases may have contained obsolete StoryFlow state.
+    // The new storyflow-connections-v1 database stores only the directory handle.
     try { indexedDB.deleteDatabase('storyflow-handles'); } catch (_) {}
   }
 
@@ -23,18 +82,34 @@ const StoryFlowIntegrations = (() => {
 
   async function restoreOutputDirectory() {
     if (!('showDirectoryPicker' in window)) return { supported: false };
+    await hydrateOutputDirectoryHandle();
     if (!outputDirectoryHandle) return { supported: true, connected: false };
     const connected = await verifyPermission(outputDirectoryHandle, false);
-    return { supported: true, connected, name: outputDirectoryHandle.name, needsPermission: !connected };
+    return { supported: true, connected, name: outputDirectoryHandle.name, needsPermission: !connected, remembered: true };
   }
 
   async function chooseOutputDirectory() {
     if (!('showDirectoryPicker' in window)) throw new Error('此瀏覽器不支援資料夾直接寫入，請使用 Chrome 或 Edge。');
-    outputDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-    return { name: outputDirectoryHandle.name };
+    await hydrateOutputDirectoryHandle();
+
+    // If the browser remembers the folder but needs permission again, reuse the
+    // same handle instead of forcing the user through the folder picker again.
+    if (outputDirectoryHandle && !(await verifyPermission(outputDirectoryHandle, false))) {
+      if (await verifyPermission(outputDirectoryHandle, true)) {
+        await persistDirectoryHandle(outputDirectoryHandle);
+        return { name: outputDirectoryHandle.name, restored: true };
+      }
+    }
+
+    // When already connected, an explicit click means the user wants to choose
+    // another folder, so open the picker normally.
+    outputDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite', id: 'storyflow-output-directory' });
+    await persistDirectoryHandle(outputDirectoryHandle);
+    return { name: outputDirectoryHandle.name, restored: false };
   }
 
   async function ensureOutputPermission() {
+    await hydrateOutputDirectoryHandle();
     return outputDirectoryHandle ? verifyPermission(outputDirectoryHandle, true) : false;
   }
 
@@ -102,16 +177,40 @@ const StoryFlowIntegrations = (() => {
     });
   }
 
-  function requestAccessToken() {
+  function waitForGoogleIdentity(timeout = 5000) {
+    const started = Date.now();
+    return new Promise((resolve, reject) => {
+      const check = () => {
+        if (window.google?.accounts?.oauth2) return resolve();
+        if (Date.now() - started >= timeout) return reject(new Error('Google 登入元件尚未載入完成。'));
+        window.setTimeout(check, 100);
+      };
+      check();
+    });
+  }
+
+  async function requestAccessToken(options = {}) {
+    await waitForGoogleIdentity();
     try { initGoogle(); } catch (error) { return Promise.reject(error); }
+    const prompt = options.prompt != null ? options.prompt : (accessToken || options.silent ? '' : 'consent');
     return new Promise((resolve, reject) => {
       tokenClient.callback = response => {
         if (response.error) return reject(new Error(response.error_description || response.error));
         accessToken = response.access_token;
         resolve(accessToken);
       };
-      tokenClient.requestAccessToken({ prompt: accessToken ? '' : 'consent' });
+      tokenClient.requestAccessToken({ prompt });
     });
+  }
+
+  async function restoreGoogleAccess() {
+    if (accessToken) return true;
+    try {
+      await requestAccessToken({ silent: true, prompt: '' });
+      return Boolean(accessToken);
+    } catch (_) {
+      return false;
+    }
   }
 
   function pickerApiKey() { return pickerKey; }
@@ -127,7 +226,10 @@ const StoryFlowIntegrations = (() => {
   async function pickGoogleDoc() {
     const key = pickerApiKey();
     if (!key) throw new Error('請先連接 StoryFlow 資料夾，並在整合設定輸入 Google Picker API Key。');
-    if (!accessToken) await requestAccessToken();
+    if (!accessToken) {
+      const restored = await restoreGoogleAccess();
+      if (!restored) await requestAccessToken();
+    }
     await loadPickerApi();
     return new Promise((resolve, reject) => {
       const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
@@ -145,11 +247,15 @@ const StoryFlowIntegrations = (() => {
   }
 
   async function authenticatedFetch(url) {
-    if (!accessToken) await requestAccessToken();
+    if (!accessToken) {
+      const restored = await restoreGoogleAccess();
+      if (!restored) await requestAccessToken();
+    }
     let response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
     if (response.status === 401) {
       accessToken = null;
-      await requestAccessToken();
+      const restored = await restoreGoogleAccess();
+      if (!restored) await requestAccessToken();
       response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
     }
     return response;
@@ -241,5 +347,5 @@ const StoryFlowIntegrations = (() => {
 
   purgeLegacyBrowserStorage();
 
-  return { restoreOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, savePart, requestAccessToken, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
+  return { restoreOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
 })();
