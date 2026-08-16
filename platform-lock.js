@@ -1,6 +1,6 @@
-// Publishing platform preset: keep every platform selector consistent.
+// Publishing platform presets: provide defaults, but allow user-added platforms.
 (function () {
-  const FIXED_PLATFORMS = ['巴哈小屋', '方格子'];
+  const DEFAULT_PLATFORMS = ['巴哈小屋', '方格子'];
   const PRESET_VERSION = 1;
 
   function defaultConfig() {
@@ -11,25 +11,36 @@
     };
   }
 
+  function uniqueNames(names) {
+    const seen = new Set();
+    return names.map(name => String(name || '').trim()).filter(name => name && !seen.has(name) && seen.add(name));
+  }
+
   function normalizePlatformState({ migrate = false } = {}) {
     state.formatting ||= structuredClone(defaultState.formatting);
     state.formatting.platforms ||= {};
 
     const firstMigration = migrate && state.platformPresetVersion !== PRESET_VERSION;
-    const old = state.formatting.platforms;
-    const next = {};
+    const oldConfigs = state.formatting.platforms;
+    const oldNames = uniqueNames([...platforms, ...Object.keys(oldConfigs)]);
+    const names = firstMigration
+      ? [...DEFAULT_PLATFORMS]
+      : uniqueNames([...DEFAULT_PLATFORMS, ...oldNames.filter(name => !DEFAULT_PLATFORMS.includes(name))]);
 
-    for (const name of FIXED_PLATFORMS) {
-      next[name] = firstMigration ? defaultConfig() : { ...defaultConfig(), ...(old[name] || {}) };
+    const next = {};
+    for (const name of names) {
+      next[name] = firstMigration
+        ? defaultConfig()
+        : { ...defaultConfig(), ...(oldConfigs[name] || {}) };
     }
 
     state.formatting.platforms = next;
-    platforms.splice(0, platforms.length, ...FIXED_PLATFORMS);
+    platforms.splice(0, platforms.length, ...names);
 
     for (const chapter of state.chapters || []) {
       for (const part of chapter.parts || []) {
         const prior = part.platformStatus || {};
-        part.platformStatus = Object.fromEntries(FIXED_PLATFORMS.map(name => [name, firstMigration ? false : Boolean(prior[name])]));
+        part.platformStatus = Object.fromEntries(names.map(name => [name, firstMigration ? false : Boolean(prior[name])]));
       }
     }
 
@@ -41,7 +52,7 @@
     const current = select.value;
     select.innerHTML = '';
     select.add(new Option('預設設定', ''));
-    FIXED_PLATFORMS.forEach(name => select.add(new Option(name, name)));
+    platforms.forEach(name => select.add(new Option(name, name)));
     const values = [...select.options].map(option => option.value);
     select.value = values.includes(current) ? current : '';
   }
@@ -66,22 +77,23 @@
     document.querySelectorAll('.copy-platform').forEach(bindSelector);
   }
 
-  function cleanSettingsUI() {
-    document.getElementById('platformManager')?.remove();
+  function updateSettingsCopy() {
     const section = document.getElementById('platformFormatSettings')?.closest('.settings-section');
     const description = section?.querySelector('p');
-    if (description) description.textContent = '發布格式固定為「預設設定、巴哈小屋、方格子」。可分別調整巴哈小屋與方格子的段首、段落空行與場景分隔符。';
+    if (description) description.textContent = '預設提供「巴哈小屋、方格子」，也可以自行新增發布平台；每個平台可個別設定段首、段落空行與場景分隔符。';
   }
 
   function refreshPlatformSurfaces() {
+    normalizePlatformState({ migrate: false });
     if (typeof renderFormattingSettings === 'function') renderFormattingSettings();
     if (typeof renderParts === 'function') renderParts();
+    if (typeof renderPlatformManager === 'function') renderPlatformManager();
     syncSelectors();
     bindSelectors();
-    cleanSettingsUI();
+    updateSettingsCopy();
   }
 
-  // Normalize the fresh UI immediately, but do not mark the one-time Drive migration yet.
+  // Keep the two defaults available without deleting user-created platforms.
   normalizePlatformState({ migrate: false });
 
   const baseRenderSuggestion = window.renderSuggestion;
@@ -98,8 +110,8 @@
     bindSelectors();
   };
 
-  // After a StoryFlow folder is loaded, clear legacy platform configuration exactly once.
-  // The version marker is stored in workspace.json, so later visits preserve new edits.
+  // Existing workspaces that have not yet received the requested one-time cleanup
+  // are cleaned exactly once. After that, user-added platforms are preserved.
   const baseChooseOutputDirectory = StoryFlowIntegrations.chooseOutputDirectory;
   StoryFlowIntegrations.chooseOutputDirectory = async (...args) => {
     const result = await baseChooseOutputDirectory(...args);
@@ -110,8 +122,8 @@
     return result;
   };
 
-  document.getElementById('openSettingsBtn')?.addEventListener('click', () => setTimeout(cleanSettingsUI, 0));
-  document.getElementById('settingsNav')?.addEventListener('click', () => setTimeout(cleanSettingsUI, 0));
+  document.getElementById('openSettingsBtn')?.addEventListener('click', () => setTimeout(refreshPlatformSurfaces, 0));
+  document.getElementById('settingsNav')?.addEventListener('click', () => setTimeout(refreshPlatformSurfaces, 0));
 
   refreshPlatformSurfaces();
 })();
