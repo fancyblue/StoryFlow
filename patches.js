@@ -3,24 +3,32 @@
 
 (function () {
   let reviewSelection = null;
+  let suggestionPreviewPlatform = '';
 
   function reviewMarkup() {
     return `
       <div class="inline-review-head">
         <div><p class="eyebrow">CONTENT CHECK</p><h3>切篇確認</h3></div>
         <div class="inline-review-actions">
-          <span class="muted">確認內容後再存成 Markdown</span>
+          <span class="muted">直接核對切點，再確認存成 Markdown</span>
           <button id="expandReviewBtn" class="button tiny ghost" type="button">放大對照</button>
         </div>
       </div>
+      <div class="suggestion-platform-bar">
+        <label>
+          <span>平台預覽</span>
+          <select id="suggestionPlatformSelect" class="text-input compact-select"></select>
+        </label>
+        <div id="suggestionPlatformSettings" class="suggestion-platform-settings"></div>
+      </div>
       <div class="review-grid compact-review-grid">
-        <article class="review-column current">
-          <div class="review-column-head"><span>這一篇（尚未存檔）</span><strong id="reviewCurrentTitle">—</strong></div>
-          <pre id="reviewCurrent" class="review-content"></pre>
-        </article>
         <article class="review-column">
           <div class="review-column-head"><span>上一篇</span><strong id="reviewPreviousTitle">—</strong></div>
           <pre id="reviewPrevious" class="review-content"></pre>
+        </article>
+        <article class="review-column current">
+          <div class="review-column-head"><span id="reviewCurrentLabel">這一篇（尚未存檔）</span><strong id="reviewCurrentTitle">—</strong></div>
+          <pre id="reviewCurrent" class="review-content"></pre>
         </article>
         <article class="review-column">
           <div class="review-column-head"><span>章節全文</span><strong id="reviewFullTitle">—</strong></div>
@@ -40,14 +48,14 @@
           <div><p class="eyebrow">CONTENT CHECK</p><h3>切篇完整對照</h3></div>
           <button id="closeReviewDialog" class="icon-button" type="button">×</button>
         </div>
-        <p class="muted review-dialog-note">左：上一篇｜中：這一篇（尚未存檔）｜右：章節全文</p>
+        <p class="muted review-dialog-note">左：上一篇｜中：這一篇｜右：章節全文</p>
         <div class="review-dialog-grid">
           <article class="review-column">
             <div class="review-column-head"><span>上一篇</span><strong id="dialogReviewPreviousTitle">—</strong></div>
             <pre id="dialogReviewPrevious" class="review-content"></pre>
           </article>
           <article class="review-column current">
-            <div class="review-column-head"><span>這一篇（尚未存檔）</span><strong id="dialogReviewCurrentTitle">—</strong></div>
+            <div class="review-column-head"><span id="dialogReviewCurrentLabel">這一篇（尚未存檔）</span><strong id="dialogReviewCurrentTitle">—</strong></div>
             <pre id="dialogReviewCurrent" class="review-content"></pre>
           </article>
           <article class="review-column">
@@ -56,7 +64,7 @@
           </article>
         </div>
         <div class="platform-preview-actions">
-          <button id="closeReviewDialogBottom" class="button primary" type="button">看完，回去調整切點</button>
+          <button id="closeReviewDialogBottom" class="button primary" type="button">回到切篇</button>
         </div>
       </div>`;
     document.body.appendChild(dialog);
@@ -68,6 +76,7 @@
     ensureReviewDialog();
     $('dialogReviewPreviousTitle').textContent = $('reviewPreviousTitle')?.textContent || '—';
     $('dialogReviewPrevious').textContent = $('reviewPrevious')?.textContent || '';
+    $('dialogReviewCurrentLabel').textContent = $('reviewCurrentLabel')?.textContent || '這一篇（尚未存檔）';
     $('dialogReviewCurrentTitle').textContent = $('reviewCurrentTitle')?.textContent || '—';
     $('dialogReviewCurrent').textContent = $('reviewCurrent')?.textContent || '';
     $('dialogReviewFullTitle').textContent = $('reviewFullTitle')?.textContent || '—';
@@ -77,6 +86,41 @@
   function openReviewDialog() {
     syncReviewDialog();
     $('reviewDialog').showModal();
+  }
+
+  function platformSettingSummary(platform) {
+    if (!platform) {
+      return {
+        indent: state.formatting.defaultIndent,
+        paragraphSpacing: state.formatting.defaultParagraphSpacing,
+        sceneSeparator: state.formatting.defaultSceneSeparator,
+        label: 'StoryFlow 預設'
+      };
+    }
+    const options = platformOptions(platform);
+    return {
+      indent: options.indent,
+      paragraphSpacing: options.paragraphSpacing,
+      sceneSeparator: options.sceneSeparator,
+      label: platform
+    };
+  }
+
+  function renderSuggestionPlatformSettings() {
+    const box = $('suggestionPlatformSettings');
+    if (!box) return;
+    const config = platformSettingSummary(suggestionPreviewPlatform);
+    box.innerHTML = `
+      <label><span>段首</span><select disabled><option>${config.indent === 'two' ? '全形兩格' : '不縮排'}</option></select></label>
+      <label class="disabled-check"><input type="checkbox" disabled ${config.paragraphSpacing ? 'checked' : ''}><span>段落間空一行</span></label>
+      <label class="disabled-check"><input type="checkbox" disabled ${config.sceneSeparator ? 'checked' : ''}><span>顯示場景分隔符</span></label>`;
+  }
+
+  function currentSuggestionPreviewText() {
+    if (!suggestion) return '';
+    return suggestionPreviewPlatform
+      ? platformFormat(suggestion.raw, suggestionPreviewPlatform)
+      : webFormat(suggestion.raw);
   }
 
   function ensureInlineReview() {
@@ -90,6 +134,16 @@
     review.innerHTML = reviewMarkup();
     confirmBtn.insertAdjacentElement('beforebegin', review);
     $('expandReviewBtn').onclick = openReviewDialog;
+
+    const select = $('suggestionPlatformSelect');
+    select.add(new Option('StoryFlow 預設格式', ''));
+    platforms.forEach(platform => select.add(new Option(platform, platform)));
+    select.value = suggestionPreviewPlatform;
+    select.onchange = () => {
+      suggestionPreviewPlatform = select.value;
+      renderSuggestionPlatformSettings();
+      showReview({ currentSuggestion: suggestion });
+    };
   }
 
   function showReview({ currentPart = null, currentSuggestion = null } = {}) {
@@ -117,9 +171,15 @@
     $('reviewPreviousTitle').textContent = previous?.title || '沒有上一篇';
     $('reviewPrevious').textContent = previous?.raw || '這是本章第一篇。';
     $('reviewCurrentTitle').textContent = current?.title || '尚未產生';
-    $('reviewCurrent').textContent = current?.raw || '按「產生下一篇」後會在這裡顯示。';
+    $('reviewCurrentLabel').textContent = suggestionPreviewPlatform
+      ? `這一篇 · ${suggestionPreviewPlatform} 預覽`
+      : '這一篇（尚未存檔）';
+    $('reviewCurrent').textContent = currentSuggestion
+      ? currentSuggestionPreviewText()
+      : (current?.raw || '按「產生下一篇」後會在這裡顯示。');
     $('reviewFullTitle').textContent = chapter.title;
     $('reviewFull').textContent = chapter.draft || '目前章節沒有內容。';
+    renderSuggestionPlatformSettings();
     review.classList.remove('hidden');
     reviewSelection = current?.id || (currentSuggestion ? '__suggestion__' : null);
   }
@@ -212,6 +272,8 @@
   window.renderSuggestion = function renderSuggestionPatched() {
     ensureInlineReview();
     baseRenderSuggestion();
+    const workspace = document.querySelector('.workspace-grid');
+    workspace?.classList.toggle('split-review-mode', Boolean(suggestion));
     if (suggestion) showReview({ currentSuggestion: suggestion });
     else $('inlineReview')?.classList.add('hidden');
   };
@@ -227,6 +289,7 @@
       saveState('此分頁已在工作區');
       els.tabDialog.close();
       renderAll();
+      if (activeChapter().draft) suggestNextPart();
       notify(`「${tab.title}」已經匯入；已切換到現有內容，不會覆寫其他分頁。`);
       return;
     }
@@ -249,8 +312,9 @@
     saveState('Google Docs 分頁已加入工作區');
     els.tabDialog.close();
     renderAll();
+    if (activeChapter().draft) suggestNextPart();
     if (tab.warnings?.length) alert(`StoryFlow 匯入提醒：\n\n${tab.warnings.join('\n')}`);
-    notify(`已加入「${tab.title}」：${imported.length || 1} 個章節；其他分頁完整保留。`);
+    notify(`已加入「${tab.title}」：${imported.length || 1} 個章節；已直接產生第一個切篇建議。`);
   };
 
   window.renderChapters = function renderChapters() {
@@ -278,7 +342,14 @@
         const button = document.createElement('button');
         button.className = `chapter-item ${chapter.id === state.activeChapterId ? 'active' : ''}`;
         button.innerHTML = `<span>${escapeHtml(chapter.title)}</span><small>${charCount(chapter.draft).toLocaleString()} 字</small>`;
-        button.onclick = () => { state.activeChapterId = chapter.id; suggestion = null; reviewSelection = null; saveState(); renderAll(); };
+        button.onclick = () => {
+          state.activeChapterId = chapter.id;
+          suggestion = null;
+          reviewSelection = null;
+          saveState();
+          renderAll();
+          if (chapter.draft) suggestNextPart();
+        };
         els.chapterList.appendChild(button);
       }
     }
