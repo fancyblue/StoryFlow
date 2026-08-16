@@ -1,7 +1,11 @@
-// Publishing queue UX: destination is per-card state; marking affects only the selected platform.
+// Publishing queue UX: destination is per-card state; preview dialog is canonical and marking affects only selected platform.
 (function () {
   let deleteFolderHandle = null;
   const selectedDestination = new Map();
+
+  function partKey(part) {
+    return part?.id || `${part?.title || 'part'}:${part?.startBlock ?? ''}:${part?.endBlock ?? ''}`;
+  }
 
   function safeName(value, fallback = 'untitled') {
     const cleaned = String(value || '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
@@ -26,60 +30,73 @@
 
   function fillPublishSelect(select, part) {
     normalizePartStatus(part);
-    const remembered = selectedDestination.get(part.id);
+    const key = partKey(part);
+    const remembered = selectedDestination.get(key);
     const fallback = platforms[0] || '';
     const current = remembered !== undefined ? remembered : fallback;
     select.innerHTML = '';
     select.add(new Option('預設設定', ''));
     platforms.forEach(name => select.add(new Option(name, name)));
     select.value = [...select.options].some(option => option.value === current) ? current : '';
-    selectedDestination.set(part.id, select.value);
-    select.onchange = () => selectedDestination.set(part.id, select.value);
+    selectedDestination.set(key, select.value);
+    select.onchange = () => selectedDestination.set(key, select.value);
   }
 
-  function ensurePublishPreviewDialog() {
-    let dialog = document.getElementById('platformPreviewDialog');
-    if (!dialog) {
-      dialog = document.createElement('dialog');
-      dialog.id = 'platformPreviewDialog';
-      dialog.innerHTML = `
-        <div class="dialog-card platform-preview-dialog-card">
-          <div class="panel-head"><div><p class="eyebrow">PUBLISH PREVIEW</p><h3 id="platformPreviewTitle">發布預覽</h3></div><button id="closePlatformPreview" class="icon-button" type="button">×</button></div>
+  function rebuildPublishPreviewDialog() {
+    document.getElementById('platformPreviewDialog')?.remove();
+    const dialog = document.createElement('dialog');
+    dialog.id = 'platformPreviewDialog';
+    dialog.className = 'publishing-preview-dialog';
+    dialog.innerHTML = `
+      <div class="dialog-card platform-preview-dialog-card">
+        <div class="panel-head">
+          <div><p class="eyebrow">PUBLISH PREVIEW</p><h3 id="platformPreviewTitle">發布預覽</h3></div>
+          <button id="closePlatformPreview" class="icon-button" type="button">×</button>
+        </div>
+        <div class="platform-preview-body">
           <p id="platformPreviewMeta" class="muted"></p>
           <pre id="platformPreviewContent" class="platform-preview-content"></pre>
-          <div class="platform-preview-actions">
-            <button id="confirmPlatformCopy" class="button primary" type="button">複製內容</button>
-            <button id="togglePlatformPublished" class="button ghost" type="button">標註已發布</button>
-            <button id="cancelPlatformCopy" class="button ghost" type="button">取消</button>
-          </div>
-        </div>`;
-      document.body.appendChild(dialog);
-    }
+        </div>
+        <div class="platform-preview-actions">
+          <button id="confirmPlatformCopy" class="button primary" type="button">複製內容</button>
+          <button id="togglePlatformPublished" class="button ghost" type="button">標註已發布</button>
+          <button id="cancelPlatformCopy" class="button ghost" type="button">取消</button>
+        </div>
+      </div>`;
+    document.body.appendChild(dialog);
     document.getElementById('closePlatformPreview').onclick = () => dialog.close();
     document.getElementById('cancelPlatformCopy').onclick = () => dialog.close();
     return dialog;
   }
 
+  const publishDialog = rebuildPublishPreviewDialog();
+
   function previewPublish(part, platform) {
-    const dialog = ensurePublishPreviewDialog();
+    const dialog = publishDialog;
     normalizePartStatus(part);
-    selectedDestination.set(part.id, platform);
+    const key = partKey(part);
+    selectedDestination.set(key, platform);
     const text = outputFor(part, platform);
     const toggle = document.getElementById('togglePlatformPublished');
     const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
 
     document.getElementById('platformPreviewTitle').textContent = `${part.title} · ${platformLabel(platform)}`;
     document.getElementById('platformPreviewMeta').textContent = platform
-      ? `目前只會變更「${platform}」的發布狀態，不影響其他平台。`
+      ? `目前操作的是「${platform}」。發布狀態只會修改這個平台。`
       : '這是預設設定的輸出預覽；預設設定不是發布平台。';
     document.getElementById('platformPreviewContent').textContent = text;
     toggle.hidden = !platform;
     toggle.textContent = isPublished ? '取消已發布標記' : '標註已發布';
 
     document.getElementById('confirmPlatformCopy').onclick = async () => {
-      await navigator.clipboard.writeText(text);
+      try {
+        await navigator.clipboard.writeText(text);
+        notify(`已複製 ${platformLabel(platform)} 內容`);
+      } catch (error) {
+        notify(`複製失敗：${error.message}`, true);
+        return;
+      }
       dialog.close();
-      notify(`已複製 ${platformLabel(platform)} 內容`);
     };
 
     toggle.onclick = () => {
@@ -87,7 +104,7 @@
       normalizePartStatus(part);
       part.platformStatus[platform] = !Boolean(part.platformStatus[platform]);
       part.published = Object.values(part.platformStatus).some(Boolean);
-      selectedDestination.set(part.id, platform);
+      selectedDestination.set(key, platform);
       saveState('發布狀態已更新');
       dialog.close();
       renderAll();
@@ -136,7 +153,7 @@
     try {
       chapter.parts.splice(index);
       chapter.confirmedBlockCount = chapter.parts.length ? chapter.parts[chapter.parts.length - 1].endBlock : 0;
-      affected.forEach(item => selectedDestination.delete(item.id));
+      affected.forEach(item => selectedDestination.delete(partKey(item)));
       suggestion = null;
       await deletePartFiles(chapter, affected);
       saveState('已刪除並退回切篇');
@@ -177,8 +194,8 @@
         </div>`;
       const select = card.querySelector('.publish-destination');
       fillPublishSelect(select, part);
-      card.querySelector('.publish-preview-btn').onclick = () => previewPublish(part, select.value);
-      card.querySelector('.publish-delete-btn').onclick = () => deleteConfirmedPart(chapter, index);
+      card.querySelector('.publish-preview-btn').addEventListener('click', () => previewPublish(part, select.value));
+      card.querySelector('.publish-delete-btn').addEventListener('click', () => deleteConfirmedPart(chapter, index));
       els.partsList.appendChild(card);
     });
   };
@@ -187,7 +204,7 @@
   const title = panel?.querySelector('.panel-head h2');
   const note = panel?.querySelector('.panel-head .muted');
   if (title) title.textContent = '已確認文章';
-  if (note) note.textContent = '選平台 → 預覽 → 複製 → 視需要標註該平台已發布。各平台狀態彼此獨立。';
+  if (note) note.textContent = '選平台 → 預覽內容 → 複製；需要時再標註該平台已發布。各平台狀態彼此獨立。';
 
   renderParts();
 })();
