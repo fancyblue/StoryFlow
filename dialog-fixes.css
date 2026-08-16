@@ -1,7 +1,6 @@
-/* Dialogs: the card owns scrolling; headers stay pinned and close actions never leave view. */
+/* Dialogs: the card owns scrolling; title/close row remains pinned. */
 dialog {
   box-sizing: border-box;
-  max-height: calc(100dvh - 24px) !important;
   overflow: hidden !important;
   padding: 0 !important;
 }
@@ -12,12 +11,14 @@ dialog > form.dialog-card {
   width: 100%;
   max-height: calc(100dvh - 24px) !important;
   overflow-y: auto !important;
+  overflow-x: hidden !important;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
 }
 
 dialog .dialog-card > .panel-head:first-child,
-dialog form.dialog-card > .panel-head:first-child {
+dialog form.dialog-card > .panel-head:first-child,
+.sticky-dialog-head {
   position: sticky !important;
   top: 0 !important;
   z-index: 100 !important;
@@ -28,50 +29,60 @@ dialog form.dialog-card > .panel-head:first-child {
 }
 
 dialog .dialog-card > .panel-head:first-child .icon-button,
-dialog form.dialog-card > .panel-head:first-child .icon-button {
-  position: sticky;
-  top: 10px;
+dialog form.dialog-card > .panel-head:first-child .icon-button,
+.sticky-dialog-head .icon-button {
   flex: 0 0 auto;
   z-index: 101;
   background: #fff;
 }
 
-#settingsDialog { width: min(760px, calc(100vw - 24px)); }
+#settingsDialog {
+  width: min(760px, calc(100vw - 24px));
+  height: min(88dvh, 900px);
+  max-height: calc(100dvh - 24px);
+}
+
 #settingsDialog > .settings-dialog {
+  height: 100%;
+  max-height: none !important;
   max-width: none;
   margin: 0;
   padding: 0 22px 22px;
+  overflow-y: auto !important;
 }
+
 #settingsDialog > .settings-dialog > .panel-head:first-child {
   margin: 0 -22px 16px !important;
   padding: 16px 22px 12px !important;
 }
 
-/* Mirror the home-screen StoryFlow folder state in Settings without maintaining a second state source. */
-#settingsDialog .settings-section:has(#settingsFolderBtn)::after {
-  content: '● 尚未連接 StoryFlow 資料夾';
-  display: inline-flex;
-  margin-left: 10px;
-  padding: 6px 9px;
+.settings-folder-connection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 0 0 12px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: #f3f4f6;
-  color: #6b7280;
-  font-size: 11px;
+  background: #f9fafb;
+  color: var(--muted);
+  font-size: 12px;
   font-weight: 700;
-  vertical-align: middle;
 }
-body:has(#folderDot.connected) #settingsDialog .settings-section:has(#settingsFolderBtn)::after {
-  content: '● StoryFlow 資料夾已連接';
+.settings-folder-connection .status-dot { flex: 0 0 auto; }
+.settings-folder-connection.connected {
+  border-color: #bbf7d0;
   background: #f0fdf4;
   color: #166534;
 }
 
 @media (max-width: 700px) {
-  dialog { max-height: calc(100dvh - 12px) !important; }
   dialog > .dialog-card,
   dialog > form.dialog-card { max-height: calc(100dvh - 12px) !important; }
-  #settingsDialog { width: calc(100vw - 12px); }
-  #settingsDialog .settings-section:has(#settingsFolderBtn)::after {
-    margin: 10px 0 0;
+  #settingsDialog {
+    width: calc(100vw - 12px);
+    height: calc(100dvh - 12px);
+    max-height: calc(100dvh - 12px);
   }
 }
