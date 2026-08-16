@@ -1,4 +1,4 @@
-// Publishing queue UX: destination is per-card state; preview dialog is canonical and marking affects only selected platform.
+// Publishing queue UX: select a destination, preview/copy, and manage that platform's status directly.
 (function () {
   let deleteFolderHandle = null;
   const selectedDestination = new Map();
@@ -28,18 +28,24 @@
     part.published = Object.values(next).some(Boolean);
   }
 
+  function selectedFor(part) {
+    const key = partKey(part);
+    if (selectedDestination.has(key)) return selectedDestination.get(key);
+    return platforms[0] || '';
+  }
+
+  function rememberSelection(part, platform) {
+    selectedDestination.set(partKey(part), platform);
+  }
+
   function fillPublishSelect(select, part) {
     normalizePartStatus(part);
-    const key = partKey(part);
-    const remembered = selectedDestination.get(key);
-    const fallback = platforms[0] || '';
-    const current = remembered !== undefined ? remembered : fallback;
+    const current = selectedFor(part);
     select.innerHTML = '';
     select.add(new Option('預設設定', ''));
     platforms.forEach(name => select.add(new Option(name, name)));
     select.value = [...select.options].some(option => option.value === current) ? current : '';
-    selectedDestination.set(key, select.value);
-    select.onchange = () => selectedDestination.set(key, select.value);
+    rememberSelection(part, select.value);
   }
 
   function rebuildPublishPreviewDialog() {
@@ -71,11 +77,27 @@
 
   const publishDialog = rebuildPublishPreviewDialog();
 
+  function setPlatformPublished(part, platform, nextValue) {
+    if (!platform) return;
+    normalizePartStatus(part);
+    part.platformStatus[platform] = Boolean(nextValue);
+    part.published = Object.values(part.platformStatus).some(Boolean);
+    rememberSelection(part, platform);
+    saveState('發布狀態已更新');
+  }
+
+  function togglePlatformPublished(part, platform) {
+    if (!platform) return;
+    normalizePartStatus(part);
+    setPlatformPublished(part, platform, !part.platformStatus[platform]);
+    renderAll();
+    notify(`${platform} 已${part.platformStatus[platform] ? '標註已發布' : '取消已發布標記'}`);
+  }
+
   function previewPublish(part, platform) {
     const dialog = publishDialog;
     normalizePartStatus(part);
-    const key = partKey(part);
-    selectedDestination.set(key, platform);
+    rememberSelection(part, platform);
     const text = outputFor(part, platform);
     const toggle = document.getElementById('togglePlatformPublished');
     const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
@@ -101,14 +123,8 @@
 
     toggle.onclick = () => {
       if (!platform) return;
-      normalizePartStatus(part);
-      part.platformStatus[platform] = !Boolean(part.platformStatus[platform]);
-      part.published = Object.values(part.platformStatus).some(Boolean);
-      selectedDestination.set(key, platform);
-      saveState('發布狀態已更新');
+      togglePlatformPublished(part, platform);
       dialog.close();
-      renderAll();
-      notify(`${platform} 已${part.platformStatus[platform] ? '標註已發布' : '取消已發布標記'}`);
     };
 
     dialog.showModal();
@@ -168,6 +184,15 @@
     }
   }
 
+  function refreshStatusButton(button, part, platform) {
+    normalizePartStatus(part);
+    button.disabled = !platform;
+    button.textContent = !platform
+      ? '預設格式無發布狀態'
+      : (part.platformStatus[platform] ? '取消已發布' : '標註已發布');
+    button.classList.toggle('is-published', Boolean(platform && part.platformStatus[platform]));
+  }
+
   window.renderParts = function renderPartsPublishingFlow() {
     els.partsList.innerHTML = '';
     const chapter = activeChapter();
@@ -189,12 +214,26 @@
         </div>
         <div class="publish-card-action">
           <select class="publish-destination text-input" aria-label="發布格式"></select>
-          <button class="button primary tiny publish-preview-btn" type="button">預覽發布內容</button>
+          <button class="button primary tiny publish-preview-btn" type="button">預覽／複製</button>
+          <button class="button ghost tiny publish-status-btn" type="button">標註已發布</button>
           <button class="button ghost tiny publish-delete-btn" type="button">刪除</button>
         </div>`;
+
       const select = card.querySelector('.publish-destination');
+      const previewButton = card.querySelector('.publish-preview-btn');
+      const statusButton = card.querySelector('.publish-status-btn');
       fillPublishSelect(select, part);
-      card.querySelector('.publish-preview-btn').addEventListener('click', () => previewPublish(part, select.value));
+      refreshStatusButton(statusButton, part, select.value);
+
+      select.addEventListener('change', () => {
+        rememberSelection(part, select.value);
+        refreshStatusButton(statusButton, part, select.value);
+      });
+      previewButton.addEventListener('click', () => previewPublish(part, select.value));
+      statusButton.addEventListener('click', () => {
+        if (!select.value) return;
+        togglePlatformPublished(part, select.value);
+      });
       card.querySelector('.publish-delete-btn').addEventListener('click', () => deleteConfirmedPart(chapter, index));
       els.partsList.appendChild(card);
     });
@@ -204,7 +243,7 @@
   const title = panel?.querySelector('.panel-head h2');
   const note = panel?.querySelector('.panel-head .muted');
   if (title) title.textContent = '已確認文章';
-  if (note) note.textContent = '選平台 → 預覽內容 → 複製；需要時再標註該平台已發布。各平台狀態彼此獨立。';
+  if (note) note.textContent = '選平台 → 預覽／複製 → 標註該平台已發布。平台狀態彼此獨立。';
 
   renderParts();
 })();
