@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="./smart-split-ui.css" />
   <link rel="stylesheet" href="./dialog-fixes.css" />
   <link rel="stylesheet" href="./source-flow.css" />
-  <link rel="stylesheet" href="./source-preview-ux.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -164,7 +163,7 @@
       </div>
       <div class="settings-section">
         <strong>發布排版</strong>
-        <p>發布格式固定為「預設設定、巴哈小屋、方格子」。段首只有「不縮排／全形兩格」。</p>
+        <p>預設提供「巴哈小屋、方格子」，也可以自行新增發布平台；每個平台可個別設定段首、段落空行與場景分隔符。</p>
         <label class="field-label" for="defaultIndent">預設段首縮排</label>
         <select id="defaultIndent" class="text-input"><option value="none">不縮排</option><option value="two">全形兩格</option></select>
         <div class="default-format-checks">
@@ -205,5 +204,6 @@
   <script src="./source-flow.js"></script>
   <script src="./source-preview-ux.js"></script>
   <script src="./raw-split.js"></script>
+  <script src="./boundary-v2.js"></script>
 </body>
 </html>
