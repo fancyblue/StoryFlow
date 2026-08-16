@@ -126,7 +126,7 @@
     const current = select.value;
     const hasDefault = select.id === 'suggestionPlatformSelect' || select.id === 'reviewPlatformSelect';
     select.innerHTML = '';
-    if (hasDefault) select.add(new Option('StoryFlow 預設格式', ''));
+    if (hasDefault) select.add(new Option('預設格式', ''));
     platforms.forEach(platform => select.add(new Option(platform, platform)));
     const values = [...select.options].map(option => option.value);
     select.value = values.includes(current) ? current : (hasDefault ? '' : (platforms[0] || ''));
@@ -195,7 +195,7 @@
     if (!list) return;
     list.innerHTML = '';
     if (!platforms.length) {
-      list.innerHTML = '<span class="muted">尚未新增平台；仍可使用 StoryFlow 預設格式。</span>';
+      list.innerHTML = '<span class="muted">尚未新增平台；仍可使用預設格式。</span>';
       return;
     }
     platforms.forEach(name => {
