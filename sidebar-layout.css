@@ -1,61 +1,101 @@
-/* Desktop sidebar stays visible while the workspace scrolls and can collapse to icons. */
+/* Desktop navigation: fixed to viewport, independently collapsible, and primary items always visible. */
 @media (min-width: 821px) {
   .app-shell {
-    grid-template-columns: 250px minmax(0, 1fr);
-    transition: grid-template-columns .18s ease;
+    display: block;
+    min-height: 100vh;
   }
 
   .sidebar {
-    position: sticky;
-    top: 0;
-    align-self: start;
+    position: fixed !important;
+    inset: 0 auto 0 0;
+    width: 250px;
     height: 100dvh;
-    min-height: 100dvh;
-    overflow-y: auto;
-    overflow-x: visible;
-    z-index: 50;
-    transition: padding .18s ease;
+    min-height: 0;
+    padding: 24px 18px;
+    overflow: hidden;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    transition: width .18s ease, padding .18s ease;
+  }
+
+  .main {
+    margin-left: 250px;
+    min-width: 0;
+    transition: margin-left .18s ease;
+  }
+
+  .sidebar .brand,
+  .sidebar .nav {
+    flex: 0 0 auto;
+  }
+
+  .sidebar .brand {
+    padding-right: 34px;
+  }
+
+  .sidebar .nav {
+    display: grid;
+    gap: 8px;
+  }
+
+  .sidebar .nav-item {
+    min-height: 44px;
+    flex: 0 0 auto;
+  }
+
+  /* Secondary safety copy may shrink/scroll, but navigation never gets pushed away. */
+  .sidebar .sidebar-note {
+    margin-top: auto;
+    min-height: 0;
+    max-height: min(220px, 28dvh);
+    overflow: auto;
+    flex: 0 1 auto;
   }
 
   .sidebar-toggle {
     position: absolute;
-    top: 76px;
-    right: 8px;
+    top: 24px;
+    right: 12px;
     width: 30px;
     height: 30px;
     display: grid;
     place-items: center;
     padding: 0;
     border: 1px solid rgba(255,255,255,.16);
-    border-radius: 10px;
+    border-radius: 9px;
     background: #1f2937;
     color: #e5e7eb;
     box-shadow: 0 5px 16px rgba(0,0,0,.18);
-    font-size: 22px;
+    font-size: 18px;
     line-height: 1;
     cursor: pointer;
-    z-index: 60;
+    z-index: 210;
   }
 
   .sidebar-toggle:hover,
   .sidebar-toggle:focus-visible {
     background: #312e55;
     color: #fff;
-    outline: none;
-  }
-
-  .app-shell.sidebar-collapsed {
-    grid-template-columns: 76px minmax(0, 1fr);
+    outline: 2px solid rgba(255,255,255,.35);
+    outline-offset: 2px;
   }
 
   .app-shell.sidebar-collapsed .sidebar {
+    width: 76px;
     padding-left: 12px;
     padding-right: 12px;
-    gap: 22px;
+  }
+
+  .app-shell.sidebar-collapsed .main {
+    margin-left: 76px;
   }
 
   .app-shell.sidebar-collapsed .brand {
     justify-content: center;
+    padding-right: 0;
+    margin-top: 42px;
   }
 
   .app-shell.sidebar-collapsed .brand > div:last-child,
@@ -72,8 +112,14 @@
   }
 
   .app-shell.sidebar-collapsed .sidebar-toggle {
-    right: 8px;
+    left: 23px;
+    right: auto;
   }
+}
+
+/* On short desktop windows, remove only the nonessential note so every menu item remains visible. */
+@media (min-width: 821px) and (max-height: 560px) {
+  .sidebar .sidebar-note { display: none; }
 }
 
 @media (max-width: 820px) {
