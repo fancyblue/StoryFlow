@@ -49,7 +49,7 @@
         </div>
         <div class="connection-item">
           <span id="folderDot" class="status-dot"></span>
-          <div><strong>產出資料夾</strong><small id="folderStatus">尚未連接</small></div>
+          <div><strong>StoryFlow 資料夾</strong><small id="folderStatus">每次開啟需選擇</small></div>
           <button id="folderBtn" class="button tiny ghost">選擇資料夾</button>
         </div>
         <button id="openSettingsBtn" class="button tiny ghost">整合設定</button>
@@ -91,7 +91,7 @@
           <textarea id="draft" spellcheck="false" placeholder="從 Google Docs 匯入，或直接貼上小說原稿……\n\n原稿中的真正空白段落會成為較強的場景切點。"></textarea>
           <div class="editor-footer">
             <span id="draftMeta">0 字 · 0 段</span>
-            <span>工作狀態保存在目前瀏覽器</span>
+            <span>工作狀態同步到 StoryFlow 資料夾</span>
           </div>
         </section>
 
@@ -129,7 +129,7 @@
       <section class="panel publishing-panel">
         <div class="panel-head">
           <div><p class="eyebrow">PUBLISHING QUEUE</p><h2>發布篇與平台狀態</h2></div>
-          <span class="muted">每個平台可設定段首、段落空行與場景分隔符</span>
+          <span class="muted">平台由你自行新增；各平台可設定段首、段落空行與場景分隔符</span>
         </div>
         <div id="partsList" class="parts-list"></div>
       </section>
@@ -149,18 +149,18 @@
       <div class="panel-head"><div><p class="eyebrow">SETTINGS</p><h3>StoryFlow 設定</h3></div><button class="icon-button" value="cancel">×</button></div>
       <div class="settings-section">
         <strong>Google Picker API Key</strong>
-        <p>API Key 不寫入 GitHub，只保存在這台瀏覽器。請使用你已限制為 Google Picker API、並限制網站來源的金鑰。</p>
+        <p>API Key 會保存在你選擇的 StoryFlow 資料夾 <code>settings.json</code>，不寫入 GitHub 或瀏覽器儲存空間。</p>
         <input id="pickerApiKeyInput" class="text-input" type="password" autocomplete="off" placeholder="AIza..." />
-        <div class="settings-actions"><button id="savePickerKeyBtn" type="button" class="button primary">儲存在這台瀏覽器</button><button id="clearPickerKeyBtn" type="button" class="button ghost">清除</button></div>
+        <div class="settings-actions"><button id="savePickerKeyBtn" type="button" class="button primary">保存到 StoryFlow 資料夾</button><button id="clearPickerKeyBtn" type="button" class="button ghost">清除</button></div>
       </div>
       <div class="settings-section">
-        <strong>產出資料夾</strong>
-        <p>建議選擇掛載在 Mac 上的 Google Drive / StoryFlow。瀏覽器只會寫入你主動授權的資料夾。</p>
-        <button id="settingsFolderBtn" type="button" class="button ghost">選擇／重新連接資料夾</button>
+        <strong>StoryFlow 資料夾</strong>
+        <p>瀏覽器不保存資料夾權限，因此重新開啟 StoryFlow 時需要再次選擇同一個 Google Drive / StoryFlow 資料夾。</p>
+        <button id="settingsFolderBtn" type="button" class="button ghost">選擇資料夾</button>
       </div>
       <div class="settings-section">
         <strong>發布排版</strong>
-        <p>可設定預設格式，也能針對各平台調整。段首只有「不縮排／全形兩格」。</p>
+        <p>可設定預設格式，再自行新增需要的平台。段首只有「不縮排／全形兩格」。</p>
         <label class="field-label" for="defaultIndent">預設段首縮排</label>
         <select id="defaultIndent" class="text-input"><option value="none">不縮排</option><option value="two">全形兩格</option></select>
         <div class="default-format-checks">
@@ -169,7 +169,7 @@
         </div>
         <div id="platformFormatSettings" class="platform-settings"></div>
       </div>
-      <div class="security-note"><strong>不會存進公開 GitHub：</strong>Google access token、文章正文、切篇 Markdown、API Key。</div>
+      <div class="security-note"><strong>保存位置：</strong>工作進度 → <code>workspace.json</code>；平台與排版設定 → <code>settings.json</code>；文章 → <code>Works/</code>。Google access token 只存在目前頁面的記憶體。</div>
     </form>
   </dialog>
 
@@ -193,6 +193,7 @@
   <script src="./config.js"></script>
   <script src="./integrations.js"></script>
   <script src="./app.js"></script>
+  <script src="./ui-bootstrap.js"></script>
   <script src="./patches.js"></script>
   <script src="./settings-sync.js"></script>
 </body>
