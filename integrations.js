@@ -3,6 +3,7 @@ const StoryFlowIntegrations = (() => {
   const STORE_NAME = 'handles';
   const OUTPUT_KEY = 'output-directory';
   const PICKER_KEY_STORAGE = 'storyflow.googlePickerApiKey';
+  const SETTINGS_FILENAME = 'settings.json';
   let outputDirectoryHandle = null;
   let accessToken = null;
   let tokenClient = null;
@@ -83,6 +84,24 @@ const StoryFlowIntegrations = (() => {
     const writable = await fileHandle.createWritable();
     await writable.write(text);
     await writable.close();
+  }
+
+  async function saveStoryFlowSettings(settings) {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    await writeTextFile(outputDirectoryHandle, SETTINGS_FILENAME, JSON.stringify(settings, null, 2));
+    return `${outputDirectoryHandle.name}/${SETTINGS_FILENAME}`;
+  }
+
+  async function loadStoryFlowSettings() {
+    if (!(await ensureOutputPermission())) return null;
+    try {
+      const fileHandle = await outputDirectoryHandle.getFileHandle(SETTINGS_FILENAME);
+      const file = await fileHandle.getFile();
+      return JSON.parse(await file.text());
+    } catch (error) {
+      if (error?.name === 'NotFoundError') return null;
+      throw error;
+    }
   }
 
   async function savePart({ projectTitle, chapter, part, metadata }) {
@@ -308,6 +327,8 @@ const StoryFlowIntegrations = (() => {
     restoreOutputDirectory,
     chooseOutputDirectory,
     ensureOutputPermission,
+    saveStoryFlowSettings,
+    loadStoryFlowSettings,
     savePart,
     requestAccessToken,
     inspectGoogleDoc,
