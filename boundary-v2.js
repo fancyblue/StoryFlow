@@ -1,6 +1,6 @@
-// Canonical boundary engine: exactly one click path, source draft decides cuts, formatting happens only after.
+// Canonical boundary engine: source scenes decide manual adjustments; publication formatting happens only after.
 (function () {
-  const CONTROL_DELTAS = new Map([
+  const CONTROL_DIRECTIONS = new Map([
     ['shrinkBtn', -1],
     ['expandBtn', 1],
     ['reviewShrinkBtn', -1],
@@ -9,6 +9,28 @@
 
   function sourceBlocks() {
     return parseBlocks(activeChapter()?.draft || '');
+  }
+
+  // A source scene ends at a true source blank paragraph. parseBlocks represents
+  // that as strongBoundaryAfter on the preceding block. The final scene always
+  // ends at the chapter tail even when there is no trailing blank paragraph.
+  function sceneEnds(blocks) {
+    const ends = [];
+    blocks.forEach((block, index) => {
+      if (block.strongBoundaryAfter) ends.push(index + 1);
+    });
+    if (blocks.length && ends[ends.length - 1] !== blocks.length) ends.push(blocks.length);
+    return ends;
+  }
+
+  function nextSceneEnd(start, currentEnd, blocks) {
+    const ends = sceneEnds(blocks);
+    return ends.find(end => end > currentEnd) ?? blocks.length;
+  }
+
+  function previousSceneEnd(start, currentEnd, blocks) {
+    const ends = sceneEnds(blocks).filter(end => end > start && end < currentEnd);
+    return ends.length ? ends[ends.length - 1] : currentEnd;
   }
 
   function currentReviewPlatform() {
@@ -74,15 +96,44 @@
     }
   }
 
-  function adjust(delta) {
+  function targetEnd(direction, blocks) {
+    if (!suggestion || !blocks.length) return null;
+    const start = Number(suggestion.start);
+    const currentEnd = Number(suggestion.end);
+    if (direction > 0) return nextSceneEnd(start, currentEnd, blocks);
+    return previousSceneEnd(start, currentEnd, blocks);
+  }
+
+  function syncControlState() {
+    const blocks = sourceBlocks();
+    const start = Number(suggestion?.start ?? 0);
+    const currentEnd = Number(suggestion?.end ?? 0);
+    const previousEnd = suggestion ? previousSceneEnd(start, currentEnd, blocks) : currentEnd;
+    const nextEnd = suggestion ? nextSceneEnd(start, currentEnd, blocks) : currentEnd;
+
+    for (const [id, direction] of CONTROL_DIRECTIONS) {
+      const button = document.getElementById(id);
+      if (!button) continue;
+      button.textContent = direction < 0 ? '← 少一個場景' : '多一個場景 →';
+      button.disabled = !suggestion || (direction < 0 ? previousEnd === currentEnd : nextEnd === currentEnd);
+      button.title = direction < 0
+        ? '將切篇結尾移到上一個原稿場景分隔點'
+        : '將切篇結尾移到下一個原稿場景分隔點；後面沒有分隔點時直接到章節尾';
+    }
+  }
+
+  function adjust(direction) {
     if (!suggestion) return;
     const blocks = sourceBlocks();
     if (!blocks.length) return;
 
     const start = Number(suggestion.start);
     const oldEnd = Number(suggestion.end);
-    const nextEnd = Math.max(start + 1, Math.min(blocks.length, oldEnd + delta));
-    if (nextEnd === oldEnd) return;
+    const nextEnd = targetEnd(direction, blocks);
+    if (nextEnd == null || nextEnd === oldEnd) {
+      syncControlState();
+      return;
+    }
 
     const titleInput = document.getElementById('suggestionTitleInput');
     const title = titleInput?.value?.trim() || suggestion.name;
@@ -94,17 +145,18 @@
     if (restoredTitle) restoredTitle.value = title;
     suggestion.name = title;
     refreshReview(false);
+    syncControlState();
   }
 
-  // Capture before every older target-level handler. Each click changes source end index exactly once.
+  // Capture before every older target-level handler. One click means one source scene move.
   document.addEventListener('click', event => {
     const button = event.target.closest?.('button');
     if (!button) return;
-    const delta = CONTROL_DELTAS.get(button.id);
-    if (!delta) return;
+    const direction = CONTROL_DIRECTIONS.get(button.id);
+    if (!direction) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    adjust(delta);
+    adjust(direction);
   }, true);
 
   document.addEventListener('change', event => {
@@ -112,10 +164,24 @@
   });
 
   document.addEventListener('click', event => {
-    if (event.target?.closest?.('#openSplitReviewBtn')) setTimeout(() => refreshReview(true), 0);
+    if (event.target?.closest?.('#openSplitReviewBtn')) {
+      setTimeout(() => {
+        refreshReview(true);
+        syncControlState();
+      }, 0);
+    }
   });
+
+  const previousRenderSuggestion = window.renderSuggestion;
+  window.renderSuggestion = function renderSuggestionWithSceneControls() {
+    previousRenderSuggestion();
+    syncControlState();
+  };
 
   window.adjustSuggestion = adjust;
   window.StoryFlowSourceParagraphs = sourceBlocks;
+  window.StoryFlowSceneEnds = () => sceneEnds(sourceBlocks());
   window.StoryFlowRefreshReviewFromSource = refreshReview;
+
+  syncControlState();
 })();
