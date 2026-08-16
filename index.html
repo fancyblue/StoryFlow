@@ -11,50 +11,30 @@
   <link rel="stylesheet" href="./smart-split-ui.css" />
   <link rel="stylesheet" href="./dialog-fixes.css" />
   <link rel="stylesheet" href="./source-flow.css" />
+  <link rel="stylesheet" href="./publishing-flow.css" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">S</div>
-        <div><strong>StoryFlow</strong><span>Creator Studio</span></div>
-      </div>
+      <div class="brand"><div class="brand-mark">S</div><div><strong>StoryFlow</strong><span>Creator Studio</span></div></div>
       <nav class="nav" aria-label="Primary">
         <button class="nav-item active" data-view="workspace">✦ <span>工作台</span></button>
         <button class="nav-item" data-view="projects">▤ <span>作品</span></button>
         <button class="nav-item" data-view="publishing">↗ <span>發布</span></button>
         <button class="nav-item" id="settingsNav" data-view="settings">⚙ <span>設定</span></button>
       </nav>
-      <div class="sidebar-note">
-        <strong>安全設計</strong>
-        <span>公開 GitHub 只放程式。原稿從你授權的 Google Docs 讀取，產出檔只寫入你主動選擇的本機資料夾。</span>
-      </div>
+      <div class="sidebar-note"><strong>安全設計</strong><span>公開 GitHub 只放程式。原稿從你授權的 Google Docs 讀取，產出檔只寫入你主動選擇的本機資料夾。</span></div>
     </aside>
 
     <main class="main">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">STORYFLOW / WORKSPACE</p>
-          <h1>內容發布工作台</h1>
-        </div>
-        <div class="top-actions">
-          <span id="saveState" class="save-state">已儲存</span>
-          <button id="saveBtn" class="button ghost">儲存</button>
-          <button id="generateBtn" class="button primary">產生下一篇</button>
-        </div>
+        <div><p class="eyebrow">STORYFLOW / WORKSPACE</p><h1>內容發布工作台</h1></div>
+        <div class="top-actions"><span id="saveState" class="save-state">已儲存</span><button id="saveBtn" class="button ghost">儲存</button><button id="generateBtn" class="button primary">產生下一篇</button></div>
       </header>
 
       <section class="connection-bar" aria-label="連線狀態">
-        <div class="connection-item">
-          <span id="googleDot" class="status-dot"></span>
-          <div><strong>Google Docs</strong><small id="googleStatus">尚未登入</small></div>
-          <button id="googleLoginBtn" class="button tiny ghost">登入 Google</button>
-        </div>
-        <div class="connection-item">
-          <span id="folderDot" class="status-dot"></span>
-          <div><strong>StoryFlow 資料夾</strong><small id="folderStatus">每次開啟需選擇</small></div>
-          <button id="folderBtn" class="button tiny ghost">選擇資料夾</button>
-        </div>
+        <div class="connection-item"><span id="googleDot" class="status-dot"></span><div><strong>Google Docs</strong><small id="googleStatus">尚未登入</small></div><button id="googleLoginBtn" class="button tiny ghost">登入 Google</button></div>
+        <div class="connection-item"><span id="folderDot" class="status-dot"></span><div><strong>StoryFlow 資料夾</strong><small id="folderStatus">每次開啟需選擇</small></div><button id="folderBtn" class="button tiny ghost">選擇資料夾</button></div>
         <button id="openSettingsBtn" class="button tiny ghost">整合設定</button>
       </section>
 
@@ -67,143 +47,55 @@
 
       <section class="workspace-grid">
         <aside class="panel source-panel">
-          <div class="panel-head">
-            <div><p class="eyebrow">SOURCE</p><h2>作品與章節</h2></div>
-            <button id="newChapterBtn" class="icon-button" title="新增章節">＋</button>
-          </div>
-          <label class="field-label" for="projectTitle">作品名稱</label>
-          <input id="projectTitle" class="text-input" value="未命名作品" />
-          <div class="chapter-list" id="chapterList"></div>
-          <button id="addChapterBtn" class="button full ghost">＋ 手動新增文章</button>
+          <div class="panel-head"><div><p class="eyebrow">SOURCE</p><h2>作品與章節</h2></div><button id="newChapterBtn" class="icon-button" title="新增章節">＋</button></div>
+          <label class="field-label" for="projectTitle">作品名稱</label><input id="projectTitle" class="text-input" value="未命名作品" />
+          <div class="chapter-list" id="chapterList"></div><button id="addChapterBtn" class="button full ghost">＋ 手動新增文章</button>
         </aside>
 
         <section class="panel editor-panel">
           <div class="panel-head editor-head">
-            <div>
-              <p class="eyebrow">MASTER DRAFT</p>
-              <input id="chapterTitle" class="title-input" value="第一章" aria-label="章節名稱" />
-              <small id="sourceMeta" class="source-meta">尚未綁定來源</small>
-            </div>
-            <div class="source-actions">
-              <button id="pasteSampleBtn" class="button tiny ghost">載入範例</button>
-              <button id="importGoogleBtn" class="button tiny primary">選擇 Google Docs</button>
-              <button id="syncGoogleBtn" class="button tiny ghost" disabled>重新同步</button>
-            </div>
+            <div><p class="eyebrow">MASTER DRAFT</p><input id="chapterTitle" class="title-input" value="第一章" aria-label="章節名稱" /><small id="sourceMeta" class="source-meta">尚未綁定來源</small></div>
+            <div class="source-actions"><button id="pasteSampleBtn" class="button tiny ghost">載入範例</button><button id="importGoogleBtn" class="button tiny primary">選擇 Google Docs</button><button id="syncGoogleBtn" class="button tiny ghost" disabled>重新同步</button></div>
           </div>
           <div class="notice">來源內容確認後會直接進入 SMART SPLIT。Google Docs 的 Heading 1 會作為章節名稱，不會加入正文。</div>
           <textarea id="draft" spellcheck="false" placeholder="文章來源確認後，轉換後內容會進入這裡供 StoryFlow 切篇。"></textarea>
-          <div class="editor-footer">
-            <span id="draftMeta">0 字 · 0 段</span>
-            <span>工作狀態同步到 StoryFlow 資料夾</span>
-          </div>
+          <div class="editor-footer"><span id="draftMeta">0 字 · 0 段</span><span>工作狀態同步到 StoryFlow 資料夾</span></div>
         </section>
 
         <aside class="panel splitter-panel">
           <div class="panel-head"><div><p class="eyebrow">SMART SPLIT</p><h2>切篇預覽</h2></div></div>
-          <div class="range-grid">
-            <label>偏好最少<input id="minChars" type="number" min="300" step="100" value="1000" /></label>
-            <label>偏好最多<input id="maxChars" type="number" min="500" step="100" value="3000" /></label>
-          </div>
-          <label class="field-label" for="sceneMarker">場景分隔符</label>
-          <input id="sceneMarker" class="text-input" value="＊＊＊" />
-
-          <div id="suggestionEmpty" class="empty-state">
-            <div class="empty-icon">✂</div>
-            <strong>尚未有可切篇內容</strong>
-            <span>請先從「作品與章節」載入 Google Docs 或手動新增文章；確認來源內容後會直接顯示切篇預覽。</span>
-          </div>
-
+          <div class="range-grid"><label>偏好最少<input id="minChars" type="number" min="300" step="100" value="1000" /></label><label>偏好最多<input id="maxChars" type="number" min="500" step="100" value="3000" /></label></div>
+          <label class="field-label" for="sceneMarker">場景分隔符</label><input id="sceneMarker" class="text-input" value="＊＊＊" />
+          <div id="suggestionEmpty" class="empty-state"><div class="empty-icon">✂</div><strong>尚未有可切篇內容</strong><span>請先從「作品與章節」載入 Google Docs 或手動新增文章；確認來源內容後會直接顯示切篇預覽。</span></div>
           <div id="suggestionCard" class="suggestion hidden">
-            <div class="suggestion-title-row">
-              <div><span id="suggestionName">第一章（1）</span><strong id="suggestionChars">0 字</strong></div>
-              <span id="suggestionStatus" class="pill">建議</span>
-            </div>
-            <div class="boundary-control">
-              <button id="shrinkBtn" class="button ghost tiny">← 少一段</button>
-              <button id="expandBtn" class="button ghost tiny">多一段 →</button>
-            </div>
-            <div id="suggestionReason" class="reason"></div>
-            <div id="preview" class="preview"></div>
-            <button id="confirmBtn" class="button primary full">確認並存成 Markdown</button>
+            <div class="suggestion-title-row"><div><span id="suggestionName">第一章（1）</span><strong id="suggestionChars">0 字</strong></div><span id="suggestionStatus" class="pill">建議</span></div>
+            <div class="boundary-control"><button id="shrinkBtn" class="button ghost tiny">← 少一段</button><button id="expandBtn" class="button ghost tiny">多一段 →</button></div>
+            <div id="suggestionReason" class="reason"></div><div id="preview" class="preview"></div><button id="confirmBtn" class="button primary full">確認並存成 Markdown</button>
           </div>
         </aside>
       </section>
 
       <section class="panel publishing-panel">
-        <div class="panel-head">
-          <div><p class="eyebrow">PUBLISHING QUEUE</p><h2>發布篇與平台狀態</h2></div>
-          <span class="muted">發布格式：預設設定、巴哈小屋、方格子</span>
-        </div>
+        <div class="panel-head"><div><p class="eyebrow">PUBLISHING QUEUE</p><h2>發布篇與平台狀態</h2></div><span class="muted">發布格式：預設設定、巴哈小屋、方格子</span></div>
         <div id="partsList" class="parts-list"></div>
       </section>
     </main>
   </div>
 
-  <dialog id="tabDialog">
-    <form method="dialog" class="dialog-card tab-dialog">
-      <div class="panel-head"><div><p class="eyebrow">GOOGLE DOCS</p><h3 id="tabDialogTitle">選擇要匯入的分頁</h3></div><button class="icon-button" value="cancel">×</button></div>
-      <p class="muted">選擇分頁後會先顯示 StoryFlow 轉換後的內容；確認後才加入工作區。</p>
-      <div id="tabList" class="tab-list"></div>
-    </form>
-  </dialog>
+  <dialog id="tabDialog"><form method="dialog" class="dialog-card tab-dialog"><div class="panel-head"><div><p class="eyebrow">GOOGLE DOCS</p><h3 id="tabDialogTitle">選擇要匯入的分頁</h3></div><button class="icon-button" value="cancel">×</button></div><p class="muted">選擇分頁後會先顯示 StoryFlow 轉換後的內容；確認後才加入工作區。</p><div id="tabList" class="tab-list"></div></form></dialog>
 
-  <dialog id="settingsDialog">
-    <form method="dialog" class="dialog-card settings-dialog">
-      <div class="panel-head"><div><p class="eyebrow">SETTINGS</p><h3>StoryFlow 設定</h3></div><button class="icon-button" value="cancel">×</button></div>
-      <div class="settings-section">
-        <strong>Google Picker API Key</strong>
-        <p>API Key 會保存在你選擇的 StoryFlow 資料夾 <code>settings.json</code>，不寫入 GitHub 或瀏覽器儲存空間。</p>
-        <input id="pickerApiKeyInput" class="text-input" type="password" autocomplete="off" placeholder="AIza..." />
-        <div class="settings-actions"><button id="savePickerKeyBtn" type="button" class="button primary">保存到 StoryFlow 資料夾</button><button id="clearPickerKeyBtn" type="button" class="button ghost">清除</button></div>
-      </div>
-      <div class="settings-section">
-        <strong>StoryFlow 資料夾</strong>
-        <p>瀏覽器不保存資料夾權限，因此重新開啟 StoryFlow 時需要再次選擇同一個 Google Drive / StoryFlow 資料夾。</p>
-        <button id="settingsFolderBtn" type="button" class="button ghost">選擇資料夾</button>
-      </div>
-      <div class="settings-section">
-        <strong>發布排版</strong>
-        <p>預設提供「巴哈小屋、方格子」，也可以自行新增發布平台；每個平台可個別設定段首、段落空行與場景分隔符。</p>
-        <label class="field-label" for="defaultIndent">預設段首縮排</label>
-        <select id="defaultIndent" class="text-input"><option value="none">不縮排</option><option value="two">全形兩格</option></select>
-        <div class="default-format-checks">
-          <label class="format-check"><input id="defaultParagraphSpacing" type="checkbox" checked /><span>預設段落間空一行</span></label>
-          <label class="format-check"><input id="defaultSceneSeparator" type="checkbox" checked /><span>預設顯示場景分隔符</span></label>
-        </div>
-        <div id="platformFormatSettings" class="platform-settings"></div>
-      </div>
-      <div class="security-note"><strong>保存位置：</strong>工作進度 → <code>workspace.json</code>；平台與排版設定 → <code>settings.json</code>；文章 → <code>Works/</code>。Google access token 只存在目前頁面的記憶體。</div>
-    </form>
-  </dialog>
+  <dialog id="settingsDialog"><form method="dialog" class="dialog-card settings-dialog">
+    <div class="panel-head"><div><p class="eyebrow">SETTINGS</p><h3>StoryFlow 設定</h3></div><button class="icon-button" value="cancel">×</button></div>
+    <div class="settings-section"><strong>Google Picker API Key</strong><p>API Key 會保存在你選擇的 StoryFlow 資料夾 <code>settings.json</code>，不寫入 GitHub 或瀏覽器儲存空間。</p><input id="pickerApiKeyInput" class="text-input" type="password" autocomplete="off" placeholder="AIza..." /><div class="settings-actions"><button id="savePickerKeyBtn" type="button" class="button primary">保存到 StoryFlow 資料夾</button><button id="clearPickerKeyBtn" type="button" class="button ghost">清除</button></div></div>
+    <div class="settings-section"><strong>StoryFlow 資料夾</strong><p>瀏覽器不保存資料夾權限，因此重新開啟 StoryFlow 時需要再次選擇同一個 Google Drive / StoryFlow 資料夾。</p><button id="settingsFolderBtn" type="button" class="button ghost">選擇資料夾</button></div>
+    <div class="settings-section"><strong>發布排版</strong><p>初始提供「巴哈小屋、方格子」，兩者都可以移除，也可以自行新增其他平台；每個平台可個別設定排版。</p><label class="field-label" for="defaultIndent">預設段首縮排</label><select id="defaultIndent" class="text-input"><option value="none">不縮排</option><option value="two">全形兩格</option></select><div class="default-format-checks"><label class="format-check"><input id="defaultParagraphSpacing" type="checkbox" checked /><span>預設段落間空一行</span></label><label class="format-check"><input id="defaultSceneSeparator" type="checkbox" checked /><span>預設顯示場景分隔符</span></label></div><div id="platformFormatSettings" class="platform-settings"></div></div>
+    <div class="security-note"><strong>保存位置：</strong>工作進度 → <code>workspace.json</code>；平台與排版設定 → <code>settings.json</code>；文章 → <code>Works/</code>。Google access token 只存在目前頁面的記憶體。</div>
+  </form></dialog>
 
-  <template id="partTemplate">
-    <article class="part-row">
-      <div class="part-main">
-        <strong class="part-name"></strong>
-        <span class="part-info"></span>
-      </div>
-      <div class="platforms"></div>
-      <div class="part-actions">
-        <select class="copy-platform compact-select" aria-label="選擇複製平台"></select>
-        <button class="button tiny ghost copy-btn">複製平台版</button>
-        <button class="button tiny ghost toggle-btn">標記已發布</button>
-      </div>
-    </article>
-  </template>
+  <template id="partTemplate"><article class="part-row"><div class="part-main"><strong class="part-name"></strong><span class="part-info"></span></div><div class="platforms"></div><div class="part-actions"><select class="copy-platform compact-select" aria-label="選擇複製平台"></select><button class="button tiny ghost copy-btn">複製平台版</button><button class="button tiny ghost toggle-btn">標記已發布</button></div></article></template>
 
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://apis.google.com/js/api.js" async defer></script>
-  <script src="./config.js"></script>
-  <script src="./integrations.js"></script>
-  <script src="./app.js"></script>
-  <script src="./ui-bootstrap.js"></script>
-  <script src="./patches.js"></script>
-  <script src="./settings-sync.js"></script>
-  <script src="./smart-split-ui.js"></script>
-  <script src="./platform-lock.js"></script>
-  <script src="./source-flow.js"></script>
-  <script src="./source-preview-ux.js"></script>
-  <script src="./raw-split.js"></script>
-  <script src="./boundary-v2.js"></script>
+  <script src="./config.js"></script><script src="./integrations.js"></script><script src="./app.js"></script><script src="./ui-bootstrap.js"></script><script src="./patches.js"></script><script src="./settings-sync.js"></script><script src="./smart-split-ui.js"></script><script src="./platform-lock.js"></script><script src="./source-flow.js"></script><script src="./source-preview-ux.js"></script><script src="./raw-split.js"></script><script src="./boundary-v2.js"></script><script src="./publishing-flow.js"></script>
 </body>
 </html>
