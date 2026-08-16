@@ -1,0 +1,16 @@
+.hidden { display: none !important; }
+
+.splitter-panel #suggestionEmpty.hidden { display: none !important; }
+.splitter-panel .suggestion:not(.hidden) { margin-top: 18px; }
+
+.chapter-group-label {
+  margin: 16px 2px 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f3f0ff;
+  color: #4c1d95;
+}
+.chapter-group-label strong,
+.chapter-group-label small { display: block; }
+.chapter-group-label strong { font-size: 12px; }
+.chapter-group-label small { margin-top: 3px; color: #7c728f; font-size: 10px; }
