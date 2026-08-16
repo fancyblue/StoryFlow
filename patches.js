@@ -20,17 +20,36 @@
     };
   }
 
+  function formatTextForPlatform(raw, platform) {
+    return platform ? platformFormat(raw, platform) : webFormat(raw);
+  }
+
   function suggestionPreviewText() {
-    if (!suggestion) return '';
-    return suggestionPreviewPlatform
-      ? platformFormat(suggestion.raw, suggestionPreviewPlatform)
-      : webFormat(suggestion.raw);
+    return suggestion ? formatTextForPlatform(suggestion.raw, suggestionPreviewPlatform) : '';
+  }
+
+  function platformSettingsMarkup(platform) {
+    const config = platformSettingSummary(platform);
+    return `
+      <label><span>段首</span><select disabled><option>${config.indent === 'two' ? '全形兩格' : '不縮排'}</option></select></label>
+      <label class="disabled-check"><input type="checkbox" disabled ${config.paragraphSpacing ? 'checked' : ''}><span>段落間空一行</span></label>
+      <label class="disabled-check"><input type="checkbox" disabled ${config.sceneSeparator ? 'checked' : ''}><span>顯示場景分隔符</span></label>`;
+  }
+
+  function renderSuggestionPlatformSettings() {
+    const box = $('suggestionPlatformSettings');
+    if (box) box.innerHTML = platformSettingsMarkup(suggestionPreviewPlatform);
+  }
+
+  function refreshSuggestionPreview() {
+    if (!suggestion) return;
+    if ($('preview')) $('preview').textContent = suggestionPreviewText();
+    if ($('suggestionName')) $('suggestionName').textContent = suggestion.name;
   }
 
   function ensureSplitPreviewControls() {
     const panel = document.querySelector('.splitter-panel');
     if (!panel) return;
-
     const head = panel.querySelector('.panel-head');
     if (head && !$('openSplitReviewBtn')) {
       const button = document.createElement('button');
@@ -43,13 +62,11 @@
       head.appendChild(button);
     }
 
-    const card = $('suggestionCard');
     const preview = $('preview');
-    if (!card || !preview || $('splitPlatformBar')) return;
-
+    if (!preview || $('splitPlatformBar')) return;
     const bar = document.createElement('div');
     bar.id = 'splitPlatformBar';
-    bar.className = 'suggestion-platform-bar';
+    bar.className = 'suggestion-platform-bar compact-format-bar';
     bar.innerHTML = `
       <label class="platform-select-field">
         <span>預覽格式</span>
@@ -57,7 +74,6 @@
       </label>
       <div id="suggestionPlatformSettings" class="suggestion-platform-settings"></div>`;
     preview.insertAdjacentElement('beforebegin', bar);
-
     const select = $('suggestionPlatformSelect');
     select.add(new Option('StoryFlow 預設格式', ''));
     platforms.forEach(platform => select.add(new Option(platform, platform)));
@@ -69,22 +85,32 @@
     };
   }
 
-  function renderSuggestionPlatformSettings() {
-    const box = $('suggestionPlatformSettings');
-    if (!box) return;
-    const config = platformSettingSummary(suggestionPreviewPlatform);
-    box.innerHTML = `
-      <label><span>段首</span><select disabled><option>${config.indent === 'two' ? '全形兩格' : '不縮排'}</option></select></label>
-      <label class="disabled-check"><input type="checkbox" disabled ${config.paragraphSpacing ? 'checked' : ''}><span>段落間空一行</span></label>
-      <label class="disabled-check"><input type="checkbox" disabled ${config.sceneSeparator ? 'checked' : ''}><span>顯示場景分隔符</span></label>`;
-  }
-
-  function refreshSuggestionPreview() {
-    if (!suggestion) return;
-    const preview = $('preview');
-    if (preview) preview.textContent = suggestionPreviewText();
-    const name = $('suggestionName');
-    if (name) name.textContent = suggestion.name;
+  function fullChapterHighlightedHTML(chapter) {
+    const blocks = parseBlocks(chapter.draft);
+    if (!blocks.length) return '目前章節沒有內容。';
+    const options = suggestionPreviewPlatform ? platformOptions(suggestionPreviewPlatform) : {
+      indent: state.formatting.defaultIndent,
+      paragraphSpacing: state.formatting.defaultParagraphSpacing,
+      sceneSeparator: state.formatting.defaultSceneSeparator,
+      marker: state.sceneMarker
+    };
+    const start = suggestion?.start ?? -1;
+    const end = suggestion?.end ?? -1;
+    const pieces = [];
+    blocks.forEach((block, index) => {
+      if (index === start) pieces.push('<span class="range-boundary">──── 這一篇開始 ────</span>\n');
+      const line = escapeHtml(applyIndent(block.raw, options.indent));
+      pieces.push(index >= start && index < end ? `<span class="current-range-highlight">${line}</span>` : line);
+      if (index === end - 1) pieces.push('\n<span class="range-boundary">──── 這一篇結束 ────</span>');
+      if (index < blocks.length - 1) {
+        if (block.strongBoundaryAfter && options.sceneSeparator) {
+          pieces.push(options.paragraphSpacing ? `\n\n${escapeHtml(options.marker || state.sceneMarker)}\n\n` : `\n${escapeHtml(options.marker || state.sceneMarker)}\n`);
+        } else {
+          pieces.push(options.paragraphSpacing ? '\n\n' : '\n');
+        }
+      }
+    });
+    return pieces.join('');
   }
 
   function ensureReviewDialog() {
@@ -98,6 +124,10 @@
           <div><p class="eyebrow">CONTENT CHECK</p><h3>切篇確認</h3></div>
           <button id="closeReviewDialog" class="icon-button" type="button">×</button>
         </div>
+        <div class="review-format-bar">
+          <label class="platform-select-field"><span>三欄比較格式</span><select id="reviewPlatformSelect" class="text-input"></select></label>
+          <div id="reviewPlatformSettings" class="suggestion-platform-settings"></div>
+        </div>
         <p id="reviewDialogMeta" class="muted review-dialog-note"></p>
         <div class="review-dialog-grid">
           <article class="review-column">
@@ -108,33 +138,48 @@
             <div class="review-column-head"><span>這一篇</span><strong id="dialogReviewCurrentTitle">—</strong></div>
             <pre id="dialogReviewCurrent" class="review-content"></pre>
           </article>
-          <article class="review-column">
+          <article class="review-column full-chapter-column">
             <div class="review-column-head"><span>章節全文</span><strong id="dialogReviewFullTitle">—</strong></div>
             <pre id="dialogReviewFull" class="review-content"></pre>
           </article>
         </div>
-        <div class="platform-preview-actions">
-          <button id="closeReviewDialogBottom" class="button primary" type="button">確認完畢，回到切篇</button>
-        </div>
+        <div class="platform-preview-actions"><button id="closeReviewDialogBottom" class="button primary" type="button">確認完畢，回到切篇</button></div>
       </div>`;
     document.body.appendChild(dialog);
+    const select = $('reviewPlatformSelect');
+    select.add(new Option('StoryFlow 預設格式', ''));
+    platforms.forEach(platform => select.add(new Option(platform, platform)));
+    select.onchange = () => {
+      suggestionPreviewPlatform = select.value;
+      if ($('suggestionPlatformSelect')) $('suggestionPlatformSelect').value = suggestionPreviewPlatform;
+      renderSuggestionPlatformSettings();
+      refreshSuggestionPreview();
+      fillReviewDialog();
+    };
     $('closeReviewDialog').onclick = () => dialog.close();
     $('closeReviewDialogBottom').onclick = () => dialog.close();
   }
 
-  function openReviewDialog() {
+  function fillReviewDialog() {
     if (!suggestion) return;
     ensureReviewDialog();
     const chapter = activeChapter();
     const previous = chapter.parts?.length ? chapter.parts[chapter.parts.length - 1] : null;
     const format = platformSettingSummary(suggestionPreviewPlatform);
+    $('reviewPlatformSelect').value = suggestionPreviewPlatform;
+    $('reviewPlatformSettings').innerHTML = platformSettingsMarkup(suggestionPreviewPlatform);
     $('dialogReviewPreviousTitle').textContent = previous?.title || '沒有上一篇';
-    $('dialogReviewPrevious').textContent = previous?.raw || '這是本章第一篇。';
-    $('dialogReviewCurrentTitle').textContent = `${suggestion.name} · ${format.label}`;
+    $('dialogReviewPrevious').textContent = previous ? formatTextForPlatform(previous.raw, suggestionPreviewPlatform) : '這是本章第一篇。';
+    $('dialogReviewCurrentTitle').textContent = suggestion.name;
     $('dialogReviewCurrent').textContent = suggestionPreviewText();
     $('dialogReviewFullTitle').textContent = chapter.title;
-    $('dialogReviewFull').textContent = chapter.draft || '目前章節沒有內容。';
-    $('reviewDialogMeta').textContent = `目前以「${format.label}」顯示這一篇；左看上一篇、右看完整章節，確認切點是否連續。`;
+    $('dialogReviewFull').innerHTML = fullChapterHighlightedHTML(chapter);
+    $('reviewDialogMeta').textContent = `三個畫面都套用「${format.label}」。章節全文中的醒目區域就是目前切篇範圍。`;
+  }
+
+  function openReviewDialog() {
+    if (!suggestion) return;
+    fillReviewDialog();
     $('reviewDialog').showModal();
   }
 
@@ -144,16 +189,10 @@
     dialog.id = 'platformPreviewDialog';
     dialog.innerHTML = `
       <div class="dialog-card platform-preview-dialog-card">
-        <div class="panel-head">
-          <div><p class="eyebrow">PUBLISH PREVIEW</p><h3 id="platformPreviewTitle">發布預覽</h3></div>
-          <button id="closePlatformPreview" class="icon-button" type="button">×</button>
-        </div>
+        <div class="panel-head"><div><p class="eyebrow">PUBLISH PREVIEW</p><h3 id="platformPreviewTitle">發布預覽</h3></div><button id="closePlatformPreview" class="icon-button" type="button">×</button></div>
         <p id="platformPreviewMeta" class="muted"></p>
         <pre id="platformPreviewContent" class="platform-preview-content"></pre>
-        <div class="platform-preview-actions">
-          <button id="confirmPlatformCopy" class="button primary" type="button">確認並複製</button>
-          <button id="cancelPlatformCopy" class="button ghost" type="button">取消</button>
-        </div>
+        <div class="platform-preview-actions"><button id="confirmPlatformCopy" class="button primary" type="button">確認並複製</button><button id="cancelPlatformCopy" class="button ghost" type="button">取消</button></div>
       </div>`;
     document.body.appendChild(dialog);
     $('closePlatformPreview').onclick = () => dialog.close();
@@ -162,17 +201,16 @@
 
   function previewPlatformCopy(part, platform) {
     ensurePlatformPreviewDialog();
-    const dialog = $('platformPreviewDialog');
     const text = platformFormat(part.raw, platform);
     $('platformPreviewTitle').textContent = `${part.title} · ${platform}`;
     $('platformPreviewMeta').textContent = '以下就是按下確認後會複製到剪貼簿的內容。';
     $('platformPreviewContent').textContent = text;
     $('confirmPlatformCopy').onclick = async () => {
       await navigator.clipboard.writeText(text);
-      dialog.close();
+      $('platformPreviewDialog').close();
       notify(`已確認並複製 ${platform} 版本`);
     };
-    dialog.showModal();
+    $('platformPreviewDialog').showModal();
   }
 
   function ensureResetAction() {
@@ -195,10 +233,7 @@
   window.buildSuggestion = function buildSuggestion(start, end, blocks = parseBlocks(activeChapter().draft)) {
     const chapter = activeChapter();
     const selected = blocks.slice(start, end);
-    const raw = selected.map((block, index) => {
-      const suffix = block.strongBoundaryAfter && index < selected.length - 1 ? '\n\n' : '\n';
-      return block.raw + suffix;
-    }).join('').trim();
+    const raw = selected.map((block, index) => block.raw + (block.strongBoundaryAfter && index < selected.length - 1 ? '\n\n' : '\n')).join('').trim();
     const chars = selected.reduce((sum, block) => sum + block.chars, 0);
     const max = Number(state.maxChars) || 3000;
     const min = Number(state.minChars) || 1000;
@@ -213,9 +248,7 @@
       status,
       reason: end >= blocks.length
         ? (chars < min ? '已到章節最新內容，因此允許低於偏好最少字數；整章只有一篇時不加（1）。' : '目前已到章節最新內容。')
-        : natural
-          ? '目前切點是原稿中的空白段落，且已達偏好最少字數。仍可手動調整。'
-          : '目前切點是一般段落結尾；仍可手動往前或往後調整。'
+        : natural ? '目前切點是原稿中的空白段落，且已達偏好最少字數。仍可手動調整。' : '目前切點是一般段落結尾；仍可手動往前或往後調整。'
     };
   };
 
@@ -232,8 +265,7 @@
 
   function updateWorkspaceMode() {
     const workspace = document.querySelector('.workspace-grid');
-    const chapter = activeChapter();
-    workspace?.classList.toggle('imported-source-mode', Boolean(chapter?.source));
+    workspace?.classList.toggle('imported-source-mode', Boolean(activeChapter()?.source));
   }
 
   window.importSelectedTab = function importSelectedTab(tabId) {
@@ -251,11 +283,9 @@
       notify(`「${tab.title}」已經匯入；已切換到現有內容。`);
       return;
     }
-
     const syncedAt = new Date().toISOString();
     const imported = tab.chapters.map((chapter, index) => ({
-      id: crypto.randomUUID(), title: chapter.title || `第${index + 1}章`, draft: chapter.draft,
-      confirmedBlockCount: 0, parts: [],
+      id: crypto.randomUUID(), title: chapter.title || `第${index + 1}章`, draft: chapter.draft, confirmedBlockCount: 0, parts: [],
       source: { id: doc.id, name: doc.name, url: doc.url, tabId: tab.id, tabTitle: tab.title, headingOrdinal: chapter.headingOrdinal, headingTitle: chapter.title, syncedAt }
     }));
     const starter = state.chapters.length === 1 && !state.chapters[0].draft && !state.chapters[0].parts?.length && !state.chapters[0].source;
@@ -323,7 +353,7 @@
     });
   };
 
-  $('generateBtn').onclick = suggestNextPart;
+  if ($('generateBtn')) $('generateBtn').onclick = suggestNextPart;
   ensureSplitPreviewControls();
   ensureReviewDialog();
   ensurePlatformPreviewDialog();
