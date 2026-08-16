@@ -201,11 +201,13 @@ const StoryFlowIntegrations = (() => {
 
   async function importGoogleDoc() {
     const picked = await pickGoogleDoc();
+    const text = await readGoogleDocText(picked.id);
     return {
       id: picked.id,
       name: picked.name || 'Google Docs',
       url: picked.url || `https://docs.google.com/document/d/${picked.id}/edit`,
-      text: await readGoogleDocText(picked.id)
+      text,
+      markdown: text
     };
   }
 
@@ -217,6 +219,7 @@ const StoryFlowIntegrations = (() => {
     requestAccessToken,
     importGoogleDoc,
     readGoogleDocText,
+    exportGoogleDocAsMarkdown: readGoogleDocText,
     pickerApiKey,
     setPickerApiKey,
     hasGoogleToken: () => Boolean(accessToken)
