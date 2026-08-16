@@ -1,7 +1,10 @@
 .hidden { display: none !important; }
 
+/* Manual save / generate are now redundant: input auto-saves locally and imported chapters auto-generate the next suggestion. */
+#saveBtn, #generateBtn { display: none !important; }
+
 .splitter-panel #suggestionEmpty.hidden { display: none !important; }
-.splitter-panel .suggestion:not(.hidden) { margin-top: 18px; }
+.splitter-panel .suggestion:not(.hidden) { margin-top: 14px; }
 
 .chapter-group-label {
   margin: 16px 2px 6px;
@@ -15,65 +18,55 @@
 .chapter-group-label strong { font-size: 12px; }
 .chapter-group-label small { margin-top: 3px; color: #7c728f; font-size: 10px; }
 
-/* Imported Google Docs no longer shows the de-formatted master editor by default. */
-.workspace-grid.imported-source-mode {
-  grid-template-columns: 250px minmax(0, 1fr);
-}
+.workspace-grid.imported-source-mode { grid-template-columns: 250px minmax(0, 1fr); }
 .workspace-grid.imported-source-mode .source-panel { grid-column: 1; }
 .workspace-grid.imported-source-mode .editor-panel { display: none; }
-.workspace-grid.imported-source-mode .splitter-panel {
-  grid-column: 2;
-  width: 100%;
-}
+.workspace-grid.imported-source-mode .splitter-panel { grid-column: 2; width: 100%; }
+
+/* Content is the primary working surface. */
 .workspace-grid.imported-source-mode .splitter-panel .preview {
-  max-height: 560px;
-  min-height: 320px;
-  font-size: 16px;
-  line-height: 1.95;
-  padding: 20px;
+  max-height: none;
+  min-height: 58vh;
+  font-size: 17px;
+  line-height: 2;
+  padding: 24px 28px;
+  background: #fff;
 }
 
-.suggestion-platform-bar {
+/* Controls stay compact above the content. */
+.suggestion-platform-bar,
+.review-format-bar {
   display: grid;
-  grid-template-columns: minmax(210px, 280px) 1fr;
-  gap: 16px;
-  align-items: end;
-  padding: 14px 16px;
-  margin: 14px 0;
+  grid-template-columns: minmax(190px, 240px) 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 11px;
+  margin: 10px 0 12px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 10px;
   background: #fafafa;
 }
 .platform-select-field > span,
 .suggestion-platform-settings label > span {
   display: block;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
-.suggestion-platform-settings {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.suggestion-platform-settings label { min-width: 150px; }
+.suggestion-platform-settings { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.suggestion-platform-settings label { min-width: 128px; }
 .suggestion-platform-settings select {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 9px;
-  padding: 8px 10px;
+  border-radius: 8px;
+  padding: 6px 8px;
   background: #f3f4f6;
   color: #6b7280;
+  font-size: 12px;
 }
-.disabled-check {
-  display: flex !important;
-  align-items: center;
-  gap: 7px;
-  min-width: auto !important;
-}
-.disabled-check span { margin: 0 !important; font-size: 12px !important; }
+.disabled-check { display: flex !important; align-items: center; gap: 6px; min-width: auto !important; }
+.disabled-check span { margin: 0 !important; font-size: 11px !important; }
 
 .review-column { min-width: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
 .review-column.current { border-color: #a78bfa; background: #fcfbff; box-shadow: 0 0 0 2px #f3f0ff inset; }
@@ -92,21 +85,29 @@
   line-height: 2;
 }
 
-.review-dialog { width: min(96vw, 1500px); max-width: none; }
-.review-dialog-card { width: min(96vw, 1500px); max-width: none; padding: 24px; }
-.review-dialog-note { margin-bottom: 14px; }
+.review-dialog { width: min(97vw, 1580px); max-width: none; }
+.review-dialog-card { width: min(97vw, 1580px); max-width: none; padding: 22px; }
+.review-dialog-note { margin: 6px 0 12px; }
 .review-dialog-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  height: min(72vh, 840px);
+  height: min(68vh, 820px);
 }
 .review-dialog-grid .review-column { display:flex; flex-direction:column; min-height:0; }
-.review-dialog-grid .review-content {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
+.review-dialog-grid .review-content { flex: 1; min-height: 0; overflow: auto; }
+.range-boundary {
+  display: block;
+  margin: 10px 0;
+  padding: 5px 8px;
+  border-top: 3px solid #7c3aed;
+  border-bottom: 3px solid #7c3aed;
+  color: #6d28d9;
+  font-weight: 800;
+  text-align: center;
+  background: #f5f3ff;
 }
+.current-range-highlight { background: #f5f3ff; box-shadow: 8px 0 0 #f5f3ff, -8px 0 0 #f5f3ff; }
 
 .platform-preview-dialog-card { width: min(760px, calc(100vw - 28px)); max-width: 760px; }
 .platform-preview-content { max-height: 58vh; overflow: auto; white-space: pre-wrap; word-break: break-word; background: #fbfbfd; border: 1px solid var(--line); border-radius: 12px; padding: 18px; font: inherit; line-height: 1.85; }
@@ -115,7 +116,7 @@
 
 @media (max-width: 1050px) {
   .workspace-grid.imported-source-mode { grid-template-columns: 220px minmax(0, 1fr); }
-  .suggestion-platform-bar { grid-template-columns: 1fr; }
+  .suggestion-platform-bar, .review-format-bar { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 820px) {
