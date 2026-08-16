@@ -1,6 +1,7 @@
-// Publishing queue UX: choose destination -> preview exact output -> copy/mark -> optional delete and rewind.
+// Publishing queue UX: destination is per-card state; marking affects only the selected platform.
 (function () {
   let deleteFolderHandle = null;
+  const selectedDestination = new Map();
 
   function safeName(value, fallback = 'untitled') {
     const cleaned = String(value || '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
@@ -15,11 +16,25 @@
     return platform || '預設設定';
   }
 
-  function fillPublishSelect(select, current = '') {
+  function normalizePartStatus(part) {
+    part.platformStatus ||= {};
+    const next = {};
+    platforms.forEach(name => { next[name] = Boolean(part.platformStatus[name]); });
+    part.platformStatus = next;
+    part.published = Object.values(next).some(Boolean);
+  }
+
+  function fillPublishSelect(select, part) {
+    normalizePartStatus(part);
+    const remembered = selectedDestination.get(part.id);
+    const fallback = platforms[0] || '';
+    const current = remembered !== undefined ? remembered : fallback;
     select.innerHTML = '';
     select.add(new Option('預設設定', ''));
     platforms.forEach(name => select.add(new Option(name, name)));
     select.value = [...select.options].some(option => option.value === current) ? current : '';
+    selectedDestination.set(part.id, select.value);
+    select.onchange = () => selectedDestination.set(part.id, select.value);
   }
 
   function ensurePublishPreviewDialog() {
@@ -34,7 +49,7 @@
           <pre id="platformPreviewContent" class="platform-preview-content"></pre>
           <div class="platform-preview-actions">
             <button id="confirmPlatformCopy" class="button primary" type="button">複製內容</button>
-            <button id="copyAndMarkPublished" class="button ghost" type="button">複製並標記已發布</button>
+            <button id="togglePlatformPublished" class="button ghost" type="button">標註已發布</button>
             <button id="cancelPlatformCopy" class="button ghost" type="button">取消</button>
           </div>
         </div>`;
@@ -47,30 +62,38 @@
 
   function previewPublish(part, platform) {
     const dialog = ensurePublishPreviewDialog();
+    normalizePartStatus(part);
+    selectedDestination.set(part.id, platform);
     const text = outputFor(part, platform);
-    const mark = document.getElementById('copyAndMarkPublished');
+    const toggle = document.getElementById('togglePlatformPublished');
+    const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
+
     document.getElementById('platformPreviewTitle').textContent = `${part.title} · ${platformLabel(platform)}`;
     document.getElementById('platformPreviewMeta').textContent = platform
-      ? '先確認以下內容；複製後可直接標記這個平台已發布。'
-      : '這是預設設定的輸出預覽；預設設定不是發布平台，因此不提供已發布狀態。';
+      ? `目前只會變更「${platform}」的發布狀態，不影響其他平台。`
+      : '這是預設設定的輸出預覽；預設設定不是發布平台。';
     document.getElementById('platformPreviewContent').textContent = text;
-    mark.hidden = !platform;
+    toggle.hidden = !platform;
+    toggle.textContent = isPublished ? '取消已發布標記' : '標註已發布';
 
     document.getElementById('confirmPlatformCopy').onclick = async () => {
       await navigator.clipboard.writeText(text);
       dialog.close();
       notify(`已複製 ${platformLabel(platform)} 內容`);
     };
-    mark.onclick = async () => {
-      await navigator.clipboard.writeText(text);
-      part.platformStatus ||= {};
-      part.platformStatus[platform] = true;
+
+    toggle.onclick = () => {
+      if (!platform) return;
+      normalizePartStatus(part);
+      part.platformStatus[platform] = !Boolean(part.platformStatus[platform]);
       part.published = Object.values(part.platformStatus).some(Boolean);
+      selectedDestination.set(part.id, platform);
       saveState('發布狀態已更新');
       dialog.close();
       renderAll();
-      notify(`已複製並標記 ${platform} 已發布`);
+      notify(`${platform} 已${part.platformStatus[platform] ? '標註已發布' : '取消已發布標記'}`);
     };
+
     dialog.showModal();
   }
 
@@ -106,14 +129,14 @@
     const affected = chapter.parts.slice(index);
     const laterCount = affected.length - 1;
     const message = laterCount
-      ? `刪除「${part.title}」會造成切篇中間出現缺口。\n\n為保持原稿切點連續，StoryFlow 會一起刪除這篇以及後面的 ${laterCount} 篇，並把切篇進度退回到這篇開始的位置。\n\n確定繼續？`
-      : `刪除「${part.title}」？\n\n會從發布清單移除、刪除 Markdown，並把切篇進度退回，讓你重新切這一段。`;
+      ? `刪除「${part.title}」會使後續切點失去連續性。\n\n因此會一起移除這篇之後的 ${laterCount} 篇，並退回到「${part.title}」開始的位置重新切篇。\n\n確定繼續？`
+      : `刪除「${part.title}」？\n\n會移除 Markdown，並把切篇進度退回，讓你重新處理這一段。`;
     if (!confirm(message)) return;
 
     try {
-      // First update in-memory structure so metadata written below reflects the remaining parts.
       chapter.parts.splice(index);
       chapter.confirmedBlockCount = chapter.parts.length ? chapter.parts[chapter.parts.length - 1].endBlock : 0;
+      affected.forEach(item => selectedDestination.delete(item.id));
       suggestion = null;
       await deletePartFiles(chapter, affected);
       saveState('已刪除並退回切篇');
@@ -121,17 +144,11 @@
       if (chapter.draft) suggestNextPart();
       notify(`已刪除 ${affected.length} 篇並退回切篇位置`);
     } catch (error) {
-      // Restore state if Drive deletion failed.
       chapter.parts.push(...affected);
       chapter.confirmedBlockCount = chapter.parts.length ? chapter.parts[chapter.parts.length - 1].endBlock : 0;
       renderAll();
       notify(`刪除失敗：${error.message}`, true);
     }
-  }
-
-  function statusText(part) {
-    const done = platforms.filter(name => part.platformStatus?.[name]);
-    return done.length ? `已發布：${done.join('、')}` : '尚未發布';
   }
 
   window.renderParts = function renderPartsPublishingFlow() {
@@ -144,9 +161,10 @@
     }
 
     parts.forEach((part, index) => {
+      normalizePartStatus(part);
       const card = document.createElement('article');
       card.className = 'publish-card';
-      const statusChips = platforms.map(name => `<span class="publish-status-chip ${part.platformStatus?.[name] ? 'done' : ''}">${escapeHtml(name)}${part.platformStatus?.[name] ? ' ✓' : ''}</span>`).join('');
+      const statusChips = platforms.map(name => `<span class="publish-status-chip ${part.platformStatus[name] ? 'done' : ''}">${escapeHtml(name)}${part.platformStatus[name] ? ' ✓' : ''}</span>`).join('');
       card.innerHTML = `
         <div class="publish-card-main">
           <div class="publish-card-title"><strong>${escapeHtml(part.title)}</strong><span>${part.chars.toLocaleString()} 字</span></div>
@@ -154,23 +172,22 @@
         </div>
         <div class="publish-card-action">
           <select class="publish-destination text-input" aria-label="發布格式"></select>
-          <button class="button primary tiny publish-preview-btn" type="button">預覽並複製</button>
+          <button class="button primary tiny publish-preview-btn" type="button">預覽發布內容</button>
           <button class="button ghost tiny publish-delete-btn" type="button">刪除</button>
         </div>`;
       const select = card.querySelector('.publish-destination');
-      fillPublishSelect(select, platforms.find(name => !part.platformStatus?.[name]) || '');
+      fillPublishSelect(select, part);
       card.querySelector('.publish-preview-btn').onclick = () => previewPublish(part, select.value);
       card.querySelector('.publish-delete-btn').onclick = () => deleteConfirmedPart(chapter, index);
       els.partsList.appendChild(card);
     });
   };
 
-  // Publishing panel copy should explain the one clear action path.
   const panel = document.querySelector('.publishing-panel');
   const title = panel?.querySelector('.panel-head h2');
   const note = panel?.querySelector('.panel-head .muted');
   if (title) title.textContent = '已確認文章';
-  if (note) note.textContent = '選格式 → 預覽 → 複製；發布後再標記狀態。做錯可刪除並退回重新切篇。';
+  if (note) note.textContent = '選平台 → 預覽 → 複製 → 視需要標註該平台已發布。各平台狀態彼此獨立。';
 
   renderParts();
 })();
