@@ -1,5 +1,13 @@
 // Primary navigation for the single-page StoryFlow workspace.
 (function () {
+  if (!document.querySelector('link[data-storyflow-sidebar-layout]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './sidebar-layout.css';
+    link.dataset.storyflowSidebarLayout = '1';
+    document.head.appendChild(link);
+  }
+
   const nav = document.querySelector('.nav');
   const sidebar = document.querySelector('.sidebar');
   const shell = document.querySelector('.app-shell');
