@@ -2,6 +2,76 @@
 // Kept separate so current published workspace state can migrate without rewriting saved data.
 
 (function () {
+  let reviewSelection = null;
+
+  function ensureReviewPanel() {
+    if ($('reviewPanel')) return;
+    const workspace = document.querySelector('.workspace-grid');
+    if (!workspace) return;
+    const section = document.createElement('section');
+    section.id = 'reviewPanel';
+    section.className = 'panel review-panel hidden';
+    section.innerHTML = `
+      <div class="panel-head review-head">
+        <div><p class="eyebrow">CONTENT CHECK</p><h2>內容對照</h2></div>
+        <div class="review-head-actions">
+          <span class="muted">上一篇／這一篇／章節全文並排核對</span>
+          <button id="closeReviewBtn" class="button tiny ghost" type="button">收起</button>
+        </div>
+      </div>
+      <div class="review-grid">
+        <article class="review-column">
+          <div class="review-column-head"><span>上一篇</span><strong id="reviewPreviousTitle">—</strong></div>
+          <pre id="reviewPrevious" class="review-content"></pre>
+        </article>
+        <article class="review-column current">
+          <div class="review-column-head"><span>這一篇</span><strong id="reviewCurrentTitle">—</strong></div>
+          <pre id="reviewCurrent" class="review-content"></pre>
+        </article>
+        <article class="review-column">
+          <div class="review-column-head"><span>章節全文</span><strong id="reviewFullTitle">—</strong></div>
+          <pre id="reviewFull" class="review-content"></pre>
+        </article>
+      </div>`;
+    workspace.insertAdjacentElement('afterend', section);
+    $('closeReviewBtn').onclick = () => section.classList.add('hidden');
+  }
+
+  function showReview({ currentPart = null, currentSuggestion = null } = {}) {
+    ensureReviewPanel();
+    const panel = $('reviewPanel');
+    if (!panel) return;
+    const chapter = activeChapter();
+    const parts = chapter.parts || [];
+
+    let current = currentPart;
+    let previous = null;
+    if (currentSuggestion) {
+      current = {
+        title: currentSuggestion.name,
+        raw: currentSuggestion.raw,
+        startBlock: currentSuggestion.start,
+        endBlock: currentSuggestion.end
+      };
+      previous = parts.length ? parts[parts.length - 1] : null;
+    } else if (currentPart) {
+      const index = parts.findIndex(part => part.id === currentPart.id);
+      previous = index > 0 ? parts[index - 1] : null;
+    } else if (parts.length) {
+      current = parts[parts.length - 1];
+      previous = parts.length > 1 ? parts[parts.length - 2] : null;
+    }
+
+    $('reviewPreviousTitle').textContent = previous?.title || '沒有上一篇';
+    $('reviewPrevious').textContent = previous?.raw || '這是本章第一篇。';
+    $('reviewCurrentTitle').textContent = current?.title || '尚未產生';
+    $('reviewCurrent').textContent = current?.raw || '按「產生下一篇」後會在這裡顯示。';
+    $('reviewFullTitle').textContent = chapter.title;
+    $('reviewFull').textContent = chapter.draft || '目前章節沒有內容。';
+    panel.classList.remove('hidden');
+    reviewSelection = current?.id || (currentSuggestion ? '__suggestion__' : null);
+  }
+
   // 1) If the entire chapter is emitted as one part, keep the chapter title as-is.
   window.buildSuggestion = function buildSuggestion(start, end, blocks = parseBlocks(activeChapter().draft)) {
     const chapter = activeChapter();
@@ -39,6 +109,13 @@
           ? '目前切點是原稿中的空白段落，且已達偏好最少字數。仍可手動往前或往後調整。'
           : '目前切點是一般段落結尾。你可以把後面的段落拉進來，即使超過偏好字數。'
     };
+  };
+
+  // Make the review panel follow the current smart-split suggestion automatically.
+  const baseRenderSuggestion = window.renderSuggestion;
+  window.renderSuggestion = function renderSuggestionPatched() {
+    baseRenderSuggestion();
+    if (suggestion) showReview({ currentSuggestion: suggestion });
   };
 
   // 2) Treat each Google Docs tab as a separate managed section instead of replacing all chapters.
@@ -80,7 +157,6 @@
       }
     }));
 
-    // Remove only the untouched starter placeholder. Never discard imported/edited work.
     const isUntouchedStarter = state.chapters.length === 1
       && !state.chapters[0].draft
       && !state.chapters[0].parts?.length
@@ -159,17 +235,40 @@
         button.onclick = () => {
           state.activeChapterId = chapter.id;
           suggestion = null;
+          reviewSelection = null;
           saveState();
           renderAll();
+          $('reviewPanel')?.classList.add('hidden');
         };
         els.chapterList.appendChild(button);
       }
     }
   };
 
-  // Existing click handlers captured the previous function objects; point them at the patched versions.
+  // 4) Every confirmed/published part gets a one-click preview button.
+  const baseRenderParts = window.renderParts;
+  window.renderParts = function renderPartsPatched() {
+    baseRenderParts();
+    const chapter = activeChapter();
+    const rows = [...els.partsList.querySelectorAll('.part-row')];
+    rows.forEach((row, index) => {
+      const part = chapter.parts[index];
+      if (!part) return;
+      const actions = row.querySelector('.part-actions');
+      if (!actions || actions.querySelector('.preview-part-btn')) return;
+      const previewBtn = document.createElement('button');
+      previewBtn.type = 'button';
+      previewBtn.className = 'button tiny ghost preview-part-btn';
+      previewBtn.textContent = '預覽對照';
+      previewBtn.onclick = () => showReview({ currentPart: part });
+      actions.prepend(previewBtn);
+      row.classList.toggle('review-selected', reviewSelection === part.id);
+    });
+  };
+
+  // Existing click handlers captured previous function objects; point them at the patched flow.
   $('generateBtn').onclick = suggestNextPart;
 
-  // Re-render once so already imported tabs are grouped immediately.
+  ensureReviewPanel();
   renderAll();
 })();
