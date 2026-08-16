@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./patches.css" />
   <link rel="stylesheet" href="./smart-split-ui.css" />
+  <link rel="stylesheet" href="./dialog-fixes.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -130,7 +131,7 @@
       <section class="panel publishing-panel">
         <div class="panel-head">
           <div><p class="eyebrow">PUBLISHING QUEUE</p><h2>發布篇與平台狀態</h2></div>
-          <span class="muted">平台由你自行新增；各平台可設定段首、段落空行與場景分隔符</span>
+          <span class="muted">發布格式：預設設定、巴哈小屋、方格子</span>
         </div>
         <div id="partsList" class="parts-list"></div>
       </section>
@@ -161,7 +162,7 @@
       </div>
       <div class="settings-section">
         <strong>發布排版</strong>
-        <p>可設定預設格式，再自行新增需要的平台。段首只有「不縮排／全形兩格」。</p>
+        <p>發布格式固定為「預設設定、巴哈小屋、方格子」。段首只有「不縮排／全形兩格」。</p>
         <label class="field-label" for="defaultIndent">預設段首縮排</label>
         <select id="defaultIndent" class="text-input"><option value="none">不縮排</option><option value="two">全形兩格</option></select>
         <div class="default-format-checks">
@@ -198,5 +199,6 @@
   <script src="./patches.js"></script>
   <script src="./settings-sync.js"></script>
   <script src="./smart-split-ui.js"></script>
+  <script src="./platform-lock.js"></script>
 </body>
 </html>
