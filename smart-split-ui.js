@@ -1,15 +1,42 @@
-// Smart Split UX refinement: editable title, compact metadata, overlay boundary controls, synced review controls.
+// Smart Split UX: compact controls, editable title, reliable platform list, synced comparison dialog.
 (function () {
   let customTitle = '';
+  let suggestionIdentity = '';
+
+  function availablePlatforms() {
+    const names = [...platforms, ...Object.keys(state.formatting?.platforms || {})];
+    return [...new Set(names.map(name => String(name || '').trim()).filter(Boolean))];
+  }
+
+  function syncFormatSelect(select) {
+    if (!select) return;
+    const current = select.value;
+    const names = availablePlatforms();
+    select.innerHTML = '';
+    select.add(new Option('預設格式', ''));
+    names.forEach(name => select.add(new Option(name, name)));
+    const values = [...select.options].map(option => option.value);
+    select.value = values.includes(current) ? current : '';
+  }
+
+  function syncAllFormatSelects() {
+    syncFormatSelect(document.getElementById('suggestionPlatformSelect'));
+    syncFormatSelect(document.getElementById('reviewPlatformSelect'));
+  }
 
   function currentFormatPlatform() {
-    return document.getElementById('reviewPlatformSelect')?.value
-      ?? document.getElementById('suggestionPlatformSelect')?.value
-      ?? '';
+    const review = document.getElementById('reviewDialog');
+    if (review?.open) return document.getElementById('reviewPlatformSelect')?.value || '';
+    return document.getElementById('suggestionPlatformSelect')?.value || '';
   }
 
   function formatText(raw, platform) {
     return platform ? platformFormat(raw, platform) : webFormat(raw);
+  }
+
+  function identityForSuggestion() {
+    if (!suggestion) return '';
+    return `${activeChapter()?.id || ''}:${suggestion.start}`;
   }
 
   function preserveTitleAdjust(delta) {
@@ -22,7 +49,7 @@
     customTitle = previousTitle;
     renderSuggestion();
     syncEditableTitle();
-    if (document.getElementById('reviewDialog')?.open) refreshReviewDialog();
+    if (document.getElementById('reviewDialog')?.open) refreshReviewDialog(false);
   }
 
   function syncEditableTitle() {
@@ -31,6 +58,11 @@
     const original = document.getElementById('suggestionName');
     if (!titleRow || !original) return;
 
+    const identity = identityForSuggestion();
+    if (identity !== suggestionIdentity) {
+      suggestionIdentity = identity;
+      customTitle = suggestion.name;
+    }
     if (!customTitle) customTitle = suggestion.name;
     suggestion.name = customTitle;
     original.textContent = customTitle;
@@ -45,13 +77,20 @@
       input.setAttribute('aria-label', '切篇標題');
       original.insertAdjacentElement('afterend', input);
       input.addEventListener('input', () => {
-        customTitle = input.value || suggestion.name;
-        if (suggestion) suggestion.name = customTitle;
+        customTitle = input.value;
+        if (suggestion) suggestion.name = customTitle || suggestion.name;
         original.textContent = customTitle;
         const reviewTitle = document.getElementById('dialogReviewCurrentTitle');
         if (reviewTitle) reviewTitle.textContent = customTitle;
       });
-      input.addEventListener('change', () => saveState('切篇標題已更新'));
+      input.addEventListener('change', () => {
+        if (!input.value.trim()) {
+          input.value = suggestion?.name || '';
+          customTitle = input.value;
+        }
+        if (suggestion) suggestion.name = customTitle;
+        saveState('切篇標題已更新');
+      });
     }
     if (document.activeElement !== input) input.value = customTitle;
   }
@@ -75,6 +114,34 @@
     document.getElementById('expandBtn').onclick = () => preserveTitleAdjust(1);
   }
 
+  function organizeSmartSplit() {
+    const panel = document.querySelector('.splitter-panel');
+    const head = panel?.querySelector('.panel-head');
+    const mini = document.getElementById('smartSplitMiniSettings');
+    const reviewBtn = document.getElementById('openSplitReviewBtn');
+    const card = document.getElementById('suggestionCard');
+    const titleRow = panel?.querySelector('.suggestion-title-row');
+    const formatBar = document.getElementById('splitPlatformBar');
+    if (!panel || !head) return;
+
+    const h2 = head.querySelector('h2');
+    if (h2) h2.remove();
+
+    let actions = document.getElementById('smartSplitHeaderActions');
+    if (!actions) {
+      actions = document.createElement('div');
+      actions.id = 'smartSplitHeaderActions';
+      actions.className = 'smart-split-header-actions';
+      head.appendChild(actions);
+    }
+    if (mini && mini.parentElement !== actions) actions.appendChild(mini);
+    if (reviewBtn && reviewBtn.parentElement !== actions) actions.appendChild(reviewBtn);
+
+    if (card && titleRow && formatBar && formatBar.nextElementSibling !== titleRow) {
+      card.insertBefore(formatBar, titleRow);
+    }
+  }
+
   function reviewFullChapterHTML(platform) {
     const chapter = activeChapter();
     const blocks = parseBlocks(chapter.draft);
@@ -90,7 +157,7 @@
     const pieces = [];
 
     blocks.forEach((block, index) => {
-      if (index === start) pieces.push('<span class="range-boundary">──── 這一篇開始 ────</span>\n');
+      if (index === start) pieces.push('<span class="range-boundary range-start">──── 這一篇開始 ────</span>\n');
       const line = escapeHtml(applyIndent(block.raw, options.indent));
       pieces.push(index >= start && index < end ? `<span class="current-range-highlight">${line}</span>` : line);
       if (index === end - 1) pieces.push('\n<span class="range-boundary">──── 這一篇結束 ────</span>');
@@ -106,9 +173,19 @@
     return pieces.join('');
   }
 
-  function refreshReviewDialog() {
+  function scrollReviewToCurrentStart() {
+    const fullBox = document.getElementById('dialogReviewFull');
+    const marker = fullBox?.querySelector('.range-start');
+    if (!fullBox || !marker) return;
+    requestAnimationFrame(() => {
+      fullBox.scrollTop = Math.max(0, marker.offsetTop - 18);
+    });
+  }
+
+  function refreshReviewDialog(scrollToStart = false) {
     if (!suggestion) return;
-    const platform = currentFormatPlatform();
+    syncAllFormatSelects();
+    const platform = document.getElementById('reviewPlatformSelect')?.value || '';
     const chapter = activeChapter();
     const previous = chapter.parts?.length ? chapter.parts[chapter.parts.length - 1] : null;
     const previousBox = document.getElementById('dialogReviewPrevious');
@@ -117,6 +194,7 @@
     const currentTitle = document.getElementById('dialogReviewCurrentTitle');
     const fullTitle = document.getElementById('dialogReviewFullTitle');
     const chars = document.getElementById('reviewCurrentChars');
+    const meta = document.getElementById('reviewDialogMeta');
 
     if (previousBox) previousBox.textContent = previous ? formatText(previous.raw, platform) : '這是本章第一篇。';
     if (currentBox) currentBox.textContent = formatText(suggestion.raw, platform);
@@ -124,6 +202,8 @@
     if (currentTitle) currentTitle.textContent = customTitle || suggestion.name;
     if (fullTitle) fullTitle.textContent = chapter.title;
     if (chars) chars.textContent = `${suggestion.chars.toLocaleString()} 字`;
+    if (meta) meta.hidden = true;
+    if (scrollToStart) scrollReviewToCurrentStart();
   }
 
   function installReviewControls() {
@@ -146,34 +226,35 @@
     const platformSelect = document.getElementById('reviewPlatformSelect');
     if (platformSelect && !platformSelect.dataset.smartSplitBound) {
       platformSelect.dataset.smartSplitBound = '1';
-      platformSelect.addEventListener('change', () => setTimeout(refreshReviewDialog, 0));
+      platformSelect.addEventListener('focus', syncAllFormatSelects);
+      platformSelect.addEventListener('pointerdown', syncAllFormatSelects);
+      platformSelect.addEventListener('change', () => setTimeout(() => refreshReviewDialog(false), 0));
     }
   }
 
-  function compactHeader() {
-    const panel = document.querySelector('.splitter-panel');
-    const head = panel?.querySelector('.panel-head');
-    const mini = document.getElementById('smartSplitMiniSettings');
-    if (!head) return;
-    const h2 = head.querySelector('h2');
-    if (h2) h2.remove();
-    if (mini && mini.parentElement !== head) head.appendChild(mini);
+  function bindSuggestionPlatformSelect() {
+    const select = document.getElementById('suggestionPlatformSelect');
+    if (!select || select.dataset.smartSplitReliable) return;
+    select.dataset.smartSplitReliable = '1';
+    select.addEventListener('focus', syncAllFormatSelects);
+    select.addEventListener('pointerdown', syncAllFormatSelects);
   }
 
   const baseRender = window.renderSuggestion;
   window.renderSuggestion = function renderSuggestionSmartSplit() {
     baseRender();
+    syncAllFormatSelects();
+    bindSuggestionPlatformSelect();
+    organizeSmartSplit();
     if (!suggestion) {
       customTitle = '';
+      suggestionIdentity = '';
       return;
     }
-    if (!customTitle || !document.getElementById('suggestionTitleInput')) customTitle = suggestion.name;
-    suggestion.name = customTitle;
-    compactHeader();
     syncEditableTitle();
     installPreviewOverlayControls();
     installReviewControls();
-    refreshReviewDialog();
+    refreshReviewDialog(false);
   };
 
   const reviewBtn = document.getElementById('openSplitReviewBtn');
@@ -181,15 +262,14 @@
     reviewBtn.dataset.smartSplitBound = '1';
     reviewBtn.addEventListener('click', () => setTimeout(() => {
       installReviewControls();
-      refreshReviewDialog();
+      refreshReviewDialog(true);
     }, 0));
   }
 
-  compactHeader();
+  syncAllFormatSelects();
+  bindSuggestionPlatformSelect();
+  organizeSmartSplit();
   installPreviewOverlayControls();
   installReviewControls();
-  if (suggestion) {
-    customTitle = suggestion.name;
-    syncEditableTitle();
-  }
+  if (suggestion) syncEditableTitle();
 })();
