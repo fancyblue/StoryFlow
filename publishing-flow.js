@@ -1,11 +1,7 @@
-// Publishing queue UX: select a destination, preview/copy, and manage that platform's status directly.
+// Dedicated publishing dashboard: all confirmed articles, all platforms, one clear publishing workflow.
 (function () {
   let deleteFolderHandle = null;
-  const selectedDestination = new Map();
-
-  function partKey(part) {
-    return part?.id || `${part?.title || 'part'}:${part?.startBlock ?? ''}:${part?.endBlock ?? ''}`;
-  }
+  let currentFilter = 'all';
 
   function safeName(value, fallback = 'untitled') {
     const cleaned = String(value || '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
@@ -28,24 +24,118 @@
     part.published = Object.values(next).some(Boolean);
   }
 
-  function selectedFor(part) {
-    const key = partKey(part);
-    if (selectedDestination.has(key)) return selectedDestination.get(key);
-    return platforms[0] || '';
-  }
-
-  function rememberSelection(part, platform) {
-    selectedDestination.set(partKey(part), platform);
-  }
-
-  function fillPublishSelect(select, part) {
+  function statusFor(part) {
     normalizePartStatus(part);
-    const current = selectedFor(part);
-    select.innerHTML = '';
-    select.add(new Option('預設設定', ''));
-    platforms.forEach(name => select.add(new Option(name, name)));
-    select.value = [...select.options].some(option => option.value === current) ? current : '';
-    rememberSelection(part, select.value);
+    const total = platforms.length;
+    const published = platforms.filter(name => part.platformStatus[name]).length;
+    if (!total || published === 0) return { key: 'pending', label: '待發布', published, total };
+    if (published === total) return { key: 'complete', label: '已完成', published, total };
+    return { key: 'partial', label: '部分發布', published, total };
+  }
+
+  function allEntries() {
+    const entries = [];
+    state.chapters.forEach((chapter, chapterIndex) => {
+      (chapter.parts || []).forEach((part, partIndex) => {
+        normalizePartStatus(part);
+        entries.push({ chapter, chapterIndex, part, partIndex, status: statusFor(part) });
+      });
+    });
+    return entries;
+  }
+
+  function dashboardCounts(entries = allEntries()) {
+    const counts = { total: entries.length, pending: 0, partial: 0, complete: 0 };
+    entries.forEach(entry => { counts[entry.status.key] += 1; });
+    return counts;
+  }
+
+  function ensureViewStructure() {
+    const main = document.querySelector('.main');
+    const publishingPanel = document.querySelector('.publishing-panel');
+    if (!main || !publishingPanel) return null;
+
+    let workspaceView = document.getElementById('workspaceView');
+    if (!workspaceView) {
+      workspaceView = document.createElement('section');
+      workspaceView.id = 'workspaceView';
+      workspaceView.className = 'app-view workspace-view';
+      const first = main.firstElementChild;
+      main.insertBefore(workspaceView, first || null);
+      ['.topbar', '.connection-bar', '.stats-grid', '.workspace-grid'].forEach(selector => {
+        const node = main.querySelector(`:scope > ${selector}`);
+        if (node) workspaceView.appendChild(node);
+      });
+
+      const summary = document.createElement('section');
+      summary.id = 'workspacePublishingSummary';
+      summary.className = 'panel workspace-publishing-summary';
+      summary.innerHTML = `
+        <div>
+          <p class="eyebrow">PUBLISHING</p>
+          <h2>發布進度</h2>
+          <p id="workspacePublishingSummaryText" class="muted"></p>
+        </div>
+        <button id="openPublishingFromWorkspace" class="button primary" type="button">前往發布 →</button>`;
+      workspaceView.appendChild(summary);
+      summary.querySelector('#openPublishingFromWorkspace').addEventListener('click', () => {
+        window.StoryFlowNavigate?.('publishing');
+      });
+    }
+
+    let publishingView = document.getElementById('publishingView');
+    if (!publishingView) {
+      publishingView = document.createElement('section');
+      publishingView.id = 'publishingView';
+      publishingView.className = 'app-view publishing-view';
+      publishingView.hidden = true;
+      publishingView.innerHTML = `
+        <header class="publishing-page-head">
+          <div>
+            <p class="eyebrow">STORYFLOW / PUBLISHING</p>
+            <h1>發布</h1>
+            <p class="publishing-page-subtitle">管理已確認文章在各個平台的發布內容與狀態。</p>
+          </div>
+          <div class="publishing-project-badge">
+            <span>目前作品</span>
+            <strong id="publishingProjectTitle"></strong>
+          </div>
+        </header>
+        <section class="publishing-stats" aria-label="發布統計">
+          <article><span>已確認文章</span><strong id="publishingTotalCount">0</strong></article>
+          <article><span>待發布</span><strong id="publishingPendingCount">0</strong></article>
+          <article><span>部分發布</span><strong id="publishingPartialCount">0</strong></article>
+          <article><span>已完成</span><strong id="publishingCompleteCount">0</strong></article>
+        </section>
+        <div class="publishing-toolbar">
+          <div id="publishingFilters" class="publishing-filters" role="group" aria-label="篩選發布狀態">
+            <button class="publishing-filter active" type="button" data-filter="all">全部</button>
+            <button class="publishing-filter" type="button" data-filter="pending">待發布</button>
+            <button class="publishing-filter" type="button" data-filter="partial">部分發布</button>
+            <button class="publishing-filter" type="button" data-filter="complete">已完成</button>
+          </div>
+          <span class="muted">每個平台的發布狀態彼此獨立。</span>
+        </div>`;
+      main.appendChild(publishingView);
+      publishingView.appendChild(publishingPanel);
+
+      publishingView.querySelector('#publishingFilters').addEventListener('click', event => {
+        const button = event.target.closest('[data-filter]');
+        if (!button) return;
+        currentFilter = button.dataset.filter || 'all';
+        renderParts();
+      });
+    } else if (publishingPanel.parentElement !== publishingView) {
+      publishingView.appendChild(publishingPanel);
+    }
+
+    publishingPanel.classList.add('publishing-dashboard-panel');
+    const panelTitle = publishingPanel.querySelector('.panel-head h2');
+    const panelNote = publishingPanel.querySelector('.panel-head .muted');
+    if (panelTitle) panelTitle.textContent = '已確認文章';
+    if (panelNote) panelNote.textContent = '直接在每篇文章下管理各平台，不需要先切換下拉選單。';
+
+    return { workspaceView, publishingView, publishingPanel };
   }
 
   function rebuildPublishPreviewDialog() {
@@ -57,7 +147,7 @@
       <div class="dialog-card platform-preview-dialog-card">
         <div class="panel-head">
           <div><p class="eyebrow">PUBLISH PREVIEW</p><h3 id="platformPreviewTitle">發布預覽</h3></div>
-          <button id="closePlatformPreview" class="icon-button" type="button">×</button>
+          <button id="closePlatformPreview" class="icon-button" type="button" aria-label="關閉">×</button>
         </div>
         <div class="platform-preview-body">
           <p id="platformPreviewMeta" class="muted"></p>
@@ -66,12 +156,12 @@
         <div class="platform-preview-actions">
           <button id="confirmPlatformCopy" class="button primary" type="button">複製內容</button>
           <button id="togglePlatformPublished" class="button ghost" type="button">標註已發布</button>
-          <button id="cancelPlatformCopy" class="button ghost" type="button">取消</button>
+          <button id="cancelPlatformCopy" class="button ghost" type="button">關閉</button>
         </div>
       </div>`;
     document.body.appendChild(dialog);
-    document.getElementById('closePlatformPreview').onclick = () => dialog.close();
-    document.getElementById('cancelPlatformCopy').onclick = () => dialog.close();
+    dialog.querySelector('#closePlatformPreview').onclick = () => dialog.close();
+    dialog.querySelector('#cancelPlatformCopy').onclick = () => dialog.close();
     return dialog;
   }
 
@@ -82,35 +172,33 @@
     normalizePartStatus(part);
     part.platformStatus[platform] = Boolean(nextValue);
     part.published = Object.values(part.platformStatus).some(Boolean);
-    rememberSelection(part, platform);
     saveState('發布狀態已更新');
   }
 
   function togglePlatformPublished(part, platform) {
     if (!platform) return;
     normalizePartStatus(part);
-    setPlatformPublished(part, platform, !part.platformStatus[platform]);
-    renderAll();
-    notify(`${platform} 已${part.platformStatus[platform] ? '標註已發布' : '取消已發布標記'}`);
+    const next = !part.platformStatus[platform];
+    setPlatformPublished(part, platform, next);
+    renderParts();
+    notify(`${platform} 已${next ? '標註已發布' : '取消已發布標記'}`);
   }
 
   function previewPublish(part, platform) {
-    const dialog = publishDialog;
     normalizePartStatus(part);
-    rememberSelection(part, platform);
     const text = outputFor(part, platform);
-    const toggle = document.getElementById('togglePlatformPublished');
+    const toggle = publishDialog.querySelector('#togglePlatformPublished');
     const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
 
-    document.getElementById('platformPreviewTitle').textContent = `${part.title} · ${platformLabel(platform)}`;
-    document.getElementById('platformPreviewMeta').textContent = platform
-      ? `目前操作的是「${platform}」。發布狀態只會修改這個平台。`
-      : '這是預設設定的輸出預覽；預設設定不是發布平台。';
-    document.getElementById('platformPreviewContent').textContent = text;
+    publishDialog.querySelector('#platformPreviewTitle').textContent = `${part.title} · ${platformLabel(platform)}`;
+    publishDialog.querySelector('#platformPreviewMeta').textContent = platform
+      ? `這是「${platform}」實際要貼出的內容。發布狀態只會修改這個平台。`
+      : '這是預設設定的輸出預覽；預設設定不是發布平台，因此不會產生發布狀態。';
+    publishDialog.querySelector('#platformPreviewContent').textContent = text;
     toggle.hidden = !platform;
     toggle.textContent = isPublished ? '取消已發布標記' : '標註已發布';
 
-    document.getElementById('confirmPlatformCopy').onclick = async () => {
+    publishDialog.querySelector('#confirmPlatformCopy').onclick = async () => {
       try {
         await navigator.clipboard.writeText(text);
         notify(`已複製 ${platformLabel(platform)} 內容`);
@@ -118,16 +206,16 @@
         notify(`複製失敗：${error.message}`, true);
         return;
       }
-      dialog.close();
+      publishDialog.close();
     };
 
     toggle.onclick = () => {
       if (!platform) return;
       togglePlatformPublished(part, platform);
-      dialog.close();
+      publishDialog.close();
     };
 
-    dialog.showModal();
+    publishDialog.showModal();
   }
 
   async function getDeleteFolder() {
@@ -169,81 +257,150 @@
     try {
       chapter.parts.splice(index);
       chapter.confirmedBlockCount = chapter.parts.length ? chapter.parts[chapter.parts.length - 1].endBlock : 0;
-      affected.forEach(item => selectedDestination.delete(partKey(item)));
-      suggestion = null;
       await deletePartFiles(chapter, affected);
+      state.activeChapterId = chapter.id;
+      suggestion = null;
       saveState('已刪除並退回切篇');
       renderAll();
       if (chapter.draft) suggestNextPart();
-      notify(`已刪除 ${affected.length} 篇並退回切篇位置`);
+      window.StoryFlowNavigate?.('workspace');
+      notify(`已刪除 ${affected.length} 篇，已回到該章節重新切篇`);
     } catch (error) {
       chapter.parts.push(...affected);
       chapter.confirmedBlockCount = chapter.parts.length ? chapter.parts[chapter.parts.length - 1].endBlock : 0;
-      renderAll();
+      renderParts();
       notify(`刪除失敗：${error.message}`, true);
     }
   }
 
-  function refreshStatusButton(button, part, platform) {
-    normalizePartStatus(part);
-    button.disabled = !platform;
-    button.textContent = !platform
-      ? '預設格式無發布狀態'
-      : (part.platformStatus[platform] ? '取消已發布' : '標註已發布');
-    button.classList.toggle('is-published', Boolean(platform && part.platformStatus[platform]));
+  function createPlatformRow(entry, platform) {
+    const { part } = entry;
+    const published = Boolean(part.platformStatus?.[platform]);
+    const row = document.createElement('div');
+    row.className = 'publish-platform-row';
+    row.innerHTML = `
+      <div class="publish-platform-state">
+        <strong>${escapeHtml(platform)}</strong>
+        <span class="publish-platform-status ${published ? 'done' : ''}">${published ? '已發布' : '尚未發布'}</span>
+      </div>
+      <div class="publish-platform-actions">
+        <button class="button tiny ghost platform-preview-btn" type="button">預覽／複製</button>
+        <button class="button tiny ghost platform-status-btn ${published ? 'is-published' : ''}" type="button">${published ? '取消已發布' : '標註已發布'}</button>
+      </div>`;
+    row.querySelector('.platform-preview-btn').addEventListener('click', () => previewPublish(part, platform));
+    row.querySelector('.platform-status-btn').addEventListener('click', () => togglePlatformPublished(part, platform));
+    return row;
   }
 
-  window.renderParts = function renderPartsPublishingFlow() {
+  function createArticleCard(entry) {
+    const { chapter, part, partIndex, status } = entry;
+    const card = document.createElement('article');
+    card.className = 'publish-article-card';
+    card.innerHTML = `
+      <div class="publish-article-head">
+        <div class="publish-article-title-block">
+          <span class="publish-chapter-name">${escapeHtml(chapter.title)}</span>
+          <div class="publish-article-title-row">
+            <strong>${escapeHtml(part.title)}</strong>
+            <span>${part.chars.toLocaleString()} 字</span>
+          </div>
+        </div>
+        <div class="publish-article-head-actions">
+          <span class="publish-overall-status ${status.key}">${status.label}${status.total ? ` · ${status.published}/${status.total}` : ''}</span>
+          <button class="button tiny ghost default-preview-btn" type="button">預覽預設設定</button>
+        </div>
+      </div>
+      <div class="publish-platform-list"></div>
+      <div class="publish-article-footer">
+        <span class="muted">發布狀態只記錄平台，不會改動原稿或已存 Markdown。</span>
+        <details class="publish-more">
+          <summary>更多</summary>
+          <div class="publish-more-menu">
+            <button class="publish-danger-action" type="button">刪除已確認文章</button>
+          </div>
+        </details>
+      </div>`;
+
+    card.querySelector('.default-preview-btn').addEventListener('click', () => previewPublish(part, ''));
+    const platformList = card.querySelector('.publish-platform-list');
+    if (!platforms.length) {
+      platformList.innerHTML = '<div class="publish-no-platform"><strong>目前沒有發布平台</strong><span>請到設定新增發布平台後再管理發布狀態。</span><button class="button tiny ghost" type="button">前往設定</button></div>';
+      platformList.querySelector('button').addEventListener('click', () => openSettings());
+    } else {
+      platforms.forEach(platform => platformList.appendChild(createPlatformRow(entry, platform)));
+    }
+    card.querySelector('.publish-danger-action').addEventListener('click', () => deleteConfirmedPart(chapter, partIndex));
+    return card;
+  }
+
+  function refreshHeaderAndSummary(entries) {
+    const counts = dashboardCounts(entries);
+    const projectTitle = document.getElementById('publishingProjectTitle');
+    if (projectTitle) projectTitle.textContent = state.projectTitle || '未命名作品';
+    const values = {
+      publishingTotalCount: counts.total,
+      publishingPendingCount: counts.pending,
+      publishingPartialCount: counts.partial,
+      publishingCompleteCount: counts.complete
+    };
+    Object.entries(values).forEach(([id, value]) => {
+      const node = document.getElementById(id);
+      if (node) node.textContent = value.toLocaleString();
+    });
+
+    const summary = document.getElementById('workspacePublishingSummaryText');
+    if (summary) {
+      if (!counts.total) summary.textContent = '還沒有已確認文章。完成 SMART SPLIT 後，文章會進入發布頁。';
+      else {
+        const unfinished = counts.pending + counts.partial;
+        summary.textContent = `${counts.total} 篇已確認 · ${unfinished} 篇尚未完成所有平台發布`;
+      }
+    }
+
+    document.querySelectorAll('.publishing-filter').forEach(button => {
+      button.classList.toggle('active', button.dataset.filter === currentFilter);
+      const key = button.dataset.filter;
+      const count = key === 'all' ? counts.total : counts[key];
+      const baseLabel = key === 'all' ? '全部' : key === 'pending' ? '待發布' : key === 'partial' ? '部分發布' : '已完成';
+      button.textContent = `${baseLabel} ${count}`;
+    });
+  }
+
+  window.renderParts = function renderPublishingDashboard() {
+    const structure = ensureViewStructure();
+    if (!structure || !els.partsList) return;
+
+    const entries = allEntries();
+    refreshHeaderAndSummary(entries);
     els.partsList.innerHTML = '';
-    const chapter = activeChapter();
-    const parts = chapter.parts || [];
-    if (!parts.length) {
-      els.partsList.innerHTML = '<div class="empty-state publishing-empty"><strong>還沒有已確認文章</strong><span>在 SMART SPLIT 確認並存成 Markdown 後，文章會出現在這裡。</span></div>';
+
+    const filtered = currentFilter === 'all'
+      ? entries
+      : entries.filter(entry => entry.status.key === currentFilter);
+
+    if (!entries.length) {
+      els.partsList.innerHTML = '<div class="empty-state publishing-empty"><div class="empty-icon">↗</div><strong>還沒有已確認文章</strong><span>回到工作台完成 SMART SPLIT 並存成 Markdown 後，文章會自動出現在發布頁。</span></div>';
       return;
     }
 
-    parts.forEach((part, index) => {
-      normalizePartStatus(part);
-      const card = document.createElement('article');
-      card.className = 'publish-card';
-      const statusChips = platforms.map(name => `<span class="publish-status-chip ${part.platformStatus[name] ? 'done' : ''}">${escapeHtml(name)}${part.platformStatus[name] ? ' ✓' : ''}</span>`).join('');
-      card.innerHTML = `
-        <div class="publish-card-main">
-          <div class="publish-card-title"><strong>${escapeHtml(part.title)}</strong><span>${part.chars.toLocaleString()} 字</span></div>
-          <div class="publish-status-line">${statusChips || '<span class="muted">尚未設定發布平台</span>'}</div>
-        </div>
-        <div class="publish-card-action">
-          <select class="publish-destination text-input" aria-label="發布格式"></select>
-          <button class="button primary tiny publish-preview-btn" type="button">預覽／複製</button>
-          <button class="button ghost tiny publish-status-btn" type="button">標註已發布</button>
-          <button class="button ghost tiny publish-delete-btn" type="button">刪除</button>
-        </div>`;
+    if (!filtered.length) {
+      els.partsList.innerHTML = '<div class="empty-state publishing-empty"><strong>這個篩選條件目前沒有文章</strong><span>可以切換其他發布狀態查看。</span></div>';
+      return;
+    }
 
-      const select = card.querySelector('.publish-destination');
-      const previewButton = card.querySelector('.publish-preview-btn');
-      const statusButton = card.querySelector('.publish-status-btn');
-      fillPublishSelect(select, part);
-      refreshStatusButton(statusButton, part, select.value);
-
-      select.addEventListener('change', () => {
-        rememberSelection(part, select.value);
-        refreshStatusButton(statusButton, part, select.value);
-      });
-      previewButton.addEventListener('click', () => previewPublish(part, select.value));
-      statusButton.addEventListener('click', () => {
-        if (!select.value) return;
-        togglePlatformPublished(part, select.value);
-      });
-      card.querySelector('.publish-delete-btn').addEventListener('click', () => deleteConfirmedPart(chapter, index));
-      els.partsList.appendChild(card);
+    let currentChapterId = null;
+    filtered.forEach(entry => {
+      if (entry.chapter.id !== currentChapterId) {
+        currentChapterId = entry.chapter.id;
+        const heading = document.createElement('div');
+        heading.className = 'publishing-chapter-heading';
+        heading.innerHTML = `<span>章節</span><strong>${escapeHtml(entry.chapter.title)}</strong>`;
+        els.partsList.appendChild(heading);
+      }
+      els.partsList.appendChild(createArticleCard(entry));
     });
   };
 
-  const panel = document.querySelector('.publishing-panel');
-  const title = panel?.querySelector('.panel-head h2');
-  const note = panel?.querySelector('.panel-head .muted');
-  if (title) title.textContent = '已確認文章';
-  if (note) note.textContent = '選平台 → 預覽／複製 → 標註該平台已發布。平台狀態彼此獨立。';
-
+  ensureViewStructure();
   renderParts();
 })();
