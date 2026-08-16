@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'storyflow.state.v4';
-const platforms = ['巴哈小屋', 'EP', '方格子', 'Matters', 'CxC', 'Penana'];
+const platforms = ['巴哈姆特', '方格子'];
 
 function defaultPlatformFormatting() {
   return Object.fromEntries(platforms.map(platform => [platform, {
