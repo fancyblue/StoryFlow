@@ -1,26 +1,25 @@
-const STORAGE_KEY = 'storyflow.state.v2';
+const STORAGE_KEY = 'storyflow.state.v3';
 const platforms = ['巴哈小屋', 'EP', '方格子', 'Matters', 'CxC', 'Penana'];
+
+function defaultPlatformFormatting() {
+  return Object.fromEntries(platforms.map(platform => [platform, { indent: 'inherit' }]));
+}
 
 const defaultState = {
   projectTitle: '未命名作品',
-  chapters: [{
-    id: crypto.randomUUID(),
-    title: '第一章',
-    draft: '',
-    confirmedBlockCount: 0,
-    parts: [],
-    source: null
-  }],
+  chapters: [{ id: crypto.randomUUID(), title: '第一章', draft: '', confirmedBlockCount: 0, parts: [], source: null }],
   activeChapterId: null,
   minChars: 1000,
   maxChars: 3000,
-  sceneMarker: '＊＊＊'
+  sceneMarker: '＊＊＊',
+  formatting: { defaultIndent: 'none', platforms: defaultPlatformFormatting() }
 };
 defaultState.activeChapterId = defaultState.chapters[0].id;
 
 let state = loadState();
 let suggestion = null;
 let outputFolderState = { supported: true, connected: false };
+let pendingGoogleDoc = null;
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -31,15 +30,20 @@ const els = {
   suggestionChars: $('suggestionChars'), suggestionStatus: $('suggestionStatus'), suggestionReason: $('suggestionReason'), preview: $('preview'),
   partsList: $('partsList'), saveState: $('saveState'), sourceMeta: $('sourceMeta'), syncGoogleBtn: $('syncGoogleBtn'),
   googleDot: $('googleDot'), googleStatus: $('googleStatus'), folderDot: $('folderDot'), folderStatus: $('folderStatus'),
-  settingsDialog: $('settingsDialog'), pickerApiKeyInput: $('pickerApiKeyInput')
+  settingsDialog: $('settingsDialog'), pickerApiKeyInput: $('pickerApiKeyInput'), defaultIndent: $('defaultIndent'),
+  platformFormatSettings: $('platformFormatSettings'), tabDialog: $('tabDialog'), tabList: $('tabList'), tabDialogTitle: $('tabDialogTitle')
 };
 
 function loadState() {
-  for (const key of [STORAGE_KEY, 'storyflow.state.v1']) {
+  for (const key of [STORAGE_KEY, 'storyflow.state.v2', 'storyflow.state.v1']) {
     try {
       const parsed = JSON.parse(localStorage.getItem(key));
       if (parsed?.chapters?.length) {
-        parsed.chapters.forEach(c => { c.source ||= null; c.parts ||= []; });
+        parsed.chapters.forEach(chapter => { chapter.source ||= null; chapter.parts ||= []; });
+        parsed.formatting ||= { defaultIndent: 'none', platforms: defaultPlatformFormatting() };
+        parsed.formatting.defaultIndent ||= 'none';
+        parsed.formatting.platforms ||= defaultPlatformFormatting();
+        platforms.forEach(platform => { parsed.formatting.platforms[platform] ||= { indent: 'inherit' }; });
         return parsed;
       }
     } catch (_) {}
@@ -59,41 +63,63 @@ function notify(message, isError = false) {
   window.setTimeout(() => {
     els.saveState.textContent = '已儲存';
     els.saveState.classList.remove('error-text');
-  }, 2800);
+  }, 3200);
 }
 
 function activeChapter() {
-  return state.chapters.find(c => c.id === state.activeChapterId) || state.chapters[0];
+  return state.chapters.find(chapter => chapter.id === state.activeChapterId) || state.chapters[0];
 }
 
-function charCount(text) { return String(text || '').replace(/\s/g, '').length; }
-
-function normalizeImportedMarkdown(markdown) {
-  return String(markdown || '')
-    .replace(/\r\n/g, '\n')
-    .replace(/^#{1,6}\s+.*\n+/, '')
-    .replace(/\\([*_])/g, '$1')
-    .trim();
+function charCount(text) {
+  return String(text || '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/[*_~`>#\s]/g, '')
+    .length;
 }
 
 function parseBlocks(text) {
-  const normalized = String(text || '').replace(/\r\n/g, '\n').trim();
-  if (!normalized) return [];
-  return normalized.split(/\n\s*\n+/).map((raw, index) => ({
-    id: `block-${index + 1}`,
-    raw: raw.trim(),
-    chars: charCount(raw),
-    strongBoundaryAfter: true
-  }));
+  const lines = String(text || '').replace(/\r\n/g, '\n').split('\n');
+  const blocks = [];
+  for (const line of lines) {
+    if (!line.trim()) {
+      if (blocks.length) blocks[blocks.length - 1].strongBoundaryAfter = true;
+      continue;
+    }
+    const raw = line.trimEnd();
+    blocks.push({ id: `block-${blocks.length + 1}`, raw, chars: charCount(raw), strongBoundaryAfter: false });
+  }
+  return blocks;
 }
 
-function webFormat(text, marker = state.sceneMarker) {
-  return parseBlocks(text).map(b => b.raw
-    .split('\n')
-    .map(line => line.replace(/^[\u3000 ]{1,2}/, '').trimEnd())
-    .filter(Boolean)
-    .join('\n\n'))
-    .join(`\n\n${marker}\n\n`);
+function stripParagraphIndent(text) {
+  return String(text || '').replace(/^(?:　{1,2}| {1,4})/, '');
+}
+
+function applyIndent(text, indent) {
+  const clean = stripParagraphIndent(text);
+  if (indent !== 'two') return clean;
+  if (/^(?:>|!\[|[-*+]\s|\d+\.\s|#{1,6}\s)/.test(clean)) return clean;
+  return `　　${clean}`;
+}
+
+function webFormat(text, marker = state.sceneMarker, indent = state.formatting.defaultIndent) {
+  const blocks = parseBlocks(text);
+  const output = [];
+  blocks.forEach((block, index) => {
+    output.push(applyIndent(block.raw, indent));
+    if (block.strongBoundaryAfter && index < blocks.length - 1) output.push(marker);
+  });
+  return output.join('\n\n');
+}
+
+function platformIndent(platform) {
+  const value = state.formatting.platforms?.[platform]?.indent || 'inherit';
+  return value === 'inherit' ? state.formatting.defaultIndent : value;
+}
+
+function platformFormat(raw, platform) {
+  return webFormat(raw, state.sceneMarker, platformIndent(platform));
 }
 
 function suggestNextPart() {
@@ -111,20 +137,19 @@ function suggestNextPart() {
   const max = Number(state.maxChars) || 3000;
   const target = (min + max) / 2;
   let end = start, chars = 0, bestEnd = null, bestScore = Infinity;
-
   while (end < blocks.length) {
     chars += blocks[end].chars;
     end += 1;
     const distance = chars < min ? (min - chars) * 1.8 : Math.abs(chars - target);
     const overflow = chars > max ? (chars - max) * 1.25 : 0;
-    const score = distance + overflow;
+    const naturalBonus = blocks[end - 1]?.strongBoundaryAfter ? -320 : 0;
+    const score = distance + overflow + naturalBonus;
     if (chars >= Math.max(400, min * 0.6) && score < bestScore) {
       bestScore = score;
       bestEnd = end;
     }
     if (chars > max * 1.8) break;
   }
-
   suggestion = buildSuggestion(start, bestEnd || Math.min(start + 1, blocks.length), blocks);
   renderSuggestion();
 }
@@ -132,18 +157,26 @@ function suggestNextPart() {
 function buildSuggestion(start, end, blocks = parseBlocks(activeChapter().draft)) {
   const chapter = activeChapter();
   const selected = blocks.slice(start, end);
-  const raw = selected.map(b => b.raw).join('\n\n');
-  const chars = charCount(raw);
+  const raw = selected.map((block, index) => {
+    const suffix = block.strongBoundaryAfter && index < selected.length - 1 ? '\n\n' : '\n';
+    return block.raw + suffix;
+  }).join('').trim();
+  const chars = selected.reduce((sum, block) => sum + block.chars, 0);
   const max = Number(state.maxChars) || 3000;
   const min = Number(state.minChars) || 1000;
   let status = '建議';
   if (chars > max) status = '超過偏好';
   else if (chars < min) status = '低於偏好';
+  const natural = Boolean(blocks[end - 1]?.strongBoundaryAfter);
   return {
     start, end, raw, formatted: webFormat(raw), chars,
     name: `${chapter.title}（${chapter.parts.length + 1}）`,
     status,
-    reason: end < blocks.length ? '切點位於原稿的自然空白段落邊界。你可以繼續把後面的段落拉進來，即使超過偏好字數。' : '目前已到章節最新內容；可以確認，或等待原稿繼續增加。'
+    reason: end >= blocks.length
+      ? '目前已到章節最新內容；可以確認，或等待原稿繼續增加。'
+      : natural
+        ? '目前切點是原稿中的空白段落，優先視為自然場景切點。仍可手動往前或往後調整。'
+        : '目前切點是一般段落結尾。你可以把後面的段落拉進來，即使超過偏好字數。'
   };
 }
 
@@ -172,15 +205,17 @@ function adjustSuggestion(delta) {
 
 function chapterMetadata(chapter) {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     projectTitle: state.projectTitle,
     chapter: chapter.title,
     source: chapter.source,
     confirmedBlockCount: chapter.confirmedBlockCount,
+    formatting: state.formatting,
+    sceneMarker: state.sceneMarker,
     updatedAt: new Date().toISOString(),
-    parts: chapter.parts.map(p => ({
-      id: p.id, title: p.title, startBlock: p.startBlock, endBlock: p.endBlock,
-      chars: p.chars, published: p.published, platformStatus: p.platformStatus
+    parts: chapter.parts.map(part => ({
+      id: part.id, title: part.title, startBlock: part.startBlock, endBlock: part.endBlock,
+      chars: part.chars, published: part.published, platformStatus: part.platformStatus
     }))
   };
 }
@@ -191,21 +226,15 @@ async function confirmSuggestion() {
   const part = {
     id: crypto.randomUUID(), title: suggestion.name, startBlock: suggestion.start, endBlock: suggestion.end,
     chars: suggestion.chars, raw: suggestion.raw, formatted: suggestion.formatted, published: false,
-    platformStatus: Object.fromEntries(platforms.map(p => [p, false]))
+    platformStatus: Object.fromEntries(platforms.map(platform => [platform, false]))
   };
   chapter.parts.push(part);
   chapter.confirmedBlockCount = suggestion.end;
   suggestion = null;
   saveState('正在保存…');
   renderAll();
-
   try {
-    const path = await StoryFlowIntegrations.savePart({
-      projectTitle: state.projectTitle,
-      chapter,
-      part,
-      metadata: chapterMetadata(chapter)
-    });
+    const path = await StoryFlowIntegrations.savePart({ projectTitle: state.projectTitle, chapter, part, metadata: chapterMetadata(chapter) });
     notify(`已保存：${path}`);
     await refreshFolderStatus();
   } catch (error) {
@@ -237,20 +266,23 @@ function renderParts() {
     node.querySelector('.part-name').textContent = part.title;
     node.querySelector('.part-info').textContent = `${part.chars.toLocaleString()} 字 · ${part.published ? '已發布' : '已確認、未發布'}`;
     const pbox = node.querySelector('.platforms');
-    platforms.forEach(p => {
+    platforms.forEach(platform => {
       const badge = document.createElement('button');
-      badge.className = `platform-badge ${part.platformStatus?.[p] ? 'done' : ''}`;
-      badge.textContent = `${p}${part.platformStatus?.[p] ? ' ✓' : ''}`;
+      badge.className = `platform-badge ${part.platformStatus?.[platform] ? 'done' : ''}`;
+      badge.textContent = `${platform}${part.platformStatus?.[platform] ? ' ✓' : ''}`;
       badge.onclick = () => {
-        part.platformStatus[p] = !part.platformStatus[p];
+        part.platformStatus[platform] = !part.platformStatus[platform];
         part.published = Object.values(part.platformStatus).some(Boolean);
         saveState(); renderAll();
       };
       pbox.appendChild(badge);
     });
+    const select = node.querySelector('.copy-platform');
+    platforms.forEach(platform => select.add(new Option(platform, platform)));
     node.querySelector('.copy-btn').onclick = async () => {
-      await navigator.clipboard.writeText(part.formatted);
-      notify('已複製網路版');
+      const platform = select.value;
+      await navigator.clipboard.writeText(platformFormat(part.raw, platform));
+      notify(`已複製 ${platform} 版本`);
     };
     const toggle = node.querySelector('.toggle-btn');
     toggle.textContent = part.published ? '取消已發布' : '標記已發布';
@@ -262,13 +294,14 @@ function renderParts() {
 function renderStats() {
   const chapter = activeChapter();
   const blocks = parseBlocks(chapter.draft);
-  const confirmed = blocks.slice(0, chapter.confirmedBlockCount || 0).map(b => b.raw).join('\n\n');
-  const remaining = blocks.slice(chapter.confirmedBlockCount || 0).map(b => b.raw).join('\n\n');
+  const confirmed = blocks.slice(0, chapter.confirmedBlockCount || 0).reduce((sum, block) => sum + block.chars, 0);
+  const remaining = blocks.slice(chapter.confirmedBlockCount || 0).reduce((sum, block) => sum + block.chars, 0);
   els.chapterChars.textContent = charCount(chapter.draft).toLocaleString();
-  els.publishedChars.textContent = charCount(confirmed).toLocaleString();
-  els.remainingChars.textContent = charCount(remaining).toLocaleString();
+  els.publishedChars.textContent = confirmed.toLocaleString();
+  els.remainingChars.textContent = remaining.toLocaleString();
   els.partCount.textContent = chapter.parts.length.toLocaleString();
-  els.draftMeta.textContent = `${charCount(chapter.draft).toLocaleString()} 字 · ${blocks.length} 段落群組`;
+  const strong = blocks.filter(block => block.strongBoundaryAfter).length;
+  els.draftMeta.textContent = `${charCount(chapter.draft).toLocaleString()} 字 · ${blocks.length} 段 · ${strong} 個空白切點`;
 }
 
 function renderSource() {
@@ -278,7 +311,8 @@ function renderSource() {
     els.syncGoogleBtn.disabled = true;
     return;
   }
-  els.sourceMeta.textContent = `來源：${source.name} · 上次同步 ${new Date(source.syncedAt).toLocaleString('zh-TW')}`;
+  const tab = source.tabTitle ? ` › ${source.tabTitle}` : '';
+  els.sourceMeta.textContent = `來源：${source.name}${tab} · 上次同步 ${new Date(source.syncedAt).toLocaleString('zh-TW')}`;
   els.syncGoogleBtn.disabled = false;
 }
 
@@ -303,18 +337,37 @@ function createChapter() {
   renderAll();
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));
+function escapeHtml(value) {
+  return String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[char]));
 }
 
 async function loginGoogle() {
   try {
     await StoryFlowIntegrations.requestAccessToken();
-    els.googleDot.classList.add('connected');
-    els.googleStatus.textContent = '本次工作階段已授權';
-    $('googleLoginBtn').textContent = '已登入';
+    await loginGoogleStatusOnly();
     notify('Google 授權完成');
   } catch (error) { notify(error.message, true); }
+}
+
+function renderTabPicker(doc) {
+  pendingGoogleDoc = doc;
+  els.tabDialogTitle.textContent = `選擇「${doc.title}」的分頁`;
+  els.tabList.innerHTML = '';
+  if (!doc.tabs.length) {
+    els.tabList.innerHTML = '<div class="empty-state" style="min-height:120px">這份文件沒有可讀取的分頁內容。</div>';
+  }
+  doc.tabs.forEach(tab => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'tab-choice';
+    button.style.marginLeft = `${tab.depth * 18}px`;
+    const count = tab.chapters.length;
+    const words = tab.chapters.reduce((sum, chapter) => sum + charCount(chapter.draft), 0);
+    button.innerHTML = `<span><strong>${escapeHtml(tab.title)}</strong><small>${count} 個章節 · ${words.toLocaleString()} 字</small></span><span>匯入 →</span>`;
+    button.onclick = () => importSelectedTab(tab.id);
+    els.tabList.appendChild(button);
+  });
+  els.tabDialog.showModal();
 }
 
 async function importGoogleDoc() {
@@ -324,20 +377,43 @@ async function importGoogleDoc() {
       notify('請先在整合設定輸入 Picker API Key', true);
       return;
     }
-    notify('正在開啟 Google Docs…');
-    const doc = await StoryFlowIntegrations.importGoogleDoc();
-    const chapter = activeChapter();
-    const nextDraft = normalizeImportedMarkdown(doc.markdown);
-    if (chapter.draft && chapter.draft !== nextDraft && !confirm('這會更新目前章節的原稿快照，但不會動到已確認的切篇。確定繼續？')) return;
-    chapter.draft = nextDraft;
-    chapter.source = { id: doc.id, name: doc.name, url: doc.url, syncedAt: new Date().toISOString() };
-    suggestion = null;
-    saveState('Google Docs 已匯入');
-    renderAll();
+    notify('正在讀取 Google Docs 分頁…');
+    const doc = await StoryFlowIntegrations.inspectGoogleDoc();
+    renderTabPicker(doc);
     await loginGoogleStatusOnly();
   } catch (error) {
     if (!/取消選取/.test(error.message)) notify(error.message, true);
   }
+}
+
+function importSelectedTab(tabId) {
+  const doc = pendingGoogleDoc;
+  const tab = doc?.tabs?.find(item => item.id === tabId);
+  if (!doc || !tab) return;
+  const existingHasWork = state.chapters.some(chapter => chapter.draft || chapter.parts?.length || chapter.source);
+  if (existingHasWork && !confirm(`將以「${tab.title}」偵測到的 ${tab.chapters.length} 個章節取代目前章節清單。已確認的切篇也會從工作區移除。確定匯入？`)) return;
+
+  const syncedAt = new Date().toISOString();
+  state.chapters = tab.chapters.map((chapter, index) => ({
+    id: crypto.randomUUID(),
+    title: chapter.title || `第${index + 1}章`,
+    draft: chapter.draft,
+    confirmedBlockCount: 0,
+    parts: [],
+    source: {
+      id: doc.id, name: doc.name, url: doc.url, tabId: tab.id, tabTitle: tab.title,
+      headingOrdinal: chapter.headingOrdinal, headingTitle: chapter.title, syncedAt
+    }
+  }));
+  if (!state.chapters.length) state.chapters = [{ id: crypto.randomUUID(), title: tab.title, draft: '', confirmedBlockCount: 0, parts: [], source: null }];
+  state.activeChapterId = state.chapters[0].id;
+  if (!state.projectTitle || state.projectTitle === '未命名作品') state.projectTitle = doc.title;
+  suggestion = null;
+  saveState('Google Docs 分頁已匯入');
+  els.tabDialog.close();
+  renderAll();
+  if (tab.warnings?.length) alert(`StoryFlow 匯入提醒：\n\n${tab.warnings.join('\n')}`);
+  notify(`已匯入 ${tab.title}：${state.chapters.length} 個章節`);
 }
 
 async function syncGoogleDoc() {
@@ -345,12 +421,21 @@ async function syncGoogleDoc() {
   if (!chapter.source?.id) return;
   try {
     notify('正在同步 Google Docs…');
-    const markdown = await StoryFlowIntegrations.exportGoogleDocAsMarkdown(chapter.source.id);
-    chapter.draft = normalizeImportedMarkdown(markdown);
+    const refreshed = await StoryFlowIntegrations.refreshChapterSource(chapter.source);
+    const nextDraft = refreshed.draft;
+    const oldBlockCount = parseBlocks(chapter.draft).length;
+    const newBlockCount = parseBlocks(nextDraft).length;
+    if (chapter.confirmedBlockCount > 0 && newBlockCount < chapter.confirmedBlockCount) {
+      if (!confirm('新的原稿段落數少於已確認的發布進度。為避免切點錯位，建議先取消。仍要更新工作快照嗎？')) return;
+    }
+    chapter.draft = nextDraft;
     chapter.source.syncedAt = new Date().toISOString();
+    chapter.source.tabTitle = refreshed.tabTitle || chapter.source.tabTitle;
     suggestion = null;
     saveState('同步完成');
     renderAll();
+    if (refreshed.warnings?.length) alert(`StoryFlow 同步提醒：\n\n${refreshed.warnings.join('\n')}`);
+    if (oldBlockCount !== newBlockCount) notify(`同步完成：${oldBlockCount} → ${newBlockCount} 段`);
     await loginGoogleStatusOnly();
   } catch (error) { notify(error.message, true); }
 }
@@ -393,17 +478,42 @@ async function chooseFolder() {
   }
 }
 
+function renderFormattingSettings() {
+  els.defaultIndent.value = state.formatting.defaultIndent;
+  els.platformFormatSettings.innerHTML = '';
+  platforms.forEach(platform => {
+    const row = document.createElement('label');
+    row.className = 'platform-setting-row';
+    const select = document.createElement('select');
+    select.className = 'text-input';
+    select.innerHTML = '<option value="inherit">跟隨預設</option><option value="none">不縮排</option><option value="two">全形兩格</option>';
+    select.value = state.formatting.platforms[platform]?.indent || 'inherit';
+    select.onchange = () => {
+      state.formatting.platforms[platform] = { indent: select.value };
+      saveState('排版設定已更新');
+      if (suggestion) suggestion = buildSuggestion(suggestion.start, suggestion.end);
+      renderSuggestion();
+    };
+    const span = document.createElement('span');
+    span.textContent = platform;
+    row.append(span, select);
+    els.platformFormatSettings.appendChild(row);
+  });
+}
+
 function openSettings() {
   els.pickerApiKeyInput.value = StoryFlowIntegrations.pickerApiKey();
+  renderFormattingSettings();
   els.settingsDialog.showModal();
 }
 
-els.projectTitle.addEventListener('input', e => { state.projectTitle = e.target.value; saveState(); });
-els.chapterTitle.addEventListener('input', e => { activeChapter().title = e.target.value; suggestion = null; saveState(); renderChapters(); });
-els.draft.addEventListener('input', e => { activeChapter().draft = e.target.value; suggestion = null; saveState(); renderStats(); });
-els.minChars.addEventListener('change', e => { state.minChars = Number(e.target.value); suggestion = null; saveState(); });
-els.maxChars.addEventListener('change', e => { state.maxChars = Number(e.target.value); suggestion = null; saveState(); });
-els.sceneMarker.addEventListener('input', e => { state.sceneMarker = e.target.value || '＊＊＊'; saveState(); if (suggestion) suggestNextPart(); });
+els.projectTitle.addEventListener('input', event => { state.projectTitle = event.target.value; saveState(); });
+els.chapterTitle.addEventListener('input', event => { activeChapter().title = event.target.value; suggestion = null; saveState(); renderChapters(); });
+els.draft.addEventListener('input', event => { activeChapter().draft = event.target.value; suggestion = null; saveState(); renderStats(); });
+els.minChars.addEventListener('change', event => { state.minChars = Number(event.target.value); suggestion = null; saveState(); });
+els.maxChars.addEventListener('change', event => { state.maxChars = Number(event.target.value); suggestion = null; saveState(); });
+els.sceneMarker.addEventListener('input', event => { state.sceneMarker = event.target.value || '＊＊＊'; saveState(); if (suggestion) suggestion = buildSuggestion(suggestion.start, suggestion.end); renderSuggestion(); });
+els.defaultIndent.addEventListener('change', event => { state.formatting.defaultIndent = event.target.value; saveState('排版設定已更新'); if (suggestion) suggestion = buildSuggestion(suggestion.start, suggestion.end); renderSuggestion(); });
 $('generateBtn').onclick = suggestNextPart;
 $('shrinkBtn').onclick = () => adjustSuggestion(-1);
 $('expandBtn').onclick = () => adjustSuggestion(1);
@@ -418,15 +528,8 @@ $('folderBtn').onclick = chooseFolder;
 $('settingsFolderBtn').onclick = chooseFolder;
 $('openSettingsBtn').onclick = openSettings;
 $('settingsNav').onclick = openSettings;
-$('savePickerKeyBtn').onclick = () => {
-  StoryFlowIntegrations.setPickerApiKey(els.pickerApiKeyInput.value);
-  notify('Picker API Key 已保存在這台瀏覽器');
-};
-$('clearPickerKeyBtn').onclick = () => {
-  StoryFlowIntegrations.setPickerApiKey('');
-  els.pickerApiKeyInput.value = '';
-  notify('已清除本機 API Key');
-};
+$('savePickerKeyBtn').onclick = () => { StoryFlowIntegrations.setPickerApiKey(els.pickerApiKeyInput.value); notify('Picker API Key 已保存在這台瀏覽器'); };
+$('clearPickerKeyBtn').onclick = () => { StoryFlowIntegrations.setPickerApiKey(''); els.pickerApiKeyInput.value = ''; notify('已清除本機 API Key'); };
 $('pasteSampleBtn').onclick = () => {
   const chapter = activeChapter();
   chapter.draft = '　　雨停了。她站在門邊，看著街上的積水。\n　　風從巷口吹進來，帶著潮濕的味道。\n\n　　三天以前，他還坐在這張桌子旁。\n　　她記得那天下午的光線，也記得那句沒有說完的話。\n\n　　電話忽然響了。\n　　她沒有立刻接。\n　　直到第三聲，她才伸出手。\n\n　　「喂？」\n　　另一端沉默了很久。\n　　然後，一個熟悉的聲音說：「我回來了。」';
@@ -434,9 +537,9 @@ $('pasteSampleBtn').onclick = () => {
   saveState('已載入範例'); renderAll();
 };
 
-document.querySelectorAll('.nav-item').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-  btn.classList.add('active');
+document.querySelectorAll('.nav-item').forEach(button => button.addEventListener('click', () => {
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  button.classList.add('active');
 }));
 
 renderAll();
