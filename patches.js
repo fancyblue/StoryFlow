@@ -8,22 +8,75 @@
     return `
       <div class="inline-review-head">
         <div><p class="eyebrow">CONTENT CHECK</p><h3>切篇確認</h3></div>
-        <span class="muted">確認上一篇／這一篇／章節全文，再存成 Markdown</span>
+        <div class="inline-review-actions">
+          <span class="muted">確認內容後再存成 Markdown</span>
+          <button id="expandReviewBtn" class="button tiny ghost" type="button">放大對照</button>
+        </div>
       </div>
       <div class="review-grid compact-review-grid">
-        <article class="review-column">
-          <div class="review-column-head"><span>上一篇</span><strong id="reviewPreviousTitle">—</strong></div>
-          <pre id="reviewPrevious" class="review-content"></pre>
-        </article>
         <article class="review-column current">
           <div class="review-column-head"><span>這一篇（尚未存檔）</span><strong id="reviewCurrentTitle">—</strong></div>
           <pre id="reviewCurrent" class="review-content"></pre>
+        </article>
+        <article class="review-column">
+          <div class="review-column-head"><span>上一篇</span><strong id="reviewPreviousTitle">—</strong></div>
+          <pre id="reviewPrevious" class="review-content"></pre>
         </article>
         <article class="review-column">
           <div class="review-column-head"><span>章節全文</span><strong id="reviewFullTitle">—</strong></div>
           <pre id="reviewFull" class="review-content"></pre>
         </article>
       </div>`;
+  }
+
+  function ensureReviewDialog() {
+    if ($('reviewDialog')) return;
+    const dialog = document.createElement('dialog');
+    dialog.id = 'reviewDialog';
+    dialog.className = 'review-dialog';
+    dialog.innerHTML = `
+      <div class="dialog-card review-dialog-card">
+        <div class="panel-head">
+          <div><p class="eyebrow">CONTENT CHECK</p><h3>切篇完整對照</h3></div>
+          <button id="closeReviewDialog" class="icon-button" type="button">×</button>
+        </div>
+        <p class="muted review-dialog-note">左：上一篇｜中：這一篇（尚未存檔）｜右：章節全文</p>
+        <div class="review-dialog-grid">
+          <article class="review-column">
+            <div class="review-column-head"><span>上一篇</span><strong id="dialogReviewPreviousTitle">—</strong></div>
+            <pre id="dialogReviewPrevious" class="review-content"></pre>
+          </article>
+          <article class="review-column current">
+            <div class="review-column-head"><span>這一篇（尚未存檔）</span><strong id="dialogReviewCurrentTitle">—</strong></div>
+            <pre id="dialogReviewCurrent" class="review-content"></pre>
+          </article>
+          <article class="review-column">
+            <div class="review-column-head"><span>章節全文</span><strong id="dialogReviewFullTitle">—</strong></div>
+            <pre id="dialogReviewFull" class="review-content"></pre>
+          </article>
+        </div>
+        <div class="platform-preview-actions">
+          <button id="closeReviewDialogBottom" class="button primary" type="button">看完，回去調整切點</button>
+        </div>
+      </div>`;
+    document.body.appendChild(dialog);
+    $('closeReviewDialog').onclick = () => dialog.close();
+    $('closeReviewDialogBottom').onclick = () => dialog.close();
+  }
+
+  function syncReviewDialog() {
+    ensureReviewDialog();
+    $('dialogReviewPreviousTitle').textContent = $('reviewPreviousTitle')?.textContent || '—';
+    $('dialogReviewPrevious').textContent = $('reviewPrevious')?.textContent || '';
+    $('dialogReviewCurrentTitle').textContent = $('reviewCurrentTitle')?.textContent || '—';
+    $('dialogReviewCurrent').textContent = $('reviewCurrent')?.textContent || '';
+    $('dialogReviewFullTitle').textContent = $('reviewFullTitle')?.textContent || '—';
+    $('dialogReviewFull').textContent = $('reviewFull')?.textContent || '';
+  }
+
+  function openReviewDialog() {
+    syncReviewDialog();
+    $('reviewDialog').showModal();
   }
 
   function ensureInlineReview() {
@@ -36,6 +89,7 @@
     review.className = 'inline-review hidden';
     review.innerHTML = reviewMarkup();
     confirmBtn.insertAdjacentElement('beforebegin', review);
+    $('expandReviewBtn').onclick = openReviewDialog;
   }
 
   function showReview({ currentPart = null, currentSuggestion = null } = {}) {
@@ -126,7 +180,6 @@
     actions.insertBefore(button, $('saveBtn'));
   }
 
-  // 1) If the entire chapter is emitted as one part, keep the chapter title as-is.
   window.buildSuggestion = function buildSuggestion(start, end, blocks = parseBlocks(activeChapter().draft)) {
     const chapter = activeChapter();
     const selected = blocks.slice(start, end);
@@ -143,29 +196,18 @@
 
     const natural = Boolean(blocks[end - 1]?.strongBoundaryAfter);
     const wholeChapterInOnePart = chapter.parts.length === 0 && start === 0 && end === blocks.length;
-    const partName = wholeChapterInOnePart
-      ? chapter.title
-      : `${chapter.title}（${chapter.parts.length + 1}）`;
+    const partName = wholeChapterInOnePart ? chapter.title : `${chapter.title}（${chapter.parts.length + 1}）`;
 
     return {
-      start,
-      end,
-      raw,
-      formatted: webFormat(raw),
-      chars,
-      name: partName,
-      status,
+      start, end, raw, formatted: webFormat(raw), chars, name: partName, status,
       reason: end >= blocks.length
-        ? (chars < min
-          ? '已到章節最新內容，因此允許低於偏好最少字數；整章只有一篇時不加（1）。'
-          : '目前已到章節最新內容；可以確認，或等待原稿繼續增加。')
+        ? (chars < min ? '已到章節最新內容，因此允許低於偏好最少字數；整章只有一篇時不加（1）。' : '目前已到章節最新內容；可以確認，或等待原稿繼續增加。')
         : natural
           ? '目前切點是原稿中的空白段落，且已達偏好最少字數。仍可手動往前或往後調整。'
           : '目前切點是一般段落結尾。你可以把後面的段落拉進來，即使超過偏好字數。'
     };
   };
 
-  // Smart split review belongs to the unsaved suggestion, immediately before confirmation.
   const baseRenderSuggestion = window.renderSuggestion;
   window.renderSuggestion = function renderSuggestionPatched() {
     ensureInlineReview();
@@ -174,16 +216,11 @@
     else $('inlineReview')?.classList.add('hidden');
   };
 
-  // 2) Treat each Google Docs tab as a separate managed section instead of replacing all chapters.
   window.importSelectedTab = function importSelectedTab(tabId) {
     const doc = pendingGoogleDoc;
     const tab = doc?.tabs?.find(item => item.id === tabId);
     if (!doc || !tab) return;
-
-    const sameTab = state.chapters.filter(chapter =>
-      chapter.source?.id === doc.id && chapter.source?.tabId === tab.id
-    );
-
+    const sameTab = state.chapters.filter(chapter => chapter.source?.id === doc.id && chapter.source?.tabId === tab.id);
     if (sameTab.length) {
       state.activeChapterId = sameTab[0].id;
       suggestion = null;
@@ -196,55 +233,17 @@
 
     const syncedAt = new Date().toISOString();
     const imported = tab.chapters.map((chapter, index) => ({
-      id: crypto.randomUUID(),
-      title: chapter.title || `第${index + 1}章`,
-      draft: chapter.draft,
-      confirmedBlockCount: 0,
-      parts: [],
-      source: {
-        id: doc.id,
-        name: doc.name,
-        url: doc.url,
-        tabId: tab.id,
-        tabTitle: tab.title,
-        headingOrdinal: chapter.headingOrdinal,
-        headingTitle: chapter.title,
-        syncedAt
-      }
+      id: crypto.randomUUID(), title: chapter.title || `第${index + 1}章`, draft: chapter.draft,
+      confirmedBlockCount: 0, parts: [],
+      source: { id: doc.id, name: doc.name, url: doc.url, tabId: tab.id, tabTitle: tab.title, headingOrdinal: chapter.headingOrdinal, headingTitle: chapter.title, syncedAt }
     }));
 
-    const isUntouchedStarter = state.chapters.length === 1
-      && !state.chapters[0].draft
-      && !state.chapters[0].parts?.length
-      && !state.chapters[0].source
-      && (state.chapters[0].title === '第一章' || state.projectTitle === '未命名作品');
+    const isUntouchedStarter = state.chapters.length === 1 && !state.chapters[0].draft && !state.chapters[0].parts?.length && !state.chapters[0].source && (state.chapters[0].title === '第一章' || state.projectTitle === '未命名作品');
     if (isUntouchedStarter) state.chapters = [];
-
     if (imported.length) {
       state.chapters.push(...imported);
       state.activeChapterId = imported[0].id;
-    } else {
-      const fallback = {
-        id: crypto.randomUUID(),
-        title: tab.title,
-        draft: '',
-        confirmedBlockCount: 0,
-        parts: [],
-        source: {
-          id: doc.id,
-          name: doc.name,
-          url: doc.url,
-          tabId: tab.id,
-          tabTitle: tab.title,
-          headingOrdinal: null,
-          headingTitle: tab.title,
-          syncedAt
-        }
-      };
-      state.chapters.push(fallback);
-      state.activeChapterId = fallback.id;
     }
-
     if (!state.projectTitle || state.projectTitle === '未命名作品') state.projectTitle = doc.title;
     suggestion = null;
     saveState('Google Docs 分頁已加入工作區');
@@ -254,12 +253,10 @@
     notify(`已加入「${tab.title}」：${imported.length || 1} 個章節；其他分頁完整保留。`);
   };
 
-  // 3) Group the chapter list by Google Docs tab so volumes/parts are visually distinct.
   window.renderChapters = function renderChapters() {
     els.chapterList.innerHTML = '';
     const groups = [];
     const map = new Map();
-
     for (const chapter of state.chapters) {
       const source = chapter.source;
       const key = source?.tabId ? `${source.id || 'doc'}::${source.tabId}` : '__manual__';
@@ -270,7 +267,6 @@
       }
       map.get(key).chapters.push(chapter);
     }
-
     for (const group of groups) {
       if (groups.length > 1 || group.key !== '__manual__') {
         const heading = document.createElement('div');
@@ -278,24 +274,16 @@
         heading.innerHTML = `<strong>${escapeHtml(group.label)}</strong>${group.docName ? `<small>${escapeHtml(group.docName)}</small>` : ''}`;
         els.chapterList.appendChild(heading);
       }
-
       for (const chapter of group.chapters) {
         const button = document.createElement('button');
         button.className = `chapter-item ${chapter.id === state.activeChapterId ? 'active' : ''}`;
         button.innerHTML = `<span>${escapeHtml(chapter.title)}</span><small>${charCount(chapter.draft).toLocaleString()} 字</small>`;
-        button.onclick = () => {
-          state.activeChapterId = chapter.id;
-          suggestion = null;
-          reviewSelection = null;
-          saveState();
-          renderAll();
-        };
+        button.onclick = () => { state.activeChapterId = chapter.id; suggestion = null; reviewSelection = null; saveState(); renderAll(); };
         els.chapterList.appendChild(button);
       }
     }
   };
 
-  // 4) Publishing is a separate verification step: preview the exact platform output before copying.
   const baseRenderParts = window.renderParts;
   window.renderParts = function renderPartsPatched() {
     baseRenderParts();
@@ -316,6 +304,7 @@
 
   $('generateBtn').onclick = suggestNextPart;
   ensureInlineReview();
+  ensureReviewDialog();
   ensurePlatformPreviewDialog();
   ensureResetAction();
   renderAll();
