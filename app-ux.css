@@ -46,6 +46,11 @@
 .project-library-delete{color:#b91c1c}
 .project-library-delete:hover{background:#fff1f2!important;border-color:#fecdd3!important}
 
+/* Prevent the old inline publishing section and old editor source buttons from
+   appearing before the dedicated app views finish booting. */
+.main > .publishing-panel{display:none}
+.editor-panel .source-actions{display:none!important}
+
 /* Workspace is for the active work. Creation/deletion belongs to the Works page,
    and manual input stays under the single "載入來源" entry point. */
 .source-panel .project-switcher-actions{display:none!important}
