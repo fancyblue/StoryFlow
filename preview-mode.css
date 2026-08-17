@@ -1,0 +1,196 @@
+/* Unified preview/read mode. Preview is the default; raw Markdown is an explicit secondary view. */
+.sf-preview-mode-control{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:7px;
+  min-width:max-content;
+  color:var(--muted);
+  font-size:10px;
+}
+.sf-preview-mode-label{
+  font-weight:700;
+  letter-spacing:.02em;
+}
+.sf-preview-mode-segment{
+  display:inline-flex;
+  align-items:center;
+  padding:3px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#f7f8fb;
+}
+.sf-preview-mode-segment button{
+  min-height:28px;
+  padding:4px 9px;
+  border:0;
+  border-radius:6px;
+  background:transparent;
+  color:var(--muted);
+  font:inherit;
+  font-size:10px;
+  font-weight:800;
+  cursor:pointer;
+}
+.sf-preview-mode-segment button:hover{color:var(--text)}
+.sf-preview-mode-segment button.active{
+  background:#fff;
+  color:#5234c6;
+  box-shadow:0 1px 4px rgba(17,24,39,.10);
+}
+.sf-preview-mode-segment button:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(104,71,239,.16);
+}
+
+/* Main Smart Split: the format selector and display mode form one compact utility row. */
+#splitPlatformBar .sf-preview-mode-control{
+  margin-left:auto;
+  align-self:flex-end;
+  padding-bottom:1px;
+}
+.review-format-bar .sf-preview-mode-control{
+  margin-left:auto;
+  align-self:center;
+}
+.sf-preview-mode-source,
+.sf-preview-mode-publish{
+  margin:8px 0 10px;
+}
+
+/* Rendered preview uses product typography instead of a preformatted/code appearance. */
+.sf-preview-surface.sf-preview-rendered{
+  white-space:normal!important;
+  font-family:inherit!important;
+  color:var(--text);
+}
+.sf-preview-rendered-root,
+.sf-preview-raw-root{
+  display:block;
+  width:100%;
+}
+.sf-preview-rendered-root{
+  font-family:inherit;
+}
+.sf-md-block{
+  display:block;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.sf-md-block.sf-md-tight{margin-top:.35em}
+.sf-md-block.sf-md-spaced{margin-top:1.15em}
+.sf-md-heading{
+  font-weight:800;
+  letter-spacing:-.01em;
+}
+.sf-md-heading-1{font-size:1.35em}
+.sf-md-heading-2{font-size:1.22em}
+.sf-md-heading-3{font-size:1.12em}
+.sf-md-heading-4,.sf-md-heading-5,.sf-md-heading-6{font-size:1.02em}
+.sf-md-quote{
+  padding-left:12px;
+  border-left:3px solid #d8d1fb;
+  color:#596170;
+}
+.sf-md-list-line{
+  display:grid;
+  grid-template-columns:1.6em minmax(0,1fr);
+  gap:2px;
+}
+.sf-md-list-marker{color:var(--muted)}
+.sf-md-scene-separator{
+  padding:7px 0;
+  color:#8a819e;
+  font-size:.88em;
+  letter-spacing:.15em;
+  text-align:center;
+}
+.sf-md-code-block{
+  padding:10px 12px;
+  border-radius:9px;
+  background:#f4f5f8;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  font-size:.88em;
+  white-space:pre-wrap;
+}
+.sf-preview-rendered-root code{
+  padding:.12em .32em;
+  border-radius:5px;
+  background:#f1f2f5;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  font-size:.88em;
+}
+.sf-preview-rendered-root a{
+  color:#5d3ed3;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+.sf-preview-rendered-root del{color:#747b89}
+.sf-md-image{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:2px 7px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:#f8f9fc;
+  color:var(--muted);
+  font-size:.9em;
+}
+.sf-md-empty{color:var(--muted)}
+
+/* Raw mode is deliberately code-like so the mode switch is unmistakable. */
+.sf-preview-surface.sf-preview-raw{
+  white-space:normal!important;
+}
+.sf-preview-raw-root{
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  font-size:12px;
+  line-height:1.75;
+  color:#343943;
+}
+
+/* Existing preview boxes already provide borders/padding; only remove browser pre defaults. */
+.source-preview-content.sf-preview-surface,
+.review-content.sf-preview-surface,
+.platform-preview-content.sf-preview-surface{
+  font-family:inherit;
+}
+.review-content.sf-preview-rendered .sf-preview-rendered-root{
+  font-size:15px;
+  line-height:1.9;
+}
+.platform-preview-content.sf-preview-rendered .sf-preview-rendered-root,
+.source-preview-content.sf-preview-rendered .sf-preview-rendered-root{
+  font-size:15px;
+  line-height:1.9;
+}
+
+/* Keep comparison highlights readable after Markdown is rendered. */
+#dialogReviewFull.sf-preview-rendered{
+  white-space:pre-wrap!important;
+}
+#dialogReviewFull .current-range-highlight strong,
+#dialogReviewFull .current-range-highlight em{
+  color:inherit;
+}
+
+@media(max-width:760px){
+  #splitPlatformBar .sf-preview-mode-control,
+  .review-format-bar .sf-preview-mode-control{
+    width:100%;
+    margin-left:0;
+    justify-content:flex-start;
+  }
+  .sf-preview-mode-source,
+  .sf-preview-mode-publish{
+    justify-content:flex-start;
+  }
+  .sf-preview-mode-label{display:none}
+  .sf-preview-mode-segment{width:100%}
+  .sf-preview-mode-segment button{flex:1 1 0}
+}
