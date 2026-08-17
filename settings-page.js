@@ -26,6 +26,7 @@
     loadStylesheet('storyflowSettingsBootstrapCss', './settings-bootstrap.css?v=20260817-1703');
     loadScript('storyflowPlatformSettingsV2Js', './platform-settings-v2.js?v=20260817-1632');
     loadScript('storyflowSettingsBootstrapJs', './settings-bootstrap.js?v=20260817-1703');
+    loadScript('storyflowSettingsFileImportFixJs', './settings-file-import-fix.js?v=20260817-1720');
   }
 
   function ensureSettingsView() {
