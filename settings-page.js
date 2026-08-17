@@ -99,3 +99,20 @@
 
   window.StoryFlowShowSettings = showSettings;
 })();
+
+// Late UX modules can depend on all source/project patches being installed first.
+(function loadProjectSourceSync() {
+  if (!document.querySelector('link[data-storyflow-project-source-sync]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './project-source-sync.css?v=20260817-1310';
+    link.dataset.storyflowProjectSourceSync = '1';
+    document.head.appendChild(link);
+  }
+  if (!document.querySelector('script[data-storyflow-project-source-sync]')) {
+    const script = document.createElement('script');
+    script.src = './project-source-sync.js?v=20260817-1310';
+    script.dataset.storyflowProjectSourceSync = '1';
+    document.body.appendChild(script);
+  }
+})();
