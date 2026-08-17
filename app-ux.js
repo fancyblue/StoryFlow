@@ -118,30 +118,63 @@
     notify(`已刪除章節：${chapter.title}`);
   }
 
-  function decorateChapterList() {
+  function chapterGroups() {
+    const groups = [];
+    const map = new Map();
+    for (const chapter of state.chapters) {
+      const source = chapter.source;
+      const key = source?.tabId ? `${source.id || 'doc'}::${source.tabId}` : '__manual__';
+      if (!map.has(key)) {
+        const group = { key, label: source?.tabTitle || '手動章節', docName: source?.name || '', chapters: [] };
+        map.set(key, group);
+        groups.push(group);
+      }
+      map.get(key).chapters.push(chapter);
+    }
+    return groups;
+  }
+
+  function renderChaptersWithActions() {
     const list = document.getElementById('chapterList');
     if (!list) return;
-    const buttons = [...list.querySelectorAll(':scope > .chapter-item')];
-    buttons.forEach((button, index) => {
-      const chapter = state.chapters[index];
-      if (!chapter || button.closest('.chapter-row')) return;
-      const row = document.createElement('div');
-      row.className = `chapter-row ${chapter.id === state.activeChapterId ? 'active' : ''}`;
-      button.classList.add('chapter-main-button');
-      button.parentNode.insertBefore(row, button);
-      row.appendChild(button);
+    list.innerHTML = '';
+    const groups = chapterGroups();
 
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.className = 'chapter-delete-button';
-      remove.textContent = '×';
-      remove.title = `刪除章節「${chapter.title}」`;
-      remove.setAttribute('aria-label', `刪除章節「${chapter.title}」`);
-      remove.addEventListener('click', event => {
-        event.stopPropagation();
-        removeChapter(chapter.id);
+    groups.forEach(group => {
+      if (groups.length > 1 || group.key !== '__manual__') {
+        const heading = document.createElement('div');
+        heading.className = 'chapter-group-label';
+        heading.innerHTML = `<strong>${escapeHtml(group.label)}</strong>${group.docName ? `<small>${escapeHtml(group.docName)}</small>` : ''}`;
+        list.appendChild(heading);
+      }
+
+      group.chapters.forEach(chapter => {
+        const row = document.createElement('div');
+        row.className = `chapter-row ${chapter.id === state.activeChapterId ? 'active' : ''}`;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `chapter-item chapter-main-button ${chapter.id === state.activeChapterId ? 'active' : ''}`;
+        button.innerHTML = `<span>${escapeHtml(chapter.title)}</span><small>${charCount(chapter.draft).toLocaleString()} 字</small>`;
+        button.onclick = () => {
+          state.activeChapterId = chapter.id;
+          suggestion = null;
+          saveState();
+          renderAll();
+          if (chapter.draft) suggestNextPart();
+        };
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'chapter-delete-button';
+        remove.textContent = '×';
+        remove.title = `刪除章節「${chapter.title}」`;
+        remove.setAttribute('aria-label', `刪除章節「${chapter.title}」`);
+        remove.onclick = () => removeChapter(chapter.id);
+
+        row.append(button, remove);
+        list.appendChild(row);
       });
-      row.appendChild(remove);
     });
   }
 
@@ -178,14 +211,9 @@
     document.getElementById('resetWorkspaceBtn')?.remove();
   }
 
-  const baseRenderChapters = window.renderChapters;
-  if (typeof baseRenderChapters === 'function') {
-    window.renderChapters = function renderChaptersWithActions(...args) {
-      const result = baseRenderChapters.apply(this, args);
-      decorateChapterList();
-      return result;
-    };
-  }
+  // Replace the older chapter renderer after all source-grouping patches are loaded,
+  // so delete actions always target the correct chapter even when several Docs tabs are interleaved.
+  window.renderChapters = renderChaptersWithActions;
 
   const baseRenderSuggestion = window.renderSuggestion;
   if (typeof baseRenderSuggestion === 'function') {
@@ -201,6 +229,9 @@
       setTimeout(refreshFormatSummaries, 0);
     }
   });
+  document.addEventListener('click', event => {
+    if (event.target?.closest?.('#openSplitReviewBtn')) setTimeout(refreshFormatSummaries, 0);
+  });
 
   window.addEventListener('storyflow:projects-changed', renderProjectsView);
   window.StoryFlowRenderProjects = renderProjectsView;
@@ -213,7 +244,7 @@
 
   ensureProjectsView();
   renderProjectsView();
-  decorateChapterList();
+  renderChaptersWithActions();
   refreshFormatSummaries();
   removeLegacyReset();
   labelCloseButtons();
