@@ -20,9 +20,9 @@
     margin:0;
   }
   .topbar .save-state {
-    color:#6b8aa1 !important;
-    font-size:11px !important;
-    font-weight:600;
+    color:#5f8098 !important;
+    font-size:12px !important;
+    font-weight:700 !important;
   }
 
   /* Reduce the feeling of stacked white boxes on a phone. */
@@ -39,101 +39,106 @@
     padding:12px 14px !important;
     border-radius:17px !important;
   }
-  .stat-card span { color:#66869d !important; }
+  .stat-card span { color:#5c7d95 !important; }
 
-  /* The bottom bar should feel like navigation, not a large blue wall. */
+  /* Bottom navigation: stronger blue text and a clearer selected state. */
   .sidebar {
     background:rgba(250,253,255,.99) !important;
-    border-top:1px solid #d5e7f2 !important;
+    border-top:1px solid #c8deec !important;
     box-shadow:0 -6px 22px rgba(63,118,151,.11) !important;
-    color:#315e7b !important;
+    color:#234f6d !important;
   }
 
   .sidebar .nav-item {
-    color:#58788f !important;
-    font-weight:700 !important;
+    color:#345f7a !important;
+    font-size:18px !important;
+    font-weight:800 !important;
   }
   .sidebar .nav-item span {
     color:inherit !important;
-    font-size:11px !important;
-    font-weight:700 !important;
+    font-size:13px !important;
+    font-weight:800 !important;
+    line-height:1.2 !important;
   }
   .sidebar .nav-item:hover {
-    background:#eef8fd !important;
-    color:#346f95 !important;
+    background:#e5f4fc !important;
+    color:#1f648d !important;
   }
   .sidebar .nav-item.active {
-    background:#dff1fb !important;
-    color:#286486 !important;
-    box-shadow:none !important;
+    background:#cfeafa !important;
+    color:#155a84 !important;
+    box-shadow:inset 0 0 0 1px #b5dced !important;
   }
 
   /* Connection state must remain readable even when disconnected. */
   .sidebar-connection-status {
-    border-top-color:#dceaf3 !important;
+    border-top-color:#d0e2ee !important;
   }
   .sidebar-connection-row {
-    background:#f6fbfe !important;
-    border:1px solid #d9e8f1 !important;
-    color:#466b83 !important;
+    background:#ffffff !important;
+    border:1px solid #cfe1ec !important;
+    color:#315b73 !important;
     box-shadow:none !important;
   }
   .sidebar-connection-row:hover,
   .sidebar-connection-row:focus-visible {
     background:#edf7fc !important;
-    border-color:#c7deec !important;
+    border-color:#b9d6e7 !important;
   }
   .sidebar-connection-copy small {
-    color:#496c83 !important;
+    color:#315b73 !important;
+    font-size:12px !important;
+    font-weight:800 !important;
+    line-height:1.2 !important;
     opacity:1 !important;
   }
   .sidebar-status-dot {
-    background:#9fb7c7 !important;
+    background:#8faabc !important;
     box-shadow:0 0 0 2px #edf6fb !important;
   }
   .sidebar-connection-row.connected {
-    background:#f1faf5 !important;
-    border-color:#d0eadc !important;
+    background:#f0faf5 !important;
+    border-color:#c7e5d6 !important;
   }
   .sidebar-connection-row.connected .sidebar-status-dot {
-    background:#7fbd9d !important;
-    box-shadow:0 0 0 2px #e8f6ef !important;
+    background:#75b995 !important;
+    box-shadow:0 0 0 2px #e6f5ed !important;
   }
   .sidebar-connection-row.connected .sidebar-connection-copy small {
-    color:#477b61 !important;
+    color:#39755a !important;
   }
   .sidebar-connection-row.restoring {
-    background:#fff9f1 !important;
-    border-color:#f0dfc8 !important;
+    background:#fff8ef !important;
+    border-color:#ecd9be !important;
   }
   .sidebar-connection-row.restoring .sidebar-status-dot {
-    background:#d2a56d !important;
-    box-shadow:0 0 0 2px #fff3e3 !important;
+    background:#c99a5e !important;
+    box-shadow:0 0 0 2px #fff1dd !important;
   }
   .sidebar-connection-row.restoring .sidebar-connection-copy small {
-    color:#876944 !important;
+    color:#765735 !important;
   }
 
   .sidebar-settings-button {
-    color:#4b7d9d !important;
+    color:#356e91 !important;
     background:transparent !important;
   }
   .sidebar-settings-button:hover,
   .sidebar-settings-button:focus-visible {
-    background:#eaf6fc !important;
-    color:#2f6d94 !important;
+    background:#e5f4fb !important;
+    color:#225f87 !important;
   }
   .sidebar-settings-button.active {
-    background:#dff1fb !important;
-    color:#286486 !important;
+    background:#cfeafa !important;
+    color:#155a84 !important;
   }
   .sidebar-logout {
-    color:#c8757e !important;
+    color:#bd6872 !important;
   }
   .sidebar-logout:hover,
   .sidebar-logout:focus-visible {
     background:#fff0f2 !important;
     border-color:#f1d0d5 !important;
-    color:#aa5b65 !important;
+    color:#a14f5a !important;
   }
 }
