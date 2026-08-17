@@ -1,192 +1,152 @@
-/* StoryFlow powder-blue visual system.
-   Loaded last so older purple-era component styles inherit one consistent product theme. */
+/* StoryFlow airy powder-blue visual system.
+   Loaded last so legacy hard-coded colors resolve into one bright, low-grey palette. */
 :root{
-  --bg:#f4f9fd;
+  --bg:#f6fbff;
   --panel:#ffffff;
-  --text:#1d2d3d;
-  --muted:#6f8293;
-  --line:#dce8f2;
-  --line-strong:#c7d9e7;
-  --primary:#3676ad;
-  --primary-hover:#2f6a9d;
-  --primary-soft:#eaf5fd;
-  --surface-soft:#f7fbff;
-  --sidebar:#18344f;
-  --success:#15805d;
-  --warning:#a16207;
-  --danger:#b42318;
-  --focus:0 0 0 3px rgba(54,118,173,.15);
-  --shadow-card:0 1px 2px rgba(31,72,107,.025),0 8px 28px rgba(31,72,107,.04);
-  --shadow-pop:0 18px 50px rgba(31,72,107,.16);
+  --text:#19364d;
+  --muted:#63839c;
+  --line:#d9eaf6;
+  --line-strong:#bdd9ea;
+  --primary:#4f95c2;
+  --primary-hover:#3f84b1;
+  --primary-soft:#e8f6ff;
+  --surface-soft:#f8fcff;
+  --sidebar:#4f7895;
+  --success:#65ad8a;
+  --warning:#b7864f;
+  --danger:#c86d76;
+  --focus:0 0 0 3px rgba(79,149,194,.16);
+  --shadow-card:0 1px 2px rgba(47,104,143,.02),0 8px 24px rgba(47,104,143,.035);
+  --shadow-pop:0 18px 48px rgba(47,104,143,.14);
   accent-color:var(--primary);
 }
 
 html,body{background:var(--bg);color:var(--text)}
-body{background-image:linear-gradient(180deg,#f9fcff 0,#f4f9fd 220px,#f4f9fd 100%)}
+body{background-image:linear-gradient(180deg,#fbfeff 0,#f6fbff 210px,#f6fbff 100%)}
 
-/* Primary actions: readable medium blue; surrounding states are soft powder blue. */
-.button.primary{
-  background:var(--primary)!important;
-  border-color:var(--primary)!important;
-  color:#fff!important;
-}
-.button.primary:hover:not(:disabled){
-  background:var(--primary-hover)!important;
-  border-color:var(--primary-hover)!important;
-}
+/* Primary actions stay readable while the surrounding UI is lighter and bluer. */
+.button.primary{background:var(--primary)!important;border-color:var(--primary)!important;color:#fff!important}
+.button.primary:hover:not(:disabled){background:var(--primary-hover)!important;border-color:var(--primary-hover)!important}
 .button.primary:active:not(:disabled){transform:translateY(1px)}
-.button.ghost:hover:not(:disabled),.icon-button:hover:not(:disabled){
-  background:#f1f7fc!important;
-  border-color:#bfd4e5!important;
-}
+.button.ghost:hover:not(:disabled),.icon-button:hover:not(:disabled){background:#f0f8fd!important;border-color:#b8d5e7!important}
 .button:focus-visible,.icon-button:focus-visible,.nav-item:focus-visible,.connection-chip:focus-visible,
 .publishing-filter:focus-visible,.source-choice:focus-visible,.tab-choice:focus-visible,
 .chapter-main-button:focus-visible,.project-library-card button:focus-visible,
-.sidebar-settings-button:focus-visible,.sidebar-toggle:focus-visible{
-  outline:none!important;
-  box-shadow:var(--focus)!important;
-}
+.sidebar-settings-button:focus-visible,.sidebar-toggle:focus-visible{outline:none!important;box-shadow:var(--focus)!important}
 button:disabled{opacity:.46!important;cursor:not-allowed!important}
 
-/* Form controls. */
-.text-input,.title-input,.range-grid input,select,textarea,.compact-select{
-  border-color:var(--line-strong)!important;
-}
-.text-input:hover:not(:disabled),.range-grid input:hover:not(:disabled),select:hover:not(:disabled),textarea:hover:not(:disabled){
-  border-color:#adc8dc!important;
-}
-.text-input:focus,.title-input:focus,.range-grid input:focus,textarea:focus,select:focus,.compact-select:focus{
-  border-color:#6aa7d1!important;
-  box-shadow:var(--focus)!important;
-}
+/* Text and controls use blue-tinted neutrals instead of flat grey. */
+.muted,.save-state,.field-label,.source-meta,.editor-footer,.format-summary-text,
+.projects-page-subtitle,.publishing-page-subtitle,.settings-page-subtitle{color:var(--muted)!important}
+.eyebrow{color:#7193ad!important}
+.text-input,.title-input,.range-grid input,select,textarea,.compact-select{border-color:var(--line-strong)!important;background:#fff!important}
+.text-input:hover:not(:disabled),.range-grid input:hover:not(:disabled),select:hover:not(:disabled),textarea:hover:not(:disabled){border-color:#a9cadf!important}
+.text-input:focus,.title-input:focus,.range-grid input:focus,textarea:focus,select:focus,.compact-select:focus{border-color:#72acd1!important;box-shadow:var(--focus)!important}
 
-/* Sidebar: softer powder-blue family instead of near-black/navy. */
-.sidebar{background:linear-gradient(180deg,#18344f 0%,#21445f 100%)!important}
-.brand-mark{background:linear-gradient(135deg,#a8d7f2,#6fb2dd 55%,#3f82b8)!important;box-shadow:0 8px 22px rgba(54,118,173,.22)}
-.sidebar .nav-item{color:#d6e3ee!important}
-.sidebar .nav-item:hover{background:#28516f!important;color:#fff!important}
-.sidebar .nav-item.active{background:#32678d!important;color:#fff!important;box-shadow:inset 3px 0 0 #9ed2ef}
-.sidebar-settings-button{color:#d8edf9!important}
-.sidebar-settings-button:hover{background:rgba(158,210,239,.13)!important;color:#fff!important}
-.sidebar-settings-button.active{color:#a9ddf6!important;background:rgba(113,180,220,.13)!important}
-.sidebar-settings-button:focus-visible{outline:2px solid rgba(169,221,246,.7)!important;outline-offset:2px!important;box-shadow:none!important}
-.sidebar-toggle{background:#244963!important;border-color:rgba(215,237,249,.2)!important;color:#e5f4fc!important}
-.sidebar-toggle:hover,.sidebar-toggle:focus-visible{background:#2d5977!important;color:#fff!important}
-.app-shell.sidebar-collapsed .nav-item::after{background:#17334d!important;border-color:rgba(215,237,249,.16)!important}
+/* Sidebar is noticeably lighter than the previous blue-grey treatment. */
+.sidebar{background:linear-gradient(180deg,#507b99 0%,#466f8d 100%)!important}
+.brand-mark{background:linear-gradient(135deg,#c4e8fa,#91cce9 52%,#62a7d1)!important;box-shadow:0 8px 20px rgba(51,119,162,.18)}
+.sidebar .brand span{color:#d8edf8!important}
+.sidebar .nav-item{color:#e4f1f8!important}
+.sidebar .nav-item:hover{background:rgba(222,243,253,.14)!important;color:#fff!important}
+.sidebar .nav-item.active{background:#6a9dbd!important;color:#fff!important;box-shadow:inset 3px 0 0 #c5ebfb}
+.sidebar-note{background:rgba(255,255,255,.08)!important;border-color:rgba(255,255,255,.10)!important;color:#e1eef6!important}
+.sidebar-note strong{color:#fff!important}
+.sidebar-settings-button{color:#e6f5fc!important}
+.sidebar-settings-button:hover{background:rgba(223,244,254,.14)!important;color:#fff!important}
+.sidebar-settings-button.active{color:#d3f0fc!important;background:rgba(214,240,253,.13)!important}
+.sidebar-settings-button:focus-visible{outline:2px solid rgba(219,243,254,.78)!important;outline-offset:2px!important;box-shadow:none!important}
+.sidebar-toggle{background:#618ba6!important;border-color:rgba(236,248,255,.28)!important;color:#f2fbff!important}
+.sidebar-toggle:hover,.sidebar-toggle:focus-visible{background:#6e99b4!important;color:#fff!important}
+.app-shell.sidebar-collapsed .nav-item::after{background:#456e89!important;border-color:rgba(235,248,255,.18)!important}
 
-/* Connection surfaces. */
-.connection-chip:hover{background:#f6fbff!important;border-color:#c4d8e8!important}
-.sidebar-connection-row:hover,.sidebar-connection-row:focus-visible{background:rgba(158,210,239,.11)!important;border-color:rgba(188,224,244,.2)!important}
-
-/* Cards/page chrome. */
+/* Cards are white; borders and secondary surfaces are blue-white, not grey. */
 .panel,.stat-card,.project-library-card,.publishing-stats article,.settings-view .settings-section,
-.settings-view .security-note,.publishing-project-badge{
-  border-color:var(--line)!important;
-  box-shadow:var(--shadow-card)!important;
-}
-.eyebrow{color:#7890a3!important}
-.notice{
-  background:#eef7fd!important;
-  border-color:#d2e6f4!important;
-  color:#355f7f!important;
-}
-.security-note,.settings-view .security-note{background:#f6fbfe!important;border-color:#dce9f3!important;color:#5a7082!important}
-.settings-view .security-note::before{background:#e4f2fb!important;color:#3676ad!important}
+.settings-view .security-note,.publishing-project-badge{background:#fff!important;border-color:var(--line)!important;box-shadow:var(--shadow-card)!important}
+.notice{background:#edf8ff!important;border-color:#cfe7f6!important;color:#356989!important}
+.security-note,.settings-view .security-note{background:#f5fbff!important;border-color:#d7eaf6!important;color:#58778e!important}
+.settings-view .security-note::before{background:#e2f3fd!important;color:#4f95c2!important}
+.reason,.publish-platform-details,.platform-preview-content,.preview,.source-preview-content{background:#fbfeff!important}
+.reason{color:#66869e!important}
 
-/* Workspace/source selections, including whole-work source refresh. */
-.chapter-group-label{background:#edf7fd!important;color:#3575a5!important}
-.chapter-item.active{background:#e6f3fc!important;color:#285f89!important}
-.chapter-item:hover{background:#f1f7fb!important}
-.project-switcher-actions .button:hover{background:#edf7fd!important}
-.project-switcher-actions #newProjectBtn{color:#2f6f9f!important}
-.empty-icon{background:#e5f3fc!important;color:#3676ad!important}
-.workspace-grid.workspace-empty-mode #suggestionEmpty{border-color:#c9ddea!important;background:#fbfeff!important}
-.workspace-source-empty,.projects-empty-state{border-color:#d2e2ed!important;background:#fbfeff!important}
-.source-panel-actions #refreshSourceBtn{
-  background:#f7fbff!important;
-  border-color:#bfd8eb!important;
-  color:#2f6f9f!important;
-}
-.source-panel-actions #refreshSourceBtn:hover{
-  background:#eaf5fd!important;
-  border-color:#95c3e2!important;
-  color:#245f8d!important;
-}
+/* Workspace / source selections. */
+.chapter-group-label{background:#eaf7ff!important;color:#3f7fa7!important}
+.chapter-item{background:#f8fcff!important}
+.chapter-item.active{background:#e3f3fd!important;color:#2e688d!important}
+.chapter-item:hover{background:#edf8fe!important}
+.project-switcher-actions .button:hover{background:#eaf7ff!important}
+.project-switcher-actions #newProjectBtn{color:#3c7da6!important}
+.empty-icon{background:#e3f4fe!important;color:#4f95c2!important}
+.workspace-grid.workspace-empty-mode #suggestionEmpty,.workspace-source-empty,.projects-empty-state{border-color:#cce2ef!important;background:#fcfeff!important}
+.source-panel-actions #refreshSourceBtn{background:#f8fcff!important;border-color:#b9d9eb!important;color:#3e7fa8!important}
+.source-panel-actions #refreshSourceBtn:hover{background:#e7f5fe!important;border-color:#8fc2df!important;color:#326e95!important}
 .source-panel-actions #loadSourceBtn{box-shadow:none!important}
+.source-choice:hover{border-color:#9bc9e3!important;background:#eef9ff!important}
+.source-preview-tab.active{background:#e3f3fd!important;border-color:#9fcbe4!important;color:#33749d!important}
+.project-source-diff-badge.missing,.project-source-diff-badge.relink{background:#e8f6fe!important;color:#3c7da6!important}
 
-/* Source dialogs / preview tabs. */
-.source-choice:hover{border-color:#a8cae2!important;background:#f2f9fd!important}
-.source-preview-tab.active{background:#e8f4fc!important;border-color:#a9cbe3!important;color:#2d6c99!important}
-.source-preview-content{background:#fbfeff!important;border-color:#dce8f2!important}
-.project-source-diff-badge.missing{background:#e8f4fc!important;color:#2f6f9f!important}
-.project-source-diff-badge.relink{background:#edf7fd!important;color:#3575a5!important}
-
-/* Smart Split. */
-.splitter-panel .smart-split-header-actions #openSplitReviewBtn{color:#3676ad!important}
-.splitter-panel .smart-split-header-actions #openSplitReviewBtn:hover{background:#edf7fd!important}
+/* Smart Split / selected states. */
+.splitter-panel .smart-split-header-actions #openSplitReviewBtn{color:#4b8eb9!important}
+.splitter-panel .smart-split-header-actions #openSplitReviewBtn:hover{background:#eaf7ff!important}
 .splitter-panel .smart-split-mini-settings .range-grid input:focus,
 .splitter-panel .scene-marker-compact #sceneMarker:focus,
-.splitter-panel .suggestion-platform-bar select.text-input:focus{border-color:#6aa7d1!important;box-shadow:var(--focus)!important}
-.splitter-panel .suggestion-title-input:hover,.splitter-panel .suggestion-title-input:focus{border-bottom-color:#8fc1df!important}
-.splitter-panel .suggestion-title-row .pill,.pill{background:#e8f4fc!important;color:#2e6d9b!important}
-#splitPlatformBar .sf-preview-mode-segment button.active,
-.sf-preview-mode-segment button.active{color:#2d6d9c!important;background:#fff!important;box-shadow:0 1px 4px rgba(54,118,173,.10)!important}
-.sf-md-quote{border-left-color:#b8d8eb!important}
-.sf-preview-rendered-root a{color:#2f73a6!important}
-.split-preview-shell .preview{border-color:#dce8f2!important}
+.splitter-panel .suggestion-platform-bar select.text-input:focus{border-color:#72acd1!important;box-shadow:var(--focus)!important}
+.splitter-panel .suggestion-title-input:hover,.splitter-panel .suggestion-title-input:focus{border-bottom-color:#8fc7e4!important}
+.splitter-panel .suggestion-title-row .pill,.pill{background:#e5f4fd!important;color:#39789f!important}
+#splitPlatformBar .sf-preview-mode-segment button.active,.sf-preview-mode-segment button.active{color:#387aa3!important;background:#fff!important;box-shadow:0 1px 4px rgba(64,124,163,.09)!important}
+.sf-md-quote{border-left-color:#b5d9ed!important}.sf-preview-rendered-root a{color:#347aa6!important}.split-preview-shell .preview{border-color:#d8eaf6!important}
 
-/* Works library. */
-.project-library-card.active{border-color:#92bfdb!important;box-shadow:0 0 0 2px #edf7fd inset!important}
-.project-library-card:hover{border-color:#c2d7e6!important}
-.project-current-badge{background:#e7f4fc!important;color:#2d6c99!important}
+/* Works / publishing. */
+.project-library-card.active{border-color:#8fc1dd!important;box-shadow:0 0 0 2px #ebf8ff inset!important}
+.project-library-card:hover{border-color:#bfdbea!important}
+.project-current-badge,.publishing-filter.active{background:#e5f4fd!important;border-color:#a5cee5!important;color:#34749a!important}
+.publish-list-item:hover{border-color:#bddaea!important}
+.publish-list-item.expanded{border-color:#8dbfdc!important;box-shadow:0 5px 16px rgba(72,140,182,.065)!important}
+.publish-list-summary:focus-visible{box-shadow:inset 0 0 0 2px #91c2de!important}
+.publish-overall-status,.publish-platform-status,.platform-badge{background:#f1f8fc!important;border-color:#d7e7f1!important;color:#68859a!important}
 
-/* Publishing. */
-.publishing-filter.active{background:#e7f4fc!important;border-color:#a6c9e1!important;color:#2b6792!important}
-.publish-list-item:hover{border-color:#c4d9e7!important}
-.publish-list-item.expanded{border-color:#8fbedb!important;box-shadow:0 5px 18px rgba(54,118,173,.07)!important}
-.publish-list-summary:focus-visible{box-shadow:inset 0 0 0 2px #8fbedb!important}
-.publish-platform-details{background:#f8fcff!important}
-
-/* Settings/bootstrap and platform editor. */
-.settings-bootstrap-panel{border-color:#d5e6f2!important;background:#f7fbfe!important}
+/* Settings / setup. */
+.settings-bootstrap-panel{border-color:#cfe6f4!important;background:#f5fbff!important}
 .settings-bootstrap-panel.configured{background:#f8fcff!important}
-.settings-bootstrap-copy strong{color:#315f80!important}
+.settings-bootstrap-copy strong{color:#3d708f!important}
 .settings-bootstrap-panel.configured .settings-bootstrap-copy strong{color:var(--text)!important}
-.settings-google-status.connected{background:#eefaf5!important;border-color:#bfe8d5!important;color:#176b4b!important}
-.settings-view .platform-add-button-v2{
-  background:#f1f8fd!important;
-  border-color:#c7ddea!important;
-  color:#2f6f9f!important;
-}
-.settings-view .platform-add-button-v2:hover{
-  background:#e5f2fb!important;
-  border-color:#9fc7df!important;
-}
-.settings-view .platform-default-row{background:#f8fcff!important}
-.portable-settings-note,.settings-view .portable-settings-note{background:#f6fbfe!important}
+.settings-view .platform-add-button-v2{background:#eef8fe!important;border-color:#bddceb!important;color:#3b7da5!important}
+.settings-view .platform-add-button-v2:hover{background:#e1f2fc!important;border-color:#98c8e2!important}
+.settings-view .platform-default-row,.portable-settings-note,.settings-view .portable-settings-note{background:#f8fcff!important}
+.tab-choice:hover,.source-choice:hover{border-color:#9bc9e3!important;background:#eef9ff!important}
+.tab-choice:focus-visible,.source-choice:focus-visible{border-color:#72acd1!important}
 
-/* Generic selected/hover surfaces that carried hard-coded purple values. */
-.tab-choice:hover,.source-choice:hover{border-color:#9fc6df!important;background:#f2f9fd!important}
-.tab-choice:focus-visible,.source-choice:focus-visible{border-color:#6aa7d1!important}
+/* Pastel success states: softer green, still distinguishable from neutral blue. */
+.status-dot.connected{background:#70b895!important;box-shadow:0 0 0 4px #eaf8f1!important}
+.connection-chip.connected .connection-chip-dot{background:#76bd9b!important;box-shadow:0 0 0 3px #e9f8f0!important}
+.connection-chip.connected .connection-chip-state{color:#4d896d!important}
+.sidebar-connection-row.connected .sidebar-status-dot{background:#9ed7bb!important;box-shadow:0 0 0 2px rgba(158,215,187,.16)!important}
+.sidebar-connection-row.connected .sidebar-connection-copy small{color:#d4f3e4!important}
+.settings-google-status.connected{background:#edf9f3!important;border-color:#c5e7d6!important;color:#4e846b!important}
+.settings-google-status span{color:#72b895!important}
+.publish-overall-status.complete,.publish-platform-status.done,.platform-status-btn.is-published,.platform-badge.done,.source-change-status.unchanged{background:#eef9f4!important;border-color:#c8e8d8!important;color:#4f876d!important}
 
-/* Feedback. */
-.storyflow-toast{background:#24445f!important;border-color:#315b78!important;box-shadow:0 10px 30px rgba(31,72,107,.20)!important}
-.storyflow-toast.error{background:#7f1d1d!important;border-color:#991b1b!important}
-
-/* Destructive actions remain red. */
+/* Pastel destructive/error states: coral-pink rather than hard red. */
+.error-text{color:#bb6570!important}
 .project-delete-btn,.project-library-delete,.publish-delete-btn,.connection-logout,.sidebar-logout,
-#clearPickerKeyBtn,.danger,.button.danger{color:#b42318!important}
-.project-delete-btn:hover,.project-library-delete:hover,.publish-delete-btn:hover,#clearPickerKeyBtn:hover,.button.danger:hover{
-  background:#fff4f3!important;border-color:#fecaca!important;color:#991b1b!important
+#clearPickerKeyBtn,.danger,.button.danger,.chapter-delete-button{color:#bf6872!important}
+.project-delete-btn:hover,.project-library-delete:hover,.publish-delete-btn:hover,#clearPickerKeyBtn:hover,.button.danger:hover,.chapter-delete-button:hover,.chapter-delete-button:focus-visible{
+  background:#fff0f2!important;border-color:#f2c9cf!important;color:#a95661!important
 }
+.connection-logout:hover{background:#fff0f2!important;border-color:#f2c9cf!important;color:#a95661!important}
+.sidebar-logout{color:#ffd6dc!important}
+.sidebar-logout:hover,.sidebar-logout:focus-visible{background:rgba(255,214,220,.15)!important;border-color:rgba(255,224,229,.18)!important;color:#fff0f2!important}
+.storyflow-toast{background:#527993!important;border-color:#668da6!important;box-shadow:0 10px 28px rgba(52,102,135,.16)!important}
+.storyflow-toast.error{background:#f6dfe3!important;border-color:#edc2c9!important;color:#804b53!important}
 
-/* Mobile bottom navigation uses the same softer blue family. */
+/* Keep partial/warning states soft too. */
+.publish-overall-status.partial{background:#fff8ee!important;border-color:#eed9b9!important;color:#94724b!important}
+.source-change-status.changed,.source-refresh-warning,.project-source-diff-badge.changed{background:#fff7ee!important;border-color:#f0d5b7!important;color:#936743!important}
+
 @media(max-width:820px){
-  .sidebar{background:#1c3b57!important;box-shadow:0 -10px 30px rgba(28,59,87,.14)!important}
-  .sidebar .nav-item.active{background:#32678d!important;box-shadow:none!important}
-  .sidebar .nav-item:hover{background:#2a5675!important}
+  .sidebar{background:#557f9c!important;box-shadow:0 -10px 28px rgba(66,117,151,.12)!important}
+  .sidebar .nav-item.active{background:#6b9fbe!important;box-shadow:none!important}
+  .sidebar .nav-item:hover{background:#638fab!important}
 }
 
-@media(prefers-reduced-motion:reduce){
-  .button.primary:active:not(:disabled){transform:none}
-}
+@media(prefers-reduced-motion:reduce){.button.primary:active:not(:disabled){transform:none}}
