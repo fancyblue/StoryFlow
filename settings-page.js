@@ -20,15 +20,15 @@
     document.body.appendChild(script);
   }
 
-  // Late-loaded Settings assets used to move the desktop theme to the end of <head>,
-  // accidentally placing it after the mobile override. That made phones fall back to
-  // desktop sidebar colors and caused the inconsistent connection-status styling.
-  // Keep the final order deterministic: base component CSS -> desktop theme -> mobile theme.
+  // Keep late-loaded theme layers deterministic. Component CSS comes first,
+  // then the desktop/mobile theme, and the final workspace UX layer stays last.
   function ensureThemeOrder() {
     const theme = document.getElementById('storyflowBlueThemeCss');
     const mobile = document.getElementById('storyflowMobileVisualPolishCss');
+    const workspaceUx = document.getElementById('storyflowWorkspaceUxRefineCss');
     if (theme && theme.parentElement === document.head) document.head.appendChild(theme);
     if (mobile && mobile.parentElement === document.head) document.head.appendChild(mobile);
+    if (workspaceUx && workspaceUx.parentElement === document.head) document.head.appendChild(workspaceUx);
   }
 
   function loadLateUiAssets() {
