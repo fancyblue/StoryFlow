@@ -20,6 +20,32 @@
     return chapters().some(chapter => chapter?.source?.id && chapter?.source?.tabId);
   }
 
+  function ensureSidebarUtilityIcons() {
+    const settings = document.getElementById('sidebarSettingsBtn');
+    const logout = document.getElementById('sidebarLogoutBtn');
+
+    const settingsIcon = settings?.querySelector(':scope > span[aria-hidden="true"]');
+    if (settingsIcon && !settingsIcon.querySelector('svg')) {
+      settingsIcon.className = 'sidebar-utility-icon';
+      settingsIcon.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.09a2 2 0 0 1 1 1.74v.5a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>`;
+    }
+
+    const logoutIcon = logout?.querySelector(':scope > span[aria-hidden="true"]');
+    if (logoutIcon && !logoutIcon.querySelector('svg')) {
+      logoutIcon.className = 'sidebar-utility-icon';
+      logoutIcon.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.15" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <path d="m16 17 5-5-5-5" />
+          <path d="M21 12H9" />
+        </svg>`;
+    }
+  }
+
   function ensureQuickSwitch() {
     const panel = document.querySelector('.source-panel');
     const head = panel?.querySelector(':scope > .panel-head');
@@ -153,6 +179,7 @@
   }
 
   function syncAll() {
+    ensureSidebarUtilityIcons();
     ensureQuickSwitch();
     syncSourceActionHint();
     tidyReviewToolbar();
@@ -163,7 +190,7 @@
     if (event.target.closest?.('#openSplitReviewBtn')) setTimeout(tidyReviewToolbar, 0);
   });
   window.addEventListener('storyflow:projects-changed', () => setTimeout(syncAll, 0));
-  window.addEventListener('storyflow:connection-changed', syncSourceActionHint);
+  window.addEventListener('storyflow:connection-changed', syncAll);
 
   const baseRenderAll = window.renderAll;
   if (typeof baseRenderAll === 'function' && !baseRenderAll.__storyflowUxRefined) {
