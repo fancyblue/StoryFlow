@@ -1,392 +1,71 @@
 /* Final workspace/readability pass: clearer stats, simpler review controls, and faster work switching. */
 
 /* Stats: label is readable, number/unit share one visual baseline and vertical center. */
-.stat-card{
-  display:grid!important;
-  grid-template-columns:max-content max-content!important;
-  grid-template-rows:auto auto!important;
-  align-items:center!important;
-  justify-content:start!important;
-  column-gap:7px!important;
-  row-gap:0!important;
-}
-.stat-card>span{
-  grid-column:1 / -1!important;
-  margin:0 0 7px!important;
-  font-size:12.5px!important;
-  font-weight:700!important;
-  line-height:1.25!important;
-}
-.stat-card>strong{
-  grid-column:1!important;
-  grid-row:2!important;
-  margin:0!important;
-  font-size:28px!important;
-  line-height:1!important;
-}
-.stat-card>small{
-  grid-column:2!important;
-  grid-row:2!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  align-self:center!important;
-  height:28px!important;
-  margin:0!important;
-  padding-top:2px!important;
-  color:#58748b!important;
-  font-size:13px!important;
-  font-weight:650!important;
-  line-height:1!important;
-}
+.stat-card{display:grid!important;grid-template-columns:max-content max-content!important;grid-template-rows:auto auto!important;align-items:center!important;justify-content:start!important;column-gap:7px!important;row-gap:0!important}
+.stat-card>span{grid-column:1 / -1!important;margin:0 0 7px!important;font-size:12.5px!important;font-weight:700!important;line-height:1.25!important}
+.stat-card>strong{grid-column:1!important;grid-row:2!important;margin:0!important;font-size:28px!important;line-height:1!important}
+.stat-card>small{grid-column:2!important;grid-row:2!important;display:inline-flex!important;align-items:center!important;align-self:center!important;height:28px!important;margin:0!important;padding-top:2px!important;color:#58748b!important;font-size:13px!important;font-weight:650!important;line-height:1!important}
 
-/* "作品與章節" gets a local work switcher instead of forcing a detour through Works. */
 .source-panel{position:sticky}
-.source-panel>.panel-head{
-  flex-wrap:wrap!important;
-  align-items:center!important;
-}
+.source-panel>.panel-head{flex-wrap:wrap!important;align-items:center!important}
 .source-panel>.panel-head>div:first-child{flex:1 1 auto;min-width:0}
-.source-panel>.panel-head .source-panel-actions{
-  flex:1 0 100%!important;
-  width:100%!important;
-  margin-top:3px!important;
-}
-.source-panel-actions.has-linked-source,
-.source-panel-actions.manual-only-source{
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
-  align-items:center!important;
-}
-.source-heading-title-row{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  width:100%;
-  min-width:0;
-}
-.source-heading-title-row h2{
-  flex:1 1 auto;
-  min-width:0;
-}
-.quick-switch-project-btn{
-  flex:0 0 auto;
-  min-height:30px;
-  margin-left:auto;
-  padding:0 10px;
-  border:1px solid #c9ddea;
-  border-radius:8px;
-  background:#f5faff;
-  color:var(--denim-700,#3975a7);
-  font-size:11.5px;
-  font-weight:800;
-  line-height:1;
-  cursor:pointer;
-}
-.quick-switch-project-btn:hover,
-.quick-switch-project-btn:focus-visible,
-.quick-switch-project-btn[aria-expanded="true"]{
-  border-color:#9fc5de;
-  background:#eaf4fa;
-  color:var(--denim-800,#2d5d85);
-  outline:none;
-}
-
-/* "切篇確認" uses the same quiet utility-button language as "切換作品". */
-.splitter-panel .smart-split-header-actions #openSplitReviewBtn{
-  min-height:30px!important;
-  margin-left:auto!important;
-  padding:0 10px!important;
-  border:1px solid #c9ddea!important;
-  border-radius:8px!important;
-  background:#f5faff!important;
-  color:var(--denim-700,#3975a7)!important;
-  box-shadow:none!important;
-  font-size:11.5px!important;
-  font-weight:800!important;
-  line-height:1!important;
-}
-.splitter-panel .smart-split-header-actions #openSplitReviewBtn:hover,
-.splitter-panel .smart-split-header-actions #openSplitReviewBtn:focus-visible{
-  border-color:#9fc5de!important;
-  background:#eaf4fa!important;
-  color:var(--denim-800,#2d5d85)!important;
-  outline:none!important;
-  box-shadow:none!important;
-}
-.workspace-project-quick-switch{
-  position:absolute;
-  top:58px;
-  left:14px;
-  right:14px;
-  z-index:40;
-  display:grid;
-  gap:4px;
-  max-height:min(320px,55vh);
-  overflow:auto;
-  padding:8px;
-  border:1px solid #cfdfea;
-  border-radius:12px;
-  background:#fff;
-  box-shadow:0 14px 34px rgba(35,68,99,.16);
-}
+.source-panel>.panel-head .source-panel-actions{flex:1 0 100%!important;width:100%!important;margin-top:3px!important}
+.source-panel-actions.has-linked-source,.source-panel-actions.manual-only-source{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:center!important}
+.source-heading-title-row{display:flex;align-items:center;gap:10px;width:100%;min-width:0}
+.source-heading-title-row h2{flex:1 1 auto;min-width:0}
+.quick-switch-project-btn{flex:0 0 auto;min-height:30px;margin-left:auto;padding:0 10px;border:1px solid #c9ddea;border-radius:8px;background:#f5faff;color:var(--denim-700,#3975a7);font-size:11.5px;font-weight:800;line-height:1;cursor:pointer}
+.quick-switch-project-btn:hover,.quick-switch-project-btn:focus-visible,.quick-switch-project-btn[aria-expanded="true"]{border-color:#9fc5de;background:#eaf4fa;color:var(--denim-800,#2d5d85);outline:none}
+.splitter-panel .smart-split-header-actions #openSplitReviewBtn{min-height:30px!important;margin-left:auto!important;padding:0 10px!important;border:1px solid #c9ddea!important;border-radius:8px!important;background:#f5faff!important;color:var(--denim-700,#3975a7)!important;box-shadow:none!important;font-size:11.5px!important;font-weight:800!important;line-height:1!important}
+.splitter-panel .smart-split-header-actions #openSplitReviewBtn:hover,.splitter-panel .smart-split-header-actions #openSplitReviewBtn:focus-visible{border-color:#9fc5de!important;background:#eaf4fa!important;color:var(--denim-800,#2d5d85)!important;outline:none!important;box-shadow:none!important}
+.workspace-project-quick-switch{position:absolute;top:58px;left:14px;right:14px;z-index:40;display:grid;gap:4px;max-height:min(320px,55vh);overflow:auto;padding:8px;border:1px solid #cfdfea;border-radius:12px;background:#fff;box-shadow:0 14px 34px rgba(35,68,99,.16)}
 .workspace-project-quick-switch[hidden]{display:none!important}
-.workspace-project-quick-switch-title{
-  padding:5px 7px 7px;
-  color:#58748b;
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:.04em;
-}
-.workspace-project-quick-switch-item{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  width:100%;
-  min-height:38px;
-  padding:8px 10px;
-  border:0;
-  border-radius:9px;
-  background:transparent;
-  color:var(--denim-900,#234463);
-  font-size:13px;
-  font-weight:700;
-  text-align:left;
-}
+.workspace-project-quick-switch-title{padding:5px 7px 7px;color:#58748b;font-size:10px;font-weight:800;letter-spacing:.04em}
+.workspace-project-quick-switch-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:38px;padding:8px 10px;border:0;border-radius:9px;background:transparent;color:var(--denim-900,#234463);font-size:13px;font-weight:700;text-align:left}
 .workspace-project-quick-switch-item:hover:not(:disabled){background:#eef5fa}
-.workspace-project-quick-switch-item.active{
-  background:#eaf3f9;
-  color:var(--denim-800,#2d5d85);
-}
+.workspace-project-quick-switch-item.active{background:#eaf3f9;color:var(--denim-800,#2d5d85)}
 .workspace-project-quick-switch-item:disabled{opacity:1;cursor:default}
-.workspace-project-quick-switch-item small{
-  color:var(--denim-700,#3975a7);
-  font-size:10px;
-  font-weight:800;
-}
-.workspace-project-quick-switch-empty{
-  padding:10px;
-  color:#58748b;
-  font-size:12px;
-}
+.workspace-project-quick-switch-item small{color:var(--denim-700,#3975a7);font-size:10px;font-weight:800}
+.workspace-project-quick-switch-empty{padding:10px;color:#58748b;font-size:12px}
 
-/* Manual-source projects should explain why sync is unavailable instead of showing a dead control. */
-.source-panel-actions .manual-source-sync-hint{
-  display:flex;
-  align-items:center;
-  min-height:42px;
-  padding:0 4px;
-  color:#6b8294;
-  font-size:11px;
-  font-weight:650;
-  line-height:1.35;
-}
-.source-panel-actions .manual-source-sync-hint::before{
-  content:'i';
-  display:grid;
-  place-items:center;
-  flex:0 0 auto;
-  width:16px;
-  height:16px;
-  margin-right:6px;
-  border:1px solid #b9ccda;
-  border-radius:50%;
-  color:#58748b;
-  font-size:10px;
-  font-weight:800;
-}
+.source-panel-actions .manual-source-sync-hint{display:flex;align-items:center;min-height:42px;padding:0 4px;color:#6b8294;font-size:11px;font-weight:650;line-height:1.35}
+.source-panel-actions .manual-source-sync-hint::before{content:'i';display:grid;place-items:center;flex:0 0 auto;width:16px;height:16px;margin-right:6px;border:1px solid #b9ccda;border-radius:50%;color:#58748b;font-size:10px;font-weight:800}
 .source-panel-actions.has-linked-source .manual-source-sync-hint{display:none!important}
 
-/* Smart Split: format/display controls become a clean toolbar, not another framed card. */
-.review-format-bar{
-  display:grid!important;
-  grid-template-columns:minmax(160px,220px) minmax(0,1fr) auto!important;
-  align-items:center!important;
-  gap:14px!important;
-  margin:0 0 16px!important;
-  padding:0 0 14px!important;
-  border:0!important;
-  border-bottom:1px solid var(--line)!important;
-  border-radius:0!important;
-  background:transparent!important;
-}
-.review-format-bar .platform-select-field{
-  width:100%!important;
-  min-width:0!important;
-}
+.review-format-bar{display:grid!important;grid-template-columns:minmax(160px,220px) minmax(0,1fr) auto!important;align-items:center!important;gap:14px!important;margin:0 0 16px!important;padding:0 0 14px!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important}
+.review-format-bar .platform-select-field{width:100%!important;min-width:0!important}
 .review-format-bar .platform-select-field>span{display:none!important}
-.review-format-bar select.text-input{
-  width:100%!important;
-  min-height:42px!important;
-  height:42px!important;
-  padding:0 34px 0 11px!important;
-  font-size:14px!important;
-  font-weight:650!important;
-}
-.review-format-bar #reviewPlatformSettings.suggestion-platform-settings{
-  display:flex!important;
-  align-items:center!important;
-  min-width:0!important;
-  min-height:42px!important;
-}
-.format-summary-text,
-.review-format-bar .format-summary-text{
-  display:flex!important;
-  align-items:center!important;
-  min-height:32px!important;
-  margin:0!important;
-  color:#4f6b80!important;
-  font-size:13px!important;
-  font-weight:650!important;
-  line-height:1.3!important;
-  white-space:normal!important;
-}
+.review-format-bar select.text-input{width:100%!important;min-height:42px!important;height:42px!important;padding:0 34px 0 11px!important;font-size:14px!important;font-weight:650!important}
+.review-format-bar #reviewPlatformSettings.suggestion-platform-settings{display:flex!important;align-items:center!important;min-width:0!important;min-height:42px!important}
+.format-summary-text,.review-format-bar .format-summary-text{display:flex!important;align-items:center!important;min-height:32px!important;margin:0!important;color:#4f6b80!important;font-size:13px!important;font-weight:650!important;line-height:1.3!important;white-space:normal!important}
+.sf-preview-mode-control{gap:8px!important;color:#58748b!important;font-size:13px!important}
+.sf-preview-mode-label{font-size:12px!important;font-weight:750!important}
+.sf-preview-mode-segment{padding:3px!important;border:0!important;border-radius:9px!important;background:#edf4f8!important}
+.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:34px!important;padding:0 11px!important;border-radius:7px!important;font-size:13px!important;font-weight:800!important}
+.sf-preview-mode-segment button.active,#splitPlatformBar .sf-preview-mode-segment button.active{background:#fff!important;color:var(--denim-700,#3975a7)!important;box-shadow:0 1px 4px rgba(35,68,99,.10)!important}
 
-/* Display mode is an actual readable control, not microcopy. */
-.sf-preview-mode-control{
-  gap:8px!important;
-  color:#58748b!important;
-  font-size:13px!important;
-}
-.sf-preview-mode-label{
-  font-size:12px!important;
-  font-weight:750!important;
-}
-.sf-preview-mode-segment{
-  padding:3px!important;
-  border:0!important;
-  border-radius:9px!important;
-  background:#edf4f8!important;
-}
-.sf-preview-mode-segment button,
-#splitPlatformBar .sf-preview-mode-segment button{
-  min-height:34px!important;
-  padding:0 11px!important;
-  border-radius:7px!important;
-  font-size:13px!important;
-  font-weight:800!important;
-}
-.sf-preview-mode-segment button.active,
-#splitPlatformBar .sf-preview-mode-segment button.active{
-  background:#fff!important;
-  color:var(--denim-700,#3975a7)!important;
-  box-shadow:0 1px 4px rgba(35,68,99,.10)!important;
-}
+/* Keep 切篇偏好 / 預覽格式 on one typographic level. */
+.splitter-panel .smart-split-settings-label,.splitter-panel .suggestion-platform-bar .platform-select-field>span{color:#58748b!important;font-size:12px!important;font-weight:750!important;line-height:1.2!important}
+.splitter-panel .suggestion-platform-bar{align-items:center!important;gap:14px!important;min-height:42px!important}
+.splitter-panel .suggestion-platform-bar select.text-input{min-height:40px!important;height:40px!important;font-size:14px!important}
 
-/* Main preview toolbar should use the same readable scale. */
-.splitter-panel .suggestion-platform-bar{
-  align-items:center!important;
-  gap:14px!important;
-  min-height:42px!important;
-}
-.splitter-panel .suggestion-platform-bar .platform-select-field>span{
-  font-size:12px!important;
-  font-weight:750!important;
-}
-.splitter-panel .suggestion-platform-bar select.text-input{
-  min-height:40px!important;
-  height:40px!important;
-  font-size:14px!important;
-}
-
-/* Character count and scene +/- belong to the current article header, not the global format row. */
-.review-column.current .review-column-head{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:5px 10px;
-}
+.review-column.current .review-column-head{display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px}
 .review-column.current .review-column-head>span{flex:0 0 100%}
 .review-column.current .review-column-head>strong{flex:1 1 auto;margin-top:0!important}
-.review-column.current .review-boundary-controls{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-end!important;
-  gap:7px!important;
-  margin:0!important;
-}
-.review-current-chars{
-  color:#58748b!important;
-  font-size:13px!important;
-  font-weight:750!important;
-}
-.review-boundary-controls .button{
-  min-height:34px!important;
-  padding:0 10px!important;
-  font-size:12px!important;
-}
+.review-column.current .review-boundary-controls{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:7px!important;margin:0!important}
+.review-current-chars{color:#58748b!important;font-size:13px!important;font-weight:750!important}
+.review-boundary-controls .button{min-height:34px!important;padding:0 10px!important;font-size:12px!important}
 
-/* Connection footer: service name is the visible label; red/green dot carries state. */
 .sidebar-connection-copy b{display:none!important}
-.sidebar-status-dot{
-  background:#ef8791!important;
-  box-shadow:0 0 0 3px rgba(239,135,145,.13)!important;
-}
-.sidebar-connection-row.connected .sidebar-status-dot{
-  background:#67dca0!important;
-  box-shadow:0 0 0 3px rgba(103,220,160,.13)!important;
-}
-.sidebar-connection-row.restoring .sidebar-status-dot{
-  background:#d8b783!important;
-  box-shadow:0 0 0 3px rgba(216,183,131,.13)!important;
-}
+.sidebar-status-dot{background:#ef8791!important;box-shadow:0 0 0 3px rgba(239,135,145,.13)!important}
+.sidebar-connection-row.connected .sidebar-status-dot{background:#67dca0!important;box-shadow:0 0 0 3px rgba(103,220,160,.13)!important}
+.sidebar-connection-row.restoring .sidebar-status-dot{background:#d8b783!important;box-shadow:0 0 0 3px rgba(216,183,131,.13)!important}
 
-/* Use one SVG icon system for Settings and Logout. Unicode glyphs have different
-   optical boxes, so equal font-size values still looked mismatched on Android. */
-.sidebar-settings-button,
-.sidebar-logout{
-  display:grid!important;
-  place-items:center!important;
-  padding:0!important;
-}
-.sidebar-settings-button>.sidebar-utility-icon,
-.sidebar-logout>.sidebar-utility-icon{
-  display:grid!important;
-  place-items:center!important;
-  width:22px!important;
-  height:22px!important;
-  line-height:0!important;
-}
-.sidebar-settings-button>.sidebar-utility-icon svg,
-.sidebar-logout>.sidebar-utility-icon svg{
-  display:block!important;
-  width:22px!important;
-  height:22px!important;
-}
-.sidebar-settings-button .sidebar-settings-label,
-.sidebar-logout .sidebar-logout-label{display:none!important}
+.sidebar-settings-button,.sidebar-logout{display:grid!important;place-items:center!important;padding:0!important}
+.sidebar-settings-button>.sidebar-utility-icon,.sidebar-logout>.sidebar-utility-icon{display:grid!important;place-items:center!important;width:22px!important;height:22px!important;line-height:0!important}
+.sidebar-settings-button>.sidebar-utility-icon svg,.sidebar-logout>.sidebar-utility-icon svg{display:block!important;width:22px!important;height:22px!important}
+.sidebar-settings-button .sidebar-settings-label,.sidebar-logout .sidebar-logout-label{display:none!important}
 
-@media(max-width:980px){
-  .review-format-bar{
-    grid-template-columns:minmax(150px,200px) minmax(0,1fr)!important;
-  }
-  .review-format-bar .sf-preview-mode-control{
-    grid-column:1 / -1;
-    justify-content:flex-start!important;
-  }
-}
-
+@media(max-width:980px){.review-format-bar{grid-template-columns:minmax(150px,200px) minmax(0,1fr)!important}.review-format-bar .sf-preview-mode-control{grid-column:1 / -1;justify-content:flex-start!important}}
 @media(max-width:820px){
-  .stat-card>strong{font-size:25px!important}
-  .stat-card>small{height:25px!important;font-size:13px!important}
-  .source-panel{position:relative!important}
-  .workspace-project-quick-switch{top:56px;left:12px;right:12px}
-  .review-format-bar{grid-template-columns:1fr!important;gap:9px!important}
-  .review-format-bar #reviewPlatformSettings.suggestion-platform-settings{min-height:0!important}
-  .review-format-bar .sf-preview-mode-control{grid-column:1!important;width:100%!important}
-  .review-column.current .review-boundary-controls{flex:1 1 100%;justify-content:flex-start!important;margin-top:5px!important}
-  .sf-preview-mode-segment button,
-  #splitPlatformBar .sf-preview-mode-segment button{min-height:38px!important;font-size:13.5px!important}
-
-  .sidebar-utility-actions{
-    grid-template-columns:repeat(2,42px)!important;
-    gap:6px!important;
-    width:90px!important;
-  }
-  .sidebar-settings-button,
-  .sidebar-logout{
-    width:42px!important;
-    min-width:42px!important;
-    height:42px!important;
-    min-height:42px!important;
-  }
+  .stat-card>strong{font-size:25px!important}.stat-card>small{height:25px!important;font-size:13px!important}.source-panel{position:relative!important}.workspace-project-quick-switch{top:56px;left:12px;right:12px}.review-format-bar{grid-template-columns:1fr!important;gap:9px!important}.review-format-bar #reviewPlatformSettings.suggestion-platform-settings{min-height:0!important}.review-format-bar .sf-preview-mode-control{grid-column:1!important;width:100%!important}.review-column.current .review-boundary-controls{flex:1 1 100%;justify-content:flex-start!important;margin-top:5px!important}.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:38px!important;font-size:13.5px!important}.sidebar-utility-actions{grid-template-columns:repeat(2,42px)!important;gap:6px!important;width:90px!important}.sidebar-settings-button,.sidebar-logout{width:42px!important;min-width:42px!important;height:42px!important;min-height:42px!important}
 }
