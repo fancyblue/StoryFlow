@@ -1,9 +1,7 @@
 /* Settings is a full app page. The hidden legacy nav item remains only for backwards compatibility. */
 .nav .nav-item[data-view="settings"]{display:none!important}
 
-.settings-view{
-  width:100%;
-}
+.settings-view{width:100%}
 .settings-page-head{
   display:flex;
   align-items:flex-start;
@@ -52,9 +50,7 @@
   background:#fff;
   box-shadow:0 2px 8px rgba(17,24,39,.03);
 }
-.settings-view .settings-section{
-  padding:20px;
-}
+.settings-view .settings-section{padding:20px}
 .settings-view .settings-section>strong{
   display:block;
   font-size:15px;
@@ -64,22 +60,56 @@
   margin:7px 0 14px;
   line-height:1.7;
 }
-.settings-view .settings-section:nth-of-type(3){
-  grid-column:1 / -1;
-}
+.settings-view .settings-section:nth-of-type(3){grid-column:1 / -1}
 .settings-view .security-note{
   grid-column:1 / -1;
   padding:14px 16px;
 }
-.settings-view .platform-manager{
-  margin-top:16px;
-}
+.settings-view .platform-manager{margin-top:16px}
 
-/* Bottom-left utility row: connection state + settings/logout, without another nav block. */
+/* Bottom-left is one compact utility strip: status first, then settings/logout. */
+.sidebar-connection-status{
+  display:flex!important;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:4px!important;
+  margin-top:8px!important;
+  padding-top:9px!important;
+}
+.sidebar-connection-title{display:none!important}
+.sidebar-connection-row{
+  display:inline-flex!important;
+  grid-template-columns:none!important;
+  align-items:center!important;
+  gap:5px!important;
+  width:auto!important;
+  min-height:30px!important;
+  padding:5px 7px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.035)!important;
+}
+.sidebar-connection-row:hover,
+.sidebar-connection-row:focus-visible{background:rgba(255,255,255,.08)!important}
+.sidebar-status-dot{
+  width:6px!important;
+  height:6px!important;
+  flex:0 0 auto;
+}
+.sidebar-connection-copy{
+  display:block!important;
+  min-width:0;
+}
+.sidebar-connection-copy b{display:none!important}
+.sidebar-connection-copy small{
+  display:block;
+  max-width:72px;
+  font-size:9px!important;
+}
 .sidebar-utility-actions{
   display:flex;
   align-items:center;
-  gap:4px;
+  gap:2px;
   margin-left:auto;
 }
 .sidebar-settings-button,
@@ -88,40 +118,50 @@
   align-items:center;
   justify-content:center;
   gap:6px;
-  min-height:30px;
-  padding:5px 7px;
+  width:30px;
+  min-height:30px!important;
+  margin:0!important;
+  padding:0!important;
   border:0;
-  border-radius:8px;
-  background:transparent;
+  border-radius:8px!important;
+  background:transparent!important;
   color:#9ca3af;
   font:inherit;
-  font-size:10px;
+  font-size:13px!important;
   cursor:pointer;
 }
+.sidebar-settings-label,
+.sidebar-logout-label{display:none!important}
 .sidebar-settings-button:hover,
 .sidebar-settings-button:focus-visible,
 .sidebar-settings-button.active{
-  background:rgba(255,255,255,.08);
+  background:rgba(255,255,255,.08)!important;
   color:#fff;
   outline:none;
 }
-.sidebar-logout{margin:0!important;color:#fca5a5}
-.sidebar-logout:hover,.sidebar-logout:focus-visible{background:rgba(127,29,29,.25);outline:none}
+.sidebar-logout{color:#fca5a5!important}
+.sidebar-logout:hover,.sidebar-logout:focus-visible{background:rgba(127,29,29,.25)!important;outline:none}
 
 @media(min-width:821px){
+  .app-shell.sidebar-collapsed .sidebar-connection-status{
+    display:grid!important;
+    justify-items:center;
+    gap:5px!important;
+    padding-top:8px!important;
+  }
+  .app-shell.sidebar-collapsed .sidebar-connection-row{
+    width:30px!important;
+    min-height:30px!important;
+    padding:0!important;
+    justify-content:center!important;
+  }
+  .app-shell.sidebar-collapsed .sidebar-connection-copy{display:none!important}
+  .app-shell.sidebar-collapsed .sidebar-status-dot{width:8px!important;height:8px!important}
   .app-shell.sidebar-collapsed .sidebar-utility-actions{
     margin-left:0;
     display:grid;
     justify-items:center;
-    gap:4px;
-  }
-  .app-shell.sidebar-collapsed .sidebar-settings-label,
-  .app-shell.sidebar-collapsed .sidebar-logout-label{display:none}
-  .app-shell.sidebar-collapsed .sidebar-settings-button,
-  .app-shell.sidebar-collapsed .sidebar-logout{
-    width:32px;
-    min-height:32px;
-    padding:0;
+    gap:2px;
   }
 }
 
