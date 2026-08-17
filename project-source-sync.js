@@ -51,29 +51,28 @@
     return next;
   }
 
-  function activeHasGoogleSource() {
-    return ensureSourceScopes().length > 0;
-  }
-
   function syncSourcePanelUi() {
     const scopes = ensureSourceScopes();
     const refresh = document.getElementById('refreshSourceBtn');
     if (refresh) {
-      refresh.hidden = !scopes.length;
-      refresh.disabled = !scopes.length || syncing;
-      refresh.textContent = syncing ? '檢查中…' : '更新作品來源';
+      const shouldHide = !scopes.length;
+      const shouldDisable = !scopes.length || syncing;
+      const nextText = syncing ? '檢查中…' : '更新作品來源';
+      if (refresh.hidden !== shouldHide) refresh.hidden = shouldHide;
+      if (refresh.disabled !== shouldDisable) refresh.disabled = shouldDisable;
+      if (refresh.textContent !== nextText) refresh.textContent = nextText;
       refresh.setAttribute('aria-label', '檢查整個作品的 Google Docs 來源差異');
       refresh.title = '比較整個作品與已連結 Google Docs 的差異';
     }
 
     const label = document.querySelector('.source-panel label[for="projectTitle"]');
-    if (label) label.textContent = '作品名稱';
+    if (label && label.textContent !== '作品名稱') label.textContent = '作品名稱';
 
     // Work switching belongs to the dedicated Works page. The workspace only edits
     // the active work, so a second "current work" selector is redundant and was a
     // source of stale-title confusion.
     const switcher = document.getElementById('projectSwitcher');
-    if (switcher) switcher.hidden = true;
+    if (switcher && !switcher.hidden) switcher.hidden = true;
   }
 
   function syncLoadSourceDialogUi() {
@@ -562,7 +561,7 @@
   // keep the whole-project affordance tied to project provenance instead.
   const observer = new MutationObserver(() => syncSourcePanelUi());
   const sourcePanel = document.querySelector('.source-panel');
-  if (sourcePanel) observer.observe(sourcePanel, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'disabled'] });
+  if (sourcePanel) observer.observe(sourcePanel, { subtree: true, attributes: true, attributeFilter: ['hidden', 'disabled'] });
 
   window.addEventListener('storyflow:projects-changed', () => {
     ensureSourceScopes({ persist: true });
