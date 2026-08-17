@@ -51,22 +51,32 @@
   width:100%!important;
   margin-top:3px!important;
 }
+.source-panel-actions.has-linked-source,
+.source-panel-actions.manual-only-source{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  align-items:center!important;
+}
 .source-heading-title-row{
   display:flex;
   align-items:center;
-  gap:8px;
+  gap:10px;
+  width:100%;
   min-width:0;
 }
-.source-heading-title-row h2{flex:0 1 auto}
+.source-heading-title-row h2{
+  flex:1 1 auto;
+  min-width:0;
+}
 .quick-switch-project-btn{
   flex:0 0 auto;
-  min-height:26px;
-  padding:0 7px;
-  border:0;
-  border-radius:7px;
-  background:transparent;
+  min-height:30px;
+  margin-left:auto;
+  padding:0 10px;
+  border:1px solid #c9ddea;
+  border-radius:8px;
+  background:#f5faff;
   color:var(--denim-700,#3975a7);
-  font-size:11px;
+  font-size:11.5px;
   font-weight:800;
   line-height:1;
   cursor:pointer;
@@ -74,7 +84,8 @@
 .quick-switch-project-btn:hover,
 .quick-switch-project-btn:focus-visible,
 .quick-switch-project-btn[aria-expanded="true"]{
-  background:#eaf3f9;
+  border-color:#9fc5de;
+  background:#eaf4fa;
   color:var(--denim-800,#2d5d85);
   outline:none;
 }
@@ -142,7 +153,7 @@
   min-height:42px;
   padding:0 4px;
   color:#6b8294;
-  font-size:10.5px;
+  font-size:11px;
   font-weight:650;
   line-height:1.35;
 }
@@ -160,6 +171,7 @@
   font-size:10px;
   font-weight:800;
 }
+.source-panel-actions.has-linked-source .manual-source-sync-hint{display:none!important}
 
 /* Smart Split: format/display controls become a clean toolbar, not another framed card. */
 .review-format-bar{
