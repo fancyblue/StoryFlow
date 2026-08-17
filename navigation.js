@@ -1,4 +1,4 @@
-// Primary navigation: workspace, works, and publishing are separate app views.
+// Primary navigation: workspace, works, publishing, and settings are separate app views.
 (function () {
   if (!document.querySelector('link[data-storyflow-sidebar-layout]')) {
     const link = document.createElement('link');
@@ -14,11 +14,11 @@
   if (!nav || !sidebar || !shell) return;
 
   let currentView = 'workspace';
-  let lastNonSettingsView = 'workspace';
 
   function workspaceView() { return document.getElementById('workspaceView'); }
   function projectsView() { return document.getElementById('projectsView'); }
   function publishingView() { return document.getElementById('publishingView'); }
+  function settingsView() { return document.getElementById('settingsView'); }
 
   function installNavHints() {
     nav.querySelectorAll('.nav-item').forEach(item => {
@@ -36,16 +36,18 @@
       if (active) item.setAttribute('aria-current', 'page');
       else item.removeAttribute('aria-current');
     });
-    if (view !== 'settings') lastNonSettingsView = view;
+    const settingsButton = document.getElementById('sidebarSettingsBtn');
+    settingsButton?.classList.toggle('active', view === 'settings');
+    if (settingsButton) {
+      if (view === 'settings') settingsButton.setAttribute('aria-current', 'page');
+      else settingsButton.removeAttribute('aria-current');
+    }
   }
 
   function hideAllViews() {
-    const workspace = workspaceView();
-    const projects = projectsView();
-    const publishing = publishingView();
-    if (workspace) workspace.hidden = true;
-    if (projects) projects.hidden = true;
-    if (publishing) publishing.hidden = true;
+    [workspaceView(), projectsView(), publishingView(), settingsView()].forEach(view => {
+      if (view) view.hidden = true;
+    });
   }
 
   function showWorkspace() {
@@ -68,27 +70,37 @@
     window.renderParts?.();
   }
 
+  function showSettings() {
+    hideAllViews();
+    const settings = settingsView();
+    if (settings) settings.hidden = false;
+    try {
+      const picker = document.getElementById('pickerApiKeyInput');
+      if (picker) picker.value = StoryFlowIntegrations.pickerApiKey();
+      window.renderFormattingSettings?.();
+    } catch (_) {}
+  }
+
   function goTo(view) {
     if (view === 'publishing') {
       currentView = 'publishing';
       showPublishing();
       setActive('publishing');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
-    if (view === 'projects') {
+    } else if (view === 'projects') {
       currentView = 'projects';
       showProjects();
       setActive('projects');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
+    } else if (view === 'settings') {
+      currentView = 'settings';
+      showSettings();
+      setActive('settings');
+    } else {
+      currentView = 'workspace';
+      showWorkspace();
+      setActive('workspace');
     }
-
-    currentView = 'workspace';
-    showWorkspace();
-    setActive('workspace');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.dispatchEvent(new CustomEvent('storyflow:view-changed', { detail: { view: currentView } }));
   }
 
   function ensureSidebarToggle() {
@@ -119,19 +131,9 @@
   nav.addEventListener('click', event => {
     const button = event.target.closest('.nav-item');
     if (!button) return;
-    const view = button.dataset.view;
-
-    if (view === 'settings') {
-      setActive('settings');
-      return;
-    }
-
     event.preventDefault();
-    goTo(view);
+    goTo(button.dataset.view);
   });
-
-  const settingsDialog = document.getElementById('settingsDialog');
-  settingsDialog?.addEventListener('close', () => setActive(lastNonSettingsView));
 
   window.StoryFlowNavigate = goTo;
   window.StoryFlowCurrentView = () => currentView;
