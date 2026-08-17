@@ -11,40 +11,40 @@
     catch (_) { return ''; }
   }
 
+  function chapters() {
+    try { return typeof state !== 'undefined' ? (state.chapters || []) : []; }
+    catch (_) { return []; }
+  }
+
   function hasGoogleSource() {
-    return Boolean((window.state?.chapters || []).some(chapter =>
-      chapter?.source?.id && chapter?.source?.tabId
-    ));
+    return chapters().some(chapter => chapter?.source?.id && chapter?.source?.tabId);
   }
 
   function ensureQuickSwitch() {
     const panel = document.querySelector('.source-panel');
     const head = panel?.querySelector(':scope > .panel-head');
-    if (!panel || !head) return;
+    const titleBlock = head?.querySelector(':scope > div:first-child');
+    const h2 = titleBlock?.querySelector('h2');
+    if (!panel || !head || !titleBlock || !h2) return;
 
-    let actions = head.querySelector('.source-heading-actions');
-    if (!actions) {
-      actions = document.createElement('div');
-      actions.className = 'source-heading-actions';
-      const sourceActions = document.getElementById('sourcePanelActions');
-      if (sourceActions && sourceActions.parentElement === head) {
-        head.insertBefore(actions, sourceActions);
-        actions.appendChild(sourceActions);
-      } else {
-        head.appendChild(actions);
-      }
+    let row = titleBlock.querySelector('.source-heading-title-row');
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'source-heading-title-row';
+      h2.replaceWith(row);
+      row.appendChild(h2);
     }
 
     let button = document.getElementById('quickSwitchProjectBtn');
     if (!button) {
       button = document.createElement('button');
       button.id = 'quickSwitchProjectBtn';
-      button.className = 'button tiny ghost quick-switch-project-btn';
+      button.className = 'quick-switch-project-btn';
       button.type = 'button';
       button.textContent = '切換作品';
       button.setAttribute('aria-haspopup', 'true');
       button.setAttribute('aria-expanded', 'false');
-      actions.insertBefore(button, actions.firstChild);
+      row.appendChild(button);
       button.addEventListener('click', event => {
         event.stopPropagation();
         toggleQuickSwitch();
@@ -66,12 +66,7 @@
 
     const projects = projectList();
     const activeId = activeProjectId();
-    menu.innerHTML = '';
-
-    const title = document.createElement('div');
-    title.className = 'workspace-project-quick-switch-title';
-    title.textContent = '切換作品';
-    menu.appendChild(title);
+    menu.innerHTML = '<div class="workspace-project-quick-switch-title">切換作品</div>';
 
     if (!projects.length) {
       const empty = document.createElement('div');
@@ -90,6 +85,7 @@
       item.addEventListener('click', () => {
         window.StoryFlowProjects?.switchProject?.(project.id);
         closeQuickSwitch();
+        setTimeout(syncAll, 0);
       });
       menu.appendChild(item);
     });
@@ -124,7 +120,8 @@
         hint = document.createElement('span');
         hint.id = 'manualSourceSyncHint';
         hint.className = 'manual-source-sync-hint';
-        hint.textContent = '手動文章沒有可同步的 Google Docs 來源';
+        hint.textContent = '手動文章沒有可同步來源';
+        hint.title = '手動新增的文章沒有連結 Google Docs，因此不需要「更新作品來源」。';
         actions.insertBefore(hint, actions.firstChild);
       }
       hint.hidden = false;
@@ -141,7 +138,7 @@
     if (!dialog) return;
 
     const formatLabel = dialog.querySelector('.review-format-bar .platform-select-field > span');
-    if (formatLabel) {
+    if (formatLabel && formatLabel.textContent) {
       formatLabel.textContent = '';
       formatLabel.setAttribute('aria-hidden', 'true');
     }
@@ -165,17 +162,8 @@
     if (!event.target.closest?.('#workspaceProjectQuickSwitch, #quickSwitchProjectBtn')) closeQuickSwitch();
     if (event.target.closest?.('#openSplitReviewBtn')) setTimeout(tidyReviewToolbar, 0);
   });
-  window.addEventListener('storyflow:projects-changed', () => {
-    syncAll();
-    if (!document.getElementById('workspaceProjectQuickSwitch')?.hidden) renderQuickSwitch();
-  });
+  window.addEventListener('storyflow:projects-changed', () => setTimeout(syncAll, 0));
   window.addEventListener('storyflow:connection-changed', syncSourceActionHint);
-
-  const observer = new MutationObserver(() => {
-    // Observe only for lazily created dialogs / re-rendered source actions; the work is idempotent.
-    syncAll();
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
 
   syncAll();
 })();
