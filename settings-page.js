@@ -2,6 +2,30 @@
 // on Workspace / Works / Publishing; settings lives with the persistent connection
 // utilities in the lower-left sidebar.
 (function () {
+  function loadStylesheet(id, href) {
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  }
+
+  function loadScript(id, src) {
+    if (document.getElementById(id)) return;
+    const script = document.createElement('script');
+    script.id = id;
+    script.src = src;
+    script.async = false;
+    document.body.appendChild(script);
+  }
+
+  function loadLateUiAssets() {
+    loadStylesheet('storyflowPlatformSettingsV2Css', './platform-settings-v2.css?v=20260817-1538');
+    loadStylesheet('storyflowControlPolishCss', './control-polish.css?v=20260817-1538');
+    loadScript('storyflowPlatformSettingsV2Js', './platform-settings-v2.js?v=20260817-1538');
+  }
+
   function ensureSettingsView() {
     const main = document.querySelector('.main');
     const dialog = document.getElementById('settingsDialog');
@@ -78,6 +102,7 @@
 
   ensureSettingsView();
   ensureSidebarSettingsButton();
+  loadLateUiAssets();
 
   // Keep legacy callers working (for example, trying to load Google Docs before a
   // Picker API key has been configured), but route them to the settings page.
