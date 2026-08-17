@@ -2,6 +2,42 @@
 (function () {
   function projectApi() { return window.StoryFlowProjects; }
 
+  function ensureToastStack() {
+    let stack = document.getElementById('storyflowToastStack');
+    if (stack) return stack;
+    stack = document.createElement('div');
+    stack.id = 'storyflowToastStack';
+    stack.className = 'storyflow-toast-stack';
+    stack.setAttribute('aria-live', 'polite');
+    stack.setAttribute('aria-atomic', 'false');
+    document.body.appendChild(stack);
+    return stack;
+  }
+
+  function showToast(message, isError = false) {
+    const text = String(message || '').trim();
+    if (!text) return;
+    const stack = ensureToastStack();
+    const toast = document.createElement('div');
+    toast.className = `storyflow-toast ${isError ? 'error' : ''}`;
+    toast.setAttribute('role', isError ? 'alert' : 'status');
+    toast.textContent = text;
+    stack.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    window.setTimeout(() => {
+      toast.classList.remove('show');
+      window.setTimeout(() => toast.remove(), 180);
+    }, isError ? 4800 : 3200);
+  }
+
+  const baseNotify = window.notify;
+  if (typeof baseNotify === 'function') {
+    window.notify = function notifyEverywhere(message, isError = false) {
+      baseNotify(message, isError);
+      showToast(message, isError);
+    };
+  }
+
   function ensureProjectsView() {
     const main = document.querySelector('.main');
     if (!main) return null;
