@@ -20,6 +20,11 @@
     document.body.appendChild(script);
   }
 
+  function ensureBlueThemeLast() {
+    const theme = document.getElementById('storyflowBlueThemeCss');
+    if (theme && theme.parentElement === document.head) document.head.appendChild(theme);
+  }
+
   function loadLateUiAssets() {
     loadStylesheet('storyflowPlatformSettingsV2Css', './platform-settings-v2.css?v=20260817-1632');
     loadStylesheet('storyflowControlPolishCss', './control-polish.css?v=20260817-1632');
@@ -29,6 +34,7 @@
     loadScript('storyflowPlatformSettingsV2Js', './platform-settings-v2.js?v=20260817-1632');
     loadScript('storyflowSettingsBootstrapJs', './settings-bootstrap.js?v=20260817-1703');
     loadScript('storyflowSettingsFileImportFixJs', './settings-file-import-fix.js?v=20260817-1720');
+    ensureBlueThemeLast();
   }
 
   function ensureSettingsView() {
@@ -129,6 +135,7 @@
       window.StoryFlowSettingsBootstrap?.sync?.();
     } catch (_) {}
     syncSettingsAvailability();
+    ensureBlueThemeLast();
     window.StoryFlowNavigate?.('settings');
     if (focusPicker) requestAnimationFrame(() => document.getElementById('pickerApiKeyInput')?.focus());
   }
