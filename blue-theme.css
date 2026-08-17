@@ -102,6 +102,8 @@ button:disabled{opacity:.46!important;cursor:not-allowed!important}
 .empty-icon{background:#e8f2ff!important;color:#2563eb!important}
 .workspace-grid.workspace-empty-mode #suggestionEmpty{border-color:#ccd9ea!important;background:#fbfdff!important}
 .workspace-source-empty,.projects-empty-state{border-color:#d5dfec!important;background:#fbfdff!important}
+.source-preview-tab.active{background:#eaf2ff!important;border-color:#a9c5f1!important;color:#174f9f!important}
+.source-preview-content{background:#fbfdff!important;border-color:#dfe7f2!important}
 
 /* Smart Split: one content frame, quiet blue utilities. */
 .splitter-panel .smart-split-header-actions #openSplitReviewBtn{color:#2563eb!important}
@@ -120,6 +122,7 @@ button:disabled{opacity:.46!important;cursor:not-allowed!important}
 /* Works library. */
 .project-library-card.active{border-color:#8fb3ef!important;box-shadow:0 0 0 2px #edf4ff inset!important}
 .project-library-card:hover{border-color:#c8d5e6!important}
+.project-current-badge{background:#eaf2ff!important;color:#174f9f!important}
 
 /* Publishing: selected/filter state is blue; success stays green, partial stays amber. */
 .publishing-filter.active{background:#eaf2ff!important;border-color:#a9c5f1!important;color:#174f9f!important}
@@ -131,12 +134,21 @@ button:disabled{opacity:.46!important;cursor:not-allowed!important}
 /* Settings/bootstrap states should read like account setup, not a purple promo card. */
 .settings-bootstrap-panel{border-color:#d8e4f4!important;background:#f8fbff!important}
 .settings-bootstrap-panel.configured{background:#f8fbff!important}
+.settings-bootstrap-copy strong{color:#285a9b!important}
+.settings-bootstrap-panel.configured .settings-bootstrap-copy strong{color:var(--text)!important}
 .settings-google-status.connected{background:#eefaf5!important;border-color:#bfe8d5!important;color:#176b4b!important}
 .portable-settings-note,.settings-view .portable-settings-note{background:#f6f9fd!important}
+.settings-view .platform-add-button-v2{border-color:#cbdcf3!important;background:#f6f9ff!important;color:#1f5fc4!important}
+.settings-view .platform-add-button-v2:hover{background:#eaf2ff!important;border-color:#a9c5f1!important}
+.settings-view .platform-default-row{background:#f8fbff!important}
 
 /* Tabs/choices and other selection surfaces. */
 .tab-choice:hover,.source-choice:hover{border-color:#9ebceb!important;background:#f3f7ff!important}
 .tab-choice:focus-visible,.source-choice:focus-visible{border-color:#5b8def!important}
+
+/* Feedback is dark navy instead of neutral black, preserving the product palette. */
+.storyflow-toast{background:#10243f!important;border-color:#1c3d67!important;box-shadow:0 10px 30px rgba(13,34,61,.22)!important}
+.storyflow-toast.error{background:#7f1d1d!important;border-color:#991b1b!important}
 
 /* Destructive actions remain red and never inherit the blue emphasis. */
 .project-delete-btn,.project-library-delete,.publish-delete-btn,.connection-logout,.sidebar-logout,
