@@ -16,6 +16,14 @@ Repo **不包含任何人的 Google OAuth Client ID 或 Picker API Key**。每�
 
 OAuth Client ID 對 Web 應用本身不是 client secret，但把它從 repo 設定移出去可以讓 fork / clone 的使用者更容易帶入自己的 Google Cloud 專案，也避免不同部署共用同一組 OAuth 設定。
 
+## 手機 / 新裝置
+
+Google OAuth 在取得 Drive / Docs 存取權之前就必須知道 Web OAuth Client ID，所以 StoryFlow 不能「先登入 Google，再從私人 Drive 讀取包含 Client ID 的 settings.json」。
+
+手機或新裝置可以改用「設定 → Google 整合 → 匯入 settings.json」：StoryFlow 會開啟瀏覽器的系統檔案選擇器，不需要先經過 StoryFlow 的 Google OAuth。若手機已把 Google Drive 加入系統檔案來源，可以直接從 Drive 選取 `settings.json`。載入後即可按「登入 Google」。
+
+匯入後，Google Client ID 與 Picker API Key 只會為目前瀏覽器工作階段保留一份 bootstrap 設定，讓單純重新整理不需要重新選檔；關閉該瀏覽器工作階段後可以再次匯入。文章內容不會因此寫進瀏覽器儲存空間。
+
 ## 本機資料
 
 ```text
