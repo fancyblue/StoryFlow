@@ -1,0 +1,132 @@
+/* Settings is a full app page. The hidden legacy nav item remains only for backwards compatibility. */
+.nav .nav-item[data-view="settings"]{display:none!important}
+
+.settings-view{
+  width:100%;
+}
+.settings-page-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:18px;
+}
+.settings-page-head h1{margin-bottom:6px}
+.settings-page-subtitle{
+  margin:0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.65;
+}
+
+/* Reuse the existing settings controls, but render the dialog as ordinary page content. */
+.settings-view .settings-page-dialog{
+  position:static!important;
+  inset:auto!important;
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.settings-view .settings-page-dialog::backdrop{display:none!important}
+.settings-view .settings-page-form{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:14px;
+  width:100%!important;
+  max-width:none!important;
+  padding:0!important;
+  background:transparent;
+}
+.settings-view .settings-section,
+.settings-view .security-note{
+  margin:0!important;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 2px 8px rgba(17,24,39,.03);
+}
+.settings-view .settings-section{
+  padding:20px;
+}
+.settings-view .settings-section>strong{
+  display:block;
+  font-size:15px;
+  margin-bottom:4px;
+}
+.settings-view .settings-section p{
+  margin:7px 0 14px;
+  line-height:1.7;
+}
+.settings-view .settings-section:nth-of-type(3){
+  grid-column:1 / -1;
+}
+.settings-view .security-note{
+  grid-column:1 / -1;
+  padding:14px 16px;
+}
+.settings-view .platform-manager{
+  margin-top:16px;
+}
+
+/* Bottom-left utility row: connection state + settings/logout, without another nav block. */
+.sidebar-utility-actions{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  margin-left:auto;
+}
+.sidebar-settings-button,
+.sidebar-logout{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:30px;
+  padding:5px 7px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#9ca3af;
+  font:inherit;
+  font-size:10px;
+  cursor:pointer;
+}
+.sidebar-settings-button:hover,
+.sidebar-settings-button:focus-visible,
+.sidebar-settings-button.active{
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  outline:none;
+}
+.sidebar-logout{margin:0!important;color:#fca5a5}
+.sidebar-logout:hover,.sidebar-logout:focus-visible{background:rgba(127,29,29,.25);outline:none}
+
+@media(min-width:821px){
+  .app-shell.sidebar-collapsed .sidebar-utility-actions{
+    margin-left:0;
+    display:grid;
+    justify-items:center;
+    gap:4px;
+  }
+  .app-shell.sidebar-collapsed .sidebar-settings-label,
+  .app-shell.sidebar-collapsed .sidebar-logout-label{display:none}
+  .app-shell.sidebar-collapsed .sidebar-settings-button,
+  .app-shell.sidebar-collapsed .sidebar-logout{
+    width:32px;
+    min-height:32px;
+    padding:0;
+  }
+}
+
+@media(max-width:900px){
+  .settings-view .settings-page-form{grid-template-columns:1fr}
+  .settings-view .settings-section:nth-of-type(3),
+  .settings-view .security-note{grid-column:1}
+}
