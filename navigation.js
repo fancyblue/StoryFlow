@@ -1,4 +1,4 @@
-// Primary navigation: workspace and publishing are separate app views; projects focuses the source area.
+// Primary navigation: workspace, works, and publishing are separate app views.
 (function () {
   if (!document.querySelector('link[data-storyflow-sidebar-layout]')) {
     const link = document.createElement('link');
@@ -17,6 +17,7 @@
   let lastNonSettingsView = 'workspace';
 
   function workspaceView() { return document.getElementById('workspaceView'); }
+  function projectsView() { return document.getElementById('projectsView'); }
   function publishingView() { return document.getElementById('publishingView'); }
 
   function installNavHints() {
@@ -38,30 +39,33 @@
     if (view !== 'settings') lastNonSettingsView = view;
   }
 
-  function showWorkspace() {
+  function hideAllViews() {
     const workspace = workspaceView();
+    const projects = projectsView();
     const publishing = publishingView();
-    if (workspace) workspace.hidden = false;
+    if (workspace) workspace.hidden = true;
+    if (projects) projects.hidden = true;
     if (publishing) publishing.hidden = true;
   }
 
-  function showPublishing() {
+  function showWorkspace() {
+    hideAllViews();
     const workspace = workspaceView();
-    const publishing = publishingView();
-    if (workspace) workspace.hidden = true;
-    if (publishing) publishing.hidden = false;
-    window.renderParts?.();
+    if (workspace) workspace.hidden = false;
   }
 
-  function focusTarget(target) {
-    if (!target) return;
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    const hadTabIndex = target.hasAttribute('tabindex');
-    if (!hadTabIndex) target.setAttribute('tabindex', '-1');
-    window.setTimeout(() => {
-      try { target.focus({ preventScroll: true }); } catch (_) {}
-      if (!hadTabIndex) window.setTimeout(() => target.removeAttribute('tabindex'), 500);
-    }, 350);
+  function showProjects() {
+    hideAllViews();
+    window.StoryFlowRenderProjects?.();
+    const projects = projectsView();
+    if (projects) projects.hidden = false;
+  }
+
+  function showPublishing() {
+    hideAllViews();
+    const publishing = publishingView();
+    if (publishing) publishing.hidden = false;
+    window.renderParts?.();
   }
 
   function goTo(view) {
@@ -75,9 +79,9 @@
 
     if (view === 'projects') {
       currentView = 'projects';
-      showWorkspace();
+      showProjects();
       setActive('projects');
-      window.requestAnimationFrame(() => focusTarget(document.querySelector('.source-panel')));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
