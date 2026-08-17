@@ -1,0 +1,55 @@
+/* Settings page layout guard.
+   The settings form used to live inside a fixed-height dialog. After moving it to a
+   full app page, those legacy dialog dimensions must not constrain the page grid. */
+.settings-view #settingsDialog.settings-page-dialog{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+}
+
+.settings-view #settingsDialog > .settings-dialog.settings-page-form{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  grid-auto-rows:max-content;
+  align-items:start;
+}
+
+.settings-view .settings-section,
+.settings-view .security-note{
+  min-width:0;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+
+/* Google integration gained a second credential field. Give both fields their own
+   rhythm instead of inheriting the compact one-field dialog layout. */
+.settings-view .settings-section:has(#googleClientIdInput) .field-label{
+  margin:14px 0 7px;
+}
+.settings-view .settings-section:has(#googleClientIdInput) .text-input{
+  display:block;
+  width:100%;
+  min-width:0;
+}
+.settings-view .settings-section:has(#googleClientIdInput) .settings-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:16px;
+}
+
+/* The folder card is intentionally content-height. It no longer stretches or clips
+   just because the Google integration card beside it is taller. */
+.settings-view .settings-section:has(#settingsFolderBtn){
+  align-self:start;
+}
+
+@media(max-width:900px){
+  .settings-view #settingsDialog > .settings-dialog.settings-page-form{
+    grid-template-columns:1fr!important;
+  }
+}
