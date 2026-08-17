@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="./publishing-flow.css" />
   <link rel="stylesheet" href="./publishing-project-switcher.css" />
   <link rel="stylesheet" href="./sidebar-layout.css" />
+  <link rel="stylesheet" href="./app-ux.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -38,7 +39,7 @@
       <section class="connection-bar" aria-label="連線狀態">
         <div class="connection-item"><span id="googleDot" class="status-dot"></span><div><strong>Google Docs</strong><small id="googleStatus">尚未登入</small></div><button id="googleLoginBtn" class="button tiny ghost">登入 Google</button></div>
         <div class="connection-item"><span id="folderDot" class="status-dot"></span><div><strong>StoryFlow 資料夾</strong><small id="folderStatus">尚未連接</small></div><button id="folderBtn" class="button tiny ghost">選擇資料夾</button></div>
-        <button id="openSettingsBtn" class="button tiny ghost">整合設定</button>
+        <button id="openSettingsBtn" class="button tiny ghost">設定</button>
       </section>
 
       <section class="stats-grid">
@@ -72,23 +73,23 @@
           <div id="suggestionEmpty" class="empty-state"><div class="empty-icon">✂</div><strong>尚未有可切篇內容</strong><span>請先從「作品與章節」載入 Google Docs 或手動新增文章；確認來源內容後會直接顯示切篇預覽。</span></div>
           <div id="suggestionCard" class="suggestion hidden">
             <div class="suggestion-title-row"><div><span id="suggestionName">第一章（1）</span><strong id="suggestionChars">0 字</strong></div><span id="suggestionStatus" class="pill">建議</span></div>
-            <div class="boundary-control"><button id="shrinkBtn" class="button ghost tiny">← 少一段</button><button id="expandBtn" class="button ghost tiny">多一段 →</button></div>
+            <div class="boundary-control"><button id="shrinkBtn" class="button ghost tiny">← 少一個場景</button><button id="expandBtn" class="button ghost tiny">多一個場景 →</button></div>
             <div id="suggestionReason" class="reason"></div><div id="preview" class="preview"></div><button id="confirmBtn" class="button primary full">確認並存成 Markdown</button>
           </div>
         </aside>
       </section>
 
       <section class="panel publishing-panel">
-        <div class="panel-head"><div><p class="eyebrow">PUBLISHING QUEUE</p><h2>發布篇與平台狀態</h2></div><span class="muted">發布格式：預設設定、巴哈小屋、方格子</span></div>
+        <div class="panel-head"><div><p class="eyebrow">PUBLISHING QUEUE</p><h2>發布篇與平台狀態</h2></div><span class="muted">發布平台依你的設定顯示。</span></div>
         <div id="partsList" class="parts-list"></div>
       </section>
     </main>
   </div>
 
-  <dialog id="tabDialog"><form method="dialog" class="dialog-card tab-dialog"><div class="panel-head"><div><p class="eyebrow">GOOGLE DOCS</p><h3 id="tabDialogTitle">選擇要匯入的分頁</h3></div><button class="icon-button" value="cancel">×</button></div><p class="muted">選擇分頁後會先顯示 StoryFlow 轉換後的內容；確認後才加入工作區。</p><div id="tabList" class="tab-list"></div></form></dialog>
+  <dialog id="tabDialog"><form method="dialog" class="dialog-card tab-dialog"><div class="panel-head"><div><p class="eyebrow">GOOGLE DOCS</p><h3 id="tabDialogTitle">選擇要匯入的分頁</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div><p class="muted">選擇分頁後會先顯示 StoryFlow 轉換後的內容；確認後才加入工作區。</p><div id="tabList" class="tab-list"></div></form></dialog>
 
   <dialog id="settingsDialog"><form method="dialog" class="dialog-card settings-dialog">
-    <div class="panel-head"><div><p class="eyebrow">SETTINGS</p><h3>StoryFlow 設定</h3></div><button class="icon-button" value="cancel">×</button></div>
+    <div class="panel-head"><div><p class="eyebrow">SETTINGS</p><h3>StoryFlow 設定</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div>
     <div class="settings-section"><strong>Google Picker API Key</strong><p>API Key 會保存在你選擇的 StoryFlow 資料夾 <code>settings.json</code>，不寫入 GitHub 或瀏覽器儲存空間。</p><input id="pickerApiKeyInput" class="text-input" type="password" autocomplete="off" placeholder="AIza..." /><div class="settings-actions"><button id="savePickerKeyBtn" type="button" class="button primary">保存到 StoryFlow 資料夾</button><button id="clearPickerKeyBtn" type="button" class="button ghost">清除</button></div></div>
     <div class="settings-section"><strong>StoryFlow 資料夾</strong><p>同一個瀏覽器工作階段內，重新整理頁面會自動接回目前資料夾，不需要重新選擇。關閉瀏覽器／頁籤後再次開啟時，可以要求你重新選擇或重新授權資料夾。</p><button id="settingsFolderBtn" type="button" class="button ghost">選擇資料夾</button></div>
     <div class="settings-section"><strong>發布排版</strong><p>初始提供「巴哈小屋、方格子」，兩者都可以移除，也可以自行新增其他平台；每個平台可個別設定排版。</p><label class="field-label" for="defaultIndent">預設段首縮排</label><select id="defaultIndent" class="text-input"><option value="none">不縮排</option><option value="two">全形兩格</option></select><div class="default-format-checks"><label class="format-check"><input id="defaultParagraphSpacing" type="checkbox" checked /><span>預設段落間空一行</span></label><label class="format-check"><input id="defaultSceneSeparator" type="checkbox" checked /><span>預設顯示場景分隔符</span></label></div><div id="platformFormatSettings" class="platform-settings"></div></div>
@@ -99,6 +100,6 @@
 
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://apis.google.com/js/api.js" async defer></script>
-  <script src="./config.js"></script><script src="./integrations.js"></script><script src="./app.js"></script><script src="./session-auth.js"></script><script src="./folder-session.js"></script><script src="./ui-bootstrap.js"></script><script src="./patches.js"></script><script src="./settings-sync.js"></script><script src="./smart-split-ui.js"></script><script src="./platform-lock.js"></script><script src="./source-flow.js"></script><script src="./projects.js"></script><script src="./source-preview-ux.js"></script><script src="./raw-split.js"></script><script src="./boundary-v2.js"></script><script src="./publishing-flow.js"></script><script src="./publishing-project-switcher.js"></script><script src="./navigation.js"></script><script src="./sidebar-layout.js"></script><script src="./confirm-continuation.js"></script>
+  <script src="./config.js"></script><script src="./integrations.js"></script><script src="./app.js"></script><script src="./session-auth.js"></script><script src="./folder-session.js"></script><script src="./ui-bootstrap.js"></script><script src="./patches.js"></script><script src="./settings-sync.js"></script><script src="./smart-split-ui.js"></script><script src="./platform-lock.js"></script><script src="./source-flow.js"></script><script src="./projects.js"></script><script src="./raw-split.js"></script><script src="./boundary-v2.js"></script><script src="./publishing-flow.js"></script><script src="./publishing-project-switcher.js"></script><script src="./app-ux.js"></script><script src="./navigation.js"></script><script src="./sidebar-layout.js"></script><script src="./confirm-continuation.js"></script>
 </body>
 </html>
