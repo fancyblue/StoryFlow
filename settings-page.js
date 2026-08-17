@@ -53,11 +53,16 @@
     button.className = 'sidebar-settings-button';
     button.type = 'button';
     button.title = '設定';
+    button.dataset.hint = '設定';
     button.setAttribute('aria-label', '設定');
     button.innerHTML = '<span aria-hidden="true">⚙</span><span class="sidebar-settings-label">設定</span>';
     utilities.appendChild(button);
 
-    if (logout) utilities.appendChild(logout);
+    if (logout) {
+      logout.dataset.hint = '登出並清除連線';
+      logout.setAttribute('aria-label', '登出並清除連線');
+      utilities.appendChild(logout);
+    }
     button.addEventListener('click', () => window.StoryFlowNavigate?.('settings'));
   }
 
