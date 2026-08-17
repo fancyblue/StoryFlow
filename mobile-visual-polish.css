@@ -86,7 +86,7 @@
   .sidebar-connection-row,
   .sidebar-connection-row.connected,
   .sidebar-connection-row.restoring {
-    min-height:36px !important;
+    min-height:40px !important;
     padding:4px 6px !important;
     justify-content:center !important;
     border:0 !important;
@@ -126,9 +126,9 @@
     max-width:none !important;
     overflow:hidden !important;
     color:#ffffff !important;
-    font-size:12px !important;
+    font-size:14px !important;
     font-weight:800 !important;
-    line-height:1.2 !important;
+    line-height:1.15 !important;
     text-overflow:ellipsis !important;
     white-space:nowrap !important;
     opacity:1 !important;
