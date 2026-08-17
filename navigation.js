@@ -14,11 +14,24 @@
   if (!nav || !sidebar || !shell) return;
 
   let currentView = 'workspace';
+  let lastInputWasKeyboard = false;
+  const viewLabels = {
+    workspace: '工作台',
+    projects: '作品',
+    publishing: '發布',
+    settings: '設定'
+  };
+
+  window.addEventListener('keydown', event => {
+    if (event.key === 'Tab' || event.key.startsWith('Arrow')) lastInputWasKeyboard = true;
+  }, true);
+  window.addEventListener('pointerdown', () => { lastInputWasKeyboard = false; }, true);
 
   function workspaceView() { return document.getElementById('workspaceView'); }
   function projectsView() { return document.getElementById('projectsView'); }
   function publishingView() { return document.getElementById('publishingView'); }
   function settingsView() { return document.getElementById('settingsView'); }
+  function prefersReducedMotion() { return window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches; }
 
   function installNavHints() {
     nav.querySelectorAll('.nav-item').forEach(item => {
@@ -78,7 +91,32 @@
       const picker = document.getElementById('pickerApiKeyInput');
       if (picker) picker.value = StoryFlowIntegrations.pickerApiKey();
       window.renderFormattingSettings?.();
+      window.StoryFlowSettingsBootstrap?.sync?.();
     } catch (_) {}
+  }
+
+  function currentViewNode() {
+    if (currentView === 'projects') return projectsView();
+    if (currentView === 'publishing') return publishingView();
+    if (currentView === 'settings') return settingsView();
+    return workspaceView();
+  }
+
+  function finishViewChange() {
+    document.title = `${viewLabels[currentView] || 'StoryFlow'} · StoryFlow`;
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+
+    // Keyboard users should land at the new page heading; pointer users keep their
+    // current focus so changing pages never feels like the UI unexpectedly grabs it.
+    if (lastInputWasKeyboard) {
+      const heading = currentViewNode()?.querySelector('h1');
+      if (heading) {
+        heading.tabIndex = -1;
+        requestAnimationFrame(() => heading.focus({ preventScroll: true }));
+      }
+    }
+
+    window.dispatchEvent(new CustomEvent('storyflow:view-changed', { detail: { view: currentView } }));
   }
 
   function goTo(view) {
@@ -99,8 +137,7 @@
       showWorkspace();
       setActive('workspace');
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    window.dispatchEvent(new CustomEvent('storyflow:view-changed', { detail: { view: currentView } }));
+    finishViewChange();
   }
 
   function ensureSidebarToggle() {
