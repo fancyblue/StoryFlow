@@ -1,9 +1,10 @@
 // Keep Google auth convenient across reloads without persisting the access token.
-// sessionStorage stores only a same-tab/session hint. On reload StoryFlow silently
-// requests a fresh short-lived token; after the browser session is gone the user
-// can be asked to sign in again.
+// sessionStorage stores only a same-tab/session hint. A single silent restore is
+// attempted during app boot; the access token itself remains memory-only.
 (function () {
   const SESSION_KEY = 'storyflow.google.session.v1';
+  const RESTORE_TIMEOUT_MS = 5000;
+  let restoreInFlight = null;
 
   function hasSessionHint() {
     try { return sessionStorage.getItem(SESSION_KEY) === '1'; }
@@ -15,8 +16,17 @@
     catch (_) {}
   }
 
+  function forgetSession() {
+    try { sessionStorage.removeItem(SESSION_KEY); }
+    catch (_) {}
+  }
+
   function rememberIfAuthorized() {
     if (StoryFlowIntegrations.hasGoogleToken()) rememberSession();
+  }
+
+  function emitConnectionChange() {
+    window.dispatchEvent(new CustomEvent('storyflow:connection-changed'));
   }
 
   function syncLoggedInUi() {
@@ -25,8 +35,9 @@
     const status = document.getElementById('googleStatus');
     const button = document.getElementById('googleLoginBtn');
     dot?.classList.add('connected');
-    if (status) status.textContent = '本次瀏覽器工作階段已登入';
+    if (status) status.textContent = '已登入';
     if (button) button.textContent = '已登入';
+    emitConnectionChange();
   }
 
   function syncRestoringUi() {
@@ -34,6 +45,7 @@
     const button = document.getElementById('googleLoginBtn');
     if (status) status.textContent = '正在恢復登入…';
     if (button) button.textContent = '恢復中…';
+    emitConnectionChange();
   }
 
   function syncSignedOutUi() {
@@ -41,8 +53,16 @@
     const status = document.getElementById('googleStatus');
     const button = document.getElementById('googleLoginBtn');
     dot?.classList.remove('connected');
-    if (status) status.textContent = '需要重新登入';
+    if (status) status.textContent = hasSessionHint() ? '登入已失效' : '尚未登入';
     if (button) button.textContent = '登入 Google';
+    emitConnectionChange();
+  }
+
+  function withTimeout(promise, timeoutMs) {
+    return Promise.race([
+      promise,
+      new Promise(resolve => window.setTimeout(() => resolve(false), timeoutMs))
+    ]);
   }
 
   const baseRequestAccessToken = StoryFlowIntegrations.requestAccessToken.bind(StoryFlowIntegrations);
@@ -61,18 +81,31 @@
       syncLoggedInUi();
       return true;
     }
-    // A cold browser/tab session should not silently revive an older Google login.
-    if (!hasSessionHint()) return false;
-    try {
-      const restored = await baseRestoreGoogleAccess();
-      if (restored) {
-        rememberSession();
-        syncLoggedInUi();
-      }
-      return restored;
-    } catch (_) {
+    if (!hasSessionHint()) {
+      syncSignedOutUi();
       return false;
     }
+    if (restoreInFlight) return restoreInFlight;
+
+    syncRestoringUi();
+    restoreInFlight = (async () => {
+      try {
+        const restored = await withTimeout(baseRestoreGoogleAccess(), RESTORE_TIMEOUT_MS);
+        if (restored && StoryFlowIntegrations.hasGoogleToken()) {
+          rememberSession();
+          syncLoggedInUi();
+          return true;
+        }
+        syncSignedOutUi();
+        return false;
+      } catch (_) {
+        syncSignedOutUi();
+        return false;
+      } finally {
+        restoreInFlight = null;
+      }
+    })();
+    return restoreInFlight;
   };
 
   // Some integration methods obtain a token internally. Remember that the current
@@ -100,27 +133,15 @@
     };
   }
 
-  // The previous implementation only wrapped restoreGoogleAccess; nothing actually
-  // called it during boot, so a plain F5 still looked signed out. Perform the restore
-  // automatically whenever this same page session has already authenticated.
-  async function restoreOnBoot() {
-    if (!hasSessionHint() || StoryFlowIntegrations.hasGoogleToken()) {
-      syncLoggedInUi();
-      return;
-    }
-    syncRestoringUi();
-
-    // GIS is loaded asynchronously. restoreGoogleAccess already waits for it, and a
-    // second attempt covers unusually slow script initialization without user action.
-    let restored = await StoryFlowIntegrations.restoreGoogleAccess();
-    if (!restored) {
-      await new Promise(resolve => window.setTimeout(resolve, 700));
-      restored = await StoryFlowIntegrations.restoreGoogleAccess();
-    }
-
-    if (restored) syncLoggedInUi();
-    else syncSignedOutUi();
-  }
-
-  restoreOnBoot();
+  // settings-sync.js owns the single boot-time restore call. Keeping only one
+  // caller is important because Google Identity Services uses one mutable token
+  // callback; concurrent silent requests can overwrite each other's callbacks and
+  // leave the UI stuck on "恢復中" indefinitely.
+  window.StoryFlowSessionAuth = {
+    hasSessionHint,
+    rememberSession,
+    forgetSession,
+    syncLoggedInUi,
+    syncSignedOutUi
+  };
 })();
