@@ -1,7 +1,6 @@
 // Keep Google auth across normal reloads without relying on a silent GIS request.
 // The short-lived access token is kept only in sessionStorage, so a page refresh can
-// restore it immediately. Closing the browser/tab session clears it in normal browser
-// behavior; StoryFlow logout clears it explicitly.
+// restore it immediately after the local StoryFlow settings provide the OAuth Client ID.
 (function () {
   const SESSION_KEY = 'storyflow.google.session.v1';
   const TOKEN_KEY = 'storyflow.google.access-token.v1';
@@ -15,6 +14,10 @@
   function hasSessionHint() {
     try { return sessionStorage.getItem(SESSION_KEY) === '1'; }
     catch (_) { return false; }
+  }
+
+  function hasGoogleConfig() {
+    return Boolean(String(window.STORYFLOW_CONFIG?.googleClientId || '').trim());
   }
 
   function clearCachedToken() {
@@ -86,8 +89,13 @@
     const status = document.getElementById('googleStatus');
     const button = document.getElementById('googleLoginBtn');
     dot?.classList.remove('connected');
-    if (status) status.textContent = hasSessionHint() ? '登入已失效' : '尚未登入';
-    if (button) button.textContent = '登入 Google';
+    if (!hasGoogleConfig()) {
+      if (status) status.textContent = '尚未設定 Google';
+      if (button) button.textContent = '設定 Google';
+    } else {
+      if (status) status.textContent = hasSessionHint() ? '登入已失效' : '尚未登入';
+      if (button) button.textContent = '登入 Google';
+    }
     emitConnectionChange();
   }
 
@@ -130,8 +138,7 @@
           const token = cachedToken();
 
           // Never start a network-based silent request during page boot. GIS can
-          // leave that callback pending in some browser/account states, which was
-          // the cause of the UI remaining on “恢復中”.
+          // leave that callback pending in some browser/account states.
           if (!prompt) {
             queueMicrotask(() => {
               if (token) callback({ access_token: token, expires_in: Math.floor(TOKEN_TTL_MS / 1000) });
@@ -163,6 +170,7 @@
 
   const baseRequestAccessToken = StoryFlowIntegrations.requestAccessToken.bind(StoryFlowIntegrations);
   StoryFlowIntegrations.requestAccessToken = async function requestAccessTokenForSession(...args) {
+    if (!hasGoogleConfig()) throw new Error('請先在設定中輸入 Google OAuth Client ID。');
     await installSessionTokenShim();
     const token = await baseRequestAccessToken(...args);
     if (token) {
@@ -177,6 +185,14 @@
     if (StoryFlowIntegrations.hasGoogleToken()) {
       syncLoggedInUi();
       return true;
+    }
+
+    // Client ID now comes from the local StoryFlow settings. During page boot the
+    // folder/settings may not have loaded yet, so do not discard a valid cached
+    // token merely because repository config intentionally contains no Client ID.
+    if (!hasGoogleConfig()) {
+      syncSignedOutUi();
+      return false;
     }
 
     const token = cachedToken();
@@ -253,8 +269,9 @@
     syncSignedOutUi
   };
 
-  // Start hydration immediately on reload. settings-sync may call the same method
-  // later; restoreInFlight makes the operation idempotent instead of concurrent.
-  if (cachedToken()) StoryFlowIntegrations.restoreGoogleAccess();
+  // Local settings are loaded asynchronously from the selected StoryFlow folder.
+  // If the Client ID is already available we can hydrate immediately; otherwise
+  // settings-sync will retry after it loads settings.json.
+  if (cachedToken() && hasGoogleConfig()) StoryFlowIntegrations.restoreGoogleAccess();
   else syncSignedOutUi();
 })();
