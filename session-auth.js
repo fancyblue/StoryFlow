@@ -1,28 +1,61 @@
-// Keep Google auth convenient across reloads without persisting the access token.
-// sessionStorage stores only a same-tab/session hint. A single silent restore is
-// attempted during app boot; the access token itself remains memory-only.
+// Keep Google auth across normal reloads without relying on a silent GIS request.
+// The short-lived access token is kept only in sessionStorage, so a page refresh can
+// restore it immediately. Closing the browser/tab session clears it in normal browser
+// behavior; StoryFlow logout clears it explicitly.
 (function () {
   const SESSION_KEY = 'storyflow.google.session.v1';
-  const RESTORE_TIMEOUT_MS = 5000;
+  const TOKEN_KEY = 'storyflow.google.access-token.v1';
+  const TOKEN_EXPIRES_KEY = 'storyflow.google.access-token.expires.v1';
+  const TOKEN_TTL_MS = 45 * 60 * 1000;
+  const GOOGLE_READY_TIMEOUT_MS = 5000;
+  const RESTORE_TIMEOUT_MS = 1800;
   let restoreInFlight = null;
+  let shimInstalled = false;
 
   function hasSessionHint() {
     try { return sessionStorage.getItem(SESSION_KEY) === '1'; }
     catch (_) { return false; }
   }
 
-  function rememberSession() {
-    try { sessionStorage.setItem(SESSION_KEY, '1'); }
-    catch (_) {}
+  function clearCachedToken() {
+    try {
+      sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(TOKEN_EXPIRES_KEY);
+    } catch (_) {}
+  }
+
+  function cachedToken() {
+    if (!hasSessionHint()) return '';
+    try {
+      const token = sessionStorage.getItem(TOKEN_KEY) || '';
+      const expiresAt = Number(sessionStorage.getItem(TOKEN_EXPIRES_KEY) || 0);
+      if (!token || !expiresAt || Date.now() >= expiresAt) {
+        clearCachedToken();
+        return '';
+      }
+      return token;
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function rememberSession(token = '') {
+    try {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      if (token) {
+        sessionStorage.setItem(TOKEN_KEY, token);
+        sessionStorage.setItem(TOKEN_EXPIRES_KEY, String(Date.now() + TOKEN_TTL_MS));
+      }
+    } catch (_) {}
   }
 
   function forgetSession() {
-    try { sessionStorage.removeItem(SESSION_KEY); }
-    catch (_) {}
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+    clearCachedToken();
   }
 
-  function rememberIfAuthorized() {
-    if (StoryFlowIntegrations.hasGoogleToken()) rememberSession();
+  function rememberIfAuthorized(token = '') {
+    if (StoryFlowIntegrations.hasGoogleToken()) rememberSession(token);
   }
 
   function emitConnectionChange() {
@@ -65,11 +98,75 @@
     ]);
   }
 
+  function waitForGoogleIdentity(timeout = GOOGLE_READY_TIMEOUT_MS) {
+    const started = Date.now();
+    return new Promise(resolve => {
+      const check = () => {
+        if (window.google?.accounts?.oauth2?.initTokenClient) return resolve(true);
+        if (Date.now() - started >= timeout) return resolve(false);
+        window.setTimeout(check, 80);
+      };
+      check();
+    });
+  }
+
+  // integrations.js owns the real in-memory accessToken. Rather than adding a
+  // second token state there, intercept token-client initialization. For a silent
+  // restore in this same browser session we feed the cached short-lived token back
+  // through the normal GIS callback, so integrations.js hydrates its own token.
+  async function installSessionTokenShim() {
+    if (shimInstalled) return true;
+    if (!(await waitForGoogleIdentity())) return false;
+
+    const oauth2 = window.google.accounts.oauth2;
+    const originalInitTokenClient = oauth2.initTokenClient.bind(oauth2);
+    oauth2.initTokenClient = function initTokenClientWithSessionCache(config) {
+      const realClient = originalInitTokenClient(config);
+      let callback = typeof config?.callback === 'function' ? config.callback : () => {};
+
+      const proxy = {
+        requestAccessToken(options = {}) {
+          const prompt = options?.prompt ?? '';
+          const token = cachedToken();
+
+          // Never start a network-based silent request during page boot. GIS can
+          // leave that callback pending in some browser/account states, which was
+          // the cause of the UI remaining on “恢復中”.
+          if (!prompt) {
+            queueMicrotask(() => {
+              if (token) callback({ access_token: token, expires_in: Math.floor(TOKEN_TTL_MS / 1000) });
+              else callback({ error: 'login_required', error_description: '需要重新登入 Google' });
+            });
+            return;
+          }
+
+          realClient.callback = response => callback(response);
+          realClient.requestAccessToken(options);
+        }
+      };
+
+      Object.defineProperty(proxy, 'callback', {
+        configurable: true,
+        enumerable: true,
+        get() { return callback; },
+        set(next) {
+          callback = typeof next === 'function' ? next : () => {};
+          realClient.callback = callback;
+        }
+      });
+      return proxy;
+    };
+
+    shimInstalled = true;
+    return true;
+  }
+
   const baseRequestAccessToken = StoryFlowIntegrations.requestAccessToken.bind(StoryFlowIntegrations);
   StoryFlowIntegrations.requestAccessToken = async function requestAccessTokenForSession(...args) {
+    await installSessionTokenShim();
     const token = await baseRequestAccessToken(...args);
     if (token) {
-      rememberSession();
+      rememberSession(token);
       syncLoggedInUi();
     }
     return token;
@@ -81,7 +178,9 @@
       syncLoggedInUi();
       return true;
     }
-    if (!hasSessionHint()) {
+
+    const token = cachedToken();
+    if (!token) {
       syncSignedOutUi();
       return false;
     }
@@ -90,15 +189,21 @@
     syncRestoringUi();
     restoreInFlight = (async () => {
       try {
+        if (!(await installSessionTokenShim())) {
+          syncSignedOutUi();
+          return false;
+        }
         const restored = await withTimeout(baseRestoreGoogleAccess(), RESTORE_TIMEOUT_MS);
         if (restored && StoryFlowIntegrations.hasGoogleToken()) {
-          rememberSession();
+          rememberSession(token);
           syncLoggedInUi();
           return true;
         }
+        clearCachedToken();
         syncSignedOutUi();
         return false;
       } catch (_) {
+        clearCachedToken();
         syncSignedOutUi();
         return false;
       } finally {
@@ -108,16 +213,22 @@
     return restoreInFlight;
   };
 
-  // Some integration methods obtain a token internally. Remember that the current
-  // browser session is authenticated after they succeed, without storing the token.
   ['inspectGoogleDoc', 'refreshChapterSource'].forEach(name => {
     const base = StoryFlowIntegrations[name];
     if (typeof base !== 'function') return;
     StoryFlowIntegrations[name] = async function rememberIntegrationSession(...args) {
-      const result = await base.apply(StoryFlowIntegrations, args);
-      rememberIfAuthorized();
-      syncLoggedInUi();
-      return result;
+      try {
+        const result = await base.apply(StoryFlowIntegrations, args);
+        rememberIfAuthorized();
+        syncLoggedInUi();
+        return result;
+      } catch (error) {
+        if (/401|invalid_token|unauthorized/i.test(String(error?.message || ''))) {
+          clearCachedToken();
+          syncSignedOutUi();
+        }
+        throw error;
+      }
     };
   });
 
@@ -126,22 +237,24 @@
     window.loginGoogleStatusOnly = async function loginGoogleStatusForSession(...args) {
       const result = await baseLoginStatus(...args);
       if (StoryFlowIntegrations.hasGoogleToken()) {
-        rememberSession();
+        rememberIfAuthorized();
         syncLoggedInUi();
       }
       return result;
     };
   }
 
-  // settings-sync.js owns the single boot-time restore call. Keeping only one
-  // caller is important because Google Identity Services uses one mutable token
-  // callback; concurrent silent requests can overwrite each other's callbacks and
-  // leave the UI stuck on "恢復中" indefinitely.
   window.StoryFlowSessionAuth = {
     hasSessionHint,
+    hasCachedToken: () => Boolean(cachedToken()),
     rememberSession,
     forgetSession,
     syncLoggedInUi,
     syncSignedOutUi
   };
+
+  // Start hydration immediately on reload. settings-sync may call the same method
+  // later; restoreInFlight makes the operation idempotent instead of concurrent.
+  if (cachedToken()) StoryFlowIntegrations.restoreGoogleAccess();
+  else syncSignedOutUi();
 })();
