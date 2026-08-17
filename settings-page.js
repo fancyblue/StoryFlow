@@ -24,6 +24,7 @@
     loadStylesheet('storyflowPlatformSettingsV2Css', './platform-settings-v2.css?v=20260817-1632');
     loadStylesheet('storyflowControlPolishCss', './control-polish.css?v=20260817-1632');
     loadStylesheet('storyflowSettingsBootstrapCss', './settings-bootstrap.css?v=20260817-1703');
+    loadStylesheet('storyflowNavigationUtilityPolishCss', './navigation-utility-polish.css?v=20260817-1902');
     loadScript('storyflowPlatformSettingsV2Js', './platform-settings-v2.js?v=20260817-1632');
     loadScript('storyflowSettingsBootstrapJs', './settings-bootstrap.js?v=20260817-1703');
     loadScript('storyflowSettingsFileImportFixJs', './settings-file-import-fix.js?v=20260817-1720');
@@ -93,6 +94,32 @@
     button.addEventListener('click', () => window.StoryFlowNavigate?.('settings'));
   }
 
+  function hasLoadedIntegrationSettings() {
+    if (String(window.STORYFLOW_CONFIG?.googleClientId || '').trim()) return true;
+    try {
+      return Boolean(sessionStorage.getItem('storyflow.integration-bootstrap.v1'));
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function hasConnectedFolder() {
+    return Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
+  }
+
+  function syncSettingsAvailability() {
+    const publishingSection = document.getElementById('defaultIndent')?.closest('.settings-section')
+      || document.getElementById('platformFormatSettings')?.closest('.settings-section');
+    const securityNote = document.querySelector('#settingsDialog .security-note');
+    const readyForAdvancedSettings = hasLoadedIntegrationSettings() || hasConnectedFolder();
+
+    // First-run settings should focus only on the two prerequisites: load/import
+    // Google integration settings and connect the StoryFlow folder. Publishing
+    // platform/format controls become relevant only after either source is available.
+    if (publishingSection) publishingSection.hidden = !readyForAdvancedSettings;
+    if (securityNote) securityNote.hidden = !readyForAdvancedSettings;
+  }
+
   function showSettings({ focusPicker = false } = {}) {
     ensureSettingsView();
     try {
@@ -100,6 +127,7 @@
       window.renderFormattingSettings?.();
       window.StoryFlowSettingsBootstrap?.sync?.();
     } catch (_) {}
+    syncSettingsAvailability();
     window.StoryFlowNavigate?.('settings');
     if (focusPicker) requestAnimationFrame(() => document.getElementById('pickerApiKeyInput')?.focus());
   }
@@ -107,6 +135,10 @@
   ensureSettingsView();
   ensureSidebarSettingsButton();
   loadLateUiAssets();
+  syncSettingsAvailability();
+
+  window.addEventListener('storyflow:connection-changed', syncSettingsAvailability);
+  window.addEventListener('storyflow:integration-config-changed', syncSettingsAvailability);
 
   // Keep legacy callers working (for example, trying to load Google Docs before a
   // Picker API key has been configured), but route them to the settings page.
@@ -127,4 +159,5 @@
   if (legacySettingsButton) legacySettingsButton.onclick = () => showSettings();
 
   window.StoryFlowShowSettings = showSettings;
+  window.StoryFlowSyncSettingsAvailability = syncSettingsAvailability;
 })();
