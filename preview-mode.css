@@ -54,6 +54,7 @@
   align-self:center;
 }
 .sf-preview-mode-source,
+.sf-preview-mode-relink,
 .sf-preview-mode-publish{
   margin:8px 0 10px;
 }
@@ -187,6 +188,7 @@
     justify-content:flex-start;
   }
   .sf-preview-mode-source,
+  .sf-preview-mode-relink,
   .sf-preview-mode-publish{
     justify-content:flex-start;
   }
