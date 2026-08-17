@@ -53,15 +53,15 @@
     block.className = 'sidebar-connection-status';
     block.innerHTML = `
       <strong class="sidebar-connection-title">連線狀態</strong>
-      <button id="sidebarGoogleConnection" class="sidebar-connection-row" type="button" title="Google 登入狀態">
+      <button id="sidebarGoogleConnection" class="sidebar-connection-row" type="button" title="Google 登入狀態" data-hint="Google：尚未登入">
         <span class="sidebar-status-dot" aria-hidden="true"></span>
         <span class="sidebar-connection-copy"><b>Google</b><small>尚未登入</small></span>
       </button>
-      <button id="sidebarFolderConnection" class="sidebar-connection-row" type="button" title="StoryFlow 資料夾狀態">
+      <button id="sidebarFolderConnection" class="sidebar-connection-row" type="button" title="StoryFlow 資料夾狀態" data-hint="資料夾：尚未連接">
         <span class="sidebar-status-dot" aria-hidden="true"></span>
         <span class="sidebar-connection-copy"><b>資料夾</b><small>尚未連接</small></span>
       </button>
-      <button id="sidebarLogoutBtn" class="sidebar-logout" type="button" title="登出並清除連線">
+      <button id="sidebarLogoutBtn" class="sidebar-logout" type="button" title="登出並清除連線" data-hint="登出並清除連線">
         <span aria-hidden="true">↪</span><span class="sidebar-logout-label">登出並清除連線</span>
       </button>`;
     if (note) note.insertAdjacentElement('afterend', block);
@@ -89,8 +89,12 @@
     if (!button) return;
     button.classList.toggle('connected', connected);
     button.classList.toggle('restoring', restoring);
+    const text = restoring ? '恢復中…' : (connected ? connectedText : disconnectedText);
     const small = button.querySelector('small');
-    if (small) small.textContent = restoring ? '恢復中…' : (connected ? connectedText : disconnectedText);
+    if (small) small.textContent = text;
+    const subject = button.id === 'sidebarGoogleConnection' ? 'Google' : '資料夾';
+    button.dataset.hint = `${subject}：${text}`;
+    button.setAttribute('aria-label', `${subject}：${text}`);
   }
 
   function syncConnectionUi() {
