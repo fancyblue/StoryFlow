@@ -150,11 +150,32 @@ h1,h2,h3{color:var(--denim-900)}
 .settings-google-status.connected span{color:#91b8d9!important}
 .publish-overall-status.complete,.publish-platform-status.done,.platform-status-btn.is-published,.platform-badge.done,.source-change-status.unchanged{background:#eef8f3!important;border-color:#c9e5d6!important;color:#477c61!important}
 
+/* Destructive actions. Keep the general semantic red soft, but make explicit delete
+   actions unmistakably red so they cannot be confused with normal denim links. */
 .error-text{color:#ad5965!important}
 .project-delete-btn,.project-library-delete,.publish-delete-btn,.connection-logout,.sidebar-logout,
 #clearPickerKeyBtn,.danger,.button.danger,.chapter-delete-button{color:var(--danger)!important}
 .project-delete-btn:hover,.project-library-delete:hover,.publish-delete-btn:hover,#clearPickerKeyBtn:hover,.button.danger:hover,.chapter-delete-button:hover,.chapter-delete-button:focus-visible{background:var(--danger-soft)!important;border-color:#efc8ce!important;color:#a14f5b!important}
 .connection-logout:hover{background:var(--danger-soft)!important;border-color:#efc8ce!important;color:#a14f5b!important}
+
+.settings-view .platform-row-delete,
+.project-delete-btn,
+.project-library-delete{
+  color:#d64040!important;
+  font-weight:800!important;
+}
+.settings-view .platform-row-delete:hover,
+.settings-view .platform-row-delete:focus-visible,
+.project-delete-btn:hover,
+.project-delete-btn:focus-visible,
+.project-library-delete:hover,
+.project-library-delete:focus-visible{
+  background:#fff0f0!important;
+  border-color:#f3bcbc!important;
+  color:#b82424!important;
+  box-shadow:none!important;
+}
+
 .storyflow-toast{background:var(--denim-800)!important;border-color:var(--denim-700)!important;box-shadow:0 10px 28px rgba(35,68,99,.16)!important}
 .storyflow-toast.error{background:#f5dfe3!important;border-color:#eac3ca!important;color:#7b4850!important}
 .publish-overall-status.partial{background:#fff8ef!important;border-color:#ead9c0!important;color:#886a46!important}
