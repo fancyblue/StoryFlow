@@ -1,10 +1,11 @@
+// Public runtime defaults only. User-specific Google credentials are loaded from
+// the selected StoryFlow folder's settings.json so forks/clones can bring their own
+// Google Cloud project without editing repository source files.
 window.STORYFLOW_CONFIG = {
-  googleClientId: "806756717305-kp8ocka22c1nh0gk32iukvpj0p9o972n.apps.googleusercontent.com",
-  googleProjectNumber: "806756717305",
+  googleClientId: null,
+  googleProjectNumber: null,
   googleScopes: [
     "https://www.googleapis.com/auth/drive.file"
   ],
-  // Keep the Picker API key out of the public repository. StoryFlow asks for it once
-  // in the browser and stores it only in that browser's local storage.
   googlePickerApiKey: null
 };
