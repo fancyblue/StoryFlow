@@ -1,5 +1,8 @@
 /* Final control scale pass: buttons should feel compact and intentional on desktop,
-   while keeping comfortable touch targets on mobile. */
+   while keeping comfortable touch targets on mobile.
+
+   UX rule: buttons that sit in the same action group always share the same geometry.
+   Hierarchy comes from primary/ghost styling, not from one sibling being taller. */
 .button,
 .icon-button{
   line-height:1.2;
@@ -26,20 +29,50 @@
   font-size:16px;
 }
 
-/* Preserve deliberate primary calls-to-action: compact, but still clearly primary. */
+/* A lone, final CTA may be larger because it is not competing with a sibling. */
 #confirmBtn{
   min-height:46px!important;
   padding:10px 16px!important;
   border-radius:11px!important;
   font-size:14px!important;
 }
-#loadSourceBtn,
-#confirmSourcePreviewBtn,
-#confirmPlatformCopy,
 #closeReviewDialogBottom{
   min-height:40px!important;
   padding:8px 14px!important;
   font-size:12.5px!important;
+}
+
+/* SOURCE panel: 更新作品來源 / 載入來源 are peers. Same size, equal width;
+   only fill color communicates which action is primary. */
+.source-panel-actions{
+  align-items:stretch!important;
+}
+.source-panel-actions .button,
+#sourcePanelActions #refreshSourceBtn,
+#sourcePanelActions #loadSourceBtn{
+  height:36px!important;
+  min-height:36px!important;
+  padding:0 12px!important;
+  border-radius:10px!important;
+  font-size:12px!important;
+  line-height:1!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  white-space:nowrap!important;
+}
+
+/* Dialog footer actions are one decision set, so cancel/confirm stay aligned. */
+.sticky-dialog-actions .button,
+.source-flow-actions.sticky-dialog-actions .button{
+  height:40px!important;
+  min-height:40px!important;
+  padding:0 14px!important;
+  border-radius:9px!important;
+  font-size:12px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
 }
 
 /* Utility actions should never look like oversized hero buttons. */
@@ -58,22 +91,62 @@
   padding:6px 12px!important;
   font-size:12px!important;
 }
+
+/* Same-row settings actions: Save/Clear use identical dimensions. */
 .settings-view .settings-actions{
   gap:8px!important;
   flex-wrap:wrap;
+  align-items:stretch!important;
 }
-.settings-view .settings-actions .button.primary{
+.settings-view .settings-actions .button{
+  height:36px!important;
   min-height:36px!important;
+  padding:0 12px!important;
+  font-size:11.5px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
 }
 
-/* List/page actions are secondary to content, so keep their chrome quiet. */
+/* List/page action clusters also share one compact control height. */
+.project-library-actions,
+.publish-platform-actions,
+.publish-list-actions,
+.source-linked-actions{
+  align-items:stretch!important;
+}
 .project-library-actions .button,
 .publish-platform-actions .button,
 .publish-list-actions .button,
 .source-linked-actions .button{
+  height:32px!important;
   min-height:32px!important;
-  padding:5px 9px!important;
+  padding:0 9px!important;
   font-size:11px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+
+/* Top-level sibling actions follow the same principle. */
+.top-actions .button{
+  height:36px!important;
+  min-height:36px!important;
+  padding:0 12px!important;
+  font-size:12px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+
+/* Paired boundary buttons already communicate direction; keep their boxes identical. */
+.boundary-control .button,
+.preview-boundary-controls .button{
+  min-height:32px!important;
+  padding:0 10px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
 }
 
 /* Compact segment/filter controls use a smaller text/control ratio than primary buttons. */
@@ -112,6 +185,25 @@
     height:40px;
     min-height:40px;
   }
+
+  .source-panel-actions .button,
+  #sourcePanelActions #refreshSourceBtn,
+  #sourcePanelActions #loadSourceBtn{
+    height:42px!important;
+    min-height:42px!important;
+    padding:0 12px!important;
+    font-size:13px!important;
+  }
+
+  .sticky-dialog-actions .button,
+  .source-flow-actions.sticky-dialog-actions .button,
+  .settings-view .settings-actions .button{
+    height:42px!important;
+    min-height:42px!important;
+    padding:0 12px!important;
+    font-size:12.5px!important;
+  }
+
   .settings-view .settings-section .button,
   .projects-view .button,
   .publishing-view .button,
@@ -120,5 +212,17 @@
     min-height:40px!important;
     padding:8px 12px!important;
     font-size:12.5px!important;
+  }
+
+  .project-library-actions .button,
+  .publish-platform-actions .button,
+  .publish-list-actions .button,
+  .source-linked-actions .button,
+  .boundary-control .button,
+  .preview-boundary-controls .button{
+    height:40px!important;
+    min-height:40px!important;
+    padding:0 11px!important;
+    font-size:12px!important;
   }
 }
