@@ -165,5 +165,16 @@
   window.addEventListener('storyflow:projects-changed', () => setTimeout(syncAll, 0));
   window.addEventListener('storyflow:connection-changed', syncSourceActionHint);
 
+  const baseRenderAll = window.renderAll;
+  if (typeof baseRenderAll === 'function' && !baseRenderAll.__storyflowUxRefined) {
+    const refinedRenderAll = function (...args) {
+      const result = baseRenderAll.apply(this, args);
+      queueMicrotask(syncAll);
+      return result;
+    };
+    refinedRenderAll.__storyflowUxRefined = true;
+    window.renderAll = refinedRenderAll;
+  }
+
   syncAll();
 })();
