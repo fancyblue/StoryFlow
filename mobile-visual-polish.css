@@ -1,12 +1,12 @@
-/* Mobile visual polish: primary navigation first, connection state second.
-   The utility row is intentionally plain text + dots rather than competing status pills. */
+/* Mobile visual polish built from the user-provided denim palette.
+   #234463 #2D5D85 #3975A7 #4D8CC2 #6FA2CF #91B8D9 #B4CEE5 */
 @media (max-width: 820px) {
   body {
-    background:#f8fcfe !important;
+    background:#f8fbfd !important;
     background-image:none !important;
   }
 
-  /* Header: page title is primary; save state is quiet metadata. */
+  /* Header: compact and calm. */
   .topbar {
     position:relative;
     gap:6px !important;
@@ -21,19 +21,19 @@
     margin:0;
   }
   .topbar .save-state {
-    color:#5c7a8f !important;
+    color:#2d5d85 !important;
     font-size:12px !important;
     font-weight:700 !important;
   }
 
-  /* Mobile content should feel like one workspace, not a pile of floating cards. */
+  /* Content uses white cards and very soft denim borders; no grey wash. */
   .panel,
   .stat-card,
   .project-library-card,
   .publishing-stats article,
   .settings-view .settings-section {
-    border-color:#dceaf2 !important;
-    box-shadow:0 2px 10px rgba(55,112,146,.025) !important;
+    border-color:#dce8f1 !important;
+    box-shadow:0 2px 10px rgba(35,68,99,.025) !important;
   }
   .panel{border-radius:15px !important}
   .stats-grid { gap:8px !important; }
@@ -41,21 +41,23 @@
     padding:12px 14px !important;
     border-radius:14px !important;
   }
-  .stat-card span { color:#5c7a8f !important; }
-  .button.primary{box-shadow:none!important}
+  .stat-card span { color:#2d5d85 !important; }
+  .button.primary{background:#4d8cc2!important;border-color:#4d8cc2!important;box-shadow:none!important}
+  .button.primary:hover:not(:disabled){background:#3975a7!important;border-color:#3975a7!important}
 
-  /* Bottom navigation: light surface, stronger type, one calm active state. */
+  /* Bottom navigation: use the dark denim swatch as one continuous product bar.
+     No white cards or floating pills are allowed inside this surface. */
   .sidebar {
-    background:rgba(249,253,255,.985) !important;
-    border-top:1px solid #cfe2ed !important;
-    box-shadow:0 -5px 20px rgba(52,105,136,.10) !important;
-    color:#244f68 !important;
-    backdrop-filter:saturate(135%) blur(12px);
-    -webkit-backdrop-filter:saturate(135%) blur(12px);
+    background:#234463 !important;
+    border-top:0 !important;
+    box-shadow:0 -7px 24px rgba(35,68,99,.20) !important;
+    color:#fff !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
   }
 
   .sidebar .nav-item {
-    color:#42677d !important;
+    color:#b4cee5 !important;
     font-size:18px !important;
     font-weight:800 !important;
   }
@@ -65,114 +67,117 @@
     font-weight:800 !important;
     line-height:1.2 !important;
   }
-  .sidebar .nav-item:hover {
-    background:#edf7fc !important;
-    color:#276889 !important;
-  }
-  .sidebar .nav-item.active {
-    background:#dff1fa !important;
-    color:#1f6285 !important;
+  .sidebar .nav-item:hover,
+  .sidebar .nav-item:focus-visible {
+    background:#2d5d85 !important;
+    color:#fff !important;
     box-shadow:none !important;
   }
+  .sidebar .nav-item.active {
+    background:#3975a7 !important;
+    color:#fff !important;
+    box-shadow:inset 0 0 0 1px rgba(180,206,229,.18) !important;
+  }
 
-  /* Utility row: no pills. Show subject + state as a compact status line. */
+  /* Connection utility row: compact text, no pills, no white focused card.
+     The state itself carries the meaning; color only supports it. */
   .sidebar-connection-status {
-    border-top:1px solid #dbe9f1 !important;
+    border-top:1px solid rgba(180,206,229,.28) !important;
     padding-top:5px !important;
   }
-  .sidebar-connection-row {
+  .sidebar-connection-row,
+  .sidebar-connection-row.connected,
+  .sidebar-connection-row.restoring {
     min-height:30px !important;
     padding:4px 3px !important;
     border:0 !important;
     border-radius:7px !important;
     background:transparent !important;
-    color:#355d73 !important;
+    color:#fff !important;
     box-shadow:none !important;
   }
   .sidebar-connection-row:hover,
-  .sidebar-connection-row:focus-visible {
-    background:#eef7fb !important;
+  .sidebar-connection-row:focus-visible,
+  .sidebar-connection-row.connected:hover,
+  .sidebar-connection-row.connected:focus-visible,
+  .sidebar-connection-row.restoring:hover,
+  .sidebar-connection-row.restoring:focus-visible {
+    background:rgba(77,140,194,.18) !important;
     border:0 !important;
-    outline:none !important;
+    outline:1px solid rgba(145,184,217,.30) !important;
+    box-shadow:none !important;
   }
   .sidebar-connection-copy {
-    gap:4px !important;
-    overflow:visible !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:5px !important;
+    overflow:hidden !important;
+    white-space:nowrap !important;
   }
   .sidebar-connection-copy b {
     display:inline !important;
     flex:0 0 auto !important;
-    color:#71899a !important;
+    color:#91b8d9 !important;
     font-size:10px !important;
     font-weight:700 !important;
     letter-spacing:.01em !important;
   }
   .sidebar-connection-copy small {
     max-width:none !important;
-    color:#355d73 !important;
+    overflow:hidden !important;
+    color:#ffffff !important;
     font-size:12px !important;
     font-weight:800 !important;
     line-height:1.2 !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
     opacity:1 !important;
   }
-  .sidebar-status-dot {
+  .sidebar-status-dot,
+  .sidebar-connection-row.connected .sidebar-status-dot,
+  .sidebar-connection-row.restoring .sidebar-status-dot {
     width:7px !important;
     height:7px !important;
-    background:#829fb2 !important;
+    background:#6fa2cf !important;
     box-shadow:none !important;
   }
+  .sidebar-connection-row.connected .sidebar-status-dot { background:#b4cee5 !important; }
+  .sidebar-connection-row.connected .sidebar-connection-copy b { color:#91b8d9 !important; }
+  .sidebar-connection-row.connected .sidebar-connection-copy small { color:#fff !important; }
+  .sidebar-connection-row.restoring .sidebar-status-dot { background:#91b8d9 !important; }
+  .sidebar-connection-row.restoring .sidebar-connection-copy b { color:#91b8d9 !important; }
+  .sidebar-connection-row.restoring .sidebar-connection-copy small { color:#fff !important; }
 
-  /* Connected/restoring are semantic accents, not filled badges. */
-  .sidebar-connection-row.connected {
-    background:transparent !important;
-    border:0 !important;
-  }
-  .sidebar-connection-row.connected .sidebar-connection-copy b { color:#668577 !important; }
-  .sidebar-connection-row.connected .sidebar-status-dot {
-    background:#62a783 !important;
-    box-shadow:none !important;
-  }
-  .sidebar-connection-row.connected .sidebar-connection-copy small {
-    color:#397556 !important;
-  }
-  .sidebar-connection-row.restoring {
-    background:transparent !important;
-    border:0 !important;
-  }
-  .sidebar-connection-row.restoring .sidebar-connection-copy b { color:#8b765e !important; }
-  .sidebar-connection-row.restoring .sidebar-status-dot {
-    background:#bd8f55 !important;
-    box-shadow:none !important;
-  }
-  .sidebar-connection-row.restoring .sidebar-connection-copy small {
-    color:#795a37 !important;
-  }
-
+  /* Settings is a utility icon, not a fourth status card. */
   .sidebar-settings-button {
-    color:#356f91 !important;
+    color:#b4cee5 !important;
     background:transparent !important;
+    border:1px solid transparent !important;
     border-radius:9px !important;
+    box-shadow:none !important;
   }
   .sidebar-settings-button:hover,
   .sidebar-settings-button:focus-visible {
-    background:#eaf6fb !important;
-    color:#225f82 !important;
+    background:#2d5d85 !important;
+    border-color:rgba(180,206,229,.18) !important;
+    color:#fff !important;
+    box-shadow:none !important;
   }
   .sidebar-settings-button.active {
-    background:#dff1fa !important;
-    color:#1f6285 !important;
+    background:#3975a7 !important;
+    border-color:rgba(180,206,229,.18) !important;
+    color:#fff !important;
   }
   .sidebar-logout {
-    color:#b96570 !important;
+    color:#91b8d9 !important;
   }
   .sidebar-logout:hover,
   .sidebar-logout:focus-visible {
-    background:#fff0f2 !important;
-    border-color:#efcbd0 !important;
-    color:#9f505a !important;
+    background:#2d5d85 !important;
+    border-color:rgba(180,206,229,.18) !important;
+    color:#fff !important;
   }
 
-  /* Keep empty/content surfaces bright rather than grey-blue. */
   .workspace-grid.workspace-empty-mode #suggestionEmpty,
   .workspace-source-empty,
   .projects-empty-state,
@@ -180,10 +185,4 @@
   .preview {
     background:#fcfeff !important;
   }
-}
-
-@media (max-width:390px) {
-  .sidebar-connection-copy { gap:3px !important; }
-  .sidebar-connection-copy b { font-size:9px !important; }
-  .sidebar-connection-copy small { font-size:11px !important; }
 }
