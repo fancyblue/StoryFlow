@@ -1,0 +1,130 @@
+/* Connection status belongs to persistent navigation/header surfaces, not its own row. */
+.connection-bar{display:none!important}
+
+.top-connection-status{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-right:4px;
+}
+.connection-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:32px;
+  padding:5px 9px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#fff;
+  color:var(--muted);
+  font:inherit;
+  font-size:10px;
+  cursor:pointer;
+}
+.connection-chip:hover{background:#fafafa;border-color:#d1d5db}
+.connection-chip-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#d1d5db;
+  box-shadow:0 0 0 3px #f3f4f6;
+  flex:0 0 auto;
+}
+.connection-chip.connected .connection-chip-dot{background:#16a34a;box-shadow:0 0 0 3px #dcfce7}
+.connection-chip.restoring .connection-chip-dot{background:#d97706;box-shadow:0 0 0 3px #fef3c7}
+.connection-chip-label{color:var(--muted)}
+.connection-chip-state{color:var(--text);font-size:10px}
+.connection-chip.connected .connection-chip-state{color:#166534}
+.connection-chip.restoring .connection-chip-state{color:#92400e}
+.connection-logout{color:#991b1b}
+.connection-logout:hover{background:#fff1f2!important;border-color:#fecdd3!important}
+
+.sidebar-connection-status{
+  display:grid;
+  gap:6px;
+  margin-top:10px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.12);
+}
+.sidebar-connection-title{
+  padding:0 4px 2px;
+  color:#9ca3af;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.sidebar-connection-row{
+  display:grid;
+  grid-template-columns:9px minmax(0,1fr);
+  align-items:center;
+  gap:9px;
+  width:100%;
+  min-height:38px;
+  padding:7px 8px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  color:#e5e7eb;
+  text-align:left;
+  cursor:pointer;
+}
+.sidebar-connection-row:hover,.sidebar-connection-row:focus-visible{background:rgba(255,255,255,.07);outline:none}
+.sidebar-status-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#6b7280;
+}
+.sidebar-connection-row.connected .sidebar-status-dot{background:#4ade80}
+.sidebar-connection-row.restoring .sidebar-status-dot{background:#fbbf24}
+.sidebar-connection-copy{display:grid;gap:1px;min-width:0}
+.sidebar-connection-copy b{font-size:10px;font-weight:700;color:#e5e7eb}
+.sidebar-connection-copy small{font-size:9px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-connection-row.connected .sidebar-connection-copy small{color:#86efac}
+.sidebar-connection-row.restoring .sidebar-connection-copy small{color:#fde68a}
+.sidebar-logout{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:34px;
+  margin-top:2px;
+  padding:6px 8px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  color:#fca5a5;
+  font-size:10px;
+  cursor:pointer;
+}
+.sidebar-logout:hover,.sidebar-logout:focus-visible{background:rgba(127,29,29,.25);outline:none}
+.sidebar-logout[hidden]{display:none!important}
+
+@media(min-width:821px){
+  .app-shell.sidebar-collapsed .sidebar-connection-status{
+    justify-items:center;
+    gap:7px;
+    padding-top:10px;
+  }
+  .app-shell.sidebar-collapsed .sidebar-connection-title,
+  .app-shell.sidebar-collapsed .sidebar-connection-copy,
+  .app-shell.sidebar-collapsed .sidebar-logout-label{display:none}
+  .app-shell.sidebar-collapsed .sidebar-connection-row,
+  .app-shell.sidebar-collapsed .sidebar-logout{
+    display:grid;
+    place-items:center;
+    width:40px;
+    min-height:40px;
+    padding:0;
+  }
+  .app-shell.sidebar-collapsed .sidebar-connection-row{grid-template-columns:1fr}
+  .app-shell.sidebar-collapsed .sidebar-status-dot{width:9px;height:9px}
+}
+
+@media(max-width:980px){
+  .top-connection-status .connection-chip-label{display:none}
+}
+
+@media(max-width:820px){
+  .top-connection-status{display:none}
+  .sidebar-connection-status{display:none}
+}
