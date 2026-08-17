@@ -46,6 +46,12 @@
 .project-library-delete{color:#b91c1c}
 .project-library-delete:hover{background:#fff1f2!important;border-color:#fecdd3!important}
 
+/* Workspace is for the active work. Creation/deletion belongs to the Works page,
+   and manual input stays under the single "載入來源" entry point. */
+.source-panel .project-switcher-actions{display:none!important}
+.source-panel #addChapterBtn{display:none!important}
+.source-panel .project-switcher{padding-bottom:12px}
+
 /* A chapter is a selectable item plus one secondary destructive affordance. */
 .chapter-list{gap:7px!important}
 .chapter-row{
