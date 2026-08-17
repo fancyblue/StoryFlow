@@ -23,9 +23,9 @@
   function loadLateUiAssets() {
     loadStylesheet('storyflowPlatformSettingsV2Css', './platform-settings-v2.css?v=20260817-1632');
     loadStylesheet('storyflowControlPolishCss', './control-polish.css?v=20260817-1632');
-    loadStylesheet('storyflowSettingsBootstrapCss', './settings-bootstrap.css?v=20260817-1622');
+    loadStylesheet('storyflowSettingsBootstrapCss', './settings-bootstrap.css?v=20260817-1702');
     loadScript('storyflowPlatformSettingsV2Js', './platform-settings-v2.js?v=20260817-1632');
-    loadScript('storyflowSettingsBootstrapJs', './settings-bootstrap.js?v=20260817-1622');
+    loadScript('storyflowSettingsBootstrapJs', './settings-bootstrap.js?v=20260817-1702');
   }
 
   function ensureSettingsView() {
@@ -97,6 +97,7 @@
     try {
       document.getElementById('pickerApiKeyInput').value = StoryFlowIntegrations.pickerApiKey();
       window.renderFormattingSettings?.();
+      window.StoryFlowSettingsBootstrap?.sync?.();
     } catch (_) {}
     window.StoryFlowNavigate?.('settings');
     if (focusPicker) requestAnimationFrame(() => document.getElementById('pickerApiKeyInput')?.focus());
