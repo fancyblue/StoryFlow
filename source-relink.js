@@ -195,8 +195,12 @@
 
     const chapter = activeChapter?.();
     const incoming = chapter && !chapter.source ? findIncomingForChapter(tab, chapter) : null;
+    const linked = (state.chapters || []).filter(item => item?.source?.id === doc.id && item?.source?.tabId === tab.id);
     const explicitDetachedMatch = Boolean(incoming && detachedFromTab(chapter, doc, tab));
-    const safeTitleMatch = Boolean(incoming && !chapter?.source && (chapter?.draft || (chapter?.parts || []).length));
+    // For chapters detached before provenance tracking existed, infer relinking only
+    // when another chapter from this exact Google Docs tab is still linked. This
+    // prevents a same-titled chapter from a completely different story being relinked.
+    const safeTitleMatch = Boolean(incoming && linked.length && !chapter?.source && (chapter?.draft || (chapter?.parts || []).length));
 
     // The user is currently on a detached/manual copy of a heading that exists in
     // the selected source. Offer a comparison + relink instead of importing a duplicate.
@@ -205,7 +209,6 @@
       return;
     }
 
-    const linked = (state.chapters || []).filter(item => item?.source?.id === doc.id && item?.source?.tabId === tab.id);
     if (linked.length) {
       const currentTitle = normalizeTitle(chapter?.title);
       const target = linked.find(item => normalizeTitle(item.title) === currentTitle) || linked[0];
