@@ -10,6 +10,8 @@
     '#sourcePreviewContent',
     '#sourceRefreshBefore',
     '#sourceRefreshAfter',
+    '#sourceRelinkBefore',
+    '#sourceRelinkAfter',
     '#platformPreviewContent'
   ].join(',');
 
@@ -18,6 +20,7 @@
     ['split', 'preview'],
     ['review', 'preview'],
     ['source', 'preview'],
+    ['relink', 'preview'],
     ['publish', 'preview']
   ]);
   let observer = null;
@@ -167,13 +170,14 @@
     if (!element) return null;
     if (element.id === 'preview') return 'split';
     if (/^dialogReview/.test(element.id)) return 'review';
+    if (/^sourceRelink/.test(element.id)) return 'relink';
     if (/^sourcePreview|^sourceRefresh/.test(element.id)) return 'source';
     if (element.id === 'platformPreviewContent') return 'publish';
     return null;
   }
 
   function isSourceRaw(element) {
-    return ['sourcePreviewContent', 'sourceRefreshBefore', 'sourceRefreshAfter'].includes(element?.id);
+    return ['sourcePreviewContent', 'sourceRefreshBefore', 'sourceRefreshAfter', 'sourceRelinkBefore', 'sourceRelinkAfter'].includes(element?.id);
   }
 
   function captureAuthoredContent(element, stateRecord) {
@@ -221,6 +225,7 @@
     if (group === 'split') return document.getElementById('splitPlatformBar');
     if (group === 'review') return document.querySelector('#reviewDialog .review-format-bar');
     if (group === 'source') return document.getElementById('sourcePreviewWarning');
+    if (group === 'relink') return document.getElementById('sourceRelinkWarning');
     if (group === 'publish') return document.getElementById('platformPreviewMeta');
     return null;
   }
@@ -239,7 +244,7 @@
       setMode(group, button.dataset.sfMode);
     });
 
-    if (group === 'source' || group === 'publish') anchor.insertAdjacentElement('afterend', control);
+    if (['source', 'relink', 'publish'].includes(group)) anchor.insertAdjacentElement('afterend', control);
     else anchor.appendChild(control);
     syncControl(group);
   }
@@ -280,7 +285,7 @@
 
   function scan() {
     pauseObserver(() => {
-      ['split', 'review', 'source', 'publish'].forEach(ensureControl);
+      ['split', 'review', 'source', 'relink', 'publish'].forEach(ensureControl);
       document.querySelectorAll(TARGET_SELECTOR).forEach(element => {
         const group = groupFor(element);
         if (!group) return;
@@ -297,7 +302,7 @@
         }
         renderTarget(element);
       });
-      ['split', 'review', 'source', 'publish'].forEach(syncControl);
+      ['split', 'review', 'source', 'relink', 'publish'].forEach(syncControl);
     });
   }
 
@@ -305,6 +310,7 @@
     if (!dialog?.open) return;
     if (dialog.id === 'reviewDialog') groupModes.set('review', 'preview');
     if (dialog.id === 'sourcePreviewDialog') groupModes.set('source', 'preview');
+    if (dialog.id === 'sourceRelinkDialog') groupModes.set('relink', 'preview');
     if (dialog.id === 'platformPreviewDialog') groupModes.set('publish', 'preview');
   }
 
