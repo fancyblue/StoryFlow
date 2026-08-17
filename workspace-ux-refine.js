@@ -53,6 +53,20 @@
     }
   }
 
+  // The status dot carries the state; the visible text only names the service.
+  // Keep the full signed-in / connected wording in aria-label/title from connection-ui.
+  function syncSidebarConnectionLabels() {
+    const labels = [
+      ['sidebarGoogleConnection', 'Google'],
+      ['sidebarFolderConnection', '資料夾']
+    ];
+    labels.forEach(([id, label]) => {
+      const button = document.getElementById(id);
+      const small = button?.querySelector('small');
+      if (small && small.textContent !== label) small.textContent = label;
+    });
+  }
+
   function ensureQuickSwitch() {
     const panel = document.querySelector('.source-panel');
     const head = panel?.querySelector(':scope > .panel-head');
@@ -190,6 +204,7 @@
 
   function syncAll() {
     ensureSidebarUtilityIcons();
+    syncSidebarConnectionLabels();
     ensureQuickSwitch();
     syncSourceActionHint();
     tidyReviewToolbar();
@@ -201,6 +216,19 @@
   });
   window.addEventListener('storyflow:projects-changed', () => setTimeout(syncAll, 0));
   window.addEventListener('storyflow:connection-changed', syncAll);
+
+  // connection-ui also reacts to these four source nodes. Watch only the same narrow
+  // signals so its status-copy refresh cannot leave the visible service names stale.
+  const connectionSignals = [
+    document.getElementById('googleStatus'),
+    document.getElementById('folderStatus'),
+    document.getElementById('googleDot'),
+    document.getElementById('folderDot')
+  ].filter(Boolean);
+  const connectionLabelObserver = new MutationObserver(() => queueMicrotask(syncSidebarConnectionLabels));
+  connectionSignals.forEach(node => connectionLabelObserver.observe(node, {
+    childList:true, subtree:true, attributes:true, characterData:true
+  }));
 
   const baseRenderAll = window.renderAll;
   if (typeof baseRenderAll === 'function' && !baseRenderAll.__storyflowUxRefined) {
