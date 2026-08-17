@@ -22,15 +22,23 @@
   }
 
   // All UI surfaces (top-right and sidebar) call this dynamically, so replacing the
-  // public predicate fixes the contradictory "已登入" state without touching the
-  // private accessToken held inside integrations.js.
+  // public predicate fixes contradictory auth labels without touching the private
+  // accessToken held inside integrations.js.
   integrations.hasGoogleToken = hasUsableGoogleToken;
+
+  function syncSettingsUi() {
+    // settings-bootstrap may be loaded dynamically before or after this file. Calling
+    // it directly as well as emitting the normal connection event prevents a stale
+    // "登入 Google" button from surviving after the sidebar has already turned green.
+    queueMicrotask(() => window.StoryFlowSettingsBootstrap?.sync?.());
+  }
 
   function syncSignedOut({ clearSession = false } = {}) {
     verifiedForCurrentConfig = false;
     if (clearSession) sessionAuth()?.forgetSession?.();
     sessionAuth()?.syncSignedOutUi?.();
     window.StoryFlowConnectionUi?.sync?.();
+    syncSettingsUi();
   }
 
   function syncLoggedIn(token = '') {
@@ -38,6 +46,7 @@
     if (token) sessionAuth()?.rememberSession?.(token);
     sessionAuth()?.syncLoggedInUi?.();
     window.StoryFlowConnectionUi?.sync?.();
+    syncSettingsUi();
   }
 
   function isAuthError(error) {
@@ -76,7 +85,7 @@
 
   // Replace the legacy button handler after settings-sync has wrapped it. The
   // bootstrap "登入 Google" button delegates to this same button, so desktop and
-  // mobile now share one explicit re-authentication path.
+  // mobile share one explicit re-authentication path.
   const loginButton = document.getElementById('googleLoginBtn');
   if (loginButton) {
     loginButton.onclick = event => {
@@ -85,12 +94,12 @@
     };
   }
 
-  // Loading a settings.json establishes a configuration boundary. Any token that
-  // was already sitting in memory may belong to the previous Client ID, so never
-  // present it as authenticated. The next explicit login overwrites that private
-  // in-memory token with a fresh token for the imported Client ID.
+  // Re-applying the SAME settings.json must not sign the user out. settings-bootstrap
+  // explicitly invalidates auth first when the Client ID really changes; therefore
+  // an integration-config event can safely preserve a currently usable token.
   window.addEventListener('storyflow:integration-config-changed', () => {
-    syncSignedOut({ clearSession: true });
+    if (hasUsableGoogleToken()) syncLoggedIn();
+    else syncSignedOut();
   });
 
   // Google operations get one guarded retry. This prevents a stale token from
