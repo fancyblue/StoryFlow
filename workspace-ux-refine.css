@@ -89,6 +89,29 @@
   color:var(--denim-800,#2d5d85);
   outline:none;
 }
+
+/* "切篇確認" uses the same quiet utility-button language as "切換作品". */
+.splitter-panel .smart-split-header-actions #openSplitReviewBtn{
+  min-height:30px!important;
+  margin-left:auto!important;
+  padding:0 10px!important;
+  border:1px solid #c9ddea!important;
+  border-radius:8px!important;
+  background:#f5faff!important;
+  color:var(--denim-700,#3975a7)!important;
+  box-shadow:none!important;
+  font-size:11.5px!important;
+  font-weight:800!important;
+  line-height:1!important;
+}
+.splitter-panel .smart-split-header-actions #openSplitReviewBtn:hover,
+.splitter-panel .smart-split-header-actions #openSplitReviewBtn:focus-visible{
+  border-color:#9fc5de!important;
+  background:#eaf4fa!important;
+  color:var(--denim-800,#2d5d85)!important;
+  outline:none!important;
+  box-shadow:none!important;
+}
 .workspace-project-quick-switch{
   position:absolute;
   top:58px;
@@ -290,6 +313,21 @@
   min-height:34px!important;
   padding:0 10px!important;
   font-size:12px!important;
+}
+
+/* Connection footer: service name is the visible label; red/green dot carries state. */
+.sidebar-connection-copy b{display:none!important}
+.sidebar-status-dot{
+  background:#ef8791!important;
+  box-shadow:0 0 0 3px rgba(239,135,145,.13)!important;
+}
+.sidebar-connection-row.connected .sidebar-status-dot{
+  background:#67dca0!important;
+  box-shadow:0 0 0 3px rgba(103,220,160,.13)!important;
+}
+.sidebar-connection-row.restoring .sidebar-status-dot{
+  background:#d8b783!important;
+  box-shadow:0 0 0 3px rgba(216,183,131,.13)!important;
 }
 
 /* Use one SVG icon system for Settings and Logout. Unicode glyphs have different
