@@ -19,6 +19,15 @@
   function workspaceView() { return document.getElementById('workspaceView'); }
   function publishingView() { return document.getElementById('publishingView'); }
 
+  function installNavHints() {
+    nav.querySelectorAll('.nav-item').forEach(item => {
+      const label = item.querySelector('span')?.textContent?.trim();
+      if (!label) return;
+      item.dataset.hint = label;
+      item.setAttribute('aria-label', label);
+    });
+  }
+
   function setActive(view) {
     document.querySelectorAll('.nav-item').forEach(item => {
       const active = item.dataset.view === view;
@@ -123,6 +132,7 @@
   window.StoryFlowNavigate = goTo;
   window.StoryFlowCurrentView = () => currentView;
 
+  installNavHints();
   ensureSidebarToggle();
   goTo('workspace');
 })();
