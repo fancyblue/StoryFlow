@@ -151,14 +151,14 @@
     manager.className = 'platform-manager';
     manager.innerHTML = `
       <div class="platform-manager-head">
-        <div><strong>發布平台</strong><p>只新增你真的使用的平台。</p></div>
+        <div><strong>發布平台</strong><p>只保留你實際會發布的平台，平台設定會各自套用。</p></div>
         <div class="platform-add-row">
-          <input id="newPlatformName" class="text-input" placeholder="平台名稱" />
-          <button id="addPlatformBtn" type="button" class="button tiny primary">新增</button>
+          <input id="newPlatformName" class="text-input" placeholder="輸入平台名稱" />
+          <button id="addPlatformBtn" type="button" class="button tiny primary">新增平台</button>
         </div>
       </div>
       <div id="managedPlatformList" class="managed-platform-list"></div>
-      <div class="portable-settings-note">文章、平台設定與工作進度都只保存在 StoryFlow 資料夾；瀏覽器只記住資料夾連線 handle，方便重新整理後自動接回。</div>`;
+      <div class="portable-settings-note">文章、平台設定與工作進度都保存在 StoryFlow 資料夾；本次瀏覽器工作階段只保留重新整理所需的連線資訊。</div>`;
     settingsList.insertAdjacentElement('beforebegin', manager);
     document.getElementById('addPlatformBtn').onclick = addPlatformFromInput;
     document.getElementById('newPlatformName').addEventListener('keydown', event => {
