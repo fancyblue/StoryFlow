@@ -60,12 +60,102 @@
   margin:7px 0 14px;
   line-height:1.7;
 }
-.settings-view .settings-section:nth-of-type(3){grid-column:1 / -1}
+.settings-view .settings-section:nth-of-type(3){
+  grid-column:1 / -1;
+  padding:22px 24px;
+}
 .settings-view .security-note{
   grid-column:1 / -1;
   padding:14px 16px;
 }
-.settings-view .platform-manager{margin-top:16px}
+
+/* Publishing-format settings: keep controls together instead of stretching actions to opposite edges. */
+.settings-view .settings-section:nth-of-type(3)>#defaultIndent{
+  width:min(100%,320px);
+}
+.settings-view .settings-section:nth-of-type(3)>.default-format-checks{
+  margin-top:12px;
+}
+.settings-view .platform-manager{
+  margin:22px 0 0!important;
+  padding:18px 0!important;
+  border:0!important;
+  border-top:1px solid var(--line)!important;
+  border-bottom:1px solid var(--line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+.settings-view .platform-manager-head{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  justify-items:start;
+  align-items:start!important;
+  gap:12px!important;
+}
+.settings-view .platform-manager-head>div:first-child strong{
+  font-size:14px;
+}
+.settings-view .platform-manager-head>div:first-child p{
+  margin:4px 0 0;
+}
+.settings-view .platform-add-row{
+  display:grid!important;
+  grid-template-columns:minmax(220px,360px) auto;
+  align-items:center!important;
+  gap:8px!important;
+  width:min(100%,460px);
+}
+.settings-view .platform-add-row .text-input{
+  min-width:0!important;
+  width:100%;
+  min-height:42px;
+}
+.settings-view .platform-add-row .button{
+  width:auto;
+  min-width:72px;
+  min-height:42px;
+  padding:9px 14px;
+  white-space:nowrap;
+}
+.settings-view .managed-platform-list{
+  margin-top:14px;
+}
+.settings-view .managed-platform-chip{
+  min-height:36px;
+  padding:5px 7px 5px 12px;
+}
+.settings-view .portable-settings-note{
+  width:fit-content;
+  max-width:760px;
+  margin-top:14px;
+  padding:9px 11px;
+  border-radius:9px;
+  background:#f8fafc;
+  line-height:1.6;
+}
+.settings-view .platform-settings{
+  margin-top:0;
+  gap:0;
+}
+.settings-view .platform-setting-row{
+  grid-template-columns:120px minmax(0,1fr)!important;
+  gap:18px!important;
+  align-items:center!important;
+  padding:14px 0!important;
+  border-top:1px solid var(--line)!important;
+}
+.settings-view .platform-setting-row:first-child{
+  border-top:0!important;
+}
+.settings-view .platform-format-controls{
+  grid-template-columns:minmax(220px,360px) max-content max-content!important;
+  justify-content:start;
+  gap:18px!important;
+  align-items:center!important;
+}
+.settings-view .platform-format-controls .text-input{
+  width:100%;
+}
 
 /* Bottom-left is one compact utility strip: status first, then settings/logout. */
 .sidebar-connection-status{
@@ -78,6 +168,7 @@
 }
 .sidebar-connection-title{display:none!important}
 .sidebar-connection-row{
+  position:relative;
   display:inline-flex!important;
   grid-template-columns:none!important;
   align-items:center!important;
@@ -109,59 +200,118 @@
 .sidebar-utility-actions{
   display:flex;
   align-items:center;
-  gap:2px;
+  gap:3px;
   margin-left:auto;
 }
 .sidebar-settings-button,
 .sidebar-logout{
+  position:relative;
   display:inline-flex;
   align-items:center;
   justify-content:center;
   gap:6px;
-  width:30px;
-  min-height:30px!important;
   margin:0!important;
   padding:0!important;
-  border:0;
-  border-radius:8px!important;
-  background:transparent!important;
-  color:#9ca3af;
+  border-radius:9px!important;
   font:inherit;
-  font-size:13px!important;
   cursor:pointer;
 }
-.sidebar-settings-label,
-.sidebar-logout-label{display:none!important}
+.sidebar-settings-button{
+  width:38px;
+  min-height:38px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  background:rgba(255,255,255,.07)!important;
+  color:#e5e7eb;
+  font-size:19px!important;
+}
 .sidebar-settings-button:hover,
 .sidebar-settings-button:focus-visible,
 .sidebar-settings-button.active{
-  background:rgba(255,255,255,.08)!important;
+  background:#312e55!important;
+  border-color:rgba(167,139,250,.55)!important;
   color:#fff;
   outline:none;
 }
-.sidebar-logout{color:#fca5a5!important}
+.sidebar-logout{
+  width:30px;
+  min-height:30px!important;
+  border:0;
+  background:transparent!important;
+  color:#fca5a5!important;
+  font-size:13px!important;
+}
+.sidebar-settings-label,
+.sidebar-logout-label{display:none!important}
 .sidebar-logout:hover,.sidebar-logout:focus-visible{background:rgba(127,29,29,.25)!important;outline:none}
 
 @media(min-width:821px){
+  /* When the safety note disappears on collapse, the utility strip itself owns the bottom anchor. */
   .app-shell.sidebar-collapsed .sidebar-connection-status{
     display:grid!important;
     justify-items:center;
-    gap:5px!important;
-    padding-top:8px!important;
+    gap:6px!important;
+    margin-top:auto!important;
+    padding-top:10px!important;
   }
   .app-shell.sidebar-collapsed .sidebar-connection-row{
-    width:30px!important;
-    min-height:30px!important;
+    width:36px!important;
+    min-height:36px!important;
     padding:0!important;
     justify-content:center!important;
   }
   .app-shell.sidebar-collapsed .sidebar-connection-copy{display:none!important}
-  .app-shell.sidebar-collapsed .sidebar-status-dot{width:8px!important;height:8px!important}
+  .app-shell.sidebar-collapsed .sidebar-status-dot{width:9px!important;height:9px!important}
   .app-shell.sidebar-collapsed .sidebar-utility-actions{
     margin-left:0;
     display:grid;
     justify-items:center;
-    gap:2px;
+    gap:4px;
+  }
+  .app-shell.sidebar-collapsed .sidebar-settings-button{
+    width:40px;
+    min-height:40px!important;
+    font-size:20px!important;
+  }
+  .app-shell.sidebar-collapsed .sidebar-logout{
+    width:36px;
+    min-height:36px!important;
+  }
+
+  /* Same immediate hint treatment as the collapsed primary navigation. */
+  .app-shell.sidebar-collapsed .sidebar-connection-row::after,
+  .app-shell.sidebar-collapsed .sidebar-settings-button::after,
+  .app-shell.sidebar-collapsed .sidebar-logout::after{
+    content:attr(data-hint);
+    position:absolute;
+    left:calc(100% + 12px);
+    top:50%;
+    transform:translateY(-50%) translateX(-4px);
+    display:block;
+    padding:7px 10px;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:9px;
+    background:#111827;
+    color:#fff;
+    box-shadow:0 8px 24px rgba(17,24,39,.2);
+    font-size:12px;
+    font-weight:700;
+    line-height:1;
+    white-space:nowrap;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .12s ease,transform .12s ease,visibility .12s ease;
+    z-index:280;
+  }
+  .app-shell.sidebar-collapsed .sidebar-connection-row:hover::after,
+  .app-shell.sidebar-collapsed .sidebar-connection-row:focus-visible::after,
+  .app-shell.sidebar-collapsed .sidebar-settings-button:hover::after,
+  .app-shell.sidebar-collapsed .sidebar-settings-button:focus-visible::after,
+  .app-shell.sidebar-collapsed .sidebar-logout:hover::after,
+  .app-shell.sidebar-collapsed .sidebar-logout:focus-visible::after{
+    opacity:1;
+    visibility:visible;
+    transform:translateY(-50%) translateX(0);
   }
 }
 
@@ -169,4 +319,13 @@
   .settings-view .settings-page-form{grid-template-columns:1fr}
   .settings-view .settings-section:nth-of-type(3),
   .settings-view .security-note{grid-column:1}
+  .settings-view .platform-format-controls{
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+  }
+}
+
+@media(max-width:620px){
+  .settings-view .platform-add-row{grid-template-columns:1fr auto}
+  .settings-view .platform-setting-row{grid-template-columns:1fr!important;gap:8px!important}
 }
