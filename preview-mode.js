@@ -70,7 +70,7 @@
   function isSceneMarker(line) {
     const value = String(line || '').trim();
     if (!value) return false;
-    const marker = String(window.state?.sceneMarker || '').trim();
+    const marker = typeof state !== 'undefined' ? String(state?.sceneMarker || '').trim() : '';
     return Boolean((marker && value === marker) || /^[＊*]{3,}$/.test(value));
   }
 
@@ -182,8 +182,8 @@
   }
 
   function previewText(element, stateRecord) {
-    if (isSourceRaw(element) && typeof window.webFormat === 'function') {
-      return window.webFormat(stateRecord.rawText || '');
+    if (isSourceRaw(element) && typeof webFormat === 'function') {
+      return webFormat(stateRecord.rawText || '');
     }
     return stateRecord.rawText || '';
   }
@@ -197,7 +197,7 @@
     element.classList.toggle('sf-preview-raw', mode === 'raw');
 
     if (mode === 'raw') {
-      element.innerHTML = `<span class="sf-preview-raw-root" data-sf-preview-owned="1"></span>`;
+      element.innerHTML = '<span class="sf-preview-raw-root" data-sf-preview-owned="1"></span>';
       element.querySelector('[data-sf-preview-owned]').textContent = stateRecord.rawText || '';
       return;
     }
@@ -208,7 +208,7 @@
     element.innerHTML = `<span class="sf-preview-rendered-root" data-sf-preview-owned="1">${html}</span>`;
   }
 
-  function controlMarkup(group) {
+  function controlMarkup() {
     return `
       <span class="sf-preview-mode-label">顯示</span>
       <span class="sf-preview-mode-segment" role="group" aria-label="預覽顯示模式">
@@ -232,7 +232,7 @@
     const control = document.createElement('div');
     control.className = `sf-preview-mode-control sf-preview-mode-${group}`;
     control.dataset.sfPreviewControl = group;
-    control.innerHTML = controlMarkup(group);
+    control.innerHTML = controlMarkup();
     control.addEventListener('click', event => {
       const button = event.target.closest('[data-sf-mode]');
       if (!button) return;
@@ -289,18 +289,15 @@
           stateRecord = { group, rawText: '', authoredHtml: '' };
           states.set(element, stateRecord);
           captureAuthoredContent(element, stateRecord);
-          renderTarget(element);
-          return;
-        }
-
-        // Feature modules write their latest preview back into the same element.
-        // Our render always leaves one owned root; its disappearance means the
-        // underlying feature supplied new Markdown that needs to be captured.
-        if (!element.querySelector(':scope > [data-sf-preview-owned]')) {
+        } else if (!element.querySelector(':scope > [data-sf-preview-owned]')) {
+          // Feature modules write their latest preview back into the same element.
+          // Our render always leaves one owned root; its disappearance means the
+          // underlying feature supplied new Markdown that needs to be captured.
           captureAuthoredContent(element, stateRecord);
-          renderTarget(element);
         }
+        renderTarget(element);
       });
+      ['split', 'review', 'source', 'publish'].forEach(syncControl);
     });
   }
 
@@ -322,13 +319,6 @@
       if (mutation.type === 'attributes' && mutation.attributeName === 'open') resetDialogMode(mutation.target);
     }
     scan();
-    ['review', 'source', 'publish'].forEach(group => {
-      syncControl(group);
-      document.querySelectorAll(TARGET_SELECTOR).forEach(element => {
-        const stateRecord = states.get(element);
-        if (stateRecord?.group === group) renderTarget(element);
-      });
-    });
   });
 
   startObserver();
