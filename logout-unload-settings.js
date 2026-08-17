@@ -87,7 +87,7 @@
       sidebar.dataset.hint = '登出並卸載設定';
       sidebar.setAttribute('aria-label', '登出並卸載設定');
       const label = sidebar.querySelector('.sidebar-logout-label');
-      if (label) label.textContent = '登出並卸載設定';
+      if (label && label.textContent !== '登出並卸載設定') label.textContent = '登出並卸載設定';
     }
     const top = document.getElementById('storyflowLogoutBtn');
     if (top) {
@@ -96,9 +96,15 @@
     }
   }
 
+  // IMPORTANT: do not observe the whole document here. The previous implementation
+  // used a subtree MutationObserver and rewrote textContent inside its own callback.
+  // That generated another childList mutation, which could loop continuously and
+  // consume a mobile CPU core while Google/session restoration was trying to run.
+  // The logout controls are created before this script; settings-page runs next and
+  // may adjust their copy once, so a zero-delay follow-up is sufficient.
   updateLogoutCopy();
-  const observer = new MutationObserver(updateLogoutCopy);
-  observer.observe(document.body, { childList: true, subtree: true });
+  window.setTimeout(updateLogoutCopy, 0);
+  window.addEventListener('storyflow:view-changed', updateLogoutCopy);
 
   window.StoryFlowLogout = { logout, clearSessionState };
 })();
