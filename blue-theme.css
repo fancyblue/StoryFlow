@@ -1,0 +1,157 @@
+/* StoryFlow blue visual system.
+   Loaded last so older purple-era component styles inherit one consistent product theme. */
+:root{
+  --bg:#f4f7fb;
+  --panel:#ffffff;
+  --text:#172033;
+  --muted:#6f7a8d;
+  --line:#e2e8f1;
+  --line-strong:#cfd9e7;
+  --primary:#2563eb;
+  --primary-hover:#1d4ed8;
+  --primary-soft:#eaf2ff;
+  --surface-soft:#f8faff;
+  --sidebar:#0d1b30;
+  --success:#15805d;
+  --warning:#a16207;
+  --danger:#b42318;
+  --focus:0 0 0 3px rgba(37,99,235,.16);
+  --shadow-card:0 1px 2px rgba(15,43,77,.025),0 8px 28px rgba(15,43,77,.04);
+  --shadow-pop:0 18px 50px rgba(15,43,77,.18);
+  accent-color:var(--primary);
+}
+
+html,body{background:var(--bg);color:var(--text)}
+body{background-image:linear-gradient(180deg,#f7faff 0,#f4f7fb 220px,#f4f7fb 100%)}
+
+/* Primary actions use blue everywhere; hierarchy comes from fill, not size. */
+.button.primary{
+  background:var(--primary)!important;
+  border-color:var(--primary)!important;
+  color:#fff!important;
+}
+.button.primary:hover:not(:disabled){
+  background:var(--primary-hover)!important;
+  border-color:var(--primary-hover)!important;
+}
+.button.primary:active:not(:disabled){transform:translateY(1px)}
+.button.ghost:hover:not(:disabled),.icon-button:hover:not(:disabled){
+  background:#f2f6fc!important;
+  border-color:#c8d5e6!important;
+}
+.button:focus-visible,.icon-button:focus-visible,.nav-item:focus-visible,.connection-chip:focus-visible,
+.publishing-filter:focus-visible,.source-choice:focus-visible,.tab-choice:focus-visible,
+.chapter-main-button:focus-visible,.project-library-card button:focus-visible,
+.sidebar-settings-button:focus-visible,.sidebar-toggle:focus-visible{
+  outline:none!important;
+  box-shadow:var(--focus)!important;
+}
+button:disabled{opacity:.46!important;cursor:not-allowed!important}
+
+/* Form fields stay quiet until interaction. */
+.text-input,.title-input,.range-grid input,select,textarea,.compact-select{
+  border-color:var(--line-strong)!important;
+}
+.text-input:hover:not(:disabled),.range-grid input:hover:not(:disabled),select:hover:not(:disabled),textarea:hover:not(:disabled){
+  border-color:#b9c8dc!important;
+}
+.text-input:focus,.title-input:focus,.range-grid input:focus,textarea:focus,select:focus,.compact-select:focus{
+  border-color:#5b8def!important;
+  box-shadow:var(--focus)!important;
+}
+
+/* Sidebar: dark navy, stable blue selected state, no purple remnants. */
+.sidebar{background:linear-gradient(180deg,#0c1a2e 0%,#0e2039 100%)!important}
+.brand-mark{background:linear-gradient(135deg,#60a5fa,#2563eb 55%,#1d4ed8)!important;box-shadow:0 8px 22px rgba(37,99,235,.25)}
+.sidebar .nav-item{color:#c2cedd!important}
+.sidebar .nav-item:hover{background:#172c49!important;color:#fff!important}
+.sidebar .nav-item.active{background:#173b6c!important;color:#fff!important;box-shadow:inset 3px 0 0 #60a5fa}
+.sidebar-settings-button{color:#bfdbfe!important}
+.sidebar-settings-button:hover{background:rgba(96,165,250,.12)!important;color:#fff!important}
+.sidebar-settings-button.active{color:#60a5fa!important;background:rgba(37,99,235,.12)!important}
+.sidebar-settings-button:focus-visible{outline:2px solid rgba(96,165,250,.65)!important;outline-offset:2px!important;box-shadow:none!important}
+.sidebar-toggle{background:#132741!important;border-color:rgba(191,219,254,.18)!important;color:#dbeafe!important}
+.sidebar-toggle:hover,.sidebar-toggle:focus-visible{background:#173b63!important;color:#fff!important}
+.app-shell.sidebar-collapsed .nav-item::after{background:#0b1830!important;border-color:rgba(191,219,254,.14)!important}
+
+/* Connection surfaces use blue for neutral connected affordances, green only for success. */
+.connection-chip:hover{background:#f6f9fe!important;border-color:#cbd7e7!important}
+.sidebar-connection-row:hover,.sidebar-connection-row:focus-visible{background:rgba(96,165,250,.10)!important;border-color:rgba(147,197,253,.16)!important}
+
+/* Cards and page chrome get a very light blue cast rather than grey/purple. */
+.panel,.stat-card,.project-library-card,.publishing-stats article,.settings-view .settings-section,
+.settings-view .security-note,.publishing-project-badge{
+  border-color:var(--line)!important;
+  box-shadow:var(--shadow-card)!important;
+}
+.eyebrow{color:#7c8799!important}
+.notice{
+  background:#f1f6ff!important;
+  border-color:#d7e5fb!important;
+  color:#36577e!important;
+}
+.security-note,.settings-view .security-note{background:#f6f9fd!important;border-color:#dfe7f2!important;color:#58687c!important}
+.settings-view .security-note::before{background:#e6f0ff!important;color:#2563eb!important}
+
+/* Workspace/source selections. */
+.chapter-group-label{background:#eef5ff!important;color:#285fa8!important}
+.chapter-item.active{background:#e9f2ff!important;color:#174b94!important}
+.chapter-item:hover{background:#f1f6fc!important}
+.project-switcher-actions .button:hover{background:#eef5ff!important}
+.project-switcher-actions #newProjectBtn{color:#1d5bb8!important}
+.empty-icon{background:#e8f2ff!important;color:#2563eb!important}
+.workspace-grid.workspace-empty-mode #suggestionEmpty{border-color:#ccd9ea!important;background:#fbfdff!important}
+.workspace-source-empty,.projects-empty-state{border-color:#d5dfec!important;background:#fbfdff!important}
+
+/* Smart Split: one content frame, quiet blue utilities. */
+.splitter-panel .smart-split-header-actions #openSplitReviewBtn{color:#2563eb!important}
+.splitter-panel .smart-split-header-actions #openSplitReviewBtn:hover{background:#edf4ff!important}
+.splitter-panel .smart-split-mini-settings .range-grid input:focus,
+.splitter-panel .scene-marker-compact #sceneMarker:focus,
+.splitter-panel .suggestion-platform-bar select.text-input:focus{border-color:#5b8def!important;box-shadow:var(--focus)!important}
+.splitter-panel .suggestion-title-input:hover,.splitter-panel .suggestion-title-input:focus{border-bottom-color:#8bb1f3!important}
+.splitter-panel .suggestion-title-row .pill,.pill{background:#eaf2ff!important;color:#245db8!important}
+#splitPlatformBar .sf-preview-mode-segment button.active,
+.sf-preview-mode-segment button.active{color:#1f5fc4!important;background:#fff!important;box-shadow:0 1px 4px rgba(26,75,133,.10)!important}
+.sf-md-quote{border-left-color:#b9d2f6!important}
+.sf-preview-rendered-root a{color:#1d5fc1!important}
+.split-preview-shell .preview{border-color:#dfe7f2!important}
+
+/* Works library. */
+.project-library-card.active{border-color:#8fb3ef!important;box-shadow:0 0 0 2px #edf4ff inset!important}
+.project-library-card:hover{border-color:#c8d5e6!important}
+
+/* Publishing: selected/filter state is blue; success stays green, partial stays amber. */
+.publishing-filter.active{background:#eaf2ff!important;border-color:#a9c5f1!important;color:#174f9f!important}
+.publish-list-item:hover{border-color:#c8d5e6!important}
+.publish-list-item.expanded{border-color:#8fb3ef!important;box-shadow:0 5px 18px rgba(37,99,235,.07)!important}
+.publish-list-summary:focus-visible{box-shadow:inset 0 0 0 2px #8fb3ef!important}
+.publish-platform-details{background:#f8fbff!important}
+
+/* Settings/bootstrap states should read like account setup, not a purple promo card. */
+.settings-bootstrap-panel{border-color:#d8e4f4!important;background:#f8fbff!important}
+.settings-bootstrap-panel.configured{background:#f8fbff!important}
+.settings-google-status.connected{background:#eefaf5!important;border-color:#bfe8d5!important;color:#176b4b!important}
+.portable-settings-note,.settings-view .portable-settings-note{background:#f6f9fd!important}
+
+/* Tabs/choices and other selection surfaces. */
+.tab-choice:hover,.source-choice:hover{border-color:#9ebceb!important;background:#f3f7ff!important}
+.tab-choice:focus-visible,.source-choice:focus-visible{border-color:#5b8def!important}
+
+/* Destructive actions remain red and never inherit the blue emphasis. */
+.project-delete-btn,.project-library-delete,.publish-delete-btn,.connection-logout,.sidebar-logout,
+#clearPickerKeyBtn,.danger,.button.danger{color:#b42318!important}
+.project-delete-btn:hover,.project-library-delete:hover,.publish-delete-btn:hover,#clearPickerKeyBtn:hover,.button.danger:hover{
+  background:#fff4f3!important;border-color:#fecaca!important;color:#991b1b!important
+}
+
+/* Mobile bottom navigation remains readable against navy. */
+@media(max-width:820px){
+  .sidebar{background:#0d1b30!important;box-shadow:0 -10px 30px rgba(13,27,48,.16)!important}
+  .sidebar .nav-item.active{background:#173b6c!important;box-shadow:none!important}
+  .sidebar .nav-item:hover{background:#17304f!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .button.primary:active:not(:disabled){transform:none}
+}
