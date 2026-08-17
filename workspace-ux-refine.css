@@ -41,6 +41,16 @@
 
 /* "作品與章節" gets a local work switcher instead of forcing a detour through Works. */
 .source-panel{position:sticky}
+.source-panel>.panel-head{
+  flex-wrap:wrap!important;
+  align-items:center!important;
+}
+.source-panel>.panel-head>div:first-child{flex:1 1 auto;min-width:0}
+.source-panel>.panel-head .source-panel-actions{
+  flex:1 0 100%!important;
+  width:100%!important;
+  margin-top:3px!important;
+}
 .source-heading-title-row{
   display:flex;
   align-items:center;
