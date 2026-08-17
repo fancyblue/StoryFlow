@@ -1,16 +1,17 @@
-/* Mobile visual polish: keep StoryFlow airy and powder-blue without sacrificing contrast. */
+/* Mobile visual polish: primary navigation first, connection state second.
+   The utility row is intentionally plain text + dots rather than competing status pills. */
 @media (max-width: 820px) {
   body {
-    background:#f8fcff !important;
+    background:#f8fcfe !important;
     background-image:none !important;
   }
 
-  /* Keep the workspace header compact; save state is secondary metadata, not a row. */
+  /* Header: page title is primary; save state is quiet metadata. */
   .topbar {
     position:relative;
     gap:6px !important;
     margin-bottom:14px !important;
-    padding-right:74px;
+    padding-right:76px;
   }
   .topbar .top-actions {
     position:absolute;
@@ -20,37 +21,41 @@
     margin:0;
   }
   .topbar .save-state {
-    color:#5f8098 !important;
+    color:#5c7a8f !important;
     font-size:12px !important;
     font-weight:700 !important;
   }
 
-  /* Reduce the feeling of stacked white boxes on a phone. */
+  /* Mobile content should feel like one workspace, not a pile of floating cards. */
   .panel,
   .stat-card,
   .project-library-card,
   .publishing-stats article,
   .settings-view .settings-section {
-    border-color:#dceaf4 !important;
-    box-shadow:0 3px 14px rgba(66,128,166,.035) !important;
+    border-color:#dceaf2 !important;
+    box-shadow:0 2px 10px rgba(55,112,146,.025) !important;
   }
-  .stats-grid { gap:9px !important; }
+  .panel{border-radius:15px !important}
+  .stats-grid { gap:8px !important; }
   .stat-card {
     padding:12px 14px !important;
-    border-radius:17px !important;
+    border-radius:14px !important;
   }
-  .stat-card span { color:#5c7d95 !important; }
+  .stat-card span { color:#5c7a8f !important; }
+  .button.primary{box-shadow:none!important}
 
-  /* Bottom navigation: stronger blue text and a clearer selected state. */
+  /* Bottom navigation: light surface, stronger type, one calm active state. */
   .sidebar {
-    background:rgba(250,253,255,.99) !important;
-    border-top:1px solid #c8deec !important;
-    box-shadow:0 -6px 22px rgba(63,118,151,.11) !important;
-    color:#234f6d !important;
+    background:rgba(249,253,255,.985) !important;
+    border-top:1px solid #cfe2ed !important;
+    box-shadow:0 -5px 20px rgba(52,105,136,.10) !important;
+    color:#244f68 !important;
+    backdrop-filter:saturate(135%) blur(12px);
+    -webkit-backdrop-filter:saturate(135%) blur(12px);
   }
 
   .sidebar .nav-item {
-    color:#345f7a !important;
+    color:#42677d !important;
     font-size:18px !important;
     font-weight:800 !important;
   }
@@ -61,84 +66,124 @@
     line-height:1.2 !important;
   }
   .sidebar .nav-item:hover {
-    background:#e5f4fc !important;
-    color:#1f648d !important;
+    background:#edf7fc !important;
+    color:#276889 !important;
   }
   .sidebar .nav-item.active {
-    background:#cfeafa !important;
-    color:#155a84 !important;
-    box-shadow:inset 0 0 0 1px #b5dced !important;
+    background:#dff1fa !important;
+    color:#1f6285 !important;
+    box-shadow:none !important;
   }
 
-  /* Connection state must remain readable even when disconnected. */
+  /* Utility row: no pills. Show subject + state as a compact status line. */
   .sidebar-connection-status {
-    border-top-color:#d0e2ee !important;
+    border-top:1px solid #dbe9f1 !important;
+    padding-top:5px !important;
   }
   .sidebar-connection-row {
-    background:#ffffff !important;
-    border:1px solid #cfe1ec !important;
-    color:#315b73 !important;
+    min-height:30px !important;
+    padding:4px 3px !important;
+    border:0 !important;
+    border-radius:7px !important;
+    background:transparent !important;
+    color:#355d73 !important;
     box-shadow:none !important;
   }
   .sidebar-connection-row:hover,
   .sidebar-connection-row:focus-visible {
-    background:#edf7fc !important;
-    border-color:#b9d6e7 !important;
+    background:#eef7fb !important;
+    border:0 !important;
+    outline:none !important;
+  }
+  .sidebar-connection-copy {
+    gap:4px !important;
+    overflow:visible !important;
+  }
+  .sidebar-connection-copy b {
+    display:inline !important;
+    flex:0 0 auto !important;
+    color:#71899a !important;
+    font-size:10px !important;
+    font-weight:700 !important;
+    letter-spacing:.01em !important;
   }
   .sidebar-connection-copy small {
-    color:#315b73 !important;
+    max-width:none !important;
+    color:#355d73 !important;
     font-size:12px !important;
     font-weight:800 !important;
     line-height:1.2 !important;
     opacity:1 !important;
   }
   .sidebar-status-dot {
-    background:#8faabc !important;
-    box-shadow:0 0 0 2px #edf6fb !important;
+    width:7px !important;
+    height:7px !important;
+    background:#829fb2 !important;
+    box-shadow:none !important;
   }
+
+  /* Connected/restoring are semantic accents, not filled badges. */
   .sidebar-connection-row.connected {
-    background:#f0faf5 !important;
-    border-color:#c7e5d6 !important;
+    background:transparent !important;
+    border:0 !important;
   }
+  .sidebar-connection-row.connected .sidebar-connection-copy b { color:#668577 !important; }
   .sidebar-connection-row.connected .sidebar-status-dot {
-    background:#75b995 !important;
-    box-shadow:0 0 0 2px #e6f5ed !important;
+    background:#62a783 !important;
+    box-shadow:none !important;
   }
   .sidebar-connection-row.connected .sidebar-connection-copy small {
-    color:#39755a !important;
+    color:#397556 !important;
   }
   .sidebar-connection-row.restoring {
-    background:#fff8ef !important;
-    border-color:#ecd9be !important;
+    background:transparent !important;
+    border:0 !important;
   }
+  .sidebar-connection-row.restoring .sidebar-connection-copy b { color:#8b765e !important; }
   .sidebar-connection-row.restoring .sidebar-status-dot {
-    background:#c99a5e !important;
-    box-shadow:0 0 0 2px #fff1dd !important;
+    background:#bd8f55 !important;
+    box-shadow:none !important;
   }
   .sidebar-connection-row.restoring .sidebar-connection-copy small {
-    color:#765735 !important;
+    color:#795a37 !important;
   }
 
   .sidebar-settings-button {
-    color:#356e91 !important;
+    color:#356f91 !important;
     background:transparent !important;
+    border-radius:9px !important;
   }
   .sidebar-settings-button:hover,
   .sidebar-settings-button:focus-visible {
-    background:#e5f4fb !important;
-    color:#225f87 !important;
+    background:#eaf6fb !important;
+    color:#225f82 !important;
   }
   .sidebar-settings-button.active {
-    background:#cfeafa !important;
-    color:#155a84 !important;
+    background:#dff1fa !important;
+    color:#1f6285 !important;
   }
   .sidebar-logout {
-    color:#bd6872 !important;
+    color:#b96570 !important;
   }
   .sidebar-logout:hover,
   .sidebar-logout:focus-visible {
     background:#fff0f2 !important;
-    border-color:#f1d0d5 !important;
-    color:#a14f5a !important;
+    border-color:#efcbd0 !important;
+    color:#9f505a !important;
   }
+
+  /* Keep empty/content surfaces bright rather than grey-blue. */
+  .workspace-grid.workspace-empty-mode #suggestionEmpty,
+  .workspace-source-empty,
+  .projects-empty-state,
+  .source-preview-content,
+  .preview {
+    background:#fcfeff !important;
+  }
+}
+
+@media (max-width:390px) {
+  .sidebar-connection-copy { gap:3px !important; }
+  .sidebar-connection-copy b { font-size:9px !important; }
+  .sidebar-connection-copy small { font-size:11px !important; }
 }
