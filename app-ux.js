@@ -134,6 +134,16 @@
     return groups;
   }
 
+  function syncSourceActionState() {
+    const chapter = activeChapter?.();
+    const hasGoogleSource = Boolean(chapter?.source?.id && chapter?.source?.tabId);
+    const refresh = document.getElementById('refreshSourceBtn');
+    if (refresh) {
+      refresh.hidden = !hasGoogleSource;
+      refresh.disabled = !hasGoogleSource;
+    }
+  }
+
   function renderChaptersWithActions() {
     const list = document.getElementById('chapterList');
     if (!list) return;
@@ -176,6 +186,7 @@
         list.appendChild(row);
       });
     });
+    syncSourceActionState();
   }
 
   function formatSummary(platform) {
@@ -233,7 +244,10 @@
     if (event.target?.closest?.('#openSplitReviewBtn')) setTimeout(refreshFormatSummaries, 0);
   });
 
-  window.addEventListener('storyflow:projects-changed', renderProjectsView);
+  window.addEventListener('storyflow:projects-changed', () => {
+    renderProjectsView();
+    syncSourceActionState();
+  });
   window.StoryFlowRenderProjects = renderProjectsView;
 
   const observer = new MutationObserver(() => {
@@ -246,6 +260,7 @@
   renderProjectsView();
   renderChaptersWithActions();
   refreshFormatSummaries();
+  syncSourceActionState();
   removeLegacyReset();
   labelCloseButtons();
 })();
