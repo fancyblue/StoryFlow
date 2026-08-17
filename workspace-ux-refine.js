@@ -16,8 +16,15 @@
     catch (_) { return []; }
   }
 
+  function sourceScopes() {
+    try { return typeof state !== 'undefined' && Array.isArray(state.sourceScopes) ? state.sourceScopes : []; }
+    catch (_) { return []; }
+  }
+
   function hasGoogleSource() {
-    return chapters().some(chapter => chapter?.source?.id && chapter?.source?.tabId);
+    if (sourceScopes().some(scope => scope?.docId && scope?.tabId)) return true;
+    return chapters().some(chapter => [chapter?.source, chapter?.detachedSource]
+      .some(source => source?.id && source?.tabId));
   }
 
   function ensureSidebarUtilityIcons() {
@@ -138,8 +145,12 @@
     const refresh = document.getElementById('refreshSourceBtn');
     if (!actions || !refresh) return;
 
+    const linked = hasGoogleSource();
     let hint = document.getElementById('manualSourceSyncHint');
-    if (!hasGoogleSource()) {
+    actions.classList.toggle('has-linked-source', linked);
+    actions.classList.toggle('manual-only-source', !linked);
+
+    if (!linked) {
       refresh.hidden = true;
       refresh.disabled = true;
       if (!hint) {
@@ -152,9 +163,8 @@
       }
       hint.hidden = false;
     } else {
-      if (hint) hint.hidden = true;
+      hint?.remove();
       refresh.hidden = false;
-      refresh.disabled = false;
       refresh.title = '比較整個作品與已連結 Google Docs 的差異';
     }
   }
