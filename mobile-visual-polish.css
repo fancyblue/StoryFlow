@@ -6,7 +6,6 @@
     background-image:none !important;
   }
 
-  /* Header: compact and calm. */
   .topbar {
     position:relative;
     gap:6px !important;
@@ -26,7 +25,6 @@
     font-weight:700 !important;
   }
 
-  /* Content uses white cards and very soft denim borders; no grey wash. */
   .panel,
   .stat-card,
   .project-library-card,
@@ -45,12 +43,11 @@
   .button.primary{background:#4d8cc2!important;border-color:#4d8cc2!important;box-shadow:none!important}
   .button.primary:hover:not(:disabled){background:#3975a7!important;border-color:#3975a7!important}
 
-  /* Bottom navigation: use the dark denim swatch as one continuous product bar.
-     No white cards or floating pills are allowed inside this surface. */
+  /* Bottom navigation and connection utility stay deliberately dark. */
   .sidebar {
     background:#234463 !important;
     border-top:0 !important;
-    box-shadow:0 -7px 24px rgba(35,68,99,.20) !important;
+    box-shadow:0 -7px 24px rgba(35,68,99,.22) !important;
     color:#fff !important;
     backdrop-filter:none !important;
     -webkit-backdrop-filter:none !important;
@@ -74,15 +71,13 @@
     box-shadow:none !important;
   }
   .sidebar .nav-item.active {
-    background:#3975a7 !important;
+    background:#2d5d85 !important;
     color:#fff !important;
-    box-shadow:inset 0 0 0 1px rgba(180,206,229,.18) !important;
+    box-shadow:inset 0 2px 0 #91b8d9 !important;
   }
 
-  /* Connection utility row: compact text, no pills, no white focused card.
-     The state itself carries the meaning; color only supports it. */
   .sidebar-connection-status {
-    border-top:1px solid rgba(180,206,229,.28) !important;
+    border-top:1px solid rgba(180,206,229,.24) !important;
     padding-top:5px !important;
   }
   .sidebar-connection-row,
@@ -102,9 +97,9 @@
   .sidebar-connection-row.connected:focus-visible,
   .sidebar-connection-row.restoring:hover,
   .sidebar-connection-row.restoring:focus-visible {
-    background:rgba(77,140,194,.18) !important;
+    background:#2d5d85 !important;
     border:0 !important;
-    outline:1px solid rgba(145,184,217,.30) !important;
+    outline:none !important;
     box-shadow:none !important;
   }
   .sidebar-connection-copy {
@@ -141,14 +136,13 @@
     background:#6fa2cf !important;
     box-shadow:none !important;
   }
-  .sidebar-connection-row.connected .sidebar-status-dot { background:#b4cee5 !important; }
+  .sidebar-connection-row.connected .sidebar-status-dot { background:#91b8d9 !important; }
   .sidebar-connection-row.connected .sidebar-connection-copy b { color:#91b8d9 !important; }
   .sidebar-connection-row.connected .sidebar-connection-copy small { color:#fff !important; }
-  .sidebar-connection-row.restoring .sidebar-status-dot { background:#91b8d9 !important; }
+  .sidebar-connection-row.restoring .sidebar-status-dot { background:#b4cee5 !important; }
   .sidebar-connection-row.restoring .sidebar-connection-copy b { color:#91b8d9 !important; }
   .sidebar-connection-row.restoring .sidebar-connection-copy small { color:#fff !important; }
 
-  /* Settings is a utility icon, not a fourth status card. */
   .sidebar-settings-button {
     color:#b4cee5 !important;
     background:transparent !important;
@@ -159,13 +153,13 @@
   .sidebar-settings-button:hover,
   .sidebar-settings-button:focus-visible {
     background:#2d5d85 !important;
-    border-color:rgba(180,206,229,.18) !important;
+    border-color:rgba(180,206,229,.16) !important;
     color:#fff !important;
     box-shadow:none !important;
   }
   .sidebar-settings-button.active {
-    background:#3975a7 !important;
-    border-color:rgba(180,206,229,.18) !important;
+    background:#2d5d85 !important;
+    border-color:rgba(180,206,229,.16) !important;
     color:#fff !important;
   }
   .sidebar-logout {
@@ -174,7 +168,7 @@
   .sidebar-logout:hover,
   .sidebar-logout:focus-visible {
     background:#2d5d85 !important;
-    border-color:rgba(180,206,229,.18) !important;
+    border-color:rgba(180,206,229,.16) !important;
     color:#fff !important;
   }
 
