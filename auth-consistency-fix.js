@@ -3,9 +3,15 @@
 // bootstrap edge case where an old in-memory token survives after settings.json
 // clears the session cache, leaving the UI saying "已登入" while API calls fail.
 (function () {
-  const integrations = window.StoryFlowIntegrations;
+  // integrations.js declares StoryFlowIntegrations with top-level `const`, which is
+  // shared across classic scripts but is NOT a window property. Using only
+  // window.StoryFlowIntegrations made this whole repair module silently return.
+  const integrations = typeof StoryFlowIntegrations !== 'undefined'
+    ? StoryFlowIntegrations
+    : window.StoryFlowIntegrations;
   if (!integrations || integrations.__authConsistencyInstalled) return;
   integrations.__authConsistencyInstalled = true;
+  if (!window.StoryFlowIntegrations) window.StoryFlowIntegrations = integrations;
 
   const rawHasGoogleToken = integrations.hasGoogleToken.bind(integrations);
   const sessionAuth = () => window.StoryFlowSessionAuth;
