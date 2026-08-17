@@ -1,5 +1,5 @@
-// StoryFlow content persistence lives in the selected Google Drive-mounted folder.
-// The browser may remember only the folder handle so refreshes can reconnect automatically.
+// StoryFlow content and user-specific integration configuration live in the selected
+// StoryFlow folder. Public repository code contains no personal Google Cloud IDs.
 (function () {
   let saveTimer = null;
   let applyingDriveState = false;
@@ -23,6 +23,67 @@
       .filter(name => name && !seen.has(name) && seen.add(name));
   }
 
+  function normalizeGoogleClientId(value) {
+    return String(value || '').trim();
+  }
+
+  function projectNumberFromClientId(clientId) {
+    const match = normalizeGoogleClientId(clientId).match(/^(\d+)-.+\.apps\.googleusercontent\.com$/i);
+    return match?.[1] || '';
+  }
+
+  function googleClientId() {
+    return normalizeGoogleClientId(window.STORYFLOW_CONFIG?.googleClientId);
+  }
+
+  function setGoogleClientId(value) {
+    window.STORYFLOW_CONFIG ||= {};
+    const clientId = normalizeGoogleClientId(value);
+    window.STORYFLOW_CONFIG.googleClientId = clientId || null;
+    window.STORYFLOW_CONFIG.googleProjectNumber = clientId ? projectNumberFromClientId(clientId) || null : null;
+    return clientId;
+  }
+
+  function ensureGoogleSettingsFields() {
+    const pickerInput = document.getElementById('pickerApiKeyInput');
+    const section = pickerInput?.closest('.settings-section');
+    if (!pickerInput || !section) return;
+
+    const heading = section.querySelector(':scope > strong');
+    const intro = section.querySelector(':scope > p');
+    if (heading) heading.textContent = 'Google 整合';
+    if (intro) intro.innerHTML = 'OAuth Client ID 與 Picker API Key 都保存在你選擇的 StoryFlow 資料夾 <code>settings.json</code>，不需要寫進 GitHub。分享或 clone 專案時，每個人可使用自己的 Google Cloud 設定。';
+
+    let clientInput = document.getElementById('googleClientIdInput');
+    if (!clientInput) {
+      const clientLabel = document.createElement('label');
+      clientLabel.className = 'field-label';
+      clientLabel.htmlFor = 'googleClientIdInput';
+      clientLabel.textContent = 'Google OAuth Client ID';
+      clientInput = document.createElement('input');
+      clientInput.id = 'googleClientIdInput';
+      clientInput.className = 'text-input';
+      clientInput.type = 'text';
+      clientInput.autocomplete = 'off';
+      clientInput.spellcheck = false;
+      clientInput.placeholder = '1234567890-xxxxxxxx.apps.googleusercontent.com';
+      section.insertBefore(clientLabel, pickerInput);
+      section.insertBefore(clientInput, pickerInput);
+
+      const pickerLabel = document.createElement('label');
+      pickerLabel.className = 'field-label';
+      pickerLabel.htmlFor = 'pickerApiKeyInput';
+      pickerLabel.textContent = 'Google Picker API Key';
+      section.insertBefore(pickerLabel, pickerInput);
+    }
+
+    clientInput.value = googleClientId();
+    const save = document.getElementById('savePickerKeyBtn');
+    const clear = document.getElementById('clearPickerKeyBtn');
+    if (save) save.textContent = '保存 Google 整合設定';
+    if (clear) clear.textContent = '清除 Google 設定';
+  }
+
   function ensurePlatformConfigs() {
     state.formatting ||= structuredClone(defaultState.formatting);
     state.formatting.platforms ||= {};
@@ -33,8 +94,9 @@
 
   function settingsPayload() {
     return {
-      schemaVersion: 2,
+      schemaVersion: 3,
       updatedAt: new Date().toISOString(),
+      googleClientId: googleClientId(),
       pickerApiKey: StoryFlowIntegrations.pickerApiKey(),
       platforms: [...platforms],
       formatting: state.formatting,
@@ -82,12 +144,14 @@
 
   function applySavedSettings(saved) {
     if (!saved) return;
+    if (typeof saved.googleClientId === 'string') setGoogleClientId(saved.googleClientId);
     const savedPlatforms = normalizePlatforms(saved.platforms);
     if (Array.isArray(saved.platforms)) platforms.splice(0, platforms.length, ...savedPlatforms);
     if (saved.formatting && typeof saved.formatting === 'object') state.formatting = saved.formatting;
     if (typeof saved.sceneMarker === 'string' && saved.sceneMarker.trim()) state.sceneMarker = saved.sceneMarker;
     StoryFlowIntegrations.setPickerApiKey(saved.pickerApiKey || '');
     ensurePlatformConfigs();
+    ensureGoogleSettingsFields();
   }
 
   function applySavedWorkspace(saved) {
@@ -115,6 +179,8 @@
       renderAll();
       if (activeChapter()?.draft) suggestNextPart();
       els.pickerApiKeyInput.value = StoryFlowIntegrations.pickerApiKey();
+      const clientInput = document.getElementById('googleClientIdInput');
+      if (clientInput) clientInput.value = googleClientId();
       notify(hasWorkspace || savedSettings ? '已從 StoryFlow 資料夾載入' : '新的 StoryFlow 資料夾');
       return Boolean(hasWorkspace || savedSettings);
     } finally {
@@ -158,7 +224,7 @@
         </div>
       </div>
       <div id="managedPlatformList" class="managed-platform-list"></div>
-      <div class="portable-settings-note">文章、平台設定與工作進度都保存在 StoryFlow 資料夾；本次瀏覽器工作階段只保留重新整理所需的連線資訊。</div>`;
+      <div class="portable-settings-note">文章、Google 整合設定、平台設定與工作進度都保存在 StoryFlow 資料夾；公開 repo 不需要放個人的 Client ID 或 API Key。</div>`;
     settingsList.insertAdjacentElement('beforebegin', manager);
     document.getElementById('addPlatformBtn').onclick = addPlatformFromInput;
     document.getElementById('newPlatformName').addEventListener('keydown', event => {
@@ -221,20 +287,69 @@
     return result;
   };
 
-  // Save API key into Drive settings instead of localStorage.
+  // Guard Google actions with local configuration. This gives clone/fork users a
+  // useful next step instead of a generic OAuth initialization error.
+  ['requestAccessToken', 'inspectGoogleDoc', 'refreshChapterSource'].forEach(name => {
+    const base = StoryFlowIntegrations[name];
+    if (typeof base !== 'function') return;
+    StoryFlowIntegrations[name] = async function configuredGoogleAction(...args) {
+      if (!googleClientId()) {
+        window.StoryFlowShowSettings?.();
+        throw new Error('請先在「設定 → Google 整合」輸入你自己的 OAuth Client ID。');
+      }
+      return base.apply(StoryFlowIntegrations, args);
+    };
+  });
+
+  // Save Google Client ID + Picker API key together into settings.json.
   document.getElementById('savePickerKeyBtn').onclick = async () => {
+    const clientInput = document.getElementById('googleClientIdInput');
+    const nextClientId = normalizeGoogleClientId(clientInput?.value);
+    if (!nextClientId || !projectNumberFromClientId(nextClientId)) {
+      notify('請輸入有效的 Google OAuth Client ID（*.apps.googleusercontent.com）', true);
+      clientInput?.focus();
+      return;
+    }
+    const changedClient = nextClientId !== googleClientId();
+    setGoogleClientId(nextClientId);
     StoryFlowIntegrations.setPickerApiKey(els.pickerApiKeyInput.value);
+    if (changedClient) {
+      window.StoryFlowSessionAuth?.forgetSession?.();
+      window.StoryFlowSessionAuth?.syncSignedOutUi?.();
+    }
     await persistAll({ quiet: false });
+    notify(changedClient ? 'Google 整合設定已保存；請重新登入 Google' : 'Google 整合設定已保存');
   };
+
   document.getElementById('clearPickerKeyBtn').onclick = async () => {
+    setGoogleClientId('');
     StoryFlowIntegrations.setPickerApiKey('');
+    const clientInput = document.getElementById('googleClientIdInput');
+    if (clientInput) clientInput.value = '';
     els.pickerApiKeyInput.value = '';
+    window.StoryFlowSessionAuth?.forgetSession?.();
+    window.StoryFlowSessionAuth?.syncSignedOutUi?.();
     await persistAll({ quiet: false });
+    notify('已清除 Google 整合設定');
   };
 
   document.getElementById('settingsDialog')?.addEventListener('change', event => {
-    if (event.target.id !== 'pickerApiKeyInput') schedulePersist();
+    if (!['pickerApiKeyInput', 'googleClientIdInput'].includes(event.target.id)) schedulePersist();
   });
+
+  const googleLoginButton = document.getElementById('googleLoginBtn');
+  if (googleLoginButton) {
+    const baseLogin = googleLoginButton.onclick;
+    googleLoginButton.onclick = event => {
+      if (!googleClientId()) {
+        event?.preventDefault?.();
+        window.StoryFlowShowSettings?.();
+        notify('請先設定 Google OAuth Client ID', true);
+        return;
+      }
+      return baseLogin?.call(googleLoginButton, event);
+    };
+  }
 
   // Clear test data now clears Drive workspace.json, while keeping settings/platforms.
   setTimeout(() => {
@@ -260,6 +375,10 @@
     }
 
     try {
+      if (!googleClientId()) {
+        window.StoryFlowSessionAuth?.syncSignedOutUi?.();
+        return;
+      }
       const restoredGoogle = await StoryFlowIntegrations.restoreGoogleAccess();
       if (restoredGoogle) await loginGoogleStatusOnly();
     } catch (error) {
@@ -267,6 +386,7 @@
     }
   }
 
+  ensureGoogleSettingsFields();
   // Remove legacy content caches while preserving the connection-only database.
   StoryFlowIntegrations.purgeLegacyBrowserStorage();
   ensurePlatformManager();
