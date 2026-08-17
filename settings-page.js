@@ -20,9 +20,15 @@
     document.body.appendChild(script);
   }
 
-  function ensureBlueThemeLast() {
+  // Late-loaded Settings assets used to move the desktop theme to the end of <head>,
+  // accidentally placing it after the mobile override. That made phones fall back to
+  // desktop sidebar colors and caused the inconsistent connection-status styling.
+  // Keep the final order deterministic: base component CSS -> desktop theme -> mobile theme.
+  function ensureThemeOrder() {
     const theme = document.getElementById('storyflowBlueThemeCss');
+    const mobile = document.getElementById('storyflowMobileVisualPolishCss');
     if (theme && theme.parentElement === document.head) document.head.appendChild(theme);
+    if (mobile && mobile.parentElement === document.head) document.head.appendChild(mobile);
   }
 
   function loadLateUiAssets() {
@@ -30,11 +36,11 @@
     loadStylesheet('storyflowControlPolishCss', './control-polish.css?v=20260817-1632');
     loadStylesheet('storyflowSettingsBootstrapCss', './settings-bootstrap.css?v=20260817-1703');
     loadStylesheet('storyflowNavigationUtilityPolishCss', './navigation-utility-polish.css?v=20260817-1902');
-    loadStylesheet('storyflowMobileBottomNavFixCss', './mobile-bottom-nav-fix.css?v=20260817-1927');
+    loadStylesheet('storyflowMobileBottomNavFixCss', './mobile-bottom-nav-fix.css?v=20260817-2130');
     loadScript('storyflowPlatformSettingsV2Js', './platform-settings-v2.js?v=20260817-1632');
     loadScript('storyflowSettingsBootstrapJs', './settings-bootstrap.js?v=20260817-1703');
     loadScript('storyflowSettingsFileImportFixJs', './settings-file-import-fix.js?v=20260817-1720');
-    ensureBlueThemeLast();
+    ensureThemeOrder();
   }
 
   function ensureSettingsView() {
@@ -135,7 +141,7 @@
       window.StoryFlowSettingsBootstrap?.sync?.();
     } catch (_) {}
     syncSettingsAvailability();
-    ensureBlueThemeLast();
+    ensureThemeOrder();
     window.StoryFlowNavigate?.('settings');
     if (focusPicker) requestAnimationFrame(() => document.getElementById('pickerApiKeyInput')?.focus());
   }
