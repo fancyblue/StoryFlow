@@ -1,7 +1,7 @@
 /* StoryFlow denim-blue visual system.
    Palette sampled from the user-provided swatches:
    #234463 #2D5D85 #3975A7 #4D8CC2 #6FA2CF #91B8D9 #B4CEE5
-   Brand/interactions use this palette; semantic success/danger stay soft green/coral. */
+   Brand/interactions use this palette; semantic states use accent dots rather than pale cards. */
 :root{
   --denim-900:#234463;
   --denim-800:#2d5d85;
@@ -59,18 +59,18 @@ h1,h2,h3{color:var(--denim-900)}
 .text-input:hover:not(:disabled),.range-grid input:hover:not(:disabled),select:hover:not(:disabled),textarea:hover:not(:disabled){border-color:var(--denim-400)!important}
 .text-input:focus,.title-input:focus,.range-grid input:focus,textarea:focus,select:focus,.compact-select:focus{border-color:var(--denim-600)!important;box-shadow:var(--focus)!important}
 
-/* Desktop navigation uses the dark end of the supplied denim palette. */
-.sidebar{background:linear-gradient(180deg,var(--denim-900) 0%,var(--denim-800) 100%)!important}
+/* Navigation deliberately stays at the dark end of the supplied denim palette. */
+.sidebar{background:var(--denim-900)!important}
 .brand-mark{background:linear-gradient(135deg,var(--denim-400),var(--denim-600) 55%,var(--denim-700))!important;box-shadow:0 7px 18px rgba(35,68,99,.20)}
 .sidebar .brand span{color:var(--denim-300)!important}
 .sidebar .nav-item{color:#dceaf4!important}
-.sidebar .nav-item:hover{background:rgba(145,184,217,.13)!important;color:#fff!important}
-.sidebar .nav-item.active{background:var(--denim-700)!important;color:#fff!important;box-shadow:inset 3px 0 0 var(--denim-400)!important}
-.sidebar-note{background:rgba(255,255,255,.065)!important;border-color:rgba(180,206,229,.15)!important;color:#d7e7f2!important}
+.sidebar .nav-item:hover{background:rgba(145,184,217,.12)!important;color:#fff!important}
+.sidebar .nav-item.active{background:var(--denim-800)!important;color:#fff!important;box-shadow:inset 3px 0 0 var(--denim-400)!important}
+.sidebar-note{background:rgba(255,255,255,.06)!important;border-color:rgba(180,206,229,.14)!important;color:#d7e7f2!important}
 .sidebar-note strong{color:#fff!important}
 .sidebar-settings-button{color:#deedf7!important}
-.sidebar-settings-button:hover{background:rgba(145,184,217,.14)!important;color:#fff!important}
-.sidebar-settings-button.active{background:var(--denim-700)!important;color:#fff!important}
+.sidebar-settings-button:hover{background:rgba(145,184,217,.13)!important;color:#fff!important}
+.sidebar-settings-button.active{background:var(--denim-800)!important;color:#fff!important}
 .sidebar-toggle{background:var(--denim-800)!important;border-color:rgba(180,206,229,.28)!important;color:#fff!important}
 .sidebar-toggle:hover,.sidebar-toggle:focus-visible{background:var(--denim-700)!important}
 .app-shell.sidebar-collapsed .nav-item::after{background:var(--denim-900)!important;border-color:rgba(180,206,229,.18)!important}
@@ -123,20 +123,31 @@ h1,h2,h3{color:var(--denim-900)}
 .settings-view .platform-add-button-v2:hover{background:#e5f0f7!important;border-color:var(--denim-400)!important}
 .settings-view .platform-default-row,.portable-settings-note,.settings-view .portable-settings-note{background:#f9fcfe!important}
 
-/* Status system. Neutral uses denim; semantic success/warning are the only non-blue accents. */
+/* Login/connection status also stays dark. Semantic meaning is a small dot, not a pastel card. */
 .status-dot{background:var(--denim-400)!important;box-shadow:0 0 0 4px #edf4f8!important}
-.connection-chip{background:#fff!important;border-color:#d4e4ee!important;color:var(--denim-800)!important}
-.connection-chip .connection-chip-dot{background:var(--denim-400)!important;box-shadow:0 0 0 3px #edf4f8!important}
-.connection-chip .connection-chip-state{color:var(--denim-800)!important;font-weight:800!important}
-.connection-chip:hover{background:#f1f7fa!important;border-color:var(--denim-300)!important}
-.status-dot.connected{background:#64a884!important;box-shadow:0 0 0 4px #eaf7f0!important}
-.connection-chip.connected{background:var(--success-soft)!important;border-color:#c9e4d5!important}
-.connection-chip.connected .connection-chip-dot{background:#69ab87!important;box-shadow:0 0 0 3px #e6f5ed!important}
-.connection-chip.connected .connection-chip-state{color:#3d7458!important}
-.connection-chip.restoring{background:var(--warning-soft)!important;border-color:#eadbc5!important}
-.connection-chip.restoring .connection-chip-dot{background:#bf9158!important;box-shadow:0 0 0 3px #fff1dd!important}
-.connection-chip.restoring .connection-chip-state{color:#765a39!important}
-.settings-google-status.connected{background:var(--success-soft)!important;border-color:#c5e4d3!important;color:#477c61!important}
+.connection-chip{
+  background:var(--denim-900)!important;
+  border-color:var(--denim-800)!important;
+  color:var(--denim-300)!important;
+  box-shadow:none!important;
+}
+.connection-chip .connection-chip-label{color:var(--denim-300)!important}
+.connection-chip .connection-chip-dot{background:var(--denim-400)!important;box-shadow:none!important}
+.connection-chip .connection-chip-state{color:#fff!important;font-weight:800!important}
+.connection-chip:hover{background:var(--denim-800)!important;border-color:var(--denim-700)!important}
+.status-dot.connected{background:#79b79a!important;box-shadow:0 0 0 4px #eaf7f0!important}
+.connection-chip.connected,
+.connection-chip.restoring{background:var(--denim-900)!important;border-color:var(--denim-800)!important}
+.connection-chip.connected .connection-chip-dot{background:#79b79a!important;box-shadow:none!important}
+.connection-chip.connected .connection-chip-state{color:#fff!important}
+.connection-chip.restoring .connection-chip-dot{background:#d1a36e!important;box-shadow:none!important}
+.connection-chip.restoring .connection-chip-state{color:#fff!important}
+.settings-google-status.connected{
+  background:var(--denim-900)!important;
+  border-color:var(--denim-800)!important;
+  color:#fff!important;
+}
+.settings-google-status.connected span{color:#91b8d9!important}
 .publish-overall-status.complete,.publish-platform-status.done,.platform-status-btn.is-published,.platform-badge.done,.source-change-status.unchanged{background:#eef8f3!important;border-color:#c9e5d6!important;color:#477c61!important}
 
 .error-text{color:#ad5965!important}
