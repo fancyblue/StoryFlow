@@ -1,0 +1,153 @@
+/* Whole-project source sync and a simplified active-work sidebar. */
+.source-panel #projectSwitcher{display:none!important}
+.source-panel label[for="projectTitle"]{
+  margin-top:14px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.04em;
+}
+.source-panel #projectTitle{
+  min-height:42px;
+  font-weight:700;
+}
+.source-panel-actions{
+  grid-template-columns:1fr 1fr!important;
+}
+.source-panel-actions #refreshSourceBtn,
+.source-panel-actions #loadSourceBtn{
+  min-height:42px;
+}
+.source-panel-actions #refreshSourceBtn{
+  border-color:#d8d2f7;
+  background:#fff;
+  color:#4c2aa1;
+}
+.source-panel-actions #refreshSourceBtn:hover{
+  background:#f7f5ff;
+  border-color:#bcaef6;
+}
+
+.project-source-diff-dialog{
+  width:min(980px,calc(100vw - 28px));
+  max-width:980px;
+  max-height:min(90dvh,920px);
+  padding:0;
+  overflow:hidden;
+}
+.project-source-diff-card{
+  display:grid;
+  grid-template-rows:auto auto auto minmax(0,1fr) auto;
+  max-height:min(90dvh,920px);
+  background:#fff;
+}
+.project-source-diff-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:20px 22px 17px;
+  border-bottom:1px solid var(--line);
+}
+.project-source-diff-head h3{margin:0;font-size:21px}
+.project-source-diff-head .muted{margin:6px 0 0;line-height:1.55}
+.project-source-diff-summary{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  flex-wrap:wrap;
+  padding:14px 22px 10px;
+}
+.project-source-diff-summary strong{font-size:14px}
+.project-source-diff-summary span{color:var(--muted);font-size:11px}
+.project-source-diff-errors{
+  margin:0 22px 10px;
+  padding:10px 12px;
+  border:1px solid #fed7aa;
+  border-radius:10px;
+  background:#fff7ed;
+  color:#9a3412;
+  font-size:11px;
+  line-height:1.55;
+}
+.project-source-diff-toolbar{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:0 22px 10px;
+}
+.project-source-diff-list{
+  min-height:0;
+  overflow:auto;
+  padding:0 22px 14px;
+}
+.project-source-diff-row{
+  display:grid;
+  grid-template-columns:18px auto minmax(0,1fr);
+  gap:10px;
+  align-items:start;
+  padding:12px 0;
+  border-top:1px solid var(--line);
+  cursor:pointer;
+}
+.project-source-diff-row:first-child{border-top:0}
+.project-source-diff-row.readonly{cursor:default}
+.project-source-diff-row>input{
+  width:16px;
+  height:16px;
+  margin:3px 0 0;
+  accent-color:var(--primary);
+}
+.project-source-diff-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:48px;
+  min-height:24px;
+  padding:3px 7px;
+  border-radius:999px;
+  font-size:9px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.project-source-diff-badge.missing{background:#eef2ff;color:#4338ca}
+.project-source-diff-badge.changed{background:#fff7ed;color:#9a3412}
+.project-source-diff-badge.relink{background:#f5f3ff;color:#6d28d9}
+.project-source-diff-badge.warning{background:#f3f4f6;color:#6b7280}
+.project-source-diff-copy{display:grid;gap:4px;min-width:0}
+.project-source-diff-copy strong{font-size:13px;line-height:1.4}
+.project-source-diff-copy>span{color:var(--muted);font-size:11px;line-height:1.55}
+.project-source-diff-copy em{
+  color:#9a3412;
+  font-size:10px;
+  font-style:normal;
+  line-height:1.5;
+}
+.project-source-diff-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  padding:13px 22px 17px;
+  border-top:1px solid var(--line);
+  background:#fff;
+}
+
+@media(max-width:700px){
+  .source-panel-actions{grid-template-columns:1fr!important}
+  .project-source-diff-dialog{
+    width:calc(100vw - 12px);
+    max-height:calc(100dvh - 12px);
+  }
+  .project-source-diff-card{max-height:calc(100dvh - 12px)}
+  .project-source-diff-head{padding:16px 16px 14px}
+  .project-source-diff-summary{padding:12px 16px 8px}
+  .project-source-diff-errors{margin:0 16px 8px}
+  .project-source-diff-toolbar{padding:0 16px 8px;flex-wrap:wrap}
+  .project-source-diff-list{padding:0 16px 10px}
+  .project-source-diff-row{grid-template-columns:18px minmax(0,1fr);gap:8px}
+  .project-source-diff-badge{grid-column:2;width:max-content}
+  .project-source-diff-copy{grid-column:2}
+  .project-source-diff-actions{display:grid;grid-template-columns:1fr 1fr;padding:11px 16px calc(13px + env(safe-area-inset-bottom))}
+  .project-source-diff-actions .button{width:100%}
+}
