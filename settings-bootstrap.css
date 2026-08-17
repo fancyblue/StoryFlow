@@ -1,4 +1,4 @@
-/* Mobile/new-device bootstrap for settings.json before Google OAuth is available. */
+/* Google integration bootstrap / configured-state card. */
 .settings-bootstrap-panel{
   display:flex;
   align-items:center;
@@ -10,6 +10,14 @@
   border-radius:12px;
   background:#faf9ff;
 }
+.settings-bootstrap-panel.configured{
+  border-color:#dfe4ea;
+  background:#fbfcfd;
+}
+.settings-bootstrap-panel.authenticated{
+  border-color:#ccebd9;
+  background:#f8fcfa;
+}
 .settings-bootstrap-copy{
   min-width:0;
   display:grid;
@@ -18,6 +26,9 @@
 .settings-bootstrap-copy strong{
   font-size:12px;
   color:#3f3567;
+}
+.settings-bootstrap-panel.configured .settings-bootstrap-copy strong{
+  color:var(--text);
 }
 .settings-bootstrap-copy span{
   color:var(--muted);
@@ -33,11 +44,39 @@
 .settings-bootstrap-actions{
   display:flex;
   align-items:center;
+  justify-content:flex-end;
   gap:7px;
   flex:0 0 auto;
+  flex-wrap:wrap;
 }
 .settings-bootstrap-actions .button{
   white-space:nowrap;
+}
+.settings-google-status{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:32px;
+  padding:0 10px;
+  border:1px solid #ccebd9;
+  border-radius:999px;
+  background:#f3fbf6;
+  color:#18794e;
+  font-size:11px;
+  font-weight:750;
+  white-space:nowrap;
+}
+.settings-google-status span{
+  color:#20a665;
+  font-size:9px;
+}
+
+/* Raw credentials are an edit state, not the default read state. */
+.settings-section.google-integration-editing{
+  padding-bottom:18px;
+}
+.settings-section [hidden]{
+  display:none!important;
 }
 
 @media(max-width:760px){
@@ -48,12 +87,16 @@
   }
   .settings-bootstrap-actions{
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:repeat(2,minmax(0,1fr));
     width:100%;
   }
-  .settings-bootstrap-actions .button{width:100%}
+  .settings-bootstrap-actions .button,
+  .settings-google-status{
+    width:100%;
+    justify-content:center;
+  }
 }
 
-@media(max-width:420px){
+@media(max-width:480px){
   .settings-bootstrap-actions{grid-template-columns:1fr}
 }
