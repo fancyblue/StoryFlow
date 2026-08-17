@@ -141,7 +141,7 @@
 }
 .sf-md-empty{color:var(--muted)}
 
-/* Raw mode is deliberately code-like so the mode switch is unmistakable. */
+/* Raw mode is code-like, but large enough to read comfortably during editing/review. */
 .sf-preview-surface.sf-preview-raw{
   white-space:normal!important;
 }
@@ -150,8 +150,8 @@
   overflow-wrap:anywhere;
   word-break:break-word;
   font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
-  font-size:12px;
-  line-height:1.75;
+  font-size:14px;
+  line-height:1.8;
   color:#343943;
 }
 
@@ -171,9 +171,13 @@
   line-height:1.9;
 }
 
-/* Keep comparison highlights readable after Markdown is rendered. */
+/* The full-chapter column is reading context, not a selection highlight. */
 #dialogReviewFull.sf-preview-rendered{
   white-space:pre-wrap!important;
+}
+#dialogReviewFull .current-range-highlight{
+  background:transparent!important;
+  box-shadow:none!important;
 }
 #dialogReviewFull .current-range-highlight strong,
 #dialogReviewFull .current-range-highlight em{
@@ -195,4 +199,8 @@
   .sf-preview-mode-label{display:none}
   .sf-preview-mode-segment{width:100%}
   .sf-preview-mode-segment button{flex:1 1 0}
+  .sf-preview-raw-root{
+    font-size:15px;
+    line-height:1.85;
+  }
 }
