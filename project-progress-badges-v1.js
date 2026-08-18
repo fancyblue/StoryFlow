@@ -12,6 +12,15 @@
   let observedLibrary = null;
   let libraryObserver = null;
 
+  function ensureStyles() {
+    if (document.getElementById('storyflowProjectProgressBadgesV1Css')) return;
+    const link = document.createElement('link');
+    link.id = 'storyflowProjectProgressBadgesV1Css';
+    link.rel = 'stylesheet';
+    link.href = './project-progress-badges-v1.css?v=20260818-1647';
+    document.head.appendChild(link);
+  }
+
   function summarizeState(projectState) {
     let splitCount = 0;
     let publishedCount = 0;
@@ -185,6 +194,7 @@
     window.setTimeout(refreshStatuses, delay);
   }
 
+  ensureStyles();
   window.addEventListener('storyflow:projects-changed', () => scheduleRefresh(40));
   window.addEventListener('storyflow:workspace-persisted', () => scheduleRefresh(0));
   window.addEventListener('storyflow:view-changed', () => scheduleRefresh(0));
