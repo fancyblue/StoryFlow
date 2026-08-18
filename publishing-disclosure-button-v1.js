@@ -1,8 +1,20 @@
 // Publishing disclosure UX v1.
 // Works uses explicit management buttons and keeps destructive actions behind "...".
 // Publishing follows the same interaction vocabulary: "管理發布" controls disclosure,
-// while delete is available only from the row overflow menu.
+// while delete is available only from the final row overflow menu.
 (function () {
+  function ensureStyles() {
+    let link = document.getElementById('storyflowPublishingDisclosureButtonV1Css');
+    if (!link) {
+      link = document.createElement('link');
+      link.id = 'storyflowPublishingDisclosureButtonV1Css';
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+    const href = './publishing-disclosure-button-v1.css?v=20260818-1729';
+    if (!link.href.endsWith(href.replace('./', '/')) && link.getAttribute('href') !== href) link.href = href;
+  }
+
   function closeOverflowMenus(except = null) {
     document.querySelectorAll('.publish-row-overflow-menu').forEach(menu => {
       if (menu === except) return;
@@ -13,7 +25,6 @@
 
   function addOverflowDelete(actions, legacyDelete, articleTitle) {
     if (!actions || !legacyDelete) return;
-
     let more = actions.querySelector(':scope > .publish-more-btn');
     let menu = actions.querySelector(':scope > .publish-row-overflow-menu');
 
@@ -26,7 +37,6 @@
       more.setAttribute('aria-label', `更多「${articleTitle}」操作`);
       more.setAttribute('aria-haspopup', 'menu');
       more.setAttribute('aria-expanded', 'false');
-      actions.appendChild(more);
     }
 
     if (!menu) {
@@ -34,7 +44,6 @@
       menu.className = 'publish-row-overflow-menu';
       menu.hidden = true;
       menu.setAttribute('role', 'menu');
-
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.setAttribute('role', 'menuitem');
@@ -47,8 +56,12 @@
         legacyDelete.click();
       });
       menu.appendChild(remove);
-      actions.appendChild(menu);
     }
+
+    // Explicitly restore DOM order after every publish-list rerender: ... is the final
+    // visible action, while the absolutely positioned menu follows it in the DOM.
+    actions.appendChild(more);
+    actions.appendChild(menu);
 
     if (more.dataset.publishOverflowBound !== '1') {
       more.dataset.publishOverflowBound = '1';
@@ -65,6 +78,7 @@
   }
 
   function decoratePublishingRows() {
+    ensureStyles();
     const panelNote = document.querySelector('.publishing-dashboard-panel > .panel-head .muted');
     if (panelNote) panelNote.textContent = '外層顯示整體發布狀態；使用「管理發布」展開各平台細項，其他操作收在「⋯」。';
 
@@ -75,8 +89,6 @@
       const legacyDelete = actions?.querySelector('.publish-delete-btn');
       if (!summary || !actions) return;
 
-      // The row is informational, matching Works cards: expansion is owned by one
-      // explicit management button rather than an invisible row-level affordance.
       summary.removeAttribute('role');
       summary.removeAttribute('tabindex');
       summary.removeAttribute('aria-expanded');
@@ -94,14 +106,12 @@
       const articleTitle = card.querySelector('.publish-list-title-row strong')?.textContent || '文章';
       const expanded = card.classList.contains('expanded');
       let manage = actions.querySelector(':scope > .publish-manage-btn');
-
       if (!manage && indicator) {
         manage = document.createElement('button');
         manage.type = 'button';
         manage.className = 'button tiny ghost publish-manage-btn';
         indicator.replaceWith(manage);
       }
-
       if (manage) {
         manage.textContent = expanded ? '收合發布' : '管理發布';
         manage.setAttribute('aria-expanded', expanded ? 'true' : 'false');
@@ -111,12 +121,10 @@
           manage.addEventListener('click', event => {
             event.preventDefault();
             event.stopPropagation();
-            // publishing-flow owns selectedPartKey. Reuse its existing summary click.
             summary.click();
           });
         }
       }
-
       addOverflowDelete(actions, legacyDelete, articleTitle);
     });
   }
@@ -140,5 +148,6 @@
   });
   window.addEventListener('storyflow:view-changed', () => window.setTimeout(decoratePublishingRows, 0));
   window.addEventListener('storyflow:projects-changed', () => window.setTimeout(decoratePublishingRows, 0));
+  ensureStyles();
   decoratePublishingRows();
 })();
