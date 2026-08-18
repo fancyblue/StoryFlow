@@ -11,7 +11,7 @@
       link.rel = 'stylesheet';
       document.head.appendChild(link);
     }
-    const href = './publishing-disclosure-button-v1.css?v=20260818-1729';
+    const href = './publishing-disclosure-button-v1.css?v=20260818-1812';
     if (!link.href.endsWith(href.replace('./', '/')) && link.getAttribute('href') !== href) link.href = href;
   }
 
@@ -19,12 +19,21 @@
     document.querySelectorAll('.publish-row-overflow-menu').forEach(menu => {
       if (menu === except) return;
       menu.hidden = true;
-      menu.closest('.publish-list-actions')?.querySelector('.publish-more-btn')?.setAttribute('aria-expanded', 'false');
+      const actions = menu.closest('.publish-list-actions');
+      actions?.querySelector('.publish-more-btn')?.setAttribute('aria-expanded', 'false');
+      actions?.closest('.publish-list-item')?.classList.remove('overflow-open');
     });
   }
 
   function addOverflowDelete(actions, legacyDelete, articleTitle) {
     if (!actions || !legacyDelete) return;
+
+    // The legacy delete control remains in the DOM only as the underlying action target.
+    // It must never compete visually with the overflow pattern.
+    legacyDelete.hidden = true;
+    legacyDelete.setAttribute('aria-hidden', 'true');
+    legacyDelete.tabIndex = -1;
+
     let more = actions.querySelector(':scope > .publish-more-btn');
     let menu = actions.querySelector(':scope > .publish-row-overflow-menu');
 
@@ -37,6 +46,7 @@
       more.setAttribute('aria-label', `更多「${articleTitle}」操作`);
       more.setAttribute('aria-haspopup', 'menu');
       more.setAttribute('aria-expanded', 'false');
+      actions.appendChild(more);
     }
 
     if (!menu) {
@@ -53,15 +63,12 @@
         event.stopPropagation();
         menu.hidden = true;
         more.setAttribute('aria-expanded', 'false');
+        actions.closest('.publish-list-item')?.classList.remove('overflow-open');
         legacyDelete.click();
       });
       menu.appendChild(remove);
+      actions.appendChild(menu);
     }
-
-    // Explicitly restore DOM order after every publish-list rerender: ... is the final
-    // visible action, while the absolutely positioned menu follows it in the DOM.
-    actions.appendChild(more);
-    actions.appendChild(menu);
 
     if (more.dataset.publishOverflowBound !== '1') {
       more.dataset.publishOverflowBound = '1';
@@ -72,6 +79,7 @@
         closeOverflowMenus(opening ? menu : null);
         menu.hidden = !opening;
         more.setAttribute('aria-expanded', opening ? 'true' : 'false');
+        actions.closest('.publish-list-item')?.classList.toggle('overflow-open', opening);
         if (opening) menu.querySelector('button')?.focus({ preventScroll: true });
       });
     }
@@ -79,8 +87,6 @@
 
   function decoratePublishingRows() {
     ensureStyles();
-    const panelNote = document.querySelector('.publishing-dashboard-panel > .panel-head .muted');
-    if (panelNote) panelNote.textContent = '外層顯示整體發布狀態；使用「管理發布」展開各平台細項，其他操作收在「⋯」。';
 
     document.querySelectorAll('.publish-list-item').forEach(card => {
       const summary = card.querySelector('.publish-list-summary');
