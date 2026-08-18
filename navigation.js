@@ -35,7 +35,8 @@
 
   function installNavHints() {
     nav.querySelectorAll('.nav-item').forEach(item => {
-      const label = item.querySelector('span')?.textContent?.trim();
+      const label = item.querySelector('.nav-label')?.textContent?.trim()
+        || item.querySelector('span:last-child')?.textContent?.trim();
       if (!label) return;
       item.dataset.hint = label;
       item.setAttribute('aria-label', label);
