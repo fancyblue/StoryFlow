@@ -1,6 +1,7 @@
 // Works-library progress badges.
-// Keep project cards focused on navigation, but surface meaningful downstream state:
-// confirmed Smart Split outputs and anything that has been published to at least one platform.
+// Surface meaningful downstream state: confirmed Smart Split outputs and anything
+// published to at least one platform. The Works UX layer may move the strip beside
+// 管理發布; this renderer therefore looks across the whole card, not only title content.
 (function () {
   const DB_NAME = 'storyflow-connections-v1';
   const STORE_NAME = 'handles';
@@ -24,7 +25,6 @@
   function summarizeState(projectState) {
     let splitCount = 0;
     let publishedCount = 0;
-
     for (const chapter of projectState?.chapters || []) {
       for (const part of chapter?.parts || []) {
         splitCount += 1;
@@ -33,7 +33,6 @@
         if (published) publishedCount += 1;
       }
     }
-
     return { splitCount, publishedCount };
   }
 
@@ -70,7 +69,6 @@
   async function readWorkspaceWithoutPrompt() {
     const handle = await rememberedFolderHandle();
     if (!handle) return null;
-
     try {
       const readPermission = await handle.queryPermission({ mode: 'read' });
       if (readPermission !== 'granted') {
@@ -125,7 +123,6 @@
   function decorateCards() {
     const library = document.getElementById('projectsLibrary');
     if (!library) return;
-
     const projects = projectListInCardOrder();
     const cards = [...library.querySelectorAll(':scope > .project-library-card')];
     if (!cards.length || cards.length !== projects.length) return;
@@ -139,7 +136,8 @@
       const titleRow = main?.querySelector('.project-library-title-row');
       if (!main || !titleRow) return;
 
-      let strip = main.querySelector('.project-progress-badges');
+      // The strip may have been moved into the publishing action cluster by Works UX.
+      let strip = card.querySelector('.project-progress-badges');
       if (!strip) {
         strip = document.createElement('div');
         strip.className = 'project-progress-badges';
@@ -149,23 +147,12 @@
 
       const status = statusByProject.get(project.id) || { splitCount: 0, publishedCount: 0 };
       strip.replaceChildren();
-
       if (status.splitCount > 0) {
-        strip.appendChild(badge(
-          'split',
-          `已切篇 ${status.splitCount.toLocaleString()} 篇`,
-          `已產出 ${status.splitCount.toLocaleString()} 篇切篇結果`
-        ));
+        strip.appendChild(badge('split', `已切篇 ${status.splitCount.toLocaleString()} 篇`, `已產出 ${status.splitCount.toLocaleString()} 篇切篇結果`));
       }
-
       if (status.publishedCount > 0) {
-        strip.appendChild(badge(
-          'published',
-          `✓ 已發布 ${status.publishedCount.toLocaleString()} 篇`,
-          `已有 ${status.publishedCount.toLocaleString()} 篇至少發布到一個平台`
-        ));
+        strip.appendChild(badge('published', `✓ 已發布 ${status.publishedCount.toLocaleString()} 篇`, `已有 ${status.publishedCount.toLocaleString()} 篇至少發布到一個平台`));
       }
-
       strip.hidden = strip.childElementCount === 0;
       card.classList.toggle('has-published-progress', status.publishedCount > 0);
     });
@@ -184,7 +171,6 @@
     const generation = ++refreshGeneration;
     const workspace = await readWorkspaceWithoutPrompt();
     if (generation !== refreshGeneration) return;
-
     statusByProject = mergeCurrentProjectStatus(mapPersistedStatuses(workspace));
     bindLibraryObserver();
     decorateCards();
@@ -199,8 +185,6 @@
   window.addEventListener('storyflow:workspace-persisted', () => scheduleRefresh(0));
   window.addEventListener('storyflow:view-changed', () => scheduleRefresh(0));
   window.addEventListener('load', () => scheduleRefresh(300), { once: true });
-
-  // If the Works view was already created before this script loaded, decorate it now.
   bindLibraryObserver();
   scheduleRefresh(0);
 })();
