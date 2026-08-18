@@ -109,10 +109,6 @@
     }
     const valid = new Set(ids);
     selectedProjectIds = new Set([...selectedProjectIds].filter(id => valid.has(id)));
-    // A newly created work joins an existing "all works" selection automatically.
-    if (selectedProjectIds.size === Math.max(0, ids.length - 1)) {
-      ids.forEach(id => selectedProjectIds.add(id));
-    }
   }
 
   function entriesForProject(project) {
