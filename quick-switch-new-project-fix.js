@@ -47,9 +47,6 @@
     const button = document.getElementById('quickSwitchProjectBtn');
     if (!button || button.dataset.newProjectFixBound === '1') return;
     button.dataset.newProjectFixBound = '1';
-
-    // workspace-ux-refine stops bubbling on this button, so bind on the button itself.
-    // A zero-delay callback runs after its renderer has replaced the menu contents.
     button.addEventListener('click', () => window.setTimeout(ensureNewProjectAction, 0));
   }
 
@@ -71,7 +68,7 @@
     if (document.getElementById('storyflowProjectProgressBadgesV1Js')) return;
     const script = document.createElement('script');
     script.id = 'storyflowProjectProgressBadgesV1Js';
-    script.src = './project-progress-badges-v1.js?v=20260818-1647';
+    script.src = './project-progress-badges-v1.js?v=20260818-1741';
     script.async = false;
     document.body.appendChild(script);
   }
