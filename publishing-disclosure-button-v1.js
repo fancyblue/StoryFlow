@@ -1,6 +1,6 @@
 // Publishing disclosure UX v1.
 // Works uses an explicit "管理章節" button to reveal secondary details; publishing
-// should use the same interaction vocabulary instead of an unlabeled chevron.
+// uses the same interaction vocabulary instead of an unlabeled chevron or clickable row.
 (function () {
   function decoratePublishingRows() {
     const panelNote = document.querySelector('.publishing-dashboard-panel > .panel-head .muted');
@@ -12,6 +12,19 @@
       const indicator = actions?.querySelector('.publish-expand-indicator');
       if (!summary || !actions || !indicator) return;
 
+      // The row is informational, matching Works cards: expansion is owned by one
+      // explicit management button rather than an invisible row-level affordance.
+      summary.removeAttribute('role');
+      summary.removeAttribute('tabindex');
+      summary.removeAttribute('aria-expanded');
+      summary.style.cursor = 'default';
+      summary.addEventListener('click', event => {
+        if (event.isTrusted && !event.target.closest('button')) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      }, true);
+
       const expanded = card.classList.contains('expanded');
       const manage = document.createElement('button');
       manage.type = 'button';
@@ -22,8 +35,8 @@
       manage.addEventListener('click', event => {
         event.preventDefault();
         event.stopPropagation();
-        // publishing-flow owns the selected-item state. Trigger its existing summary
-        // handler so filtering, one-at-a-time expansion, and rerender behavior stay intact.
+        // publishing-flow owns the selected-item state. A synthetic summary click
+        // reuses that state transition while trusted row clicks remain disabled above.
         summary.click();
       });
       indicator.replaceWith(manage);
