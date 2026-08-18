@@ -37,6 +37,14 @@
   // Source-mode v2 intentionally loads after the legacy source/project layers.
   // Load CSS first, then source-mode behavior, then the final article/dialog UX layer.
   window.addEventListener('load', () => {
+    if (!document.getElementById('storyflowProjectPersistenceGuardJs')) {
+      const persistence = document.createElement('script');
+      persistence.id = 'storyflowProjectPersistenceGuardJs';
+      persistence.src = './project-persistence-guard.js?v=20260818-1500';
+      persistence.async = false;
+      document.body.appendChild(persistence);
+    }
+
     const loadArticleUx = () => {
       if (!document.getElementById('storyflowSourceArticleUxV2Css')) {
         const link = document.createElement('link');
