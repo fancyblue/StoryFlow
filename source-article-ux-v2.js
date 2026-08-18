@@ -32,6 +32,13 @@
     return { title, draft };
   }
 
+  function rerenderChapterList() {
+    try {
+      if (typeof window.renderChapters === 'function') window.renderChapters();
+    } catch (_) {}
+    queueMicrotask(syncAll);
+  }
+
   function addManualArticleDirect() {
     const { title, draft } = manualInput();
     if (!draft) {
@@ -56,6 +63,10 @@
     saveState('文章已新增');
     document.getElementById('manualSourceDialog')?.close();
     renderAll();
+    // renderAll still reaches an older lexical chapter renderer in some script-load
+    // orders. Explicitly invoke the final public renderer so mixed Google/manual works
+    // immediately show the newly added manual article in the left chapter list.
+    rerenderChapterList();
     window.StoryFlowProjectSourceModeV2?.syncUi?.();
     if (chapter.draft) suggestNextPart();
     notify(`已新增文章：${title}`);
@@ -142,7 +153,10 @@
     if (label) label.textContent = 'Google Docs';
     if (!name) return;
 
-    const docName = state?.projectSource?.docName || name.textContent || 'Google Docs';
+    const chapterSourceName = (state?.chapters || [])
+      .map(chapter => chapter?.source?.name)
+      .find(Boolean);
+    const docName = state?.projectSource?.docName || chapterSourceName || name.textContent || 'Google Docs';
     const sameAsProject = normalize(docName) && normalize(docName) === normalize(state?.projectTitle);
     name.hidden = sameAsProject || !normalize(docName) || normalize(docName) === 'Google Docs';
     if (!name.hidden) name.textContent = `文件：${docName}`;
@@ -171,6 +185,44 @@
     }
   }
 
+  function closeQuickSwitch() {
+    const menu = document.getElementById('workspaceProjectQuickSwitch');
+    if (menu) menu.hidden = true;
+    document.getElementById('quickSwitchProjectBtn')?.setAttribute('aria-expanded', 'false');
+  }
+
+  function decorateQuickSwitchMenu() {
+    const menu = document.getElementById('workspaceProjectQuickSwitch');
+    if (!menu || menu.hidden) return;
+    let add = document.getElementById('workspaceQuickNewProject');
+    if (!add) {
+      add = document.createElement('button');
+      add.id = 'workspaceQuickNewProject';
+      add.type = 'button';
+      add.className = 'workspace-project-quick-switch-new';
+      add.innerHTML = '<span aria-hidden="true">＋</span><strong>新增作品</strong>';
+      add.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        window.StoryFlowProjects?.createProject?.({ title: '未命名作品' });
+        closeQuickSwitch();
+        window.setTimeout(() => {
+          window.StoryFlowProjectSourceModeV2?.syncUi?.();
+          const input = document.getElementById('projectTitle');
+          // Source mode chooser intentionally owns focus for a brand-new work; only
+          // focus the title if a mode has already been established by migration.
+          if (window.StoryFlowProjectSourceModeV2?.mode?.()) {
+            input?.focus();
+            input?.select();
+          }
+        }, 0);
+      });
+    }
+    const title = menu.querySelector('.workspace-project-quick-switch-title');
+    if (title) title.insertAdjacentElement('afterend', add);
+    else menu.prepend(add);
+  }
+
   function ensureStyleLast() {
     const link = document.getElementById('storyflowSourceArticleUxV2Css');
     if (link && link.parentElement === document.head && document.head.lastElementChild !== link) {
@@ -183,6 +235,7 @@
     preparePreviewDialog();
     simplifyGoogleSourceOrigin();
     simplifyChapterGroups();
+    decorateQuickSwitchMenu();
     ensureStyleLast();
   }
 
@@ -200,8 +253,15 @@
   window.addEventListener('storyflow:projects-changed', () => queueMicrotask(syncAll));
   window.addEventListener('storyflow:view-changed', () => queueMicrotask(syncAll));
   document.addEventListener('click', event => {
-    if (event.target?.closest?.('#addChapterBtn, #previewManualSourceBtn')) {
+    if (event.target?.closest?.('#addChapterBtn, #previewManualSourceBtn, #quickSwitchProjectBtn')) {
       window.setTimeout(syncAll, 0);
+    }
+    // The preview path uses source-flow's original confirm handler. Re-render the
+    // final chapter list after it mutates state so the new manual article appears
+    // immediately in mixed-source works as well.
+    if (event.target?.closest?.('#confirmSourcePreviewBtn')
+      && document.getElementById('sourcePreviewDialog')?.classList.contains('manual-single-preview-v2')) {
+      window.setTimeout(rerenderChapterList, 0);
     }
   });
 
