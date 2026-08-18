@@ -105,12 +105,17 @@
       heading.textContent = '預覽文章';
       confirm.textContent = '確定新增';
       cancel.textContent = '返回編輯';
+    } else {
+      // source-flow controls Google tab visibility through its .hidden class; remove
+      // the manual-only hidden attribute so later Google previews are not suppressed.
+      tabs.hidden = false;
     }
   }
 
   function preparePreviewDialog() {
     const dialog = document.getElementById('sourcePreviewDialog');
     const summary = document.getElementById('sourcePreviewSummary');
+    const cancel = document.getElementById('cancelSourcePreviewBtn');
     if (!dialog || !summary || dialog.dataset.manualPreviewUxV2 === '1') return;
     dialog.dataset.manualPreviewUxV2 = '1';
 
@@ -120,6 +125,14 @@
     document.getElementById('previewManualSourceBtn')?.addEventListener('click', () => {
       window.setTimeout(syncManualPreviewPresentation, 0);
     });
+    cancel?.addEventListener('click', () => {
+      const returnToEditor = dialog.classList.contains('manual-single-preview-v2');
+      if (!returnToEditor) return;
+      window.setTimeout(() => {
+        const editor = document.getElementById('manualSourceDialog');
+        if (editor && !editor.open) editor.showModal();
+      }, 0);
+    }, true);
   }
 
   function simplifyGoogleSourceOrigin() {
@@ -158,11 +171,19 @@
     }
   }
 
+  function ensureStyleLast() {
+    const link = document.getElementById('storyflowSourceArticleUxV2Css');
+    if (link && link.parentElement === document.head && document.head.lastElementChild !== link) {
+      document.head.appendChild(link);
+    }
+  }
+
   function syncAll() {
     prepareManualDialog();
     preparePreviewDialog();
     simplifyGoogleSourceOrigin();
     simplifyChapterGroups();
+    ensureStyleLast();
   }
 
   const baseRenderAll = window.renderAll;
