@@ -33,6 +33,47 @@
   box-shadow:0 0 0 3px rgba(54,118,173,.14);
 }
 
+/* A brand-new/manual work has nothing to sync yet. Keep that state quiet and
+   linear: one short explanation followed by the single useful action. */
+.source-panel .source-panel-actions.manual-only-source{
+  grid-template-columns:minmax(0,1fr)!important;
+  align-items:stretch!important;
+  gap:10px!important;
+}
+.source-panel .source-panel-actions.manual-only-source #refreshSourceBtn{
+  display:none!important;
+}
+.source-panel .source-panel-actions.manual-only-source .manual-source-sync-hint{
+  grid-column:1 / -1!important;
+  display:flex!important;
+  align-items:center!important;
+  width:100%!important;
+  min-height:24px!important;
+  margin:0!important;
+  padding:0 2px 2px!important;
+  color:#6b8294!important;
+  font-size:12.5px!important;
+  font-weight:650!important;
+  line-height:1.4!important;
+  white-space:nowrap!important;
+}
+.source-panel .source-panel-actions.manual-only-source .manual-source-sync-hint::before{
+  width:18px!important;
+  height:18px!important;
+  flex:0 0 18px!important;
+  margin-right:8px!important;
+  font-size:11px!important;
+}
+.source-panel .source-panel-actions.manual-only-source #loadSourceBtn{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  min-height:44px!important;
+}
+.source-panel .source-panel-actions.has-linked-source{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:8px!important;
+}
+
 .project-source-diff-dialog{
   width:min(980px,calc(100vw - 28px));
   max-width:980px;
@@ -140,6 +181,9 @@
 
 @media(max-width:700px){
   .source-panel-actions{grid-template-columns:1fr!important}
+  .source-panel .source-panel-actions.manual-only-source .manual-source-sync-hint{
+    white-space:normal!important;
+  }
   .project-source-diff-dialog{
     width:calc(100vw - 12px);
     max-height:calc(100dvh - 12px);
