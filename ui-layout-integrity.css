@@ -1,0 +1,133 @@
+/* StoryFlow structural layout integrity.
+   Header utilities stay in the same row as their section title; action rows always
+   start below the header. This layer is intentionally structural, not decorative. */
+
+/* SOURCE: title on the left, compact utilities on the right, source actions below. */
+.source-panel > .panel-head{
+  display:block!important;
+  width:100%!important;
+  margin-bottom:16px!important;
+  padding-bottom:16px!important;
+}
+.source-panel > .panel-head > div:first-child{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+}
+.source-heading-title-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:12px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+.source-heading-title-row h2{
+  min-width:0!important;
+  margin:0!important;
+}
+.source-heading-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  justify-self:end!important;
+  flex:0 0 auto!important;
+}
+.source-heading-add-btn{
+  order:1!important;
+  display:grid!important;
+  place-items:center!important;
+  width:34px!important;
+  min-width:34px!important;
+  height:34px!important;
+  min-height:34px!important;
+  padding:0!important;
+  border-radius:9px!important;
+  font-size:20px!important;
+  line-height:1!important;
+}
+.source-heading-actions .quick-switch-project-btn{
+  order:2!important;
+  margin:0!important;
+  white-space:nowrap!important;
+}
+.source-panel > .panel-head > .source-panel-actions,
+.source-panel .source-panel-actions{
+  width:100%!important;
+  margin-top:14px!important;
+}
+
+/* SMART SPLIT: use the exact same title/action alignment contract. */
+.splitter-panel > .panel-head{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:12px!important;
+  width:100%!important;
+  margin-bottom:14px!important;
+  padding-bottom:14px!important;
+}
+.splitter-panel > .panel-head > div:first-child{
+  min-width:0!important;
+}
+.splitter-panel > .panel-head h2{
+  margin:0!important;
+}
+.splitter-panel .smart-split-header-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  justify-self:end!important;
+  gap:8px!important;
+  margin:0!important;
+  min-width:0!important;
+}
+.splitter-panel .smart-split-header-actions #openSplitReviewBtn{
+  margin:0!important;
+  white-space:nowrap!important;
+}
+.splitter-panel .smart-split-mini-settings{
+  width:100%!important;
+  clear:both!important;
+}
+
+@media(max-width:820px){
+  .source-heading-title-row,
+  .splitter-panel > .panel-head{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:10px!important;
+  }
+  .source-heading-actions{gap:6px!important}
+  .source-heading-add-btn{
+    width:40px!important;
+    min-width:40px!important;
+    height:40px!important;
+    min-height:40px!important;
+    border-radius:10px!important;
+  }
+  .source-heading-actions .quick-switch-project-btn,
+  .splitter-panel .smart-split-header-actions #openSplitReviewBtn{
+    min-height:40px!important;
+    height:40px!important;
+  }
+}
+
+@media(max-width:390px){
+  .source-heading-title-row,
+  .splitter-panel > .panel-head{gap:8px!important}
+  .source-heading-actions{gap:5px!important}
+  .source-heading-add-btn{
+    width:36px!important;
+    min-width:36px!important;
+    height:36px!important;
+    min-height:36px!important;
+  }
+  .source-heading-actions .quick-switch-project-btn,
+  .splitter-panel .smart-split-header-actions #openSplitReviewBtn{
+    min-height:36px!important;
+    height:36px!important;
+    padding-inline:9px!important;
+    font-size:12.5px!important;
+  }
+}
