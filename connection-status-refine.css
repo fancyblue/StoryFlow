@@ -1,5 +1,6 @@
 /* Final connection-control pass.
-   Desktop sidebar: compact service labels and utility icons share one row.
+   Desktop sidebar: primary navigation owns the strongest visual weight; connection
+   status and utility actions stay compact and secondary.
    Desktop header: light status chips align optically with Logout and use the same semantic dots. */
 
 :root{
@@ -9,17 +10,35 @@
 }
 
 @media (min-width:821px){
+  /* Primary navigation should read before the utility strip. */
+  .sidebar .nav{
+    gap:10px!important;
+  }
+  .sidebar .nav-item{
+    min-height:48px!important;
+    padding:12px 14px!important;
+    gap:12px!important;
+    font-size:17px!important;
+    font-weight:800!important;
+    line-height:1!important;
+  }
+  .sidebar .nav-item span{
+    font-size:17px!important;
+    font-weight:800!important;
+    line-height:1!important;
+  }
+
   /* Keep Google / folder / settings / logout on one line in the 250px sidebar.
-     Service state is communicated by the dot, so the labels do not need pill chrome. */
+     Service state is communicated by the dot, so this strip stays visually quiet. */
   .sidebar #sidebarConnectionStatus.sidebar-connection-status{
     display:flex!important;
     flex-wrap:nowrap!important;
     align-items:center!important;
-    gap:4px!important;
+    gap:3px!important;
     width:100%!important;
     min-width:0!important;
     margin-top:8px!important;
-    padding-top:10px!important;
+    padding-top:9px!important;
   }
 
   #sidebarConnectionStatus .sidebar-connection-row,
@@ -31,8 +50,8 @@
     flex:0 1 auto!important;
     width:auto!important;
     min-width:0!important;
-    height:38px!important;
-    min-height:38px!important;
+    height:32px!important;
+    min-height:32px!important;
     padding:0 2px!important;
     gap:5px!important;
     border:0!important;
@@ -42,7 +61,7 @@
   }
   #sidebarConnectionStatus .sidebar-connection-row:hover,
   #sidebarConnectionStatus .sidebar-connection-row:focus-visible{
-    background:rgba(255,255,255,.07)!important;
+    background:rgba(255,255,255,.06)!important;
     outline:none!important;
   }
   #sidebarConnectionStatus .sidebar-connection-copy{
@@ -56,35 +75,35 @@
     display:block!important;
     max-width:none!important;
     overflow:visible!important;
-    color:#f4f9fc!important;
-    font-size:13px!important;
-    font-weight:800!important;
+    color:#dceaf4!important;
+    font-size:12px!important;
+    font-weight:750!important;
     line-height:1!important;
     white-space:nowrap!important;
     text-overflow:clip!important;
   }
 
   #sidebarConnectionStatus .sidebar-status-dot{
-    width:9px!important;
-    height:9px!important;
-    flex:0 0 9px!important;
+    width:7px!important;
+    height:7px!important;
+    flex:0 0 7px!important;
     background:var(--connection-off)!important;
-    box-shadow:0 0 0 3px rgba(239,135,145,.13)!important;
+    box-shadow:0 0 0 2px rgba(239,135,145,.13)!important;
   }
   #sidebarConnectionStatus .sidebar-connection-row.connected .sidebar-status-dot{
     background:var(--connection-on)!important;
-    box-shadow:0 0 0 3px rgba(103,220,160,.13)!important;
+    box-shadow:0 0 0 2px rgba(103,220,160,.13)!important;
   }
   #sidebarConnectionStatus .sidebar-connection-row.restoring .sidebar-status-dot{
     background:var(--connection-restoring)!important;
-    box-shadow:0 0 0 3px rgba(216,183,131,.13)!important;
+    box-shadow:0 0 0 2px rgba(216,183,131,.13)!important;
   }
 
   #sidebarConnectionStatus .sidebar-utility-actions{
     display:flex!important;
     align-items:center!important;
     flex:0 0 auto!important;
-    gap:4px!important;
+    gap:3px!important;
     width:auto!important;
     margin-left:auto!important;
   }
@@ -92,20 +111,30 @@
   #sidebarConnectionStatus .sidebar-logout{
     display:grid!important;
     place-items:center!important;
-    flex:0 0 38px!important;
-    width:38px!important;
-    min-width:38px!important;
-    height:38px!important;
-    min-height:38px!important;
+    flex:0 0 34px!important;
+    width:34px!important;
+    min-width:34px!important;
+    height:34px!important;
+    min-height:34px!important;
     padding:0!important;
-    border-radius:10px!important;
+    border-radius:9px!important;
   }
   #sidebarConnectionStatus .sidebar-settings-button>.sidebar-utility-icon,
   #sidebarConnectionStatus .sidebar-logout>.sidebar-utility-icon,
   #sidebarConnectionStatus .sidebar-settings-button>.sidebar-utility-icon svg,
   #sidebarConnectionStatus .sidebar-logout>.sidebar-utility-icon svg{
-    width:22px!important;
-    height:22px!important;
+    width:19px!important;
+    height:19px!important;
+  }
+
+  /* Collapsed sidebar keeps compact utility targets without competing with nav icons. */
+  .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-connection-row,
+  .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-settings-button,
+  .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-logout{
+    width:34px!important;
+    min-width:34px!important;
+    height:34px!important;
+    min-height:34px!important;
   }
 }
 
