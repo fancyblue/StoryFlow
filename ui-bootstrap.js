@@ -22,6 +22,18 @@
     sceneLabel.remove();
   }
 
+  // app.js keeps this as a top-level lexical binding. Expose a read/write bridge for
+  // late-loaded source-mode behavior without duplicating Google document state.
+  try {
+    if (!Object.prototype.hasOwnProperty.call(window, 'pendingGoogleDoc')) {
+      Object.defineProperty(window, 'pendingGoogleDoc', {
+        configurable: true,
+        get: () => pendingGoogleDoc,
+        set: value => { pendingGoogleDoc = value; }
+      });
+    }
+  } catch (_) {}
+
   // Source-mode v2 intentionally loads after the legacy source/project layers.
   // Load the CSS first so the new creation-mode controls never flash unstyled.
   window.addEventListener('load', () => {
@@ -29,7 +41,7 @@
       if (document.getElementById('storyflowProjectSourceModeV2Js')) return;
       const script = document.createElement('script');
       script.id = 'storyflowProjectSourceModeV2Js';
-      script.src = './project-source-mode-v2.js?v=20260818-1425';
+      script.src = './project-source-mode-v2.js?v=20260818-1433';
       script.async = false;
       document.body.appendChild(script);
     };
@@ -39,7 +51,7 @@
       link = document.createElement('link');
       link.id = 'storyflowProjectSourceModeV2Css';
       link.rel = 'stylesheet';
-      link.href = './project-source-mode-v2.css?v=20260818-1425';
+      link.href = './project-source-mode-v2.css?v=20260818-1433';
       link.addEventListener('load', loadBehavior, { once: true });
       document.head.appendChild(link);
       // If a browser restores the stylesheet from cache without a load callback,
