@@ -1,7 +1,8 @@
 /* Publishing row actions use the same disclosure/destructive-action pattern as Works.
    Primary/secondary actions stay visible; destructive delete lives behind a final overflow menu. */
 .publish-list-actions{position:relative!important}
-.publish-list-actions > .publish-delete-btn{display:none!important}
+/* Hide the legacy destructive control regardless of renderer nesting/cascade. */
+.publish-delete-btn{display:none!important}
 .publish-list-actions > .publish-manage-btn{
   min-height:36px!important;
   height:36px!important;
@@ -42,11 +43,18 @@
   background:#f3f8fc!important;
   color:#2f6f9f!important;
 }
+/* The base card clips its children to preserve rounded corners. Temporarily lift that
+   clipping only while the overflow menu is open, so the menu can sit above the next row. */
+.publish-list-item.overflow-open{
+  position:relative!important;
+  z-index:80!important;
+  overflow:visible!important;
+}
 .publish-row-overflow-menu{
   position:absolute;
   top:calc(100% + 7px);
   right:0;
-  z-index:140;
+  z-index:160;
   min-width:148px;
   padding:5px;
   border:1px solid #d8e5ee;
