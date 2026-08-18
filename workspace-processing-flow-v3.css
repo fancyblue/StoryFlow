@@ -1,0 +1,47 @@
+/* Workspace processing flow v3
+   Once an article exists, source provenance should not change the processing UI.
+   Manual and Google Docs chapters both use the same Workspace flow:
+   Work/chapters -> context stats -> Smart Split.
+   The legacy MASTER DRAFT panel is no longer part of the active workflow. */
+
+body .workspace-grid.workspace-hierarchy-v2 > .editor-panel{
+  display:none!important;
+}
+
+body .workspace-grid.workspace-hierarchy-v2 > .source-panel{
+  grid-column:1!important;
+  grid-row:1 / span 2!important;
+  align-self:start!important;
+}
+
+body .workspace-grid.workspace-hierarchy-v2 > .splitter-panel{
+  grid-column:2!important;
+  grid-row:2!important;
+  min-width:0!important;
+  width:100%!important;
+}
+
+body .workspace-grid.workspace-hierarchy-v2.workspace-hierarchy-no-stats > .splitter-panel{
+  grid-row:1!important;
+}
+
+@media(max-width:820px){
+  body .workspace-grid.workspace-hierarchy-v2 > .source-panel{
+    grid-column:1!important;
+    grid-row:1!important;
+  }
+
+  body .workspace-grid.workspace-hierarchy-v2 > .stats-grid{
+    grid-column:1!important;
+    grid-row:2!important;
+  }
+
+  body .workspace-grid.workspace-hierarchy-v2 > .splitter-panel{
+    grid-column:1!important;
+    grid-row:3!important;
+  }
+
+  body .workspace-grid.workspace-hierarchy-v2.workspace-hierarchy-no-stats > .splitter-panel{
+    grid-row:2!important;
+  }
+}
