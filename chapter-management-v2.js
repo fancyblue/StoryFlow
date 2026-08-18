@@ -1,5 +1,5 @@
 // Chapter management UX: avoid empty destructive-action columns in the workspace and
-// let manual articles be renamed from the Works page without conflating source titles
+// let manual articles be fully edited from the Works page without conflating source titles
 // with Smart Split output titles.
 (function () {
   const expandedProjects = new Set();
@@ -177,6 +177,17 @@
     requestAnimationFrame(() => { input.focus(); input.select(); });
   }
 
+  function editManualChapter(row, chapter) {
+    const editor = window.StoryFlowManualArticleEditor?.open;
+    if (typeof editor === 'function') {
+      editor(chapter.id);
+      return;
+    }
+    // Compatibility fallback for an older cached editor layer: at minimum keep
+    // title editing available instead of leaving the control inert.
+    startInlineRename(row, chapter);
+  }
+
   function buildChapterManager(projectId) {
     const manager = document.createElement('section');
     manager.className = 'project-chapter-manager';
@@ -184,7 +195,7 @@
 
     const head = document.createElement('div');
     head.className = 'project-chapter-manager-head';
-    head.innerHTML = '<div><strong>章節</strong><span>手動文章可以重新命名；Google Docs 章節名稱由來源維護。</span></div>';
+    head.innerHTML = '<div><strong>章節</strong><span>手動文章可以編輯章節標題與內容；Google Docs 章節由來源同步維護。</span></div>';
     manager.appendChild(head);
 
     const chapters = activeChapterMetadata();
@@ -218,12 +229,13 @@
       const actions = document.createElement('div');
       actions.className = 'project-chapter-actions';
       if (chapter.manual) {
-        const rename = document.createElement('button');
-        rename.type = 'button';
-        rename.className = 'button tiny ghost project-chapter-rename';
-        rename.textContent = '重新命名';
-        rename.addEventListener('click', () => startInlineRename(row, chapter));
-        actions.appendChild(rename);
+        const edit = document.createElement('button');
+        edit.type = 'button';
+        edit.className = 'button tiny ghost project-chapter-rename project-chapter-edit';
+        edit.textContent = '編輯章節';
+        edit.setAttribute('aria-label', `編輯章節「${chapter.title}」的標題與內容`);
+        edit.addEventListener('click', () => editManualChapter(row, chapter));
+        actions.appendChild(edit);
       } else {
         const locked = document.createElement('span');
         locked.className = 'project-chapter-source-note';
