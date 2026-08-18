@@ -39,9 +39,9 @@
 .connection-logout{color:#991b1b}
 .connection-logout:hover{background:#fff1f2!important;border-color:#fecdd3!important}
 
-/* Sidebar connection status is intentionally a compact footer strip: two status
-   chips plus one icon-only sign-out action. The detailed connection controls stay
-   available in the top-right header. */
+/* Sidebar connection status is the persistent footer: two status chips plus the
+   settings/sign-out utilities. On desktop it is pushed to the bottom by flex layout,
+   so it stays grounded regardless of viewport height or the amount of navigation. */
 .sidebar-connection-status{
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr) 30px;
@@ -196,6 +196,12 @@
 }
 
 @media(min-width:821px){
+  .sidebar-connection-status{
+    margin-top:auto;
+    padding-top:14px;
+    flex:0 0 auto;
+    min-width:0;
+  }
   .app-shell.sidebar-collapsed .sidebar-connection-status{
     grid-template-columns:1fr;
     justify-items:center;
