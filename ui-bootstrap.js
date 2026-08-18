@@ -23,22 +23,30 @@
   }
 
   // Source-mode v2 intentionally loads after the legacy source/project layers.
-  // It owns the final creation-mode UI and whole-project refresh behavior without
-  // making the older scripts race each other during initial page parsing.
+  // Load the CSS first so the new creation-mode controls never flash unstyled.
   window.addEventListener('load', () => {
-    if (!document.getElementById('storyflowProjectSourceModeV2Css')) {
-      const link = document.createElement('link');
-      link.id = 'storyflowProjectSourceModeV2Css';
-      link.rel = 'stylesheet';
-      link.href = './project-source-mode-v2.css?v=20260818-1418';
-      document.head.appendChild(link);
-    }
-    if (!document.getElementById('storyflowProjectSourceModeV2Js')) {
+    const loadBehavior = () => {
+      if (document.getElementById('storyflowProjectSourceModeV2Js')) return;
       const script = document.createElement('script');
       script.id = 'storyflowProjectSourceModeV2Js';
-      script.src = './project-source-mode-v2.js?v=20260818-1418';
+      script.src = './project-source-mode-v2.js?v=20260818-1425';
       script.async = false;
       document.body.appendChild(script);
+    };
+
+    let link = document.getElementById('storyflowProjectSourceModeV2Css');
+    if (!link) {
+      link = document.createElement('link');
+      link.id = 'storyflowProjectSourceModeV2Css';
+      link.rel = 'stylesheet';
+      link.href = './project-source-mode-v2.css?v=20260818-1425';
+      link.addEventListener('load', loadBehavior, { once: true });
+      document.head.appendChild(link);
+      // If a browser restores the stylesheet from cache without a load callback,
+      // do not strand the behavior layer.
+      window.setTimeout(loadBehavior, 250);
+    } else {
+      loadBehavior();
     }
   }, { once: true });
 })();
