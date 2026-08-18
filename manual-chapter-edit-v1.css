@@ -40,3 +40,39 @@
 #manualSourceDialog[data-edit-chapter-id] #previewManualSourceBtn{
   display:none!important;
 }
+
+/* Edit mode uses a real dialog footer. Keeping the action row full-width prevents
+   button alignment from inheriting the textarea/content-column width. */
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:6!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:10px!important;
+  width:100%!important;
+  margin:18px 0 0!important;
+  padding:14px 22px 20px!important;
+  border-top:1px solid #e2ebf2!important;
+  background:rgba(255,255,255,.98)!important;
+  box-sizing:border-box!important;
+}
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2 .button{
+  flex:0 0 auto!important;
+  min-width:0!important;
+  margin:0!important;
+}
+
+@media(max-width:700px){
+  #manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    width:100%!important;
+    margin:16px 0 0!important;
+    padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2 .button{
+    width:100%!important;
+  }
+}
