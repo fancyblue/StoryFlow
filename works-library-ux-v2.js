@@ -1,10 +1,9 @@
 // Works library UX v2.
-// Refines the Works page around task hierarchy: work identity stays on the left,
-// publishing progress sits beside its management action, and destructive actions
-// stay behind a final overflow button.
+// Refines the Works page around task hierarchy without creating DOM-observer feedback loops.
 (function () {
   let observedLibrary = null;
   let observer = null;
+  let syncQueued = false;
 
   function closeOverflowMenus(except = null) {
     document.querySelectorAll('.project-library-overflow-menu').forEach(menu => {
@@ -29,35 +28,27 @@
     return row;
   }
 
-  function ensurePublishingCluster(card, actions) {
-    if (!card || !actions) return;
+  function ensurePublishingCluster(card, actions, statusRow) {
+    if (!card || !actions || !statusRow) return;
 
-    const main = card.querySelector('.project-library-main');
-    const manageChapters = actions.querySelector(':scope > .project-manage-chapters-btn');
-    const open = actions.querySelector(':scope > .project-open-btn');
     let publish = actions.querySelector(':scope > .project-publish-btn')
-      || actions.querySelector('.project-publishing-cluster > .project-publish-btn');
+      || card.querySelector('.project-publishing-cluster > .project-publish-btn');
     if (!publish) return;
 
-    let cluster = actions.querySelector(':scope > .project-publishing-cluster');
+    let cluster = statusRow.querySelector(':scope > .project-publishing-cluster');
     if (!cluster) {
       cluster = document.createElement('div');
       cluster.className = 'project-publishing-cluster';
-      const anchor = manageChapters || open;
-      if (anchor) anchor.insertAdjacentElement('afterend', cluster);
-      else actions.prepend(cluster);
+      statusRow.appendChild(cluster);
     }
 
-    // Progress explains what "管理發布" is managing, so keep both in one visual group.
+    // Keep progress + 管理發布 together, but inside project-library-main. The progress
+    // renderer can therefore keep finding/reusing the same strip without recreating it.
     const badges = card.querySelector('.project-progress-badges');
     if (badges && badges.parentElement !== cluster) cluster.appendChild(badges);
     if (publish.parentElement !== cluster) cluster.appendChild(publish);
     if (publish.textContent !== '管理發布') publish.textContent = '管理發布';
-
-    // If a later renderer recreates the progress strip under the title, the subtree
-    // observer will bring it back here without duplicating the publishing action.
-    if (!badges && main) cluster.classList.add('no-progress');
-    else cluster.classList.remove('no-progress');
+    cluster.classList.toggle('no-progress', !badges || badges.hidden);
   }
 
   function ensureOverflow(actions, card) {
@@ -77,6 +68,7 @@
       more.setAttribute('aria-label', '更多作品操作');
       more.setAttribute('aria-haspopup', 'menu');
       more.setAttribute('aria-expanded', 'false');
+      actions.appendChild(more);
     }
 
     if (!menu) {
@@ -97,12 +89,11 @@
         legacyDelete.click();
       });
       menu.appendChild(remove);
+      actions.appendChild(menu);
     }
 
-    // Keep the visible overflow trigger as the final control in every card.
-    actions.appendChild(more);
-    actions.appendChild(menu);
-
+    // CSS keeps ⋯ visually last. Do not append existing nodes on every sync: moving an
+    // existing child fires MutationObserver again and previously caused an infinite loop.
     if (more.dataset.worksUxBound !== '1') {
       more.dataset.worksUxBound = '1';
       more.addEventListener('click', event => {
@@ -136,10 +127,10 @@
 
   function refineCard(card) {
     if (!(card instanceof HTMLElement)) return;
-    ensureStatusRow(card);
+    const statusRow = ensureStatusRow(card);
     refineLabels(card);
     const actions = card.querySelector('.project-library-actions');
-    ensurePublishingCluster(card, actions);
+    ensurePublishingCluster(card, actions, statusRow);
     ensureOverflow(actions, card);
   }
 
@@ -149,18 +140,25 @@
     [...library.querySelectorAll(':scope > .project-library-card')].forEach(refineCard);
   }
 
+  function scheduleSync() {
+    if (syncQueued) return;
+    syncQueued = true;
+    requestAnimationFrame(() => {
+      syncQueued = false;
+      bindObserver();
+      refineLibrary();
+    });
+  }
+
   function bindObserver() {
     const library = document.getElementById('projectsLibrary');
     if (!library || library === observedLibrary) return;
     observer?.disconnect();
     observedLibrary = library;
-    observer = new MutationObserver(() => queueMicrotask(refineLibrary));
-    observer.observe(library, { childList: true, subtree: true });
-  }
-
-  function sync() {
-    bindObserver();
-    refineLibrary();
+    observer = new MutationObserver(scheduleSync);
+    // Only watch card replacement/add/remove. Internal decoration is intentionally not
+    // observed, preventing self-triggered mutation loops on slower/mobile browsers.
+    observer.observe(library, { childList: true });
   }
 
   document.addEventListener('click', event => {
@@ -169,10 +167,11 @@
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') closeOverflowMenus();
   });
-  window.addEventListener('storyflow:projects-changed', () => window.setTimeout(sync, 0));
-  window.addEventListener('storyflow:view-changed', () => window.setTimeout(sync, 0));
-  window.addEventListener('storyflow:workspace-persisted', () => window.setTimeout(sync, 0));
-  window.addEventListener('load', () => window.setTimeout(sync, 250), { once: true });
+  window.addEventListener('storyflow:projects-changed', scheduleSync);
+  window.addEventListener('storyflow:view-changed', scheduleSync);
+  window.addEventListener('storyflow:workspace-persisted', scheduleSync);
+  window.addEventListener('storyflow:project-progress-rendered', scheduleSync);
+  window.addEventListener('load', scheduleSync, { once: true });
 
-  sync();
+  scheduleSync();
 })();
