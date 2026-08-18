@@ -58,6 +58,15 @@
     ensureNewProjectAction();
   }
 
+  function loadChapterManagement() {
+    if (document.getElementById('storyflowChapterManagementV2Js')) return;
+    const script = document.createElement('script');
+    script.id = 'storyflowChapterManagementV2Js';
+    script.src = './chapter-management-v2.js?v=20260818-1538';
+    script.async = false;
+    document.body.appendChild(script);
+  }
+
   window.addEventListener('storyflow:projects-changed', () => window.setTimeout(sync, 0));
   window.addEventListener('storyflow:view-changed', () => window.setTimeout(sync, 0));
   document.addEventListener('keydown', event => {
@@ -65,4 +74,5 @@
   });
 
   sync();
+  loadChapterManagement();
 })();
