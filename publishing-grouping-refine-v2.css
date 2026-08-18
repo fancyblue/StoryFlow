@@ -1,0 +1,152 @@
+/* Publishing grouping refinement v2.
+   Make the WORK level unmistakable, then nest chapter cards inside it. This sheet is
+   appended last by publishing-project-filter-v1.js so legacy !important rules cannot
+   bring destructive controls back into the visible row. */
+
+#publishingView .publishing-project-group{
+  position:relative;
+  display:grid;
+  gap:10px;
+  min-width:0;
+  margin:0 0 16px!important;
+  padding:0 12px 12px!important;
+  border:1px solid #cfdfea!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  box-shadow:0 3px 12px rgba(35,68,99,.035)!important;
+  overflow:visible!important;
+}
+#publishingView .publishing-project-group:last-child{margin-bottom:0!important}
+#publishingView .publishing-project-group-current{
+  border-color:#a9cde5!important;
+  box-shadow:0 4px 16px rgba(47,111,159,.07)!important;
+}
+
+#publishingView .publishing-project-group-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  min-height:54px;
+  margin:0 -12px 0!important;
+  padding:10px 14px!important;
+  border-bottom:1px solid #dce8f0;
+  border-radius:17px 17px 0 0;
+  background:#f4f8fb;
+}
+#publishingView .publishing-project-group-current>.publishing-project-group-head{
+  background:#eef7fd;
+  border-bottom-color:#d3e6f2;
+}
+#publishingView .publishing-project-group-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+#publishingView .publishing-project-group-title::before{
+  content:'作品';
+  display:inline-flex;
+  align-items:center;
+  flex:0 0 auto;
+  min-height:22px;
+  padding:3px 7px;
+  border-radius:999px;
+  background:#dfeef8;
+  color:#3975a7;
+  font-size:9.5px;
+  font-weight:850;
+  line-height:1;
+  letter-spacing:.04em;
+}
+#publishingView .publishing-project-group-head strong{
+  min-width:0;
+  overflow:hidden;
+  color:#234463!important;
+  font-size:16px!important;
+  font-weight:850!important;
+  line-height:1.3!important;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#publishingView .publishing-project-group-head>span{
+  display:inline-flex;
+  align-items:center;
+  flex:0 0 auto;
+  min-height:26px;
+  padding:4px 8px;
+  border:1px solid #d7e5ee;
+  border-radius:999px;
+  background:#fff;
+  color:#6c8599!important;
+  font-size:10.5px!important;
+  font-weight:800!important;
+  line-height:1;
+}
+#publishingView .publishing-project-current{
+  min-height:22px!important;
+  padding:3px 7px!important;
+  border:0!important;
+  background:#fff!important;
+  color:#3975a7!important;
+  font-size:10px!important;
+  font-weight:850!important;
+}
+
+/* Chapters are a second-level container: lighter and inset under the work header. */
+#publishingView .publishing-project-group>.publishing-chapter-group{
+  margin:0!important;
+  border:1px solid #dce7ef!important;
+  border-radius:13px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+#publishingView .publishing-project-group>.publishing-chapter-group+.publishing-chapter-group{
+  margin-top:0!important;
+}
+#publishingView .publishing-chapter-group-head{
+  min-height:40px!important;
+  padding:8px 12px!important;
+  border-bottom:1px solid #e5edf3!important;
+  border-radius:12px 12px 0 0!important;
+  background:#fafcfe!important;
+}
+#publishingView .publishing-chapter-group-head strong{
+  color:#446986!important;
+  font-size:12px!important;
+  font-weight:850!important;
+}
+#publishingView .publishing-chapter-group-head span{
+  color:#7890a3!important;
+  font-size:10.5px!important;
+  font-weight:750!important;
+}
+
+/* Destructive delete exists only behind the final overflow action. Keep the legacy
+   action node available for its click handler, but remove it from layout with a
+   last-loaded, high-specificity rule. */
+html body #publishingView .publish-list-actions>.publish-delete-btn,
+html body #publishingView button.publish-delete-btn,
+html body #publishingView .publish-delete-btn[hidden]{
+  display:none!important;
+  visibility:hidden!important;
+  position:absolute!important;
+  width:0!important;
+  min-width:0!important;
+  height:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+
+@media(max-width:680px){
+  #publishingView .publishing-project-group{padding:0 9px 9px!important;border-radius:15px!important;margin-bottom:12px!important}
+  #publishingView .publishing-project-group-head{min-height:50px;margin:0 -9px!important;padding:9px 10px!important;border-radius:14px 14px 0 0}
+  #publishingView .publishing-project-group-title{gap:6px;flex-wrap:wrap}
+  #publishingView .publishing-project-group-head strong{font-size:15px!important}
+  #publishingView .publishing-project-group-title::before{font-size:9px}
+}
