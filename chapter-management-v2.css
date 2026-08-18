@@ -1,0 +1,249 @@
+/* Chapter management v2: compact contextual actions in Workspace and lightweight
+   manual-article maintenance in the Works library. */
+
+/* Workspace chapter rows: the trailing slot is no longer empty. It is a persistent,
+   neutral overflow affordance; destructive color only appears inside the menu. */
+#chapterList .chapter-row{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 32px!important;
+  align-items:center!important;
+  gap:6px!important;
+  overflow:visible!important;
+}
+#chapterList .chapter-row > .chapter-main-button{
+  width:100%!important;
+  min-width:0!important;
+}
+#chapterList .chapter-row > .chapter-delete-button.chapter-more-button{
+  display:grid!important;
+  place-items:center!important;
+  width:32px!important;
+  min-width:32px!important;
+  height:32px!important;
+  min-height:32px!important;
+  margin:0!important;
+  padding:0!important;
+  border:1px solid transparent!important;
+  border-radius:9px!important;
+  background:transparent!important;
+  color:#6f8293!important;
+  font-size:20px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  opacity:1!important;
+  box-shadow:none!important;
+}
+#chapterList .chapter-row > .chapter-delete-button.chapter-more-button:hover,
+#chapterList .chapter-row > .chapter-delete-button.chapter-more-button:focus-visible,
+#chapterList .chapter-row > .chapter-delete-button.chapter-more-button[aria-expanded="true"]{
+  border-color:#cfe0ec!important;
+  background:#f3f8fc!important;
+  color:#2f6f9f!important;
+  outline:none!important;
+}
+.chapter-row-action-menu{
+  position:absolute;
+  top:calc(50% + 20px);
+  right:0;
+  z-index:80;
+  min-width:136px;
+  padding:5px;
+  border:1px solid #d8e5ee;
+  border-radius:10px;
+  background:#fff;
+  box-shadow:0 12px 30px rgba(31,72,107,.16);
+}
+.chapter-row-action-menu[hidden]{display:none!important}
+.chapter-row-delete-menu-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-height:36px;
+  padding:7px 9px;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#b44f59;
+  font-size:12.5px;
+  font-weight:800;
+  text-align:left;
+}
+.chapter-row-delete-menu-item:hover,
+.chapter-row-delete-menu-item:focus-visible{
+  background:#fff1f3;
+  color:#a83f49;
+  outline:none;
+}
+.chapter-row-delete-menu-item > span:first-child{
+  display:grid;
+  place-items:center;
+  width:18px;
+  height:18px;
+  font-size:17px;
+  line-height:1;
+}
+
+/* Works library: chapter maintenance is disclosure-based so it does not compete with
+   the primary actions (open / publish / delete work). */
+.project-library-card.chapters-expanded{
+  align-items:start!important;
+}
+.project-manage-chapters-btn{
+  white-space:nowrap!important;
+}
+.project-chapter-manager{
+  grid-column:1 / -1;
+  width:100%;
+  margin-top:2px;
+  padding-top:14px;
+  border-top:1px solid #e0eaf2;
+}
+.project-chapter-manager-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:10px;
+}
+.project-chapter-manager-head > div{
+  display:grid;
+  gap:3px;
+}
+.project-chapter-manager-head strong{
+  color:#234463;
+  font-size:13.5px;
+  font-weight:850;
+}
+.project-chapter-manager-head span{
+  color:#6f8293;
+  font-size:11.5px;
+  line-height:1.45;
+}
+.project-chapter-manager-list{
+  display:grid;
+  gap:6px;
+}
+.project-chapter-manager-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(92px,auto);
+  align-items:center;
+  gap:10px;
+  min-height:48px;
+  padding:8px 10px 8px 12px;
+  border:1px solid #e3ecf3;
+  border-radius:10px;
+  background:#fbfdff;
+}
+.project-chapter-title{
+  display:flex;
+  align-items:baseline;
+  gap:9px;
+  min-width:0;
+}
+.project-chapter-title strong{
+  min-width:0;
+  overflow:hidden;
+  color:#234463;
+  font-size:13.5px;
+  font-weight:800;
+  line-height:1.35;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.project-chapter-title small{
+  flex:0 0 auto;
+  color:#7890a2;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.project-chapter-source{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:10.5px;
+  font-weight:800;
+  line-height:1;
+  white-space:nowrap;
+}
+.project-chapter-source.manual{
+  background:#edf6fc;
+  color:#3975a7;
+}
+.project-chapter-source.google{
+  background:#f1f5f8;
+  color:#667d8f;
+}
+.project-chapter-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  min-width:92px;
+}
+.project-chapter-actions .button{
+  min-height:32px!important;
+  padding:0 10px!important;
+  border-radius:8px!important;
+  font-size:11.5px!important;
+}
+.project-chapter-source-note{
+  color:#8a9aa7;
+  font-size:10.5px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.project-chapter-rename-input{
+  width:100%!important;
+  min-height:36px!important;
+  height:36px!important;
+  padding:0 10px!important;
+  border-radius:8px!important;
+  font-size:13px!important;
+  font-weight:750!important;
+}
+.project-chapter-manager-empty{
+  padding:14px;
+  border:1px dashed #d6e4ee;
+  border-radius:10px;
+  color:#6f8293;
+  font-size:12px;
+  text-align:center;
+}
+
+@media(max-width:820px){
+  #chapterList .chapter-row{grid-template-columns:minmax(0,1fr) 36px!important}
+  #chapterList .chapter-row > .chapter-delete-button.chapter-more-button{
+    width:36px!important;
+    min-width:36px!important;
+    height:36px!important;
+    min-height:36px!important;
+  }
+  .project-chapter-manager-row{
+    grid-template-columns:minmax(0,1fr) auto;
+  }
+  .project-chapter-actions{
+    grid-column:1 / -1;
+    justify-content:flex-start;
+    min-width:0;
+  }
+  .project-chapter-source-note{padding-left:2px}
+}
+
+@media(max-width:520px){
+  .project-chapter-manager-row{
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:7px;
+    padding:9px;
+  }
+  .project-chapter-title{
+    display:grid;
+    gap:2px;
+  }
+  .project-chapter-title small{font-size:10.5px}
+  .project-chapter-manager-head span{font-size:11px}
+}
