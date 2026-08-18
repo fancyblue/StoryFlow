@@ -1,0 +1,51 @@
+/* Publishing list compact v1.
+   The filters already explain the collection, so the list itself should not sit inside
+   another titled panel. Keep the publishing page shallow and let article rows be the content. */
+.publishing-dashboard-panel{
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+
+/* "PUBLISHING QUEUE / 文章清單 / 說明" repeats the page hierarchy and wastes vertical space. */
+.publishing-dashboard-panel > .panel-head{
+  display:none!important;
+}
+
+.publishing-dashboard-panel .parts-list{
+  display:block!important;
+  padding:0!important;
+}
+
+/* Keep filters visually connected to the rows instead of to a large empty container. */
+.publishing-toolbar{
+  margin-bottom:10px!important;
+}
+
+.publish-list-item{
+  margin-bottom:8px!important;
+}
+.publish-list-summary{
+  min-height:60px!important;
+  padding:10px 12px!important;
+}
+
+/* When there are no articles, retain a deliberate empty surface even though the outer panel is gone. */
+.publishing-dashboard-panel .publishing-empty{
+  box-sizing:border-box;
+  min-height:180px!important;
+  padding:24px!important;
+  border:1px solid #dbe7f0;
+  border-radius:14px;
+  background:#fff;
+}
+
+@media(max-width:680px){
+  .publishing-toolbar{margin-bottom:8px!important}
+  .publish-list-summary{padding:10px!important}
+  .publishing-dashboard-panel .publishing-empty{min-height:150px!important;padding:20px!important}
+}
