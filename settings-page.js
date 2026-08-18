@@ -44,7 +44,7 @@
     loadStylesheet('storyflowNavigationUtilityPolishCss', './navigation-utility-polish.css?v=20260817-1902');
     loadStylesheet('storyflowMobileBottomNavFixCss', './mobile-bottom-nav-fix.css?v=20260817-2130');
     loadStylesheet('storyflowUiSystemV4Css', './ui-system-v4.css?v=20260818-1041');
-    loadStylesheet('storyflowUiLayoutIntegrityCss', './ui-layout-integrity.css?v=20260818-1055');
+    loadStylesheet('storyflowUiLayoutIntegrityCss', './ui-layout-integrity.css?v=20260818-1108');
     loadScript('storyflowPlatformSettingsV2Js', './platform-settings-v2.js?v=20260817-1632');
     loadScript('storyflowSettingsBootstrapJs', './settings-bootstrap.js?v=20260817-1703');
     loadScript('storyflowSettingsFileImportFixJs', './settings-file-import-fix.js?v=20260817-1720');
