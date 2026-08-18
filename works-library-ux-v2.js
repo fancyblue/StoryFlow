@@ -1,7 +1,7 @@
 // Works library UX v2.
-// Refines the existing Works page without changing project data: compact card hierarchy,
-// concise navigation labels, one overflow location for destructive actions, and a shared
-// metadata/progress row so status does not compete with the work title.
+// Refines the Works page around task hierarchy: work identity stays on the left,
+// publishing progress sits beside its management action, and destructive actions
+// stay behind a final overflow button.
 (function () {
   let observedLibrary = null;
   let observer = null;
@@ -26,10 +26,38 @@
       meta.insertAdjacentElement('beforebegin', row);
     }
     if (meta.parentElement !== row) row.appendChild(meta);
-
-    const badges = main.querySelector('.project-progress-badges');
-    if (badges && badges.parentElement !== row) row.appendChild(badges);
     return row;
+  }
+
+  function ensurePublishingCluster(card, actions) {
+    if (!card || !actions) return;
+
+    const main = card.querySelector('.project-library-main');
+    const manageChapters = actions.querySelector(':scope > .project-manage-chapters-btn');
+    const open = actions.querySelector(':scope > .project-open-btn');
+    let publish = actions.querySelector(':scope > .project-publish-btn')
+      || actions.querySelector('.project-publishing-cluster > .project-publish-btn');
+    if (!publish) return;
+
+    let cluster = actions.querySelector(':scope > .project-publishing-cluster');
+    if (!cluster) {
+      cluster = document.createElement('div');
+      cluster.className = 'project-publishing-cluster';
+      const anchor = manageChapters || open;
+      if (anchor) anchor.insertAdjacentElement('afterend', cluster);
+      else actions.prepend(cluster);
+    }
+
+    // Progress explains what "管理發布" is managing, so keep both in one visual group.
+    const badges = card.querySelector('.project-progress-badges');
+    if (badges && badges.parentElement !== cluster) cluster.appendChild(badges);
+    if (publish.parentElement !== cluster) cluster.appendChild(publish);
+    if (publish.textContent !== '管理發布') publish.textContent = '管理發布';
+
+    // If a later renderer recreates the progress strip under the title, the subtree
+    // observer will bring it back here without duplicating the publishing action.
+    if (!badges && main) cluster.classList.add('no-progress');
+    else cluster.classList.remove('no-progress');
   }
 
   function ensureOverflow(actions, card) {
@@ -49,7 +77,6 @@
       more.setAttribute('aria-label', '更多作品操作');
       more.setAttribute('aria-haspopup', 'menu');
       more.setAttribute('aria-expanded', 'false');
-      actions.appendChild(more);
     }
 
     if (!menu) {
@@ -70,8 +97,11 @@
         legacyDelete.click();
       });
       menu.appendChild(remove);
-      actions.appendChild(menu);
     }
+
+    // Keep the visible overflow trigger as the final control in every card.
+    actions.appendChild(more);
+    actions.appendChild(menu);
 
     if (more.dataset.worksUxBound !== '1') {
       more.dataset.worksUxBound = '1';
@@ -94,6 +124,9 @@
       if (open.textContent !== label) open.textContent = label;
     }
 
+    const publish = card.querySelector('.project-publish-btn');
+    if (publish && publish.textContent !== '管理發布') publish.textContent = '管理發布';
+
     const meta = card.querySelector('.project-library-meta');
     if (meta) {
       const text = meta.textContent || '';
@@ -106,6 +139,7 @@
     ensureStatusRow(card);
     refineLabels(card);
     const actions = card.querySelector('.project-library-actions');
+    ensurePublishingCluster(card, actions);
     ensureOverflow(actions, card);
   }
 
