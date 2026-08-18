@@ -43,12 +43,14 @@
       && !(chapter?.parts || []).length;
   }
 
+  function defaultSuggestionName(start, end, blocks, chapter = activeChapter()) {
+    if (isWholeChapterRange(start, end, blocks, chapter)) return chapter?.title || '未命名章節';
+    return `${chapter?.title || '未命名章節'}（${(chapter?.parts || []).length + 1}）`;
+  }
+
   function applyAutomaticSuggestionName(nextSuggestion, start, end, blocks) {
     if (!nextSuggestion) return nextSuggestion;
-    if (isWholeChapterRange(start, end, blocks)) {
-      nextSuggestion.name = activeChapter()?.title || nextSuggestion.name;
-      nextSuggestion.__autoWholeChapterName = true;
-    }
+    nextSuggestion.name = defaultSuggestionName(start, end, blocks);
     return nextSuggestion;
   }
 
@@ -214,11 +216,13 @@
       return;
     }
 
-    const preserveCurrentName = !suggestion.__autoWholeChapterName;
     const titleInput = document.getElementById('suggestionTitleInput');
-    const title = titleInput?.value?.trim() || suggestion.name;
+    const currentTitle = titleInput?.value?.trim() || suggestion.name;
+    const oldDefaultTitle = defaultSuggestionName(start, oldEnd, blocks);
+    const hasCustomTitle = Boolean(currentTitle && currentTitle !== oldDefaultTitle);
+
     suggestion = applyAutomaticSuggestionName(buildSuggestion(start, nextEnd, blocks), start, nextEnd, blocks);
-    if (preserveCurrentName) suggestion.name = title;
+    if (hasCustomTitle) suggestion.name = currentTitle;
     renderSuggestion();
 
     const restoredTitle = document.getElementById('suggestionTitleInput');
