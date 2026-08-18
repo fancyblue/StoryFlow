@@ -145,6 +145,31 @@ html body #publishingView .publish-delete-btn[hidden]{
   pointer-events:none!important;
 }
 
+/* Platform status actions use color as a quick semantic cue.
+   Marking as published is a positive action; undoing a published state is a reversible warning action. */
+#publishingView .publish-platform-actions .platform-status-btn:not(.is-published){
+  border-color:#bfe5d1!important;
+  background:#f0faf5!important;
+  color:#277153!important;
+}
+#publishingView .publish-platform-actions .platform-status-btn:not(.is-published):hover,
+#publishingView .publish-platform-actions .platform-status-btn:not(.is-published):focus-visible{
+  border-color:#99d2b4!important;
+  background:#e4f6ed!important;
+  color:#1f6046!important;
+}
+#publishingView .publish-platform-actions .platform-status-btn.is-published{
+  border-color:#efd7a4!important;
+  background:#fff8e8!important;
+  color:#9a661a!important;
+}
+#publishingView .publish-platform-actions .platform-status-btn.is-published:hover,
+#publishingView .publish-platform-actions .platform-status-btn.is-published:focus-visible{
+  border-color:#e4c277!important;
+  background:#fff1cf!important;
+  color:#825313!important;
+}
+
 @media(max-width:680px){
   #publishingView .publishing-project-group{padding:0 9px 9px!important;border-radius:15px!important;margin-bottom:12px!important}
   #publishingView .publishing-project-group-head{min-height:50px;margin:0 -9px!important;padding:9px 10px!important;border-radius:14px 14px 0 0}
