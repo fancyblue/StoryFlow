@@ -61,19 +61,37 @@
 .review-column.current .review-boundary-controls{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:7px!important;margin:0!important}
 .review-boundary-controls .button{min-height:34px!important;padding:0 10px!important;font-size:12px!important}
 
+/* Persistent connection controls use one size/color system everywhere. */
+.top-connection-status{gap:8px!important;margin-right:8px!important}
+.connection-chip{min-height:42px!important;padding:0 12px!important;gap:8px!important;border-radius:999px!important;font-size:14px!important;line-height:1!important}
+.connection-chip-label,.connection-chip-state{font-size:14px!important;line-height:1!important}
+.connection-chip-label{font-weight:650!important}
+.connection-chip-state{font-weight:800!important}
+.connection-chip-dot,.sidebar-status-dot{width:9px!important;height:9px!important;flex:0 0 9px!important;background:#ef8791!important;box-shadow:0 0 0 3px rgba(239,135,145,.13)!important}
+.connection-chip.connected .connection-chip-dot,.sidebar-connection-row.connected .sidebar-status-dot{background:#67dca0!important;box-shadow:0 0 0 3px rgba(103,220,160,.13)!important}
+.connection-chip.restoring .connection-chip-dot,.sidebar-connection-row.restoring .sidebar-status-dot{background:#d8b783!important;box-shadow:0 0 0 3px rgba(216,183,131,.13)!important}
+.connection-logout{min-height:42px!important;padding:0 13px!important;font-size:14px!important;font-weight:800!important}
+.topbar .save-state{font-size:14px!important;font-weight:700!important;line-height:1.2!important}
+
+/* Sidebar/footer service label is the visible state summary; dot carries actual state. */
 .sidebar-connection-copy b{display:none!important}
-.sidebar-status-dot{background:#ef8791!important;box-shadow:0 0 0 3px rgba(239,135,145,.13)!important}
-.sidebar-connection-row.connected .sidebar-status-dot{background:#67dca0!important;box-shadow:0 0 0 3px rgba(103,220,160,.13)!important}
-.sidebar-connection-row.restoring .sidebar-status-dot{background:#d8b783!important;box-shadow:0 0 0 3px rgba(216,183,131,.13)!important}
+.sidebar-connection-copy small{font-size:15px!important;font-weight:800!important;line-height:1!important;color:#dceaf4!important}
+.sidebar-connection-row.connected .sidebar-connection-copy small,.sidebar-connection-row.restoring .sidebar-connection-copy small{color:#fff!important}
 
 .sidebar-settings-button,.sidebar-logout{display:grid!important;place-items:center!important;padding:0!important}
-.sidebar-settings-button>.sidebar-utility-icon,.sidebar-logout>.sidebar-utility-icon{display:grid!important;place-items:center!important;width:22px!important;height:22px!important;line-height:0!important}
-.sidebar-settings-button>.sidebar-utility-icon svg,.sidebar-logout>.sidebar-utility-icon svg{display:block!important;width:22px!important;height:22px!important}
+.sidebar-settings-button>.sidebar-utility-icon,.sidebar-logout>.sidebar-utility-icon{display:grid!important;place-items:center!important;width:24px!important;height:24px!important;line-height:0!important}
+.sidebar-settings-button>.sidebar-utility-icon svg,.sidebar-logout>.sidebar-utility-icon svg{display:block!important;width:24px!important;height:24px!important}
 .sidebar-settings-button .sidebar-settings-label,.sidebar-logout .sidebar-logout-label{display:none!important}
 
 @media(max-width:980px){.review-format-bar{grid-template-columns:minmax(150px,200px) minmax(0,1fr)!important}.review-format-bar .sf-preview-mode-control{grid-column:1 / -1;justify-content:flex-start!important}}
 @media(max-width:820px){
-  .stat-card>strong{font-size:25px!important}.stat-card>small{height:25px!important;font-size:13px!important}.source-panel{position:relative!important}.workspace-project-quick-switch{top:56px;left:12px;right:12px}.review-format-bar{grid-template-columns:1fr!important;gap:9px!important}.review-format-bar #reviewPlatformSettings.suggestion-platform-settings{min-height:0!important}.review-format-bar .sf-preview-mode-control{grid-column:1!important;width:100%!important}.review-column.current .review-boundary-controls{flex:1 1 100%;justify-content:flex-start!important;margin-top:5px!important}.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:38px!important;font-size:13.5px!important}.sidebar-utility-actions{grid-template-columns:repeat(2,42px)!important;gap:6px!important;width:90px!important}.sidebar-settings-button,.sidebar-logout{width:42px!important;min-width:42px!important;height:42px!important;min-height:42px!important}
+  .stat-card>strong{font-size:25px!important}.stat-card>small{height:25px!important;font-size:13px!important}.source-panel{position:relative!important}.workspace-project-quick-switch{top:56px;left:12px;right:12px}.review-format-bar{grid-template-columns:1fr!important;gap:9px!important}.review-format-bar #reviewPlatformSettings.suggestion-platform-settings{min-height:0!important}.review-format-bar .sf-preview-mode-control{grid-column:1!important;width:100%!important}.review-column.current .review-boundary-controls{flex:1 1 100%;justify-content:flex-start!important;margin-top:5px!important}.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:38px!important;font-size:13.5px!important}
+  .sidebar-connection-status{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 96px!important;gap:8px!important}
+  .sidebar-connection-row{height:44px!important;min-height:44px!important;padding:0 10px!important;border-radius:12px!important}
+  .sidebar-connection-copy{gap:7px!important}
+  .sidebar-connection-copy small{font-size:15px!important;font-weight:800!important}
+  .sidebar-utility-actions{grid-template-columns:repeat(2,44px)!important;gap:8px!important;width:96px!important}
+  .sidebar-settings-button,.sidebar-logout{width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;border-radius:12px!important}
   .splitter-panel #suggestionChars,.review-current-chars{font-size:15px!important}
   .splitter-panel .suggestion-title-row .pill{font-size:13px!important;min-height:30px!important}
 }
