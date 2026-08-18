@@ -124,9 +124,6 @@
     const formatBar = document.getElementById('splitPlatformBar');
     if (!panel || !head) return;
 
-    // Keep a real section title. The previous compact version removed it and
-    // crowded all preferences into the heading row, which made the panel read
-    // like a toolbar instead of the primary editing surface.
     const titleBlock = head.querySelector(':scope > div:first-child') || head.firstElementChild;
     if (titleBlock && !titleBlock.querySelector('h2')) {
       const h2 = document.createElement('h2');
@@ -147,7 +144,6 @@
       reviewBtn.disabled = !suggestion;
     }
 
-    // Preferences belong to their own row below the heading, not beside it.
     if (mini) {
       if (!mini.querySelector('.smart-split-settings-label')) {
         const label = document.createElement('span');
@@ -196,11 +192,26 @@
 
   function scrollReviewToCurrentStart() {
     const fullBox = document.getElementById('dialogReviewFull');
-    const marker = fullBox?.querySelector('.range-start');
-    if (!fullBox || !marker) return;
-    requestAnimationFrame(() => {
-      fullBox.scrollTop = Math.max(0, marker.offsetTop - 18);
-    });
+    if (!fullBox) return;
+
+    // Reset first. offsetTop on an inline marker is relative to whichever ancestor
+    // becomes its offset parent, not necessarily this scrolling <pre>; that made the
+    // previous positioning unreliable. Measure both boxes in viewport coordinates
+    // after the dialog has completed layout, then translate that delta into scrollTop.
+    fullBox.scrollTop = 0;
+
+    const align = () => {
+      const marker = fullBox.querySelector('.range-start');
+      if (!marker || !fullBox.isConnected) return;
+      const boxRect = fullBox.getBoundingClientRect();
+      const markerRect = marker.getBoundingClientRect();
+      const target = fullBox.scrollTop + markerRect.top - boxRect.top - 12;
+      fullBox.scrollTop = Math.max(0, target);
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(align));
+    // One delayed pass covers late font/layout changes in the modal without animation.
+    window.setTimeout(align, 80);
   }
 
   function refreshReviewDialog(scrollToStart = false) {
