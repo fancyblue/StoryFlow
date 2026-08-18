@@ -1,7 +1,6 @@
 // Works-library progress badges.
 // Surface meaningful downstream state: confirmed Smart Split outputs and anything
-// published to at least one platform. The Works UX layer may move the strip beside
-// 管理發布; this renderer therefore looks across the whole card, not only title content.
+// published to at least one platform. Rendering is idempotent to avoid unnecessary DOM churn.
 (function () {
   const DB_NAME = 'storyflow-connections-v1';
   const STORE_NAME = 'handles';
@@ -136,8 +135,7 @@
       const titleRow = main?.querySelector('.project-library-title-row');
       if (!main || !titleRow) return;
 
-      // The strip may have been moved into the publishing action cluster by Works UX.
-      let strip = card.querySelector('.project-progress-badges');
+      let strip = main.querySelector('.project-progress-badges');
       if (!strip) {
         strip = document.createElement('div');
         strip.className = 'project-progress-badges';
@@ -146,16 +144,22 @@
       }
 
       const status = statusByProject.get(project.id) || { splitCount: 0, publishedCount: 0 };
-      strip.replaceChildren();
-      if (status.splitCount > 0) {
-        strip.appendChild(badge('split', `已切篇 ${status.splitCount.toLocaleString()} 篇`, `已產出 ${status.splitCount.toLocaleString()} 篇切篇結果`));
-      }
-      if (status.publishedCount > 0) {
-        strip.appendChild(badge('published', `✓ 已發布 ${status.publishedCount.toLocaleString()} 篇`, `已有 ${status.publishedCount.toLocaleString()} 篇至少發布到一個平台`));
+      const signature = `${status.splitCount}:${status.publishedCount}`;
+      if (strip.dataset.progressSignature !== signature) {
+        strip.dataset.progressSignature = signature;
+        strip.replaceChildren();
+        if (status.splitCount > 0) {
+          strip.appendChild(badge('split', `已切篇 ${status.splitCount.toLocaleString()} 篇`, `已產出 ${status.splitCount.toLocaleString()} 篇切篇結果`));
+        }
+        if (status.publishedCount > 0) {
+          strip.appendChild(badge('published', `✓ 已發布 ${status.publishedCount.toLocaleString()} 篇`, `已有 ${status.publishedCount.toLocaleString()} 篇至少發布到一個平台`));
+        }
       }
       strip.hidden = strip.childElementCount === 0;
       card.classList.toggle('has-published-progress', status.publishedCount > 0);
     });
+
+    window.dispatchEvent(new CustomEvent('storyflow:project-progress-rendered'));
   }
 
   function bindLibraryObserver() {
