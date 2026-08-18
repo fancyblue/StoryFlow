@@ -21,18 +21,20 @@
   }
 
   // Keep late-loaded layers deterministic. Component CSS comes first, then the
-  // brand/mobile refinements, and the single UI-system contract always stays last.
+  // brand/mobile refinements, the UI-system contract, and structural integrity last.
   function ensureThemeOrder() {
     const theme = document.getElementById('storyflowBlueThemeCss');
     const mobile = document.getElementById('storyflowMobileVisualPolishCss');
     const workspaceUx = document.getElementById('storyflowWorkspaceUxRefineCss');
     const connectionStatus = document.getElementById('storyflowConnectionStatusRefineCss');
     const uiSystem = document.getElementById('storyflowUiSystemV4Css');
+    const layoutIntegrity = document.getElementById('storyflowUiLayoutIntegrityCss');
     if (theme && theme.parentElement === document.head) document.head.appendChild(theme);
     if (mobile && mobile.parentElement === document.head) document.head.appendChild(mobile);
     if (workspaceUx && workspaceUx.parentElement === document.head) document.head.appendChild(workspaceUx);
     if (connectionStatus && connectionStatus.parentElement === document.head) document.head.appendChild(connectionStatus);
     if (uiSystem && uiSystem.parentElement === document.head) document.head.appendChild(uiSystem);
+    if (layoutIntegrity && layoutIntegrity.parentElement === document.head) document.head.appendChild(layoutIntegrity);
   }
 
   function loadLateUiAssets() {
@@ -42,6 +44,7 @@
     loadStylesheet('storyflowNavigationUtilityPolishCss', './navigation-utility-polish.css?v=20260817-1902');
     loadStylesheet('storyflowMobileBottomNavFixCss', './mobile-bottom-nav-fix.css?v=20260817-2130');
     loadStylesheet('storyflowUiSystemV4Css', './ui-system-v4.css?v=20260818-1041');
+    loadStylesheet('storyflowUiLayoutIntegrityCss', './ui-layout-integrity.css?v=20260818-1055');
     loadScript('storyflowPlatformSettingsV2Js', './platform-settings-v2.js?v=20260817-1632');
     loadScript('storyflowSettingsBootstrapJs', './settings-bootstrap.js?v=20260817-1703');
     loadScript('storyflowSettingsFileImportFixJs', './settings-file-import-fix.js?v=20260817-1720');
