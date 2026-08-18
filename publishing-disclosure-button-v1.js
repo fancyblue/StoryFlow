@@ -11,8 +11,19 @@
       link.rel = 'stylesheet';
       document.head.appendChild(link);
     }
-    const href = './publishing-disclosure-button-v1.css?v=20260818-1812';
+    const href = './publishing-disclosure-button-v1.css?v=20260818-1836';
     if (!link.href.endsWith(href.replace('./', '/')) && link.getAttribute('href') !== href) link.href = href;
+
+    // This refinement must win the legacy cascade. It is deliberately injected from a
+    // body script so it sits after every static stylesheet in <head>.
+    let refine = document.getElementById('storyflowPublishingGroupingRefineV2Css');
+    if (!refine) {
+      refine = document.createElement('link');
+      refine.id = 'storyflowPublishingGroupingRefineV2Css';
+      refine.rel = 'stylesheet';
+      refine.href = './publishing-grouping-refine-v2.css?v=20260818-1836';
+      document.head.appendChild(refine);
+    }
   }
 
   function closeOverflowMenus(except = null) {
@@ -29,10 +40,19 @@
     if (!actions || !legacyDelete) return;
 
     // The legacy delete control remains in the DOM only as the underlying action target.
-    // It must never compete visually with the overflow pattern.
+    // It must never compete visually with the overflow pattern. Inline !important makes
+    // this invariant immune to later legacy styles that also use !important.
     legacyDelete.hidden = true;
     legacyDelete.setAttribute('aria-hidden', 'true');
     legacyDelete.tabIndex = -1;
+    legacyDelete.style.setProperty('display', 'none', 'important');
+    legacyDelete.style.setProperty('visibility', 'hidden', 'important');
+    legacyDelete.style.setProperty('position', 'absolute', 'important');
+    legacyDelete.style.setProperty('width', '0', 'important');
+    legacyDelete.style.setProperty('height', '0', 'important');
+    legacyDelete.style.setProperty('padding', '0', 'important');
+    legacyDelete.style.setProperty('margin', '0', 'important');
+    legacyDelete.style.setProperty('pointer-events', 'none', 'important');
 
     let more = actions.querySelector(':scope > .publish-more-btn');
     let menu = actions.querySelector(':scope > .publish-row-overflow-menu');
