@@ -1,0 +1,42 @@
+/* Manual chapter edit affordances. Destructive actions stay visually separate from edit. */
+.chapter-row-edit-menu-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-height:36px;
+  padding:7px 9px;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#2f6f9f;
+  font-size:12.5px;
+  font-weight:800;
+  text-align:left;
+}
+.chapter-row-edit-menu-item:hover,
+.chapter-row-edit-menu-item:focus-visible{
+  background:#edf6fc;
+  color:#234463;
+  outline:none;
+}
+.chapter-row-edit-menu-item > span:first-child{
+  display:grid;
+  place-items:center;
+  width:18px;
+  height:18px;
+  font-size:15px;
+  line-height:1;
+}
+.chapter-row-action-menu .chapter-row-edit-menu-item + .chapter-row-delete-menu-item{
+  margin-top:3px;
+  padding-top:8px;
+  border-top:1px solid #edf1f4;
+  border-radius:0 0 7px 7px;
+}
+#manualSourceDialog[data-edit-chapter-id] #cancelManualChapterEditBtn{
+  display:inline-flex!important;
+}
+#manualSourceDialog[data-edit-chapter-id] #previewManualSourceBtn{
+  display:none!important;
+}
