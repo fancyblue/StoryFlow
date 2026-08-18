@@ -29,7 +29,8 @@
   }
 
   /* Keep Google / folder / settings / logout on one line in the 250px sidebar.
-     Service state is communicated by the dot, so this strip stays visually quiet. */
+     The strip is the sidebar footer, so auto margin absorbs all remaining vertical
+     space and keeps connection/session actions anchored to the bottom edge. */
   .sidebar #sidebarConnectionStatus.sidebar-connection-status{
     display:flex!important;
     flex-wrap:nowrap!important;
@@ -37,7 +38,7 @@
     gap:3px!important;
     width:100%!important;
     min-width:0!important;
-    margin-top:8px!important;
+    margin-top:auto!important;
     padding-top:9px!important;
   }
 
