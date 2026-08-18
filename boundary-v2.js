@@ -37,6 +37,21 @@
     return blocks.slice(start, end).reduce((sum, block) => sum + block.chars, 0);
   }
 
+  function isWholeChapterRange(start, end, blocks, chapter = activeChapter()) {
+    return start === 0
+      && end === blocks.length
+      && !(chapter?.parts || []).length;
+  }
+
+  function applyAutomaticSuggestionName(nextSuggestion, start, end, blocks) {
+    if (!nextSuggestion) return nextSuggestion;
+    if (isWholeChapterRange(start, end, blocks)) {
+      nextSuggestion.name = activeChapter()?.title || nextSuggestion.name;
+      nextSuggestion.__autoWholeChapterName = true;
+    }
+    return nextSuggestion;
+  }
+
   // SMART SPLIT must never create its first/default cut inside a source scene.
   // Choose only among real source scene ends (or the chapter tail). Character
   // preferences rank those valid scene boundaries; they never manufacture a
@@ -52,6 +67,16 @@
       end,
       chars: charsBetween(blocks, start, end)
     }));
+
+    // If all remaining content already fits the user's preferred range, keep it
+    // together. Do not split early merely because an earlier scene end is closer
+    // to the mathematical midpoint of the range.
+    const chapterTail = ranked[ranked.length - 1];
+    if (chapterTail?.end === blocks.length
+      && chapterTail.chars >= min
+      && chapterTail.chars <= max) {
+      return chapterTail.end;
+    }
 
     const inRange = ranked.filter(item => item.chars >= min && item.chars <= max);
     if (inRange.length) {
@@ -83,7 +108,7 @@
     }
 
     const end = preferredSceneEnd(blocks, start);
-    suggestion = buildSuggestion(start, end, blocks);
+    suggestion = applyAutomaticSuggestionName(buildSuggestion(start, end, blocks), start, end, blocks);
     renderSuggestion();
   }
 
@@ -189,15 +214,15 @@
       return;
     }
 
+    const preserveCurrentName = !suggestion.__autoWholeChapterName;
     const titleInput = document.getElementById('suggestionTitleInput');
     const title = titleInput?.value?.trim() || suggestion.name;
-    suggestion = buildSuggestion(start, nextEnd, blocks);
-    suggestion.name = title;
+    suggestion = applyAutomaticSuggestionName(buildSuggestion(start, nextEnd, blocks), start, nextEnd, blocks);
+    if (preserveCurrentName) suggestion.name = title;
     renderSuggestion();
 
     const restoredTitle = document.getElementById('suggestionTitleInput');
-    if (restoredTitle) restoredTitle.value = title;
-    suggestion.name = title;
+    if (restoredTitle) restoredTitle.value = suggestion.name;
     refreshReview(false);
     syncControlState();
   }
