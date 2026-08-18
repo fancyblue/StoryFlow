@@ -67,6 +67,15 @@
     document.body.appendChild(script);
   }
 
+  function loadProjectProgressBadges() {
+    if (document.getElementById('storyflowProjectProgressBadgesV1Js')) return;
+    const script = document.createElement('script');
+    script.id = 'storyflowProjectProgressBadgesV1Js';
+    script.src = './project-progress-badges-v1.js?v=20260818-1647';
+    script.async = false;
+    document.body.appendChild(script);
+  }
+
   window.addEventListener('storyflow:projects-changed', () => window.setTimeout(sync, 0));
   window.addEventListener('storyflow:view-changed', () => window.setTimeout(sync, 0));
   document.addEventListener('keydown', event => {
@@ -75,4 +84,5 @@
 
   sync();
   loadChapterManagement();
+  loadProjectProgressBadges();
 })();
