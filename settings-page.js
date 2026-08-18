@@ -21,14 +21,16 @@
   }
 
   // Keep late-loaded theme layers deterministic. Component CSS comes first,
-  // then the desktop/mobile theme, and the final workspace UX layer stays last.
+  // then desktop/mobile theme, workspace UX, and connection/navigation hierarchy last.
   function ensureThemeOrder() {
     const theme = document.getElementById('storyflowBlueThemeCss');
     const mobile = document.getElementById('storyflowMobileVisualPolishCss');
     const workspaceUx = document.getElementById('storyflowWorkspaceUxRefineCss');
+    const connectionStatus = document.getElementById('storyflowConnectionStatusRefineCss');
     if (theme && theme.parentElement === document.head) document.head.appendChild(theme);
     if (mobile && mobile.parentElement === document.head) document.head.appendChild(mobile);
     if (workspaceUx && workspaceUx.parentElement === document.head) document.head.appendChild(workspaceUx);
+    if (connectionStatus && connectionStatus.parentElement === document.head) document.head.appendChild(connectionStatus);
   }
 
   function loadLateUiAssets() {
