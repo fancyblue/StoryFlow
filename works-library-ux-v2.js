@@ -89,7 +89,10 @@
 
   function refineLabels(card) {
     const open = card.querySelector('.project-open-btn');
-    if (open) open.textContent = card.classList.contains('active') ? '工作台' : '開啟';
+    if (open) {
+      const label = card.classList.contains('active') ? '工作台' : '開啟';
+      if (open.textContent !== label) open.textContent = label;
+    }
 
     const meta = card.querySelector('.project-library-meta');
     if (meta) {
