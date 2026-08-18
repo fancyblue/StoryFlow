@@ -35,15 +35,42 @@
   } catch (_) {}
 
   // Source-mode v2 intentionally loads after the legacy source/project layers.
-  // Load the CSS first so the new creation-mode controls never flash unstyled.
+  // Load CSS first, then source-mode behavior, then the final article/dialog UX layer.
   window.addEventListener('load', () => {
+    const loadArticleUx = () => {
+      if (!document.getElementById('storyflowSourceArticleUxV2Css')) {
+        const link = document.createElement('link');
+        link.id = 'storyflowSourceArticleUxV2Css';
+        link.rel = 'stylesheet';
+        link.href = './source-article-ux-v2.css?v=20260818-1438';
+        document.head.appendChild(link);
+      }
+      if (!document.getElementById('storyflowSourceArticleUxV2Js')) {
+        const script = document.createElement('script');
+        script.id = 'storyflowSourceArticleUxV2Js';
+        script.src = './source-article-ux-v2.js?v=20260818-1438';
+        script.async = false;
+        document.body.appendChild(script);
+      }
+    };
+
     const loadBehavior = () => {
-      if (document.getElementById('storyflowProjectSourceModeV2Js')) return;
+      const existing = document.getElementById('storyflowProjectSourceModeV2Js');
+      if (existing) {
+        if (window.StoryFlowProjectSourceModeV2) loadArticleUx();
+        else {
+          existing.addEventListener('load', loadArticleUx, { once: true });
+          window.setTimeout(loadArticleUx, 250);
+        }
+        return;
+      }
       const script = document.createElement('script');
       script.id = 'storyflowProjectSourceModeV2Js';
-      script.src = './project-source-mode-v2.js?v=20260818-1433';
+      script.src = './project-source-mode-v2.js?v=20260818-1438';
       script.async = false;
+      script.addEventListener('load', loadArticleUx, { once: true });
       document.body.appendChild(script);
+      window.setTimeout(loadArticleUx, 350);
     };
 
     let link = document.getElementById('storyflowProjectSourceModeV2Css');
@@ -51,7 +78,7 @@
       link = document.createElement('link');
       link.id = 'storyflowProjectSourceModeV2Css';
       link.rel = 'stylesheet';
-      link.href = './project-source-mode-v2.css?v=20260818-1433';
+      link.href = './project-source-mode-v2.css?v=20260818-1438';
       link.addEventListener('load', loadBehavior, { once: true });
       document.head.appendChild(link);
       // If a browser restores the stylesheet from cache without a load callback,
