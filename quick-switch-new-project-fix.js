@@ -1,10 +1,136 @@
 // Keep the quick-switch menu's "新增作品" action present after the legacy renderer
-// rebuilds the menu on every open.
+// rebuilds the menu on every open. This layer also owns the empty-workspace
+// onboarding hand-off so it does not depend on a source button that may be removed.
 (function () {
+  const INTEGRATION_SESSION_KEY = 'storyflow.integration-bootstrap.v1';
+
   function closeQuickSwitch() {
     const menu = document.getElementById('workspaceProjectQuickSwitch');
     if (menu) menu.hidden = true;
     document.getElementById('quickSwitchProjectBtn')?.setAttribute('aria-expanded', 'false');
+  }
+
+  function hasIntegrationSettings() {
+    if (String(window.STORYFLOW_CONFIG?.googleClientId || '').trim()) return true;
+    try {
+      return Boolean(sessionStorage.getItem(INTEGRATION_SESSION_KEY));
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function showSettings(message = '請先載入 StoryFlow 設定，再繼續載入來源。') {
+    document.getElementById('sourceDialog')?.close?.();
+    document.getElementById('manualSourceDialog')?.close?.();
+    if (message) window.notify?.(message);
+    if (typeof window.StoryFlowShowSettings === 'function') {
+      window.StoryFlowShowSettings();
+      return;
+    }
+    window.StoryFlowNavigate?.('settings');
+  }
+
+  function configureSourceDialog({ creation = false } = {}) {
+    const dialog = document.getElementById('sourceDialog');
+    if (!dialog) return null;
+
+    const heading = dialog.querySelector('.sticky-dialog-head h3');
+    const intro = dialog.querySelector('.source-flow-intro');
+    const googleTitle = dialog.querySelector('#sourceGoogleBtn strong');
+    const googleCopy = dialog.querySelector('#sourceGoogleBtn span');
+    const manualTitle = dialog.querySelector('#sourceManualBtn strong');
+    const manualCopy = dialog.querySelector('#sourceManualBtn span');
+
+    if (heading) heading.textContent = creation ? '建立作品' : '載入來源';
+    if (intro) {
+      intro.textContent = creation
+        ? '先選擇作品建立方式。Google Docs 會帶入文件內容；手動建立則可直接輸入作品名稱與第一篇文章。'
+        : '先選擇文章來源。內容會先轉成 StoryFlow 可處理的文字並預覽，確認後才加入工作區。';
+    }
+    if (googleTitle) googleTitle.textContent = creation ? '從 Google Docs 建立' : 'Google Docs';
+    if (googleCopy) googleCopy.textContent = creation ? '帶入作品名稱與章節' : '選文件與分頁，再預覽轉換後內容';
+    if (manualTitle) manualTitle.textContent = creation ? '手動建立' : '手動新增';
+    if (manualCopy) manualCopy.textContent = creation ? '輸入作品名稱與第一篇文章' : '直接輸入章節標題與文章內容';
+    dialog.dataset.storyflowCreationMode = creation ? '1' : '0';
+    return dialog;
+  }
+
+  function openSourceChooser({ allowManualBeforeSettings = false, creation = false } = {}) {
+    if (!hasIntegrationSettings() && !allowManualBeforeSettings) {
+      showSettings();
+      return false;
+    }
+
+    const dialog = configureSourceDialog({ creation });
+    if (dialog) {
+      if (!dialog.open) dialog.showModal();
+      return true;
+    }
+
+    // source-flow normally creates the dialog at boot. Keep a defensive fallback for
+    // slower script loading, but never depend on this button as the primary path.
+    const legacy = document.getElementById('loadSourceBtn');
+    if (legacy) {
+      legacy.click();
+      return true;
+    }
+    return false;
+  }
+
+  function manualProjectTitleNeeded() {
+    try {
+      return !String(state?.projectTitle || '').trim() || state.projectTitle === '未命名作品';
+    } catch (_) {
+      return true;
+    }
+  }
+
+  function ensureManualProjectTitleField({ focus = false } = {}) {
+    const dialog = document.getElementById('manualSourceDialog');
+    const card = dialog?.querySelector('.source-editor-card');
+    const chapterLabel = card?.querySelector('label.field-label');
+    if (!dialog || !card || !chapterLabel) return;
+
+    let label = document.getElementById('manualSourceProjectTitleLabel');
+    let input = document.getElementById('manualSourceProjectTitle');
+    if (!label || !input) {
+      label = document.createElement('label');
+      label.id = 'manualSourceProjectTitleLabel';
+      label.className = 'field-label';
+      label.htmlFor = 'manualSourceProjectTitle';
+      label.textContent = '作品名稱';
+
+      input = document.createElement('input');
+      input.id = 'manualSourceProjectTitle';
+      input.className = 'text-input';
+      input.placeholder = '例如：我的作品';
+
+      chapterLabel.insertAdjacentElement('beforebegin', label);
+      label.insertAdjacentElement('afterend', input);
+    }
+
+    const needed = manualProjectTitleNeeded();
+    label.hidden = !needed;
+    input.hidden = !needed;
+    if (needed) {
+      input.value = String(state?.projectTitle || '').trim() === '未命名作品'
+        ? ''
+        : String(state?.projectTitle || '').trim();
+      const heading = dialog.querySelector('.sticky-dialog-head h3');
+      if (heading) heading.textContent = '手動建立作品';
+      if (focus) requestAnimationFrame(() => input.focus());
+    }
+  }
+
+  function applyPendingManualProjectTitle() {
+    const input = document.getElementById('manualSourceProjectTitle');
+    if (!input || input.hidden) return;
+    const value = input.value.trim() || '未命名作品';
+    try {
+      state.projectTitle = value;
+      const projectInput = document.getElementById('projectTitle');
+      if (projectInput) projectInput.value = value;
+    } catch (_) {}
   }
 
   function createNewProject(event) {
@@ -12,13 +138,12 @@
     event?.stopPropagation?.();
     window.StoryFlowProjects?.createProject?.({ title: '未命名作品' });
     closeQuickSwitch();
+    window.StoryFlowNavigate?.('workspace');
+
     window.setTimeout(() => {
       window.StoryFlowProjectSourceModeV2?.syncUi?.();
-      const input = document.getElementById('projectTitle');
-      if (window.StoryFlowProjectSourceModeV2?.mode?.()) {
-        input?.focus();
-        input?.select();
-      }
+      ensureManualProjectTitleField();
+      openSourceChooser({ allowManualBeforeSettings: true, creation: true });
     }, 0);
   }
 
@@ -53,6 +178,7 @@
   function sync() {
     bindToggle();
     ensureNewProjectAction();
+    ensureManualProjectTitleField();
   }
 
   function loadChapterManagement() {
@@ -73,6 +199,45 @@
     document.body.appendChild(script);
   }
 
+  // Empty workspace CTA used to click #loadSourceBtn, but project-source-mode-v2
+  // intentionally removes that legacy action row. Intercept the real user action and
+  // invoke the source chooser directly. Without integration settings, this CTA routes
+  // to Settings as the user expects.
+  document.addEventListener('click', event => {
+    const target = event.target.closest?.('button');
+    if (!target) return;
+
+    if (target.id === 'workspaceLoadSourceBtn') {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openSourceChooser();
+      return;
+    }
+
+    if (target.id === 'loadSourceBtn' && !hasIntegrationSettings()) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      showSettings();
+      return;
+    }
+
+    if ((target.id === 'sourceGoogleBtn' || target.id === 'createProjectFromGoogle') && !hasIntegrationSettings()) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      showSettings('Google Docs 需要先載入 StoryFlow 設定；完成後即可回來選擇文件。');
+      return;
+    }
+
+    if (target.id === 'sourceManualBtn') {
+      window.setTimeout(() => ensureManualProjectTitleField({ focus: true }), 0);
+      return;
+    }
+
+    if (target.id === 'previewManualSourceBtn') {
+      applyPendingManualProjectTitle();
+    }
+  }, true);
+
   window.addEventListener('storyflow:projects-changed', () => window.setTimeout(sync, 0));
   window.addEventListener('storyflow:view-changed', () => window.setTimeout(sync, 0));
   document.addEventListener('keydown', event => {
@@ -82,6 +247,12 @@
   sync();
   loadChapterManagement();
   loadProjectProgressBadges();
+
+  window.StoryFlowSourceOnboarding = {
+    hasIntegrationSettings,
+    openSourceChooser,
+    showSettings
+  };
 })();
 
 // Final hierarchy pass: keep context compact and move infrequent Smart Split preferences
