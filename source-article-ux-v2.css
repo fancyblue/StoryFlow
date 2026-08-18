@@ -121,6 +121,41 @@
 }
 #sourcePreviewDialog.manual-single-preview-v2 .sticky-dialog-actions{
   justify-content:flex-end!important;
+  padding:16px 22px 22px!important;
+}
+
+/* Quick switch includes work creation as a first-class, but secondary, action. */
+.workspace-project-quick-switch-new{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-height:40px;
+  margin:0 0 5px;
+  padding:8px 10px;
+  border:1px solid #c9ddea;
+  border-radius:9px;
+  background:#f7fbfd;
+  color:#2f6f9f;
+  font-size:13px;
+  font-weight:800;
+  text-align:left;
+  cursor:pointer;
+}
+.workspace-project-quick-switch-new:hover,
+.workspace-project-quick-switch-new:focus-visible{
+  border-color:#91b8d9;
+  background:#eaf4fa;
+  color:#234463;
+  outline:none;
+}
+.workspace-project-quick-switch-new > span{
+  display:grid;
+  place-items:center;
+  width:20px;
+  height:20px;
+  font-size:16px;
+  line-height:1;
 }
 
 @media(max-width:700px){
@@ -145,6 +180,9 @@
     grid-template-columns:1fr 1fr!important;
   }
   #manualSourceDialog.manual-source-dialog-v2 .manual-source-actions-v2 .button{width:100%!important}
+  #sourcePreviewDialog.manual-single-preview-v2 .sticky-dialog-actions{
+    padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px))!important;
+  }
   .source-panel.project-source-google .project-source-origin{
     grid-template-columns:1fr!important;
   }
