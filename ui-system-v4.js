@@ -1,6 +1,15 @@
 // StoryFlow UI System v4 interaction contract: keep state, menus, and segmented controls
 // semantically consistent without changing the product's underlying data flow.
 (function () {
+  function loadPublishingDeleteFolderFix() {
+    if (document.getElementById('storyflowPublishingDeleteFolderFixJs')) return;
+    const script = document.createElement('script');
+    script.id = 'storyflowPublishingDeleteFolderFixJs';
+    script.src = './publishing-delete-folder-fix.js?v=20260818-1132';
+    script.async = false;
+    document.body.appendChild(script);
+  }
+
   function syncLiveRegions() {
     const saveState = document.getElementById('saveState');
     if (saveState) {
@@ -113,6 +122,7 @@
   window.addEventListener('storyflow:projects-changed', () => requestAnimationFrame(enhanceQuickSwitch));
   window.addEventListener('storyflow:connection-changed', () => requestAnimationFrame(syncConnectionLabels));
 
+  loadPublishingDeleteFolderFix();
   syncLiveRegions();
   syncPublishingFilters();
   syncConnectionLabels();
