@@ -91,11 +91,29 @@
       button.textContent = '切換作品';
       button.setAttribute('aria-haspopup', 'true');
       button.setAttribute('aria-expanded', 'false');
-      row.appendChild(button);
       button.addEventListener('click', event => {
         event.stopPropagation();
         toggleQuickSwitch();
       });
+    }
+
+    // Header utilities belong to the same row. Keeping the legacy + button as a
+    // sibling of panel-head forced it onto a separate grid row and made the card
+    // look broken whenever the source actions were also present.
+    let actions = row.querySelector('.source-heading-actions');
+    if (!actions) {
+      actions = document.createElement('div');
+      actions.className = 'source-heading-actions';
+      row.appendChild(actions);
+    }
+    if (button.parentElement !== actions) actions.appendChild(button);
+
+    const addChapter = document.getElementById('newChapterBtn');
+    if (addChapter) {
+      addChapter.classList.add('source-heading-add-btn');
+      addChapter.title = '新增章節';
+      addChapter.setAttribute('aria-label', '新增章節');
+      if (addChapter.parentElement !== actions) actions.appendChild(addChapter);
     }
   }
 
