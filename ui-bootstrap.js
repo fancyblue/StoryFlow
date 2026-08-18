@@ -21,4 +21,24 @@
     mini.appendChild(scene);
     sceneLabel.remove();
   }
+
+  // Source-mode v2 intentionally loads after the legacy source/project layers.
+  // It owns the final creation-mode UI and whole-project refresh behavior without
+  // making the older scripts race each other during initial page parsing.
+  window.addEventListener('load', () => {
+    if (!document.getElementById('storyflowProjectSourceModeV2Css')) {
+      const link = document.createElement('link');
+      link.id = 'storyflowProjectSourceModeV2Css';
+      link.rel = 'stylesheet';
+      link.href = './project-source-mode-v2.css?v=20260818-1418';
+      document.head.appendChild(link);
+    }
+    if (!document.getElementById('storyflowProjectSourceModeV2Js')) {
+      const script = document.createElement('script');
+      script.id = 'storyflowProjectSourceModeV2Js';
+      script.src = './project-source-mode-v2.js?v=20260818-1418';
+      script.async = false;
+      document.body.appendChild(script);
+    }
+  }, { once: true });
 })();
