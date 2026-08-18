@@ -83,3 +83,90 @@
   loadChapterManagement();
   loadProjectProgressBadges();
 })();
+
+// Final hierarchy pass: keep context compact and move infrequent Smart Split preferences
+// behind an explicit disclosure instead of competing with the article preview.
+(function () {
+  function hasSplitContent() {
+    try {
+      return Array.isArray(state?.chapters) && state.chapters.some(chapter => Boolean(chapter?.draft));
+    } catch (_) {
+      return Boolean(document.getElementById('draft')?.value);
+    }
+  }
+
+  function markProgressPriority() {
+    document.querySelectorAll('.stat-card').forEach(card => {
+      card.classList.toggle('stat-card-primary', Boolean(card.querySelector('#remainingChars')));
+    });
+  }
+
+  function ensureSplitPreferencesToggle() {
+    const panel = document.querySelector('.splitter-panel');
+    const head = panel?.querySelector(':scope > .panel-head');
+    const settings = document.getElementById('smartSplitMiniSettings');
+    if (!panel || !head || !settings) return;
+
+    let actions = head.querySelector('.smart-split-header-actions');
+    if (!actions) {
+      actions = document.createElement('div');
+      actions.className = 'smart-split-header-actions';
+      head.appendChild(actions);
+    }
+
+    let toggle = document.getElementById('splitPreferencesToggle');
+    if (!toggle) {
+      toggle = document.createElement('button');
+      toggle.id = 'splitPreferencesToggle';
+      toggle.type = 'button';
+      toggle.textContent = '切篇偏好';
+      toggle.setAttribute('aria-controls', 'smartSplitMiniSettings');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.addEventListener('click', () => {
+        const open = !panel.classList.contains('split-preferences-open');
+        panel.classList.toggle('split-preferences-open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+      });
+    }
+
+    const review = document.getElementById('openSplitReviewBtn');
+    if (toggle.parentElement !== actions) {
+      if (review?.parentElement === actions) actions.insertBefore(toggle, review);
+      else actions.prepend(toggle);
+    } else if (review?.parentElement === actions && toggle.nextElementSibling !== review) {
+      actions.insertBefore(toggle, review);
+    }
+
+    const available = hasSplitContent();
+    toggle.hidden = !available;
+    if (!available) {
+      panel.classList.remove('split-preferences-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function syncHierarchy() {
+    markProgressPriority();
+    ensureSplitPreferencesToggle();
+  }
+
+  window.addEventListener('storyflow:projects-changed', () => queueMicrotask(syncHierarchy));
+  window.addEventListener('storyflow:view-changed', () => queueMicrotask(syncHierarchy));
+
+  const baseRenderAll = window.renderAll;
+  if (typeof baseRenderAll === 'function' && !baseRenderAll.__storyflowHierarchyRefined) {
+    const refinedRenderAll = function (...args) {
+      const result = baseRenderAll.apply(this, args);
+      queueMicrotask(syncHierarchy);
+      return result;
+    };
+    refinedRenderAll.__storyflowHierarchyRefined = true;
+    window.renderAll = refinedRenderAll;
+  }
+
+  const observer = new MutationObserver(() => queueMicrotask(syncHierarchy));
+  const splitter = document.querySelector('.splitter-panel');
+  if (splitter) observer.observe(splitter, { childList:true, subtree:true });
+
+  syncHierarchy();
+})();
