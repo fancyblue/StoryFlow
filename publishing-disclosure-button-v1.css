@@ -1,11 +1,7 @@
 /* Publishing row actions use the same disclosure/destructive-action pattern as Works.
-   Primary/secondary actions stay visible; destructive delete lives behind an overflow menu. */
-.publish-list-actions{
-  position:relative!important;
-}
-.publish-list-actions > .publish-delete-btn{
-  display:none!important;
-}
+   Primary/secondary actions stay visible; destructive delete lives behind a final overflow menu. */
+.publish-list-actions{position:relative!important}
+.publish-list-actions > .publish-delete-btn{display:none!important}
 .publish-list-actions > .publish-manage-btn{
   min-height:36px!important;
   height:36px!important;
@@ -24,6 +20,7 @@
   color:#2f6f9f!important;
 }
 .publish-list-actions > .publish-more-btn{
+  order:99!important;
   display:grid!important;
   place-items:center!important;
   width:36px!important;
@@ -79,16 +76,14 @@
   color:#a83f49;
   outline:none;
 }
-
 @media(max-width:680px){
   .publish-list-actions{
     grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px!important;
   }
   .publish-list-actions > .default-preview-btn,
-  .publish-list-actions > .publish-manage-btn{
-    width:100%!important;
-  }
+  .publish-list-actions > .publish-manage-btn{width:100%!important}
   .publish-list-actions > .publish-more-btn{
+    grid-column:3!important;
     width:36px!important;
   }
 }
