@@ -1,16 +1,79 @@
 // Publishing disclosure UX v1.
-// Works uses an explicit "管理章節" button to reveal secondary details; publishing
-// uses the same interaction vocabulary instead of an unlabeled chevron or clickable row.
+// Works uses explicit management buttons and keeps destructive actions behind "...".
+// Publishing follows the same interaction vocabulary: "管理發布" controls disclosure,
+// while delete is available only from the row overflow menu.
 (function () {
+  function closeOverflowMenus(except = null) {
+    document.querySelectorAll('.publish-row-overflow-menu').forEach(menu => {
+      if (menu === except) return;
+      menu.hidden = true;
+      menu.closest('.publish-list-actions')?.querySelector('.publish-more-btn')?.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function addOverflowDelete(actions, legacyDelete, articleTitle) {
+    if (!actions || !legacyDelete) return;
+
+    let more = actions.querySelector(':scope > .publish-more-btn');
+    let menu = actions.querySelector(':scope > .publish-row-overflow-menu');
+
+    if (!more) {
+      more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'button tiny ghost publish-more-btn';
+      more.textContent = '⋯';
+      more.title = '更多文章操作';
+      more.setAttribute('aria-label', `更多「${articleTitle}」操作`);
+      more.setAttribute('aria-haspopup', 'menu');
+      more.setAttribute('aria-expanded', 'false');
+      actions.appendChild(more);
+    }
+
+    if (!menu) {
+      menu = document.createElement('div');
+      menu.className = 'publish-row-overflow-menu';
+      menu.hidden = true;
+      menu.setAttribute('role', 'menu');
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.setAttribute('role', 'menuitem');
+      remove.innerHTML = '<span aria-hidden="true">×</span><span>刪除文章</span>';
+      remove.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        menu.hidden = true;
+        more.setAttribute('aria-expanded', 'false');
+        legacyDelete.click();
+      });
+      menu.appendChild(remove);
+      actions.appendChild(menu);
+    }
+
+    if (more.dataset.publishOverflowBound !== '1') {
+      more.dataset.publishOverflowBound = '1';
+      more.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const opening = menu.hidden;
+        closeOverflowMenus(opening ? menu : null);
+        menu.hidden = !opening;
+        more.setAttribute('aria-expanded', opening ? 'true' : 'false');
+        if (opening) menu.querySelector('button')?.focus({ preventScroll: true });
+      });
+    }
+  }
+
   function decoratePublishingRows() {
     const panelNote = document.querySelector('.publishing-dashboard-panel > .panel-head .muted');
-    if (panelNote) panelNote.textContent = '外層顯示整體發布狀態；使用「管理發布」展開各平台細項。';
+    if (panelNote) panelNote.textContent = '外層顯示整體發布狀態；使用「管理發布」展開各平台細項，其他操作收在「⋯」。';
 
     document.querySelectorAll('.publish-list-item').forEach(card => {
       const summary = card.querySelector('.publish-list-summary');
       const actions = card.querySelector('.publish-list-actions');
       const indicator = actions?.querySelector('.publish-expand-indicator');
-      if (!summary || !actions || !indicator) return;
+      const legacyDelete = actions?.querySelector('.publish-delete-btn');
+      if (!summary || !actions) return;
 
       // The row is informational, matching Works cards: expansion is owned by one
       // explicit management button rather than an invisible row-level affordance.
@@ -18,28 +81,43 @@
       summary.removeAttribute('tabindex');
       summary.removeAttribute('aria-expanded');
       summary.style.cursor = 'default';
-      summary.addEventListener('click', event => {
-        if (event.isTrusted && !event.target.closest('button')) {
-          event.preventDefault();
-          event.stopImmediatePropagation();
-        }
-      }, true);
+      if (summary.dataset.publishDisclosureBound !== '1') {
+        summary.dataset.publishDisclosureBound = '1';
+        summary.addEventListener('click', event => {
+          if (event.isTrusted && !event.target.closest('button')) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+      }
 
+      const articleTitle = card.querySelector('.publish-list-title-row strong')?.textContent || '文章';
       const expanded = card.classList.contains('expanded');
-      const manage = document.createElement('button');
-      manage.type = 'button';
-      manage.className = 'button tiny ghost publish-manage-btn';
-      manage.textContent = expanded ? '收合發布' : '管理發布';
-      manage.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-      manage.setAttribute('aria-label', `${expanded ? '收合' : '展開'}「${card.querySelector('.publish-list-title-row strong')?.textContent || '文章'}」的發布平台`);
-      manage.addEventListener('click', event => {
-        event.preventDefault();
-        event.stopPropagation();
-        // publishing-flow owns the selected-item state. A synthetic summary click
-        // reuses that state transition while trusted row clicks remain disabled above.
-        summary.click();
-      });
-      indicator.replaceWith(manage);
+      let manage = actions.querySelector(':scope > .publish-manage-btn');
+
+      if (!manage && indicator) {
+        manage = document.createElement('button');
+        manage.type = 'button';
+        manage.className = 'button tiny ghost publish-manage-btn';
+        indicator.replaceWith(manage);
+      }
+
+      if (manage) {
+        manage.textContent = expanded ? '收合發布' : '管理發布';
+        manage.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        manage.setAttribute('aria-label', `${expanded ? '收合' : '展開'}「${articleTitle}」的發布平台`);
+        if (manage.dataset.publishManageBound !== '1') {
+          manage.dataset.publishManageBound = '1';
+          manage.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            // publishing-flow owns selectedPartKey. Reuse its existing summary click.
+            summary.click();
+          });
+        }
+      }
+
+      addOverflowDelete(actions, legacyDelete, articleTitle);
     });
   }
 
@@ -54,6 +132,12 @@
     window.renderParts = wrapped;
   }
 
+  document.addEventListener('click', event => {
+    if (!event.target.closest?.('.publish-more-btn, .publish-row-overflow-menu')) closeOverflowMenus();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeOverflowMenus();
+  });
   window.addEventListener('storyflow:view-changed', () => window.setTimeout(decoratePublishingRows, 0));
   window.addEventListener('storyflow:projects-changed', () => window.setTimeout(decoratePublishingRows, 0));
   decoratePublishingRows();
