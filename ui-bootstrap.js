@@ -42,13 +42,13 @@
         const link = document.createElement('link');
         link.id = 'storyflowSourceArticleUxV2Css';
         link.rel = 'stylesheet';
-        link.href = './source-article-ux-v2.css?v=20260818-1438';
+        link.href = './source-article-ux-v2.css?v=20260818-1444';
         document.head.appendChild(link);
       }
       if (!document.getElementById('storyflowSourceArticleUxV2Js')) {
         const script = document.createElement('script');
         script.id = 'storyflowSourceArticleUxV2Js';
-        script.src = './source-article-ux-v2.js?v=20260818-1438';
+        script.src = './source-article-ux-v2.js?v=20260818-1444';
         script.async = false;
         document.body.appendChild(script);
       }
