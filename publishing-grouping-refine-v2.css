@@ -1,7 +1,7 @@
 /* Publishing grouping refinement v2.
    Make the WORK level unmistakable, then nest chapter cards inside it. This sheet is
-   appended last by publishing-project-filter-v1.js so legacy !important rules cannot
-   bring destructive controls back into the visible row. */
+   loaded last so legacy !important rules cannot bring destructive controls back into
+   the visible row. */
 
 #publishingView .publishing-project-group{
   position:relative;
@@ -17,7 +17,8 @@
   overflow:visible!important;
 }
 #publishingView .publishing-project-group:last-child{margin-bottom:0!important}
-#publishingView .publishing-project-group-current{
+#publishingView .publishing-project-group-current,
+#publishingView .publishing-project-group:has(.publishing-project-current){
   border-color:#a9cde5!important;
   box-shadow:0 4px 16px rgba(47,111,159,.07)!important;
 }
@@ -34,7 +35,8 @@
   border-radius:17px 17px 0 0;
   background:#f4f8fb;
 }
-#publishingView .publishing-project-group-current>.publishing-project-group-head{
+#publishingView .publishing-project-group-current>.publishing-project-group-head,
+#publishingView .publishing-project-group:has(.publishing-project-current)>.publishing-project-group-head{
   background:#eef7fd;
   border-bottom-color:#d3e6f2;
 }
