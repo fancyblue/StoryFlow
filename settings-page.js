@@ -44,7 +44,7 @@
     loadStylesheet('storyflowNavigationUtilityPolishCss', './navigation-utility-polish.css?v=20260817-1902');
     loadStylesheet('storyflowMobileBottomNavFixCss', './mobile-bottom-nav-fix.css?v=20260817-2130');
     loadStylesheet('storyflowUiSystemV4Css', './ui-system-v4.css?v=20260818-1041');
-    loadStylesheet('storyflowUiLayoutIntegrityCss', './ui-layout-integrity.css?v=20260818-1108');
+    loadStylesheet('storyflowUiLayoutIntegrityCss', './ui-layout-integrity.css?v=20260818-1112');
     loadScript('storyflowPlatformSettingsV2Js', './platform-settings-v2.js?v=20260817-1632');
     loadScript('storyflowSettingsBootstrapJs', './settings-bootstrap.js?v=20260817-1703');
     loadScript('storyflowSettingsFileImportFixJs', './settings-file-import-fix.js?v=20260817-1720');
@@ -134,9 +134,6 @@
     const securityNote = document.querySelector('#settingsDialog .security-note');
     const readyForAdvancedSettings = hasLoadedIntegrationSettings() || hasConnectedFolder();
 
-    // First-run settings should focus only on the two prerequisites: load/import
-    // Google integration settings and connect the StoryFlow folder. Publishing
-    // platform/format controls become relevant only after either source is available.
     if (publishingSection) publishingSection.hidden = !readyForAdvancedSettings;
     if (securityNote) securityNote.hidden = !readyForAdvancedSettings;
   }
@@ -162,8 +159,6 @@
   window.addEventListener('storyflow:connection-changed', syncSettingsAvailability);
   window.addEventListener('storyflow:integration-config-changed', syncSettingsAvailability);
 
-  // Keep legacy callers working (for example, trying to load Google Docs before a
-  // Picker API key has been configured), but route them to the settings page.
   window.openSettings = function openSettingsPage() {
     showSettings({ focusPicker: true });
   };
