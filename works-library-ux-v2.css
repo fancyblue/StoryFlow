@@ -54,6 +54,8 @@
 .project-library-status-row{
   display:flex;
   align-items:center;
+  flex-wrap:wrap;
+  gap:7px 10px;
   margin-top:7px;
 }
 .project-library-status-row .project-library-meta{
@@ -96,19 +98,22 @@
   color:#3b607f!important;
 }
 
-/* Publishing is one task cluster: progress answers “what state is it in?” and
-   管理發布 answers “what can I do next?”. */
+/* Publishing progress + its management action live together inside the metadata row.
+   This keeps the state and the next action close without moving the progress strip out
+   of project-library-main (which also keeps the renderer stable). */
 .project-publishing-cluster{
   display:flex;
   align-items:center;
-  gap:7px;
-  margin-left:4px;
+  flex-wrap:wrap;
+  gap:6px;
+  min-width:0;
   padding-left:10px;
   border-left:1px solid #dfeaf2;
 }
 .project-publishing-cluster .project-progress-badges{
   display:flex!important;
   align-items:center!important;
+  flex-wrap:wrap!important;
   gap:5px!important;
   margin:0!important;
 }
@@ -226,9 +231,8 @@
   }
   .project-publishing-cluster{
     flex:1 1 100%;
-    justify-content:space-between;
-    margin:2px 0 0;
-    padding:9px 0 0;
+    margin-top:2px;
+    padding:8px 0 0;
     border-left:0;
     border-top:1px solid #e4edf4;
   }
@@ -241,18 +245,16 @@
   }
   .project-library-actions > .project-open-btn{grid-column:1!important;width:100%!important}
   .project-library-actions > .project-manage-chapters-btn{grid-column:2!important;width:100%!important}
-  .project-publishing-cluster{
-    grid-column:1 / 3!important;
-    grid-row:2!important;
-    min-width:0;
-    justify-content:flex-start;
-    flex-wrap:wrap;
-  }
-  .project-publishing-cluster .project-progress-badges{flex:1 1 auto!important;flex-wrap:wrap}
-  .project-publishing-cluster .project-publish-btn{flex:0 0 auto}
   .project-library-more-btn{
     grid-column:3!important;
-    grid-row:2!important;
-    align-self:end!important;
+    grid-row:1!important;
+  }
+  .project-library-status-row{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .project-publishing-cluster{
+    width:100%;
+    justify-content:flex-start;
   }
 }
