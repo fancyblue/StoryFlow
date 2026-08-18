@@ -298,26 +298,66 @@ const StoryFlowIntegrations = (() => {
     return { markdown: markdown.trimEnd(), plain: plain.trimEnd(), namedStyle, empty: !plain.trim() && !markdown.trim() };
   }
 
-  function blocksToDraft(blocks) {
+  function detectChapterHeadingStyle(blocks) {
+    const counts = new Map();
+    for (const block of blocks) {
+      const match = /^HEADING_([1-6])$/.exec(block.namedStyle || '');
+      if (!match || block.empty) continue;
+      const level = Number(match[1]);
+      const current = counts.get(level) || 0;
+      counts.set(level, current + 1);
+    }
+    const levels = [...counts.keys()].sort((a, b) => a - b);
+    if (!levels.length) return null;
+    // A single document title may use a shallow heading while chapters use a
+    // deeper repeated heading. Prefer the shallowest level that repeats.
+    const repeated = levels.find(level => counts.get(level) >= 2);
+    const selected = repeated ?? levels[0];
+    return `HEADING_${selected}`;
+  }
+
+  function blocksToDraft(blocks, chapterHeadingStyle = null) {
     const lines = [];
     for (const block of blocks) {
-      if (block.empty) { if (lines.length && lines[lines.length - 1] !== '') lines.push(''); }
-      else if (!/^HEADING_[1-6]$/.test(block.namedStyle)) lines.push(block.markdown);
+      if (block.empty) {
+        if (lines.length && lines[lines.length - 1] !== '') lines.push('');
+      } else if (!chapterHeadingStyle || block.namedStyle !== chapterHeadingStyle) {
+        lines.push(block.markdown);
+      }
     }
-    while (lines[0] === '') lines.shift(); while (lines[lines.length - 1] === '') lines.pop();
+    while (lines[0] === '') lines.shift();
+    while (lines[lines.length - 1] === '') lines.pop();
     return lines.join('\n');
   }
 
   function chaptersFromTab(tab) {
     const content = tab?.documentTab?.body?.content || [], inlineObjects = tab?.documentTab?.inlineObjects || {}, warnings = new Set(), blocks = [];
     for (const structural of content) if (structural.paragraph) blocks.push(paragraphToBlock(structural.paragraph, inlineObjects, warnings));
+
+    const headingStyle = detectChapterHeadingStyle(blocks);
     const headingIndexes = [];
-    blocks.forEach((block, index) => { if (block.namedStyle === 'HEADING_1' && !block.empty) headingIndexes.push(index); });
-    if (!headingIndexes.length) return { chapters: [{ title: tab.tabProperties?.title || '未命名章節', draft: blocksToDraft(blocks), headingOrdinal: null }], warnings: [...warnings] };
-    return { chapters: headingIndexes.map((start, ordinal) => ({
-      title: blocks[start].plain.trim() || `第 ${ordinal + 1} 章`,
-      draft: blocksToDraft(blocks.slice(start + 1, headingIndexes[ordinal + 1] ?? blocks.length)), headingOrdinal: ordinal
-    })), warnings: [...warnings] };
+    if (headingStyle) {
+      blocks.forEach((block, index) => {
+        if (block.namedStyle === headingStyle && !block.empty) headingIndexes.push(index);
+      });
+    }
+
+    if (!headingIndexes.length) {
+      return {
+        chapters: [{ title: tab.tabProperties?.title || '未命名章節', draft: blocksToDraft(blocks), headingOrdinal: null }],
+        warnings: [...warnings]
+      };
+    }
+
+    return {
+      chapters: headingIndexes.map((start, ordinal) => ({
+        title: blocks[start].plain.trim() || `第 ${ordinal + 1} 章`,
+        draft: blocksToDraft(blocks.slice(start + 1, headingIndexes[ordinal + 1] ?? blocks.length), headingStyle),
+        headingOrdinal: ordinal,
+        headingStyle
+      })),
+      warnings: [...warnings]
+    };
   }
 
   function flattenTabs(tabs, depth = 0, output = []) {
@@ -341,7 +381,7 @@ const StoryFlowIntegrations = (() => {
     let chapter = source.headingOrdinal != null ? tab.chapters[source.headingOrdinal] : null;
     if (!chapter && source.headingTitle) chapter = tab.chapters.find(item => item.title === source.headingTitle);
     if (!chapter && tab.chapters.length === 1) chapter = tab.chapters[0];
-    if (!chapter) throw new Error('找不到原本的章節 Heading，請重新匯入這個分頁。');
+    if (!chapter) throw new Error('找不到原本的章節標題，請重新匯入這個分頁。');
     return { ...chapter, tabTitle: tab.title, warnings: tab.warnings };
   }
 
