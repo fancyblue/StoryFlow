@@ -44,13 +44,13 @@
     if (heading) heading.textContent = creation ? '建立作品' : '載入來源';
     if (intro) {
       intro.textContent = creation
-        ? '先選擇作品建立方式。Google Docs 會帶入文件內容；手動建立則可直接輸入作品名稱與第一篇文章。'
+        ? '先選擇作品建立方式。Google Docs 會帶入文件內容；手動建立則先新增第一篇文章，完成後可在工作台修改作品名稱。'
         : '先選擇文章來源。內容會先轉成 StoryFlow 可處理的文字並預覽，確認後才加入工作區。';
     }
     if (googleTitle) googleTitle.textContent = creation ? '從 Google Docs 建立' : 'Google Docs';
     if (googleCopy) googleCopy.textContent = creation ? '帶入作品名稱與章節' : '選文件與分頁，再預覽轉換後內容';
     if (manualTitle) manualTitle.textContent = creation ? '手動建立' : '手動新增';
-    if (manualCopy) manualCopy.textContent = creation ? '輸入作品名稱與第一篇文章' : '直接輸入章節標題與文章內容';
+    if (manualCopy) manualCopy.textContent = creation ? '輸入第一篇文章的章節名稱與內容' : '直接輸入章節標題與文章內容';
     dialog.dataset.storyflowCreationMode = creation ? '1' : '0';
     return dialog;
   }
@@ -77,62 +77,6 @@
     return false;
   }
 
-  function manualProjectTitleNeeded() {
-    try {
-      return !String(state?.projectTitle || '').trim() || state.projectTitle === '未命名作品';
-    } catch (_) {
-      return true;
-    }
-  }
-
-  function ensureManualProjectTitleField({ focus = false } = {}) {
-    const dialog = document.getElementById('manualSourceDialog');
-    const card = dialog?.querySelector('.source-editor-card');
-    const chapterLabel = card?.querySelector('label.field-label');
-    if (!dialog || !card || !chapterLabel) return;
-
-    let label = document.getElementById('manualSourceProjectTitleLabel');
-    let input = document.getElementById('manualSourceProjectTitle');
-    if (!label || !input) {
-      label = document.createElement('label');
-      label.id = 'manualSourceProjectTitleLabel';
-      label.className = 'field-label';
-      label.htmlFor = 'manualSourceProjectTitle';
-      label.textContent = '作品名稱';
-
-      input = document.createElement('input');
-      input.id = 'manualSourceProjectTitle';
-      input.className = 'text-input';
-      input.placeholder = '例如：我的作品';
-
-      chapterLabel.insertAdjacentElement('beforebegin', label);
-      label.insertAdjacentElement('afterend', input);
-    }
-
-    const needed = manualProjectTitleNeeded();
-    label.hidden = !needed;
-    input.hidden = !needed;
-    if (needed) {
-      input.value = String(state?.projectTitle || '').trim() === '未命名作品'
-        ? ''
-        : String(state?.projectTitle || '').trim();
-      const heading = dialog.querySelector('.sticky-dialog-head h3');
-      if (heading) heading.textContent = '手動建立作品';
-      if (focus) requestAnimationFrame(() => input.focus());
-    }
-  }
-
-  function applyPendingManualProjectTitle() {
-    const input = document.getElementById('manualSourceProjectTitle');
-    if (!input || input.hidden) return;
-    const value = input.value.trim() || '未命名作品';
-    try {
-      state.projectTitle = value;
-      const projectInput = document.getElementById('projectTitle');
-      if (projectInput) projectInput.value = value;
-    } catch (_) {}
-  }
-
   function createNewProject(event) {
     event?.preventDefault?.();
     event?.stopPropagation?.();
@@ -142,7 +86,6 @@
 
     window.setTimeout(() => {
       window.StoryFlowProjectSourceModeV2?.syncUi?.();
-      ensureManualProjectTitleField();
       openSourceChooser({ allowManualBeforeSettings: true, creation: true });
     }, 0);
   }
@@ -178,7 +121,6 @@
   function sync() {
     bindToggle();
     ensureNewProjectAction();
-    ensureManualProjectTitleField();
   }
 
   function loadChapterManagement() {
@@ -225,16 +167,6 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       showSettings('Google Docs 需要先載入 StoryFlow 設定；完成後即可回來選擇文件。');
-      return;
-    }
-
-    if (target.id === 'sourceManualBtn') {
-      window.setTimeout(() => ensureManualProjectTitleField({ focus: true }), 0);
-      return;
-    }
-
-    if (target.id === 'previewManualSourceBtn') {
-      applyPendingManualProjectTitle();
     }
   }, true);
 
