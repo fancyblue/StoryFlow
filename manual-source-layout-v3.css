@@ -1,0 +1,118 @@
+/* Manual source dialog layout v3.
+   This is intentionally ID-scoped because older source/dialog layers have accumulated
+   conflicting width rules. The dialog is a compact single-article editor, not a full-screen canvas. */
+
+#manualSourceDialog#manualSourceDialog{
+  width:min(760px,calc(100vw - 32px))!important;
+  max-width:760px!important;
+  height:auto!important;
+  max-height:calc(100dvh - 32px)!important;
+  margin:auto!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+
+#manualSourceDialog#manualSourceDialog > .source-editor-card{
+  width:100%!important;
+  max-width:none!important;
+  max-height:calc(100dvh - 32px)!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:auto!important;
+  box-sizing:border-box!important;
+}
+
+#manualSourceDialog#manualSourceDialog .sticky-dialog-head{
+  margin:0!important;
+  padding:18px 22px 16px!important;
+}
+
+#manualSourceDialog#manualSourceDialog .source-editor-card > .field-label{
+  display:block!important;
+  width:calc(100% - 44px)!important;
+  margin:16px 22px 7px!important;
+  box-sizing:border-box!important;
+}
+
+#manualSourceDialog#manualSourceDialog #manualSourceTitle,
+#manualSourceDialog#manualSourceDialog #manualSourceText{
+  display:block!important;
+  width:calc(100% - 44px)!important;
+  max-width:none!important;
+  margin-left:22px!important;
+  margin-right:22px!important;
+  box-sizing:border-box!important;
+}
+
+#manualSourceDialog#manualSourceDialog #manualSourceTitle{
+  min-height:44px!important;
+  height:44px!important;
+  padding:0 14px!important;
+  font-size:15px!important;
+  font-weight:700!important;
+}
+
+#manualSourceDialog#manualSourceDialog #manualSourceText{
+  min-height:260px!important;
+  height:clamp(280px,38dvh,380px)!important;
+  max-height:48dvh!important;
+  margin-bottom:0!important;
+  padding:14px 16px!important;
+  resize:vertical!important;
+  font-size:15px!important;
+  line-height:1.75!important;
+}
+
+#manualSourceDialog#manualSourceDialog .source-flow-actions,
+#manualSourceDialog#manualSourceDialog .manual-source-actions-v2{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:10px!important;
+  width:calc(100% - 44px)!important;
+  margin:18px 22px 22px!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+}
+
+#manualSourceDialog#manualSourceDialog .source-flow-actions .button{
+  min-height:40px!important;
+  padding:0 15px!important;
+  font-size:13px!important;
+  font-weight:800!important;
+}
+
+@media(max-width:700px){
+  #manualSourceDialog#manualSourceDialog{
+    width:calc(100vw - 12px)!important;
+    max-width:none!important;
+    max-height:calc(100dvh - 12px)!important;
+  }
+  #manualSourceDialog#manualSourceDialog > .source-editor-card{
+    max-height:calc(100dvh - 12px)!important;
+  }
+  #manualSourceDialog#manualSourceDialog .source-editor-card > .field-label{
+    width:calc(100% - 32px)!important;
+    margin-left:16px!important;
+    margin-right:16px!important;
+  }
+  #manualSourceDialog#manualSourceDialog #manualSourceTitle,
+  #manualSourceDialog#manualSourceDialog #manualSourceText,
+  #manualSourceDialog#manualSourceDialog .source-flow-actions,
+  #manualSourceDialog#manualSourceDialog .manual-source-actions-v2{
+    width:calc(100% - 32px)!important;
+    margin-left:16px!important;
+    margin-right:16px!important;
+  }
+  #manualSourceDialog#manualSourceDialog #manualSourceText{
+    min-height:220px!important;
+    height:36dvh!important;
+  }
+  #manualSourceDialog#manualSourceDialog .source-flow-actions,
+  #manualSourceDialog#manualSourceDialog .manual-source-actions-v2{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    margin-bottom:calc(18px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #manualSourceDialog#manualSourceDialog .source-flow-actions .button{width:100%!important}
+}
