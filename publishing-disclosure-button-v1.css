@@ -1,0 +1,94 @@
+/* Publishing row actions use the same disclosure/destructive-action pattern as Works.
+   Primary/secondary actions stay visible; destructive delete lives behind an overflow menu. */
+.publish-list-actions{
+  position:relative!important;
+}
+.publish-list-actions > .publish-delete-btn{
+  display:none!important;
+}
+.publish-list-actions > .publish-manage-btn{
+  min-height:36px!important;
+  height:36px!important;
+  padding:0 12px!important;
+  border-radius:9px!important;
+  border-color:#d9e6ef!important;
+  background:#fff!important;
+  color:#3b607f!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+}
+.publish-list-actions > .publish-manage-btn[aria-expanded="true"]{
+  border-color:#bdd7e8!important;
+  background:#eef7fd!important;
+  color:#2f6f9f!important;
+}
+.publish-list-actions > .publish-more-btn{
+  display:grid!important;
+  place-items:center!important;
+  width:36px!important;
+  min-width:36px!important;
+  height:36px!important;
+  min-height:36px!important;
+  padding:0!important;
+  border-radius:9px!important;
+  border-color:#d9e6ef!important;
+  background:#fff!important;
+  color:#668097!important;
+  font-size:19px!important;
+  line-height:1!important;
+}
+.publish-list-actions > .publish-more-btn:hover,
+.publish-list-actions > .publish-more-btn:focus-visible,
+.publish-list-actions > .publish-more-btn[aria-expanded="true"]{
+  border-color:#c7dce9!important;
+  background:#f3f8fc!important;
+  color:#2f6f9f!important;
+}
+.publish-row-overflow-menu{
+  position:absolute;
+  top:calc(100% + 7px);
+  right:0;
+  z-index:140;
+  min-width:148px;
+  padding:5px;
+  border:1px solid #d8e5ee;
+  border-radius:10px;
+  background:#fff;
+  box-shadow:0 14px 34px rgba(31,72,107,.16);
+}
+.publish-row-overflow-menu[hidden]{display:none!important}
+.publish-row-overflow-menu button{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-height:36px;
+  padding:7px 10px;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#b44f59;
+  font-size:12px;
+  font-weight:800;
+  text-align:left;
+}
+.publish-row-overflow-menu button:hover,
+.publish-row-overflow-menu button:focus-visible{
+  background:#fff1f3;
+  color:#a83f49;
+  outline:none;
+}
+
+@media(max-width:680px){
+  .publish-list-actions{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px!important;
+  }
+  .publish-list-actions > .default-preview-btn,
+  .publish-list-actions > .publish-manage-btn{
+    width:100%!important;
+  }
+  .publish-list-actions > .publish-more-btn{
+    width:36px!important;
+  }
+}
