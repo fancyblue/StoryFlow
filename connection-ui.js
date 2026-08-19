@@ -188,6 +188,12 @@
   }
 
   function isImplicitBlankWorkspace() {
+    const projectApi = window.StoryFlowProjects;
+    if (typeof projectApi?.isActivePlaceholder === 'function') {
+      return Boolean(projectApi.isActivePlaceholder());
+    }
+
+    // Backward-compatible fallback for an older projects.js.
     const chapters = state.chapters || [];
     return !hasNamedProject()
       && chapters.length === 1
@@ -218,7 +224,7 @@
     if (!empty) return;
     const strong = empty.querySelector('strong');
     const text = empty.querySelector(':scope > span');
-    const hasProject = hasNamedProject();
+    const hasProject = !isImplicitBlankWorkspace();
     if (strong) strong.textContent = hasProject ? '這個作品還沒有可切篇的章節' : '尚未載入作品內容';
     if (text) text.textContent = hasProject
       ? '請先載入 Google Docs／手動內容，或到「作品」切換到已有章節的作品。'
@@ -281,15 +287,14 @@
     }
   }
 
-  // Hide the one implicit starter record from consumers that use the public
-  // project list (Works and Publishing). Once a real source or named work exists,
-  // the same record becomes visible normally.
+  // Hide only StoryFlow's internal starter record from consumers that use the public
+  // project list. A real work remains visible even when its first article is still empty.
   const projectsApi = window.StoryFlowProjects;
   if (projectsApi?.list) {
     const baseList = projectsApi.list.bind(projectsApi);
     projectsApi.list = function listVisibleProjects() {
       const projects = baseList();
-      if (projects.length === 1 && isImplicitBlankWorkspace()) return [];
+      if (projects.length === 1 && projects[0]?.placeholder === true) return [];
       return projects;
     };
   }

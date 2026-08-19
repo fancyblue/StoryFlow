@@ -66,8 +66,9 @@
 .project-creation-option-copy small{color:#6b8294;font-size:11.5px;font-weight:600;line-height:1.35}
 .project-creation-option-arrow{color:#7aa4c3;font-size:18px;font-weight:700;text-align:right}
 
-.source-panel.project-source-unset label[for="projectTitle"],
-.source-panel.project-source-unset #projectTitle,
+/* An unset source mode is not the same as “no work”. Keep the current work name
+   visible so an explicitly created empty work still has identity in Workspace.
+   The true no-work sentinel is still hidden by the empty-workspace controller. */
 .source-panel.project-source-unset #chapterList,
 .source-panel.project-source-unset #addChapterBtn{
   display:none!important;
