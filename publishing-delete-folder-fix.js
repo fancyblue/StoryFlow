@@ -122,8 +122,8 @@
       saveState('已刪除並退回切篇');
       renderAll();
       if (chapter.draft) suggestNextPart();
-      window.StoryFlowNavigate?.('workspace');
-      notify(`已刪除 ${affected.length} 篇，已回到該章節重新切篇`);
+      window.renderParts?.();
+      notify(`已刪除 ${affected.length} 篇，發布清單已更新`);
     } catch (error) {
       chapter.parts.push(...affected);
       chapter.confirmedBlockCount = chapter.parts.length ? chapter.parts[chapter.parts.length - 1].endBlock : 0;

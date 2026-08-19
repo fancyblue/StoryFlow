@@ -5,7 +5,7 @@
     if (document.getElementById('storyflowPublishingDeleteFolderFixJs')) return;
     const script = document.createElement('script');
     script.id = 'storyflowPublishingDeleteFolderFixJs';
-    script.src = './publishing-delete-folder-fix.js?v=20260818-1132';
+    script.src = './publishing-delete-folder-fix.js?v=20260820-0005';
     script.async = false;
     document.body.appendChild(script);
   }
