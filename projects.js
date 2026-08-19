@@ -53,6 +53,9 @@
       id: meta.id || crypto.randomUUID(),
       title: normalized.projectTitle || meta.title || '未命名作品',
       sourceDocId: meta.sourceDocId || deriveSourceDocId(normalized),
+      // `placeholder` is only true for StoryFlow's internal compatibility starter.
+      // Existing saved records that predate this flag are real works by default.
+      placeholder: meta.placeholder === true,
       createdAt: meta.createdAt || now,
       updatedAt: meta.updatedAt || now,
       state: clone(normalized)
@@ -61,7 +64,7 @@
 
   function ensureStore() {
     if (store.projects.length) return;
-    const record = makeRecord(state);
+    const record = makeRecord(state, { placeholder: true });
     store = { activeProjectId: record.id, projects: [record] };
   }
 
@@ -77,6 +80,8 @@
     const normalized = normalizeProjectState(sourceState);
     record.title = normalized.projectTitle || '未命名作品';
     record.sourceDocId = deriveSourceDocId(normalized) || record.sourceDocId || null;
+    // Once the starter acquires real project/source/article data it is no longer a placeholder.
+    if (!isBlank(normalized) || normalized.projectSource?.type) record.placeholder = false;
     record.updatedAt = new Date().toISOString();
     record.state = clone(normalized);
     store.activeProjectId = record.id;
@@ -88,6 +93,7 @@
       title: record.title || record.state?.projectTitle || '未命名作品',
       sourceDocId: record.sourceDocId || deriveSourceDocId(record.state),
       chapterCount: record.state?.chapters?.length || 0,
+      placeholder: record.placeholder === true,
       updatedAt: record.updatedAt || null,
       active: record.id === store.activeProjectId
     };
@@ -122,7 +128,9 @@
     }
 
     if (saved?.state?.chapters?.length) {
-      const record = makeRecord(saved.state);
+      // A legacy workspace that was actually saved is a real work, even if its first
+      // article is still empty. This migrates old zero-content works correctly.
+      const record = makeRecord(saved.state, { placeholder: false });
       store = { activeProjectId: record.id, projects: [record] };
       setTimeout(dispatchChanged, 0);
     }
@@ -140,6 +148,7 @@
         id: project.id,
         title: project.title,
         sourceDocId: project.sourceDocId || deriveSourceDocId(project.state),
+        placeholder: project.placeholder === true,
         createdAt: project.createdAt,
         updatedAt: project.updatedAt,
         state: project.state
@@ -157,7 +166,13 @@
     ensureStore();
     const target = store.projects.find(project => project.id === projectId);
     if (!target) return false;
-    if (target.id === store.activeProjectId) return true;
+    if (target.id === store.activeProjectId) {
+      // Re-rendering the active work must still refresh Workspace surfaces. This is
+      // especially important for a real empty work, whose UI differs from the internal starter.
+      renderAll();
+      dispatchChanged();
+      return true;
+    }
 
     syncActiveRecord();
     const sharedFormatting = clone(state.formatting);
@@ -193,13 +208,14 @@
     const normalized = normalizeProjectState(next);
 
     let record = activeRecord();
-    if (store.projects.length === 1 && isBlank(record.state)) {
+    if (store.projects.length === 1 && record.placeholder === true && isBlank(record.state)) {
       record.title = normalized.projectTitle;
       record.sourceDocId = sourceDocId;
+      record.placeholder = false;
       record.updatedAt = new Date().toISOString();
       record.state = clone(normalized);
     } else {
-      record = makeRecord(normalized, { sourceDocId });
+      record = makeRecord(normalized, { sourceDocId, placeholder: false });
       store.projects.push(record);
     }
 
@@ -226,7 +242,7 @@
 
     store.projects.splice(index, 1);
     if (!store.projects.length) {
-      const blank = makeRecord(clone(defaultState));
+      const blank = makeRecord(clone(defaultState), { placeholder: true });
       store.projects = [blank];
     }
 
@@ -271,6 +287,7 @@
   window.StoryFlowProjects = {
     list: listProjects,
     activeId: () => { ensureStore(); return store.activeProjectId; },
+    isActivePlaceholder: () => activeRecord()?.placeholder === true,
     findBySourceDocId,
     findSourceTab,
     switchProject,
