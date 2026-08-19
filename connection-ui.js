@@ -294,21 +294,9 @@
     };
   }
 
-  // An explicit new work is a real work even before a source is loaded. Give it a
-  // temporary visible name so it is distinguishable from the compatibility sentinel.
-  document.addEventListener('click', event => {
-    const button = event.target.closest?.('#projectsNewWorkBtn');
-    if (!button) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    window.StoryFlowProjects?.createProject?.({ title: '新作品' });
-    window.StoryFlowNavigate?.('workspace');
-    requestAnimationFrame(() => {
-      const input = document.getElementById('projectTitle');
-      input?.focus();
-      input?.select();
-    });
-  }, true);
+  // New-project entry points are owned by navigation.js. Keeping one flow there avoids
+  // this empty-workspace layer from intercepting the Works-page button before the
+  // guarded onboarding flow can open the shared 「建立作品」 chooser.
 
   const baseRenderChapters = window.renderChapters;
   if (typeof baseRenderChapters === 'function') {
