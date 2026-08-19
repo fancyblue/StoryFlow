@@ -41,42 +41,47 @@
   display:none!important;
 }
 
-/* Edit mode uses the same content gutter as the rest of the manual editor.
-   Avoid a full-bleed sticky footer here: several dialog layers own width/margins,
-   and making the action row 100% wide caused it to overrun the card edge. */
-#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2{
-  position:static!important;
+/* Edit mode explicitly opts into the shared sticky dialog footer. The dedicated
+   class is added by manual-chapter-edit-v1.js so creation mode keeps its compact
+   inline action row while editing always gets one predictable footer layout. */
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2.manual-chapter-edit-actions.sticky-dialog-actions{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:8!important;
   display:flex!important;
   align-items:center!important;
   justify-content:flex-end!important;
   gap:10px!important;
-  width:calc(100% - 44px)!important;
+  width:100%!important;
   max-width:none!important;
-  margin:18px 22px 22px!important;
-  padding:0!important;
-  border-top:0!important;
-  background:transparent!important;
+  margin:18px 0 0!important;
+  padding:14px 22px 18px!important;
+  border-top:1px solid #e2ebf2!important;
+  background:#fff!important;
   box-sizing:border-box!important;
 }
-#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2 .button{
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2.manual-chapter-edit-actions .button{
   flex:0 0 auto!important;
+  width:auto!important;
   min-width:0!important;
   min-height:40px!important;
   margin:0!important;
   padding:0 15px!important;
 }
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] #cancelManualChapterEditBtn{
+  min-width:72px!important;
+}
 
 @media(max-width:700px){
-  #manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2{
-    position:static!important;
+  #manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2.manual-chapter-edit-actions.sticky-dialog-actions{
     display:grid!important;
     grid-template-columns:1fr 1fr!important;
     gap:10px!important;
-    width:calc(100% - 32px)!important;
-    margin:16px 16px calc(18px + env(safe-area-inset-bottom,0px))!important;
-    padding:0!important;
+    width:100%!important;
+    margin:14px 0 0!important;
+    padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px))!important;
   }
-  #manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2 .button{
+  #manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2.manual-chapter-edit-actions .button{
     width:100%!important;
   }
 }
