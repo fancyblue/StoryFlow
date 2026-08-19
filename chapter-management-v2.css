@@ -92,6 +92,20 @@
 }
 .project-manage-chapters-btn{
   white-space:nowrap!important;
+  border-color:#e1cfad!important;
+  background:#fff8ef!important;
+  color:#7a5f35!important;
+}
+.project-manage-chapters-btn:hover,
+.project-manage-chapters-btn:focus-visible{
+  border-color:#cdb484!important;
+  background:#f7ecd9!important;
+  color:#644a25!important;
+}
+.project-manage-chapters-btn[aria-expanded="true"]{
+  border-color:#c7a96f!important;
+  background:#f4e5c9!important;
+  color:#5d4525!important;
 }
 .project-chapter-manager{
   grid-column:1 / -1;
