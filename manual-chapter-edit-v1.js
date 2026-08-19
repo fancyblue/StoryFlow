@@ -26,6 +26,13 @@
     };
   }
 
+  function setEditFooterMode(editing) {
+    const { actions } = dialogParts();
+    if (!actions) return;
+    actions.classList.toggle('sticky-dialog-actions', editing);
+    actions.classList.toggle('manual-chapter-edit-actions', editing);
+  }
+
   function ensureCancelButton() {
     const { actions, confirm } = dialogParts();
     if (!actions) return null;
@@ -48,6 +55,7 @@
     const { dialog, heading, eyebrow, preview, confirm } = dialogParts();
     if (!dialog) return;
     delete dialog.dataset.editChapterId;
+    setEditFooterMode(false);
     if (heading) heading.textContent = '手動新增文章';
     if (eyebrow) eyebrow.textContent = 'MANUAL SOURCE';
     if (preview) preview.hidden = false;
@@ -78,6 +86,7 @@
     editingChapterId = chapter.id;
     warnedChapterId = null;
     dialog.dataset.editChapterId = chapter.id;
+    setEditFooterMode(true);
     title.value = chapter.title || '';
     text.value = chapter.draft || '';
     if (heading) heading.textContent = '編輯章節';
