@@ -42,11 +42,25 @@
   color:#2f6f9f!important;
   outline:none!important;
 }
+
+/* Chapter row actions are popovers, not card content. Keep every ancestor in the
+   source rail from clipping the menu at the panel's rounded lower edge. Raise the
+   source card only while a menu is open so it can paint above neighboring panels. */
+.workspace-grid.workspace-hierarchy-v2,
+.workspace-grid.workspace-hierarchy-v2 > .source-panel,
+.source-panel #chapterList{
+  overflow:visible!important;
+}
+.workspace-grid.workspace-hierarchy-v2 > .source-panel:has(.chapter-row-action-menu:not([hidden])){
+  position:relative!important;
+  z-index:90!important;
+}
+
 .chapter-row-action-menu{
   position:absolute;
   top:calc(50% + 20px);
   right:0;
-  z-index:80;
+  z-index:120;
   min-width:136px;
   padding:5px;
   border:1px solid #d8e5ee;
