@@ -112,7 +112,9 @@
     setSidebarRow(document.getElementById('sidebarGoogleConnection'), gConnected, gRestoring, '已登入', '尚未登入');
     setSidebarRow(document.getElementById('sidebarFolderConnection'), fConnected, false, '已連接', fNeedsPermission ? '需要重新連接' : '尚未連接');
 
-    const showLogout = gConnected || fConnected || hasSessionHint(GOOGLE_SESSION_KEY) || hasSessionHint(FOLDER_SESSION_KEY);
+    // "登出" is an authentication action, not a generic connection reset. Stale
+    // session hints or an independently connected folder must never surface it.
+    const showLogout = gConnected;
     document.querySelectorAll('#storyflowLogoutBtn,#sidebarLogoutBtn').forEach(button => { button.hidden = !showLogout; });
   }
 
