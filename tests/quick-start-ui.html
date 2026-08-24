@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StoryFlow quick start UI test</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../connection-ui.css">
+</head>
+<body>
+  <main class="main"><h1>Quick start fixture</h1></main>
+  <script>
+    window.quickStartFixture = { chooseCalls: [], destination: null };
+    window.StoryFlowIntegrations = {
+      async restoreOutputDirectory() {
+        return { supported: true, connected: false, sessionExpired: true, remembered: true, needsPermission: true, name: 'StoryFlow-test' };
+      }
+    };
+    window.StoryFlowFolderConnection = {
+      async choose(options) {
+        window.quickStartFixture.chooseCalls.push(options);
+        document.body.dataset.quickStartReuse = String(Boolean(options?.reuseRemembered));
+        return { name: 'StoryFlow-test', restored: Boolean(options?.reuseRemembered) };
+      }
+    };
+    window.StoryFlowSettingsBootstrap = { async importSettingsFile() { return true; } };
+    window.StoryFlowNavigate = destination => {
+      window.quickStartFixture.destination = destination;
+      document.body.dataset.quickStartDestination = destination;
+    };
+    window.StoryFlowSaveStatus = { set() {} };
+  </script>
+  <script src="../src/connection/quick-start.js"></script>
+</body>
+</html>

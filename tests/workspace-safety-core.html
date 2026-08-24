@@ -7,6 +7,7 @@
   <script>
     const rootFiles = new Map();
     const recoveryFiles = new Map();
+    let pickerCalls = 0;
     let activeWorkspaceWrites = 0;
     let maxWorkspaceWrites = 0;
 
@@ -67,7 +68,7 @@
 
     const mockRoot = directory('StoryFlow-test', rootFiles);
     try { delete window.indexedDB; } catch (_) {}
-    window.showDirectoryPicker = async () => mockRoot;
+    window.showDirectoryPicker = async () => { pickerCalls += 1; return mockRoot; };
   </script>
   <script src="../src/persistence/integrations.js"></script>
   <script>
@@ -86,6 +87,10 @@
 
       try {
         await StoryFlowIntegrations.chooseOutputDirectory();
+        const rememberedFolder = await StoryFlowIntegrations.inspectRememberedOutputDirectory();
+        assert(rememberedFolder.remembered && rememberedFolder.name === 'StoryFlow-test', '可辨識 Chrome 記住的資料夾');
+        const fastReconnect = await StoryFlowIntegrations.chooseOutputDirectory({ reuseRemembered: true });
+        assert(fastReconnect.restored && pickerCalls === 1, '快速重新連接會重用原資料夾 handle');
         await StoryFlowIntegrations.saveWorkspace(workspace('版本 1'), { reason: 'test-1' });
         await StoryFlowIntegrations.loadWorkspace();
         await Promise.all([

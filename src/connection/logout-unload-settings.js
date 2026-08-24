@@ -132,16 +132,23 @@
     dialog.addEventListener('cancel', event => event.preventDefault());
 
     const status = dialog.querySelector('#storyflowRecoveryStatus');
-    dialog.querySelector('#reconnectStoryFlowFolderBtn').addEventListener('click', () => {
+    dialog.querySelector('#reconnectStoryFlowFolderBtn').addEventListener('click', async event => {
+      const button = event.currentTarget;
+      button.disabled = true;
       status.textContent = '請選擇原本的 StoryFlow 資料夾。';
-      document.getElementById('folderBtn')?.click();
+      try {
+        const result = await window.StoryFlowFolderConnection?.choose?.({ reuseRemembered: true });
+        if (!result) {
+          button.disabled = false;
+          return;
+        }
+        status.textContent = '工作區與設定已載入。';
+        dismissRecovery(dialog, 'workspace');
+      } catch (error) {
+        button.disabled = false;
+        if (error?.name !== 'AbortError') status.textContent = error.message;
+      }
     });
-    const handleConnectionChanged = () => {
-      if (!document.getElementById('folderDot')?.classList.contains('connected')) return;
-      window.removeEventListener('storyflow:connection-changed', handleConnectionChanged);
-      dismissRecovery(dialog, 'workspace');
-    };
-    window.addEventListener('storyflow:connection-changed', handleConnectionChanged);
 
     const fileInput = dialog.querySelector('#storyflowRecoveryFileInput');
     dialog.querySelector('#reimportStoryFlowSettingsBtn').addEventListener('click', () => fileInput.click());
