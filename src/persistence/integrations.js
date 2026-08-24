@@ -160,6 +160,22 @@ const StoryFlowIntegrations = (() => {
     );
   }
 
+  function summarizeWorkspace(candidate) {
+    const workspace = candidate?.workspace || candidate;
+    if (!validWorkspace(workspace)) throw new Error('這個檔案不是可辨識的 StoryFlow 工作區。');
+    const projectStates = workspace.schemaVersion >= 2
+      ? (workspace.projects || []).map(project => project?.state).filter(Boolean)
+      : [workspace.state];
+    return {
+      schemaVersion: Number(workspace.schemaVersion || 1),
+      updatedAt: workspace.updatedAt || null,
+      projectCount: projectStates.length,
+      chapterCount: projectStates.reduce((total, project) => total + (project?.chapters?.length || 0), 0),
+      partCount: projectStates.reduce((total, project) => total + (project?.chapters || [])
+        .reduce((chapterTotal, chapter) => chapterTotal + (chapter?.parts?.length || 0), 0), 0)
+    };
+  }
+
   function recoveryFilename(kind, extension = 'json') {
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     return `workspace.${kind}-${stamp}.${extension}`;
@@ -194,6 +210,92 @@ const StoryFlowIntegrations = (() => {
     } catch (_) {
       return null;
     }
+  }
+
+  async function readFileRecord(parent, filename) {
+    try {
+      const handle = await parent.getFileHandle(filename, { create: false });
+      const file = await handle.getFile();
+      return {
+        name: filename,
+        text: await file.text(),
+        size: Number(file.size || 0),
+        lastModified: Number(file.lastModified || 0) || null
+      };
+    } catch (error) {
+      if (error?.name === 'NotFoundError') return null;
+      throw error;
+    }
+  }
+
+  async function listRecoveryArtifacts() {
+    let directory;
+    try {
+      directory = await outputDirectoryHandle.getDirectoryHandle(RECOVERY_DIRECTORY, { create: false });
+    } catch (error) {
+      if (error?.name === 'NotFoundError') return [];
+      throw error;
+    }
+    if (typeof directory.entries !== 'function') return [];
+
+    const artifacts = [];
+    for await (const [name, handle] of directory.entries()) {
+      if (handle?.kind === 'directory' || !name.startsWith('workspace.')) continue;
+      try {
+        const file = await handle.getFile();
+        artifacts.push({
+          name,
+          size: Number(file.size || 0),
+          lastModified: Number(file.lastModified || 0) || null
+        });
+      } catch (_) {}
+    }
+    return artifacts.sort((left, right) => (right.lastModified || 0) - (left.lastModified || 0));
+  }
+
+  async function inspectWorkspaceStorage() {
+    if (!outputDirectoryHandle) return { connected: false };
+    if (!(await verifyPermission(outputDirectoryHandle, false))) {
+      return { connected: false, needsPermission: true, folderName: outputDirectoryHandle.name || '' };
+    }
+    await workspaceWriteQueue;
+
+    const primaryFile = await readFileRecord(outputDirectoryHandle, WORKSPACE_FILENAME);
+    const backupFile = await readFileRecord(outputDirectoryHandle, WORKSPACE_BACKUP_FILENAME);
+    let primary = null;
+    let backup = null;
+
+    if (primaryFile) {
+      try {
+        const workspace = JSON.parse(primaryFile.text);
+        primary = { ...summarizeWorkspace(workspace), valid: true, size: primaryFile.size, lastModified: primaryFile.lastModified };
+      } catch (error) {
+        primary = { valid: false, size: primaryFile.size, lastModified: primaryFile.lastModified, error: error.message };
+      }
+    }
+    if (backupFile) {
+      try {
+        const envelope = JSON.parse(backupFile.text);
+        backup = {
+          ...summarizeWorkspace(envelope),
+          valid: true,
+          createdAt: envelope?.createdAt || null,
+          reason: envelope?.reason || '',
+          size: backupFile.size,
+          lastModified: backupFile.lastModified
+        };
+      } catch (error) {
+        backup = { valid: false, size: backupFile.size, lastModified: backupFile.lastModified, error: error.message };
+      }
+    }
+
+    return {
+      connected: true,
+      folderName: outputDirectoryHandle.name || '',
+      primary,
+      backup,
+      recoveryArtifacts: await listRecoveryArtifacts()
+    };
   }
 
   function announceWorkspaceRecovery(recovery) {
@@ -360,11 +462,36 @@ const StoryFlowIntegrations = (() => {
 
   async function backupWorkspace(reason = 'manual-backup') {
     if (!(await ensureOutputPermission())) return null;
+    await workspaceWriteQueue;
     const workspace = await readJsonFile(WORKSPACE_FILENAME);
     if (!workspace) return null;
     const backup = backupEnvelope(workspace, reason);
     await writeTextFile(outputDirectoryHandle, WORKSPACE_BACKUP_FILENAME, JSON.stringify(backup, null, 2));
     return backup;
+  }
+
+  async function exportWorkspaceFile() {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾讀取權限。');
+    await workspaceWriteQueue;
+    const text = await readTextFile(outputDirectoryHandle, WORKSPACE_FILENAME);
+    if (!text) throw new Error('目前資料夾中沒有 workspace.json。');
+    summarizeWorkspace(JSON.parse(text));
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    return { filename: `storyflow-workspace-${stamp}.json`, text };
+  }
+
+  async function restoreLatestWorkspaceBackup() {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    await workspaceWriteQueue;
+    const backup = await readWorkspaceBackup();
+    if (!backup?.workspace) throw new Error('目前沒有可使用的 workspace.backup.json。');
+
+    const currentText = await readTextFile(outputDirectoryHandle, WORKSPACE_FILENAME);
+    const artifactPath = currentText
+      ? await writeRecoveryArtifact(recoveryFilename('before-backup-restore'), currentText)
+      : null;
+    await saveWorkspace(backup.workspace, { force: true, reason: 'manual-backup-restore' });
+    return { backupCreatedAt: backup.envelope?.createdAt || null, artifactPath };
   }
 
   function getWorkspaceRecovery() {
@@ -401,7 +528,11 @@ const StoryFlowIntegrations = (() => {
 
   async function importWorkspace(workspace) {
     const candidate = workspace?.workspace || workspace;
-    if (!validWorkspace(candidate)) throw new Error('這個檔案不是可辨識的 StoryFlow 工作區。');
+    summarizeWorkspace(candidate);
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    await workspaceWriteQueue;
+    const currentText = await readTextFile(outputDirectoryHandle, WORKSPACE_FILENAME);
+    if (currentText) await writeRecoveryArtifact(recoveryFilename('before-import'), currentText);
     await saveWorkspace(candidate, { force: true, reason: 'workspace-import' });
     pendingWorkspaceRecovery = null;
     return true;
@@ -641,7 +772,7 @@ const StoryFlowIntegrations = (() => {
 
   purgeLegacyBrowserStorage();
 
-  const api = { restoreOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
+  const api = { restoreOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, inspectWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
   window.StoryFlowIntegrations = api;
   return api;
 })();

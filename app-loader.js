@@ -6,7 +6,7 @@
 (function () {
   const scripts = [
     { src: './src/core/config.js?v=20260817-1625', owner: 'core' },
-    { src: './src/persistence/integrations.js?v=20260824-p0', owner: 'persistence' },
+    { src: './src/persistence/integrations.js?v=20260825-p1d', owner: 'persistence' },
     { src: './src/core/app.js?v=20260824-flow2', owner: 'core' },
     { src: './src/connection/session-auth.js?v=20260817-1522', owner: 'connection' },
     { src: './src/connection/folder-session.js', owner: 'connection' },
@@ -33,6 +33,7 @@
     { id: 'storyflowPlatformSettingsV2Js', src: './src/settings/platform-settings-v2.js?v=20260817-1632', owner: 'settings' },
     { id: 'storyflowSettingsBootstrapJs', src: './src/settings/settings-bootstrap.js?v=20260817-1703', owner: 'settings' },
     { id: 'storyflowSettingsFileImportFixJs', src: './src/settings/settings-file-import-fix.js?v=20260817-1720', owner: 'settings' },
+    { id: 'storyflowBackupCenterJs', src: './src/settings/backup-center.js?v=20260825-p1', owner: 'settings' },
     { src: './src/ui/navigation.js?v=20260824-p1c2', owner: 'ui' },
     { src: './src/split/confirm-continuation.js', owner: 'split' },
     { src: './src/ui/preview-mode.js?v=20260817-1405', owner: 'ui' },
