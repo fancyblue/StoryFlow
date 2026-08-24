@@ -4,6 +4,7 @@
 - `workspace-safety-ui.html` renders the recovery dialog without reading or changing a real StoryFlow folder.
 - `backup-center-ui.html` renders the connected-folder backup center with safe fixture metadata.
 - `quick-start-ui.html` verifies the remembered-folder cold-start prompt without touching a real folder.
+- `browser/visual-regression.spec.js` captures the real app at 1280, 1440 and 1920 desktop widths, including a long chapter rail, works library, publishing queue and settings.
 
 No user files or Google credentials are used.
 
@@ -16,3 +17,9 @@ npm run test:browser
 ```
 
 `npm test` runs both the static checks and browser suite. The Playwright web server starts the local static site automatically.
+
+When an intentional visual change is approved, refresh the committed Chrome baselines with:
+
+```sh
+npm run test:browser -- --update-snapshots=all tests/browser/visual-regression.spec.js
+```
