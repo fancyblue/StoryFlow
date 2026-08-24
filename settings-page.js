@@ -82,6 +82,22 @@
     const oldHead = form?.querySelector(':scope > .panel-head');
     oldHead?.remove();
 
+    if (!document.getElementById('storyflowDevicePrivacySection')) {
+      const privacy = document.createElement('section');
+      privacy.id = 'storyflowDevicePrivacySection';
+      privacy.className = 'settings-device-privacy';
+      privacy.innerHTML = `
+        <div>
+          <strong>裝置與隱私</strong>
+          <p>清除這個瀏覽器中的 Google 登入、暫存設定與資料夾連線。StoryFlow 資料夾內的作品與設定檔不會被刪除。</p>
+        </div>
+        <button id="settingsLeaveDeviceBtn" class="button danger" type="button">離開此裝置</button>`;
+      privacy.querySelector('#settingsLeaveDeviceBtn').addEventListener('click', () => {
+        window.StoryFlowLogout?.leaveDevice?.();
+      });
+      view.appendChild(privacy);
+    }
+
     return view;
   }
 
@@ -108,8 +124,8 @@
     utilities.appendChild(button);
 
     if (logout) {
-      logout.dataset.hint = '登出並清除連線';
-      logout.setAttribute('aria-label', '登出並清除連線');
+      logout.dataset.hint = '離開此裝置';
+      logout.setAttribute('aria-label', '離開此裝置');
       utilities.appendChild(logout);
     }
     button.addEventListener('click', () => window.StoryFlowNavigate?.('settings'));

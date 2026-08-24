@@ -61,6 +61,8 @@
 .source-panel #loadSourceBtn,.source-panel #refreshSourceBtn { white-space:nowrap; }
 .source-panel #refreshSourceBtn[hidden] { display:none !important; }
 .source-panel #refreshSourceBtn[hidden] + #loadSourceBtn { grid-column:1 / -1; }
+.source-panel .source-undo-update{grid-column:1 / -1;color:#2f6f9f}
+.source-panel .source-undo-update[hidden]{display:none!important}
 
 @media (max-width:700px) {
   .source-choice-grid { grid-template-columns:1fr; }

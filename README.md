@@ -30,8 +30,14 @@ Google OAuth 在取得 Drive / Docs 存取權之前就必須知道 Web OAuth Cli
 StoryFlow/
 ├─ settings.json      # Google Client ID、Picker API Key、平台與排版設定
 ├─ workspace.json     # 作品、章節、切篇與發布進度
+├─ workspace.backup.json # 最近一次正常寫入前的工作區備份
+├─ Recovery/         # 衝突副本、損壞原檔與被取代版本
 └─ Works/
    └─ <作品>/<章節>/*.md
 ```
 
-Google access token 不寫入 `settings.json`；為了讓單純重新整理頁面時不必再次登入，只會短暫存在目前瀏覽器工作階段的 `sessionStorage`。登出會清除該工作階段 token 與已記住的資料夾連線資訊，但不會刪除 StoryFlow 資料夾內的檔案。
+StoryFlow 只會在 `workspace.json` 實際寫入完成後顯示「已同步」；尚未連接資料夾、正在同步或寫入失敗都會分別顯示。所有工作區寫入都依序執行，並在改寫前把最近正常版本保存為 `workspace.backup.json`。若其他分頁或裝置先寫入了較新版本，StoryFlow 會停止覆蓋，並將本頁修改另存到 `Recovery/`。
+
+當 `workspace.json` 無法解析時，頁面會自動開啟恢復介面：可一鍵從備份恢復，或匯入既有 `workspace.json` / `workspace.backup.json`。恢復前會先把損壞原檔留在 `Recovery/`。從 Google Docs 更新章節後，同一次開啟頁面期間也可用「復原來源更新」立即回到更新前的章節。
+
+Google access token 不寫入 `settings.json`；為了讓單純重新整理頁面時不必再次登入，只會短暫存在目前瀏覽器工作階段的 `sessionStorage`。「離開此裝置」會清除該瀏覽器中的 token、暫存整合設定、`storyflow.*` 瀏覽器狀態與已記住的資料夾連線資訊，但不會修改或刪除 StoryFlow 資料夾內的 `settings.json`、`workspace.json`、`workspace.backup.json`、`Recovery/` 或作品 Markdown。離開後可以重新連接既有 StoryFlow 資料夾，或匯入 `settings.json` 快速恢復 Google 整合設定。

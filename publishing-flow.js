@@ -124,6 +124,7 @@
             <button class="publishing-filter" type="button" data-filter="partial">部分發布</button>
             <button class="publishing-filter" type="button" data-filter="complete">已完成</button>
           </div>
+          <button id="continuePublishingBtn" class="button primary publishing-continue-btn" type="button" hidden>繼續發布</button>
           <span class="muted">最新確認的文章顯示在最上面。</span>
         </div>`;
       main.appendChild(publishingView);
@@ -215,6 +216,14 @@
       } catch (error) {
         notify(`複製失敗：${error.message}`, true);
         return;
+      }
+      if (platform && !part.platformStatus?.[platform]) {
+        const markPublished = window.confirm(`已複製「${platform}」版本。\n\n要將這個平台標註為已發布嗎？`);
+        if (markPublished) {
+          setPlatformPublished(part, platform, true);
+          renderParts();
+          notify(`${platform} 已標註為已發布`);
+        }
       }
       publishDialog.close();
     };
@@ -416,6 +425,25 @@
       const baseLabel = key === 'all' ? '全部' : key === 'pending' ? '待發布' : key === 'partial' ? '部分發布' : '已完成';
       button.textContent = `${baseLabel} ${count}`;
     });
+
+    const continueButton = document.getElementById('continuePublishingBtn');
+    const next = entries.find(entry => entry.status.key !== 'complete');
+    if (continueButton) {
+      continueButton.hidden = !next;
+      continueButton.textContent = platforms.length ? '繼續發布' : '設定發布平台';
+      continueButton.onclick = () => {
+        if (!next) return;
+        const platform = platforms.find(name => !next.part.platformStatus?.[name]);
+        if (!platform) {
+          openSettings();
+          return;
+        }
+        selectedPartKey = partKey(next.part);
+        currentFilter = 'all';
+        renderParts();
+        previewPublish(next.part, platform);
+      };
+    }
   }
 
   window.renderParts = function renderPublishingDashboard() {
@@ -433,16 +461,33 @@
     if (selectedPartKey && !filtered.some(entry => partKey(entry.part) === selectedPartKey)) selectedPartKey = null;
 
     if (!entries.length) {
-      els.partsList.innerHTML = '<div class="empty-state publishing-empty"><div class="empty-icon">↗</div><strong>還沒有已確認文章</strong><span>回到工作台完成 SMART SPLIT 並存成 Markdown 後，文章會自動出現在發布頁。</span></div>';
+      els.partsList.innerHTML = '<div class="empty-state publishing-empty"><div class="empty-icon">↗</div><strong>還沒有已確認文章</strong><span>先回到工作台載入內容並完成第一篇切篇。</span><button class="button primary publishing-empty-action" type="button">回到工作台開始切篇</button></div>';
+      els.partsList.querySelector('.publishing-empty-action')?.addEventListener('click', () => window.StoryFlowNavigate?.('workspace'));
       return;
     }
 
     if (!filtered.length) {
-      els.partsList.innerHTML = '<div class="empty-state publishing-empty"><strong>這個篩選條件目前沒有文章</strong><span>可以切換其他發布狀態查看。</span></div>';
+      els.partsList.innerHTML = '<div class="empty-state publishing-empty"><strong>這個篩選條件目前沒有文章</strong><span>目前文章存在，只是沒有符合選擇的發布狀態。</span><button class="button ghost publishing-empty-action" type="button">清除狀態篩選</button></div>';
+      els.partsList.querySelector('.publishing-empty-action')?.addEventListener('click', () => {
+        currentFilter = 'all';
+        renderParts();
+      });
       return;
     }
 
     filtered.forEach(entry => els.partsList.appendChild(createArticleRow(entry)));
+  };
+
+  window.StoryFlowPublishing = {
+    openPending(key, platform) {
+      const entry = allEntries().find(item => partKey(item.part) === key);
+      if (!entry) return false;
+      selectedPartKey = key;
+      currentFilter = 'all';
+      renderParts();
+      previewPublish(entry.part, platform || platforms.find(name => !entry.part.platformStatus?.[name]) || '');
+      return true;
+    }
   };
 
   ensureViewStructure();

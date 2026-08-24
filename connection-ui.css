@@ -39,6 +39,61 @@
 .connection-logout{color:#991b1b}
 .connection-logout:hover{background:#fff1f2!important;border-color:#fecdd3!important}
 
+.storyflow-recovery-dialog{
+  width:min(520px,calc(100vw - 32px));
+  max-width:none;
+  padding:0;
+  border:0;
+  border-radius:22px;
+  background:transparent;
+  box-shadow:0 28px 80px rgba(16,38,60,.28);
+}
+.storyflow-recovery-dialog::backdrop{background:rgba(19,40,61,.68);backdrop-filter:blur(6px)}
+.storyflow-recovery-card{
+  display:grid;
+  justify-items:center;
+  padding:38px;
+  border:1px solid rgba(255,255,255,.65);
+  border-radius:22px;
+  background:#fff;
+  color:var(--text);
+  text-align:center;
+}
+.storyflow-recovery-mark{
+  display:grid;
+  place-items:center;
+  width:56px;
+  height:56px;
+  margin-bottom:18px;
+  border-radius:16px;
+  background:linear-gradient(145deg,#6da4d3,#356f9f);
+  color:#fff;
+  font-size:22px;
+  font-weight:800;
+}
+.storyflow-recovery-card .eyebrow{margin:0 0 7px}
+.storyflow-recovery-card h1{margin:0;font-size:28px}
+.storyflow-recovery-card>p:not(.eyebrow):not(.storyflow-recovery-status){max-width:410px;margin:14px 0 0;color:var(--muted);line-height:1.75}
+.storyflow-recovery-actions{display:grid;width:100%;gap:9px;margin-top:26px}
+.storyflow-recovery-actions .button{width:100%;min-height:46px}
+.storyflow-recovery-actions .button.quiet{border-color:transparent;background:transparent;color:var(--muted)}
+.storyflow-recovery-status{min-height:22px;margin:10px 0 0;color:var(--muted);font-size:12px}
+
+.settings-device-privacy{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  margin-top:16px;
+  padding:22px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+}
+.settings-device-privacy strong{font-size:16px}
+.settings-device-privacy p{max-width:720px;margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.65}
+.settings-device-privacy .button{flex:0 0 auto}
+
 /* Sidebar connection status is the persistent footer: two status chips plus the
    settings/sign-out utilities. On desktop it is pushed to the bottom by flex layout,
    so it stays grounded regardless of viewport height or the amount of navigation. */
@@ -166,6 +221,7 @@
   margin-top:18px;
 }
 .workspace-empty-actions .button{min-width:118px}
+.workspace-empty-next-step{color:var(--muted);font-size:12px;line-height:1.6;text-align:center}
 .workspace-source-empty{
   padding:18px 10px;
   border:1px dashed var(--line);
@@ -194,6 +250,7 @@
   font-size:12px;
   line-height:1.7;
 }
+.projects-empty-state .button{margin-top:10px}
 
 @media(min-width:821px){
   .sidebar-connection-status{
@@ -235,4 +292,8 @@
   .workspace-grid.workspace-empty-mode #suggestionEmpty{min-height:280px;padding:30px 20px}
   .workspace-empty-actions{width:100%;flex-direction:column}
   .workspace-empty-actions .button{width:100%}
+  .storyflow-recovery-card{padding:30px 22px}
+  .storyflow-recovery-card h1{font-size:24px}
+  .settings-device-privacy{align-items:stretch;flex-direction:column}
+  .settings-device-privacy .button{width:100%;min-height:44px}
 }

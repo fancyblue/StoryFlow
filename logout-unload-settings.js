@@ -1,6 +1,6 @@
-// Logout is a local session reset, not a destructive settings operation.
-// It unloads the imported settings.json/bootstrap state and forgets the folder handle,
-// but never rewrites or deletes settings.json, workspace.json, or Markdown files.
+// Leaving this device is a local privacy reset, not a destructive data operation.
+// It unloads browser-held StoryFlow state and forgets the folder handle, but never
+// rewrites or deletes settings.json, workspace.json, or Markdown files.
 (function () {
   const KEYS = [
     'storyflow.google.session.v1',
@@ -10,6 +10,8 @@
     'storyflow.integration-bootstrap.v1'
   ];
   const CONNECTION_DB = 'storyflow-connections-v1';
+  const LEGACY_CONNECTION_DB = 'storyflow-handles';
+  const LEFT_QUERY_KEY = 'storyflow-left';
   let loggingOut = false;
 
   function integrationsApi() {
@@ -18,9 +20,22 @@
       : window.StoryFlowIntegrations;
   }
 
-  function clearSessionState() {
+  function removeStoryFlowStorage(storage) {
+    try {
+      const keys = [];
+      for (let index = 0; index < storage.length; index += 1) {
+        const key = storage.key(index);
+        if (key?.startsWith('storyflow.')) keys.push(key);
+      }
+      keys.forEach(key => storage.removeItem(key));
+    } catch (_) {}
+  }
+
+  function clearBrowserState() {
     try { window.StoryFlowSessionAuth?.forgetSession?.(); } catch (_) {}
     try { KEYS.forEach(key => sessionStorage.removeItem(key)); } catch (_) {}
+    removeStoryFlowStorage(sessionStorage);
+    removeStoryFlowStorage(localStorage);
 
     // Clear only the currently loaded in-memory integration values. Do NOT persist
     // these empty values back to settings.json.
@@ -33,7 +48,7 @@
     try { integrationsApi()?.setPickerApiKey?.(''); } catch (_) {}
   }
 
-  function deleteConnectionDatabase() {
+  function deleteDatabase(name) {
     if (!('indexedDB' in window)) return Promise.resolve();
     return new Promise(resolve => {
       let done = false;
@@ -43,7 +58,7 @@
         resolve();
       };
       try {
-        const request = indexedDB.deleteDatabase(CONNECTION_DB);
+        const request = indexedDB.deleteDatabase(name);
         request.onsuccess = finish;
         request.onerror = finish;
         request.onblocked = finish;
@@ -54,19 +69,119 @@
     });
   }
 
-  async function logout() {
+  function recoveryUrl() {
+    const url = new URL(location.href);
+    url.searchParams.set(LEFT_QUERY_KEY, '1');
+    url.hash = '';
+    return url.href;
+  }
+
+  function clearRecoveryMarker() {
+    const url = new URL(location.href);
+    url.searchParams.delete(LEFT_QUERY_KEY);
+    history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  function waitForSettingsBootstrap(timeout = 4000) {
+    const started = Date.now();
+    return new Promise((resolve, reject) => {
+      const check = () => {
+        if (window.StoryFlowSettingsBootstrap?.importSettingsFile) {
+          resolve(window.StoryFlowSettingsBootstrap);
+          return;
+        }
+        if (Date.now() - started >= timeout) {
+          reject(new Error('設定載入元件尚未準備完成，請稍後再試。'));
+          return;
+        }
+        window.setTimeout(check, 80);
+      };
+      check();
+    });
+  }
+
+  function dismissRecovery(dialog, destination = 'workspace') {
+    clearRecoveryMarker();
+    dialog.close();
+    dialog.remove();
+    window.StoryFlowNavigate?.(destination);
+  }
+
+  function showRecoveryScreen() {
+    if (new URL(location.href).searchParams.get(LEFT_QUERY_KEY) !== '1') return;
+    if (document.getElementById('storyflowRecoveryDialog')) return;
+
+    const dialog = document.createElement('dialog');
+    dialog.id = 'storyflowRecoveryDialog';
+    dialog.className = 'storyflow-recovery-dialog';
+    dialog.innerHTML = `
+      <div class="storyflow-recovery-card">
+        <div class="storyflow-recovery-mark" aria-hidden="true">S</div>
+        <p class="eyebrow">DEVICE PRIVACY</p>
+        <h1>已離開此裝置</h1>
+        <p>這個瀏覽器中的 Google 登入、暫存設定與 StoryFlow 資料夾連線已清除。資料夾內的作品與設定檔仍完整保留。</p>
+        <div class="storyflow-recovery-actions">
+          <button id="reconnectStoryFlowFolderBtn" class="button primary" type="button">重新連接 StoryFlow 資料夾</button>
+          <button id="reimportStoryFlowSettingsBtn" class="button ghost" type="button">匯入 settings.json</button>
+          <button id="openManualStoryFlowSettingsBtn" class="button quiet" type="button">改用手動設定</button>
+        </div>
+        <p id="storyflowRecoveryStatus" class="storyflow-recovery-status" role="status" aria-live="polite"></p>
+        <input id="storyflowRecoveryFileInput" type="file" accept="application/json,.json" hidden />
+      </div>`;
+    document.body.appendChild(dialog);
+    dialog.addEventListener('cancel', event => event.preventDefault());
+
+    const status = dialog.querySelector('#storyflowRecoveryStatus');
+    dialog.querySelector('#reconnectStoryFlowFolderBtn').addEventListener('click', () => {
+      status.textContent = '請選擇原本的 StoryFlow 資料夾。';
+      document.getElementById('folderBtn')?.click();
+    });
+    const handleConnectionChanged = () => {
+      if (!document.getElementById('folderDot')?.classList.contains('connected')) return;
+      window.removeEventListener('storyflow:connection-changed', handleConnectionChanged);
+      dismissRecovery(dialog, 'workspace');
+    };
+    window.addEventListener('storyflow:connection-changed', handleConnectionChanged);
+
+    const fileInput = dialog.querySelector('#storyflowRecoveryFileInput');
+    dialog.querySelector('#reimportStoryFlowSettingsBtn').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      status.textContent = '正在載入設定…';
+      try {
+        const bootstrap = await waitForSettingsBootstrap();
+        await bootstrap.importSettingsFile(file);
+        dismissRecovery(dialog, 'settings');
+      } catch (error) {
+        status.textContent = error.message;
+        fileInput.value = '';
+      }
+    });
+    dialog.querySelector('#openManualStoryFlowSettingsBtn').addEventListener('click', () => {
+      dismissRecovery(dialog, 'settings');
+    });
+
+    dialog.showModal();
+    requestAnimationFrame(() => dialog.querySelector('#reconnectStoryFlowFolderBtn')?.focus());
+  }
+
+  async function leaveDevice() {
     if (loggingOut) return;
     const ok = window.confirm(
-      '登出 StoryFlow？\n\n' +
-      '會登出 Google、卸載目前載入的 settings.json，並忘記 StoryFlow 資料夾連線。\n' +
+      '離開此裝置？\n\n' +
+      '會清除這個瀏覽器中的 Google 登入、暫存設定與 StoryFlow 資料夾連線。\n' +
       '不會修改或刪除資料夾內的 settings.json、workspace.json 或 Markdown。'
     );
     if (!ok) return;
 
     loggingOut = true;
-    clearSessionState();
-    await deleteConnectionDatabase();
-    location.reload();
+    clearBrowserState();
+    await Promise.all([
+      deleteDatabase(CONNECTION_DB),
+      deleteDatabase(LEGACY_CONNECTION_DB)
+    ]);
+    location.replace(recoveryUrl());
   }
 
   // The legacy connection module attached direct click handlers to these buttons.
@@ -77,22 +192,23 @@
     if (!button) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    logout();
+    leaveDevice();
   }, true);
 
   function updateLogoutCopy() {
     const sidebar = document.getElementById('sidebarLogoutBtn');
     if (sidebar) {
-      sidebar.title = '登出並卸載設定';
-      sidebar.dataset.hint = '登出並卸載設定';
-      sidebar.setAttribute('aria-label', '登出並卸載設定');
+      sidebar.title = '離開此裝置';
+      sidebar.dataset.hint = '離開此裝置';
+      sidebar.setAttribute('aria-label', '離開此裝置');
       const label = sidebar.querySelector('.sidebar-logout-label');
-      if (label && label.textContent !== '登出並卸載設定') label.textContent = '登出並卸載設定';
+      if (label && label.textContent !== '離開此裝置') label.textContent = '離開此裝置';
     }
     const top = document.getElementById('storyflowLogoutBtn');
     if (top) {
-      top.title = '登出並卸載設定';
-      top.setAttribute('aria-label', '登出並卸載設定');
+      top.title = '離開此裝置';
+      top.setAttribute('aria-label', '離開此裝置');
+      top.textContent = '離開';
     }
   }
 
@@ -104,7 +220,8 @@
   // may adjust their copy once, so a zero-delay follow-up is sufficient.
   updateLogoutCopy();
   window.setTimeout(updateLogoutCopy, 0);
+  window.setTimeout(showRecoveryScreen, 0);
   window.addEventListener('storyflow:view-changed', updateLogoutCopy);
 
-  window.StoryFlowLogout = { logout, clearSessionState };
+  window.StoryFlowLogout = { logout: leaveDevice, leaveDevice, clearSessionState: clearBrowserState };
 })();

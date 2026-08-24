@@ -14,7 +14,12 @@
     '手動作品已建立',
     'Google Docs 作品已建立',
     '文章已新增',
-    '來源已加入'
+    '來源已加入',
+    '來源已更新',
+    '已復原來源更新',
+    '章節已刪除',
+    '已刪除並退回切篇',
+    '發布狀態已更新'
   ]);
 
   function normalizeLoadedState(next) {
@@ -43,9 +48,13 @@
   async function persistWorkspaceNow(reason = 'project-change') {
     if (hydrating) return false;
     const folder = await connectedFolder();
-    if (!folder) return false;
+    if (!folder) {
+      window.StoryFlowSaveStatus?.set?.('尚未保存 · 請連接資料夾');
+      return false;
+    }
 
     try {
+      window.StoryFlowSaveStatus?.set?.('同步中…');
       // projects.js owns StoryFlowIntegrations.saveWorkspace by this point. Passing
       // the active state lets that wrapper serialize the complete schema-v2 project store.
       await StoryFlowIntegrations.saveWorkspace({
@@ -53,16 +62,20 @@
         updatedAt: new Date().toISOString(),
         state
       });
-      const status = document.getElementById('saveState');
-      if (status) status.textContent = '已同步';
+      const time = new Intl.DateTimeFormat('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+      window.StoryFlowSaveStatus?.set?.(`已同步 ${time}`);
       window.dispatchEvent(new CustomEvent('storyflow:workspace-persisted', {
         detail: { reason }
       }));
       return true;
     } catch (error) {
       console.warn('StoryFlow immediate workspace persistence failed', error);
-      const status = document.getElementById('saveState');
-      if (status) status.textContent = '尚未同步';
+      const message = error?.code === 'WORKSPACE_CONFLICT'
+        ? '同步已暫停 · 發現較新版本'
+        : error?.code === 'WORKSPACE_CORRUPT'
+          ? '工作資料損壞 · 請先恢復'
+          : '同步失敗 · 請重試';
+      window.StoryFlowSaveStatus?.set?.(message, true);
       return false;
     }
   }
@@ -91,6 +104,9 @@
         if (activeChapter()?.draft) suggestNextPart();
         window.StoryFlowRenderProjects?.();
         window.StoryFlowProjectSourceModeV2?.syncUi?.();
+        window.dispatchEvent(new CustomEvent('storyflow:workspace-loaded', {
+          detail: { hasWorkspace: true, source: 'multi-project-rehydrate' }
+        }));
       }
     } catch (error) {
       console.warn('StoryFlow multi-project rehydrate failed', error);

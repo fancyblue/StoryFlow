@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><title>StoryFlow workspace safety core test</title></head>
+<body>
+  <h1>Workspace safety core test</h1>
+  <pre id="result">RUNNING</pre>
+  <script>
+    const rootFiles = new Map();
+    const recoveryFiles = new Map();
+    let activeWorkspaceWrites = 0;
+    let maxWorkspaceWrites = 0;
+
+    function notFound(name) {
+      return new DOMException(`${name} not found`, 'NotFoundError');
+    }
+
+    function directory(name, files) {
+      return {
+        name,
+        async queryPermission() { return 'granted'; },
+        async requestPermission() { return 'granted'; },
+        async getDirectoryHandle(child, options = {}) {
+          if (child === 'Recovery') return directory('Recovery', recoveryFiles);
+          if (!options.create) throw notFound(child);
+          return directory(child, new Map());
+        },
+        async getFileHandle(filename, options = {}) {
+          if (!files.has(filename) && !options.create) throw notFound(filename);
+          return {
+            async getFile() {
+              if (!files.has(filename)) throw notFound(filename);
+              return { async text() { return files.get(filename); } };
+            },
+            async createWritable() {
+              let pending = '';
+              const tracksWorkspace = filename === 'workspace.json';
+              if (tracksWorkspace) {
+                activeWorkspaceWrites += 1;
+                maxWorkspaceWrites = Math.max(maxWorkspaceWrites, activeWorkspaceWrites);
+              }
+              return {
+                async write(text) { pending = String(text); await new Promise(resolve => setTimeout(resolve, 8)); },
+                async close() {
+                  files.set(filename, pending);
+                  if (tracksWorkspace) activeWorkspaceWrites -= 1;
+                }
+              };
+            }
+          };
+        }
+      };
+    }
+
+    const mockRoot = directory('StoryFlow-test', rootFiles);
+    try { delete window.indexedDB; } catch (_) {}
+    window.showDirectoryPicker = async () => mockRoot;
+  </script>
+  <script src="../integrations.js"></script>
+  <script>
+    (async () => {
+      const result = document.getElementById('result');
+      const checks = [];
+      const assert = (condition, message) => {
+        if (!condition) throw new Error(message);
+        checks.push(`PASS ${message}`);
+      };
+      const workspace = title => ({
+        schemaVersion: 1,
+        updatedAt: new Date().toISOString(),
+        state: { projectTitle: title, chapters: [{ id: 'chapter-1', title: '第一章', draft: title, parts: [] }] }
+      });
+
+      try {
+        await StoryFlowIntegrations.chooseOutputDirectory();
+        await StoryFlowIntegrations.saveWorkspace(workspace('版本 1'), { reason: 'test-1' });
+        await StoryFlowIntegrations.loadWorkspace();
+        await Promise.all([
+          StoryFlowIntegrations.saveWorkspace(workspace('版本 2'), { reason: 'test-2' }),
+          StoryFlowIntegrations.saveWorkspace(workspace('版本 3'), { reason: 'test-3' })
+        ]);
+        assert(maxWorkspaceWrites === 1, 'workspace 寫入保持單一序列');
+        assert(JSON.parse(rootFiles.get('workspace.json')).state.projectTitle === '版本 3', '序列最後版本正確');
+        assert(JSON.parse(rootFiles.get('workspace.backup.json')).workspace.state.projectTitle === '版本 2', '每次寫入前保留最近正常版本');
+
+        const external = JSON.parse(rootFiles.get('workspace.json'));
+        external.writeRevision = crypto.randomUUID();
+        external.updatedAt = new Date(Date.now() + 1000).toISOString();
+        external.state.projectTitle = '外部較新版本';
+        rootFiles.set('workspace.json', JSON.stringify(external, null, 2));
+
+        let conflict = null;
+        try { await StoryFlowIntegrations.saveWorkspace(workspace('本頁未同步版本')); }
+        catch (error) { conflict = error; }
+        assert(conflict?.code === 'WORKSPACE_CONFLICT', '外部較新版本會停止覆蓋');
+        assert(StoryFlowIntegrations.getWorkspaceRecovery()?.kind === 'conflict', '衝突狀態可供 UI 處理');
+        assert([...recoveryFiles.keys()].some(name => name.includes('conflict')), '本頁修改另存 Recovery 副本');
+
+        await StoryFlowIntegrations.restoreWorkspaceRecovery('local');
+        assert(JSON.parse(rootFiles.get('workspace.json')).state.projectTitle === '本頁未同步版本', '可明確選擇保留目前版本');
+
+        rootFiles.set('workspace.json', '{broken-json');
+        const corrupted = await StoryFlowIntegrations.loadWorkspace();
+        assert(corrupted === null, '損壞主檔不會被當成正常工作區');
+        assert(StoryFlowIntegrations.getWorkspaceRecovery()?.recoverable === true, '損壞時會找到最近備份');
+        await StoryFlowIntegrations.restoreWorkspaceRecovery('backup');
+        assert(Boolean(await StoryFlowIntegrations.loadWorkspace()), '可從備份恢復並重新載入');
+        assert([...recoveryFiles.keys()].some(name => name.includes('corrupt')), '恢復前保留損壞原檔');
+        assert(!StoryFlowIntegrations.workspaceSavePending(), '測試完成後沒有未完成寫入');
+
+        result.textContent = `${checks.join('\n')}\n\nALL PASS`;
+        document.body.dataset.testStatus = 'pass';
+      } catch (error) {
+        result.textContent = `${checks.join('\n')}\n\nFAIL ${error.stack || error.message}`;
+        document.body.dataset.testStatus = 'fail';
+      }
+    })();
+  </script>
+</body>
+</html>
