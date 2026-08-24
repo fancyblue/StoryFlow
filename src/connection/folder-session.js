@@ -18,11 +18,20 @@
 
   const baseRestore = StoryFlowIntegrations.restoreOutputDirectory.bind(StoryFlowIntegrations);
   const baseChoose = StoryFlowIntegrations.chooseOutputDirectory.bind(StoryFlowIntegrations);
+  const inspectRemembered = StoryFlowIntegrations.inspectRememberedOutputDirectory?.bind(StoryFlowIntegrations);
 
   StoryFlowIntegrations.restoreOutputDirectory = async function restoreOutputDirectoryForSession() {
     if (!('showDirectoryPicker' in window)) return { supported: false };
     if (!hasSessionHint()) {
-      return { supported: true, connected: false, sessionExpired: true };
+      const remembered = await inspectRemembered?.();
+      return {
+        supported: true,
+        connected: false,
+        sessionExpired: true,
+        remembered: Boolean(remembered?.remembered),
+        name: remembered?.name || '',
+        needsPermission: Boolean(remembered?.remembered)
+      };
     }
     return baseRestore();
   };

@@ -94,9 +94,31 @@ const StoryFlowIntegrations = (() => {
     return { supported: true, connected, name: outputDirectoryHandle.name, needsPermission: !connected, remembered: true };
   }
 
-  async function chooseOutputDirectory() {
+  async function inspectRememberedOutputDirectory() {
+    if (!('showDirectoryPicker' in window)) return { supported: false };
+    await hydrateOutputDirectoryHandle();
+    if (!outputDirectoryHandle) return { supported: true, remembered: false };
+    let permission = 'prompt';
+    try { permission = await outputDirectoryHandle.queryPermission({ mode: 'readwrite' }); } catch (_) {}
+    return {
+      supported: true,
+      remembered: true,
+      name: outputDirectoryHandle.name || '',
+      permission
+    };
+  }
+
+  async function chooseOutputDirectory(options = {}) {
     if (!('showDirectoryPicker' in window)) throw new Error('此瀏覽器不支援資料夾直接寫入，請使用 Chrome 或 Edge。');
     await hydrateOutputDirectoryHandle();
+
+    if (outputDirectoryHandle && options?.reuseRemembered) {
+      if (await verifyPermission(outputDirectoryHandle, false) || await verifyPermission(outputDirectoryHandle, true)) {
+        await persistDirectoryHandle(outputDirectoryHandle);
+        return { name: outputDirectoryHandle.name, restored: true };
+      }
+      throw new Error('尚未重新授權原本的 StoryFlow 資料夾。');
+    }
 
     // If the browser remembers the folder but needs permission again, reuse the
     // same handle instead of forcing the user through the folder picker again.
@@ -772,7 +794,7 @@ const StoryFlowIntegrations = (() => {
 
   purgeLegacyBrowserStorage();
 
-  const api = { restoreOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, inspectWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
+  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, inspectWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
   window.StoryFlowIntegrations = api;
   return api;
 })();

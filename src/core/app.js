@@ -510,13 +510,18 @@ async function refreshFolderStatus() {
   }
 }
 
-async function chooseFolder() {
+async function chooseFolder(options = {}) {
   try {
-    const result = await StoryFlowIntegrations.chooseOutputDirectory();
+    const result = await StoryFlowIntegrations.chooseOutputDirectory(options);
     notify(`已連接 ${result.name}`);
     await refreshFolderStatus();
+    window.dispatchEvent(new CustomEvent('storyflow:connection-changed', {
+      detail: { kind: 'folder', connected: true, name: result.name, restored: Boolean(result.restored) }
+    }));
+    return result;
   } catch (error) {
     if (error.name !== 'AbortError') notify(error.message, true);
+    return null;
   }
 }
 
@@ -589,8 +594,11 @@ $('newChapterBtn').onclick = createChapter;
 $('googleLoginBtn').onclick = loginGoogle;
 $('importGoogleBtn').onclick = importGoogleDoc;
 els.syncGoogleBtn.onclick = syncGoogleDoc;
-$('folderBtn').onclick = chooseFolder;
-$('settingsFolderBtn').onclick = chooseFolder;
+const chooseFolderFromUi = () => chooseFolder(
+  outputFolderState?.remembered && !outputFolderState?.connected ? { reuseRemembered: true } : {}
+);
+$('folderBtn').onclick = chooseFolderFromUi;
+$('settingsFolderBtn').onclick = chooseFolderFromUi;
 $('openSettingsBtn').onclick = openSettings;
 $('settingsNav').onclick = openSettings;
 $('savePickerKeyBtn').onclick = () => { StoryFlowIntegrations.setPickerApiKey(els.pickerApiKeyInput.value); notify('Picker API Key 已保存在這台瀏覽器'); };
@@ -609,3 +617,4 @@ document.querySelectorAll('.nav-item').forEach(button => button.addEventListener
 
 renderAll();
 refreshFolderStatus();
+window.StoryFlowFolderConnection = { choose: chooseFolder, refresh: refreshFolderStatus };
