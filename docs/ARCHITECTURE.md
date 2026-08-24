@@ -49,7 +49,7 @@ The repository root contains entry assets only. Runtime JavaScript lives under d
 Run:
 
 ```sh
-node scripts/check-static.mjs
+npm test
 ```
 
-For workspace safety integration checks, serve the repository root and open the two pages documented in `tests/README.md`.
+This runs the static architecture check and the desktop Chromium smoke suite. The browser suite starts its own local server and uses fixture data only; setup and individual test pages are documented in `tests/README.md`.
