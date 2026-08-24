@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><title>StoryFlow source diff core test</title></head>
+<body>
+  <h1>Source diff core test</h1>
+  <pre id="result">RUNNING</pre>
+  <script src="../src/source/source-diff.js"></script>
+  <script>
+    const result = document.getElementById('result');
+    const checks = [];
+    const assert = (condition, message) => {
+      if (!condition) throw new Error(message);
+      checks.push(`PASS ${message}`);
+    };
+
+    try {
+      const sameCount = StoryFlowSourceDiff.compareChapter(
+        { title: '07、指引', draft: '他的回答是甲。\n\n下一段保留。' },
+        { title: '07、指引', draft: '他的回答是乙。\n\n下一段保留。' }
+      );
+      assert(sameCount.changed && sameCount.category === 'content', '同字數文字替換判定為正文變更');
+      assert(sameCount.sameCharCount, '同字數變更會明確標記');
+      assert(sameCount.hunks[0].before.includes('甲') && sameCount.hunks[0].after.includes('乙'), '差異包含更新前後實文');
+
+      const formatting = StoryFlowSourceDiff.compareChapter(
+        { title: '章節', draft: '第一段。\n\n第二段。' },
+        { title: '章節', draft: '第一段。\n\n\n第二段。' }
+      );
+      assert(formatting.category === 'formatting' && formatting.whitespaceOnly, '純空白或換行獨立分類');
+
+      const title = StoryFlowSourceDiff.compareChapter(
+        { title: '舊標題', draft: '內容不變' },
+        { title: '新標題', draft: '內容不變' }
+      );
+      assert(title.category === 'title' && title.titleChanged && !title.draftChanged, '純標題變更獨立分類');
+
+      const lineEndings = StoryFlowSourceDiff.compareChapter(
+        { title: '章節', draft: '第一行\r\n第二行\r\n' },
+        { title: '章節', draft: '第一行\n第二行' }
+      );
+      assert(!lineEndings.changed, 'CRLF 與 LF 不製造假差異');
+
+      const html = StoryFlowSourceDiff.renderPreviewHtml(sameCount);
+      assert(html.includes('字數相同，但文字內容不同') && html.includes('他的回答是甲') && html.includes('他的回答是乙'), '預覽清楚說明同字數更新');
+      result.textContent = `${checks.join('\n')}\nALL PASS`;
+      document.body.dataset.testStatus = 'pass';
+    } catch (error) {
+      result.textContent = `${checks.join('\n')}\nFAIL ${error.message}`;
+      document.body.dataset.testStatus = 'fail';
+      throw error;
+    }
+  </script>
+</body>
+</html>

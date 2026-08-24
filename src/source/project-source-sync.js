@@ -291,22 +291,19 @@
       }
       used.add(match.id);
       const detached = !match.source && Boolean(match.detachedSource);
-      const draftChanged = normalizeDraft(match.draft) !== normalizeDraft(incoming.draft);
-      const titleChanged = normalizeTitle(match.title) !== normalizeTitle(incoming.title);
+      const preview = StoryFlowSourceDiff.compareChapter(match, incoming, { countChars: charCount });
+      const { draftChanged, titleChanged } = preview;
       if (detached) {
         changes.push({
           id: crypto.randomUUID(), kind: 'relink', selected: false, scope: syncedScope, incoming, chapterId: match.id,
           label: '章節已解除來源連結', detail: `可重新連結「${match.title}」${draftChanged || titleChanged ? '並套用來源內容' : ''}`,
-          confirmedChanged: (draftChanged || titleChanged) && confirmedRangeChanged(match, incoming.draft)
+          confirmedChanged: (draftChanged || titleChanged) && confirmedRangeChanged(match, incoming.draft), preview
         });
       } else if (draftChanged || titleChanged) {
-        const details = [];
-        if (titleChanged) details.push(`標題：${match.title} → ${incoming.title}`);
-        if (draftChanged) details.push(`內容 ${charCount(match.draft).toLocaleString()} → ${charCount(incoming.draft).toLocaleString()} 字`);
         changes.push({
           id: crypto.randomUUID(), kind: 'update', selected: true, scope: syncedScope, incoming, chapterId: match.id,
-          label: '來源內容有更新', detail: details.join(' · '),
-          confirmedChanged: confirmedRangeChanged(match, incoming.draft)
+          label: '來源內容有更新', detail: StoryFlowSourceDiff.summaryText(preview),
+          confirmedChanged: confirmedRangeChanged(match, incoming.draft), preview
         });
       }
     }
@@ -425,16 +422,19 @@
     list.innerHTML = '';
     changes.forEach(change => {
       const [badgeText, badgeClass] = changeBadge(change);
-      const row = document.createElement('label');
+      const row = document.createElement('article');
       row.className = `project-source-diff-row ${change.kind === 'source-missing' ? 'readonly' : ''}`;
       row.innerHTML = `
-        <input type="checkbox" ${change.selected ? 'checked' : ''} ${change.kind === 'source-missing' ? 'disabled' : ''} />
-        <span class="project-source-diff-badge ${badgeClass}">${badgeText}</span>
-        <span class="project-source-diff-copy">
-          <strong>${esc(change.label)}</strong>
-          <span>${esc(change.scope.docName)} › ${esc(change.scope.tabTitle)} · ${esc(change.detail)}</span>
-          ${change.confirmedChanged ? '<em>包含已確認發布範圍；既有 Markdown／發布狀態不會自動改寫。</em>' : ''}
-        </span>`;
+        <label class="project-source-diff-select">
+          <input type="checkbox" ${change.selected ? 'checked' : ''} ${change.kind === 'source-missing' ? 'disabled' : ''} />
+          <span class="project-source-diff-badge ${badgeClass}">${badgeText}</span>
+          <span class="project-source-diff-copy">
+            <strong>${esc(change.label)}</strong>
+            <span>${esc(change.scope.docName)} › ${esc(change.scope.tabTitle)} · ${esc(change.detail)}</span>
+            ${change.confirmedChanged ? '<em>包含已確認發布範圍；既有 Markdown／發布狀態不會自動改寫。</em>' : ''}
+          </span>
+        </label>
+        ${StoryFlowSourceDiff.renderPreviewHtml(change.preview)}`;
       const checkbox = row.querySelector('input');
       if (checkbox && !checkbox.disabled) {
         checkbox.addEventListener('change', () => {

@@ -13,7 +13,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(48);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(49);
 
   await page.locator('#createProjectManually').click();
   await page.locator('#workspaceLoadSourceBtn').click();
@@ -100,5 +100,21 @@ test('remembered folder supports fast reconnect and explicit leave suppression',
 
   await page.goto('/tests/quick-start-ui.html?storyflow-left=1');
   await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(pageErrors).toEqual([]);
+});
+
+test('source diff explains same-count text replacements', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/tests/source-diff-core.html');
+  await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
+  await expect(page.getByText('ALL PASS')).toBeVisible();
+
+  await page.goto('/tests/source-diff-ui.html');
+  await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
+  await expect(page.getByText('內容 8,645 → 8,645 字（字數相同）')).toBeVisible();
+  await page.getByText('查看實際差異').click();
+  await expect(page.getByText('字數相同，但文字內容不同。')).toBeVisible();
+  await expect(page.getByText(/答案在舊信裡/)).toBeVisible();
+  await expect(page.getByText(/答案在新信裡/)).toBeVisible();
   expect(pageErrors).toEqual([]);
 });

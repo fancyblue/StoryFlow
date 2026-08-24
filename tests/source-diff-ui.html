@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StoryFlow source diff UI test</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../project-source-sync.css">
+</head>
+<body>
+  <dialog class="project-source-diff-dialog" open>
+    <div class="project-source-diff-card">
+      <header class="project-source-diff-head">
+        <div><p class="eyebrow">SOURCE / PROJECT SYNC</p><h3>更新作品來源</h3><p class="muted">先確認實際文字差異，再決定是否套用。</p></div>
+      </header>
+      <div class="project-source-diff-summary"><strong>來源差異 1 項</strong><span>1 個內容更新</span></div>
+      <div class="project-source-diff-list">
+        <article class="project-source-diff-row">
+          <label class="project-source-diff-select">
+            <input type="checkbox" checked>
+            <span class="project-source-diff-badge changed">更新</span>
+            <span class="project-source-diff-copy"><strong>章節「07、指引」有更新</strong><span>幻封咒 › 01 · 內容 8,645 → 8,645 字（字數相同）</span></span>
+          </label>
+          <div id="preview"></div>
+        </article>
+      </div>
+    </div>
+  </dialog>
+  <script src="../src/source/source-diff.js"></script>
+  <script>
+    const preview = StoryFlowSourceDiff.compareChapter(
+      { title: '07、指引', draft: '納西加說：「答案在舊信裡。」\n\n她收起信紙。' },
+      { title: '07、指引', draft: '納西加說：「答案在新信裡。」\n\n她收起信紙。' }
+    );
+    document.getElementById('preview').outerHTML = StoryFlowSourceDiff.renderPreviewHtml(preview);
+    document.body.dataset.testStatus = preview.sameCharCount ? 'pass' : 'fail';
+  </script>
+</body>
+</html>
