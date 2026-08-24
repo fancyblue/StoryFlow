@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StoryFlow workspace recovery UI test</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../dialog-fixes.css">
+  <link rel="stylesheet" href="../workspace-safety.css">
+</head>
+<body>
+  <main class="main">
+    <header class="topbar"><div><p class="eyebrow">TEST</p><h1>Workspace recovery</h1></div></header>
+    <section class="connection-bar" aria-label="連線狀態"></section>
+  </main>
+  <script>
+    const conflictFixture = new URLSearchParams(location.search).get('kind') === 'conflict';
+    window.StoryFlowIntegrations = {
+      getWorkspaceRecovery() {
+        return conflictFixture ? {
+          kind: 'conflict',
+          recoverable: true,
+          artifactPath: 'StoryFlow-test/Recovery/workspace.conflict-2026-08-24.json'
+        } : {
+          kind: 'corrupt',
+          recoverable: true,
+          backupCreatedAt: '2026-08-24T12:30:00.000Z',
+          message: 'Unexpected token at position 24'
+        };
+      },
+      async restoreWorkspaceRecovery() { return true; },
+      async importWorkspace() { return true; }
+    };
+  </script>
+  <script src="../workspace-safety.js"></script>
+</body>
+</html>

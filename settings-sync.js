@@ -3,6 +3,9 @@
 (function () {
   let saveTimer = null;
   let applyingDriveState = false;
+  let persistQueue = Promise.resolve();
+  let changeVersion = 0;
+  let persistedVersion = 0;
   let canonicalSaveStatus = '正在檢查保存位置…';
   let canonicalSaveError = false;
 
@@ -138,39 +141,58 @@
     return Boolean((await StoryFlowIntegrations.restoreOutputDirectory()).connected);
   }
 
-  async function persistAll({ quiet = true } = {}) {
+  function saveFailureStatus(error) {
+    if (error?.code === 'WORKSPACE_CONFLICT') return '同步已暫停 · 發現較新版本';
+    if (error?.code === 'WORKSPACE_CORRUPT') return '工作資料損壞 · 請先恢復';
+    return '同步失敗 · 請重試';
+  }
+
+  async function persistAllNow({ quiet = true } = {}) {
     if (applyingDriveState) return false;
     if (!(await folderConnected())) {
       setSaveStatus('尚未保存 · 請連接資料夾');
       return false;
     }
+    const targetVersion = changeVersion;
     setSaveStatus('同步中…');
     try {
       await Promise.all([
         StoryFlowIntegrations.saveWorkspace(workspacePayload()),
         StoryFlowIntegrations.saveStoryFlowSettings(settingsPayload())
       ]);
+      persistedVersion = Math.max(persistedVersion, targetVersion);
       setSaveStatus(`已同步 ${syncedTimeLabel()}`);
       window.dispatchEvent(new CustomEvent('storyflow:workspace-persisted', {
         detail: { reason: 'scheduled-save' }
       }));
       if (!quiet) notify('已保存到 StoryFlow 資料夾');
+      if (changeVersion > targetVersion) schedulePersist();
       return true;
     } catch (error) {
-      setSaveStatus('同步失敗 · 請重試', true);
+      setSaveStatus(saveFailureStatus(error), true);
       if (!quiet) notify(`尚未寫入 StoryFlow 資料夾：${error.message}`, true);
       else console.warn('Drive persistence failed', error);
       return false;
     }
   }
 
+  function persistAll(options = {}) {
+    const task = persistQueue.then(() => persistAllNow(options));
+    persistQueue = task.catch(() => {});
+    return task;
+  }
+
   function schedulePersist() {
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => persistAll(), 300);
+    saveTimer = setTimeout(() => {
+      saveTimer = null;
+      persistAll();
+    }, 300);
   }
 
   // Replace browser-local content persistence. In-memory state is only the live UI working copy.
   saveState = function saveStateToDrive(label = '準備同步') {
+    changeVersion += 1;
     setSaveStatus('準備同步…');
     schedulePersist();
   };
@@ -206,6 +228,7 @@
         StoryFlowIntegrations.loadStoryFlowSettings(),
         StoryFlowIntegrations.loadWorkspace()
       ]);
+      const workspaceRecovery = StoryFlowIntegrations.getWorkspaceRecovery?.();
       if (savedSettings) applySavedSettings(savedSettings);
       const hasWorkspace = applySavedWorkspace(savedWorkspace);
       refreshPlatformUI();
@@ -214,8 +237,13 @@
       els.pickerApiKeyInput.value = StoryFlowIntegrations.pickerApiKey();
       const clientInput = document.getElementById('googleClientIdInput');
       if (clientInput) clientInput.value = googleClientId();
-      notify(hasWorkspace || savedSettings ? '已從 StoryFlow 資料夾載入' : '新的 StoryFlow 資料夾');
-      setSaveStatus(hasWorkspace || savedSettings ? `已同步 ${syncedTimeLabel()}` : '新的資料夾 · 尚未有工作資料');
+      notify(workspaceRecovery
+        ? '工作資料需要恢復；StoryFlow 已停止覆蓋 workspace.json'
+        : hasWorkspace || savedSettings ? '已從 StoryFlow 資料夾載入' : '新的 StoryFlow 資料夾', Boolean(workspaceRecovery));
+      persistedVersion = changeVersion;
+      setSaveStatus(workspaceRecovery
+        ? '工作資料損壞 · 請先恢復'
+        : hasWorkspace || savedSettings ? `已同步 ${syncedTimeLabel()}` : '新的資料夾 · 尚未有工作資料', Boolean(workspaceRecovery));
       window.dispatchEvent(new CustomEvent('storyflow:workspace-loaded', {
         detail: { hasWorkspace, hasSettings: Boolean(savedSettings) }
       }));
@@ -371,7 +399,10 @@
   };
 
   document.getElementById('settingsDialog')?.addEventListener('change', event => {
-    if (!['pickerApiKeyInput', 'googleClientIdInput'].includes(event.target.id)) schedulePersist();
+    if (!['pickerApiKeyInput', 'googleClientIdInput'].includes(event.target.id)) {
+      changeVersion += 1;
+      schedulePersist();
+    }
   });
 
   const googleLoginButton = document.getElementById('googleLoginBtn');
@@ -426,6 +457,20 @@
 
   ensureGoogleSettingsFields();
   window.StoryFlowSaveStatus = { render: renderSaveStatus, set: setSaveStatus };
+  window.StoryFlowPersistenceStatus = {
+    dirty: () => Boolean(saveTimer || changeVersion > persistedVersion || StoryFlowIntegrations.workspaceSavePending?.()),
+    flush: () => persistAll({ quiet: true }),
+    markClean: () => {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+      persistedVersion = changeVersion;
+    }
+  };
+  window.addEventListener('beforeunload', event => {
+    if (!window.StoryFlowPersistenceStatus.dirty()) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
   renderSaveStatus();
   // Remove legacy content caches while preserving the connection-only database.
   StoryFlowIntegrations.purgeLegacyBrowserStorage();

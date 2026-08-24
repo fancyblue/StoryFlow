@@ -2,6 +2,7 @@ const StoryFlowIntegrations = (() => {
   const SETTINGS_FILENAME = 'settings.json';
   const WORKSPACE_FILENAME = 'workspace.json';
   const WORKSPACE_BACKUP_FILENAME = 'workspace.backup.json';
+  const RECOVERY_DIRECTORY = 'Recovery';
   const CONNECTION_DB = 'storyflow-connections-v1';
   const CONNECTION_STORE = 'handles';
   const OUTPUT_HANDLE_KEY = 'storyflow-output-directory';
@@ -9,6 +10,10 @@ const StoryFlowIntegrations = (() => {
   let accessToken = null;
   let tokenClient = null;
   let pickerKey = '';
+  let workspaceRevision = null;
+  let workspaceWriteQueue = Promise.resolve();
+  let workspaceWritesPending = 0;
+  let pendingWorkspaceRecovery = null;
 
   function openConnectionDb() {
     return new Promise((resolve, reject) => {
@@ -130,6 +135,78 @@ const StoryFlowIntegrations = (() => {
     await writable.close();
   }
 
+  async function readTextFile(parent, filename) {
+    try {
+      const fileHandle = await parent.getFileHandle(filename, { create: false });
+      const file = await fileHandle.getFile();
+      return await file.text();
+    } catch (error) {
+      if (error?.name === 'NotFoundError') return null;
+      throw error;
+    }
+  }
+
+  function workspaceSignature(workspace) {
+    if (!workspace || typeof workspace !== 'object') return null;
+    return workspace.writeRevision || workspace.updatedAt || `legacy:${JSON.stringify(workspace)}`;
+  }
+
+  function validWorkspace(workspace) {
+    return Boolean(
+      workspace && typeof workspace === 'object' && (
+        (workspace.schemaVersion >= 2 && Array.isArray(workspace.projects)) ||
+        Array.isArray(workspace.state?.chapters)
+      )
+    );
+  }
+
+  function recoveryFilename(kind, extension = 'json') {
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    return `workspace.${kind}-${stamp}.${extension}`;
+  }
+
+  async function recoveryDirectory() {
+    return getDirectory(outputDirectoryHandle, RECOVERY_DIRECTORY);
+  }
+
+  async function writeRecoveryArtifact(filename, content) {
+    const directory = await recoveryDirectory();
+    await writeTextFile(directory, filename, content);
+    return `${outputDirectoryHandle.name}/${RECOVERY_DIRECTORY}/${filename}`;
+  }
+
+  function backupEnvelope(workspace, reason) {
+    return {
+      schemaVersion: 1,
+      createdAt: new Date().toISOString(),
+      reason,
+      workspace
+    };
+  }
+
+  async function readWorkspaceBackup() {
+    const text = await readTextFile(outputDirectoryHandle, WORKSPACE_BACKUP_FILENAME);
+    if (!text) return null;
+    try {
+      const parsed = JSON.parse(text);
+      const workspace = parsed?.workspace || parsed;
+      return validWorkspace(workspace) ? { envelope: parsed, workspace } : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function announceWorkspaceRecovery(recovery) {
+    pendingWorkspaceRecovery = recovery;
+    window.dispatchEvent(new CustomEvent('storyflow:workspace-recovery-needed', {
+      detail: {
+        kind: recovery.kind,
+        recoverable: Boolean(recovery.workspace),
+        artifactPath: recovery.artifactPath || null
+      }
+    }));
+  }
+
   async function readJsonFile(filename) {
     if (!(await ensureOutputPermission())) return null;
     try {
@@ -150,26 +227,188 @@ const StoryFlowIntegrations = (() => {
 
   const loadStoryFlowSettings = () => readJsonFile(SETTINGS_FILENAME);
 
-  async function saveWorkspace(workspace) {
+  async function loadWorkspace() {
+    if (!(await ensureOutputPermission())) return null;
+    if (pendingWorkspaceRecovery?.kind === 'corrupt') return null;
+    const text = await readTextFile(outputDirectoryHandle, WORKSPACE_FILENAME);
+    if (!text) {
+      workspaceRevision = null;
+      pendingWorkspaceRecovery = null;
+      return null;
+    }
+    try {
+      const workspace = JSON.parse(text);
+      if (!validWorkspace(workspace)) throw new Error('workspace.json 缺少可辨識的工作區資料。');
+      workspaceRevision = workspaceSignature(workspace);
+      pendingWorkspaceRecovery = null;
+      return workspace;
+    } catch (error) {
+      const backup = await readWorkspaceBackup();
+      announceWorkspaceRecovery({
+        kind: 'corrupt',
+        message: error.message,
+        rawPrimary: text,
+        workspace: backup?.workspace || null,
+        backupCreatedAt: backup?.envelope?.createdAt || null
+      });
+      return null;
+    }
+  }
+
+  function workspaceError(code, message, recovery = null) {
+    const error = new Error(message);
+    error.code = code;
+    if (recovery?.artifactPath) error.artifactPath = recovery.artifactPath;
+    return error;
+  }
+
+  async function withWorkspaceWriteLock(callback) {
+    if (navigator.locks?.request) {
+      return navigator.locks.request('storyflow-workspace-write', { mode: 'exclusive' }, callback);
+    }
+    return callback();
+  }
+
+  async function performWorkspaceWrite(workspace, { force = false, reason = 'workspace-save' } = {}) {
     if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
-    await writeTextFile(outputDirectoryHandle, WORKSPACE_FILENAME, JSON.stringify(workspace, null, 2));
+
+    if (pendingWorkspaceRecovery?.kind === 'corrupt' && !force) {
+      throw workspaceError('WORKSPACE_CORRUPT', 'workspace.json 無法讀取，請先完成工作區恢復。');
+    }
+
+    if (pendingWorkspaceRecovery?.kind === 'conflict' && !force) {
+      pendingWorkspaceRecovery.workspace = structuredClone(workspace);
+      await writeRecoveryArtifact(
+        pendingWorkspaceRecovery.artifactFilename,
+        JSON.stringify(backupEnvelope(pendingWorkspaceRecovery.workspace, 'unsaved-conflict-copy'), null, 2)
+      );
+      throw workspaceError('WORKSPACE_CONFLICT', '偵測到較新的工作區版本，已停止覆蓋並保留本次修改。', pendingWorkspaceRecovery);
+    }
+
+    const currentText = await readTextFile(outputDirectoryHandle, WORKSPACE_FILENAME);
+    let current = null;
+    if (currentText) {
+      try {
+        current = JSON.parse(currentText);
+        if (!validWorkspace(current)) throw new Error('workspace.json 缺少可辨識的工作區資料。');
+      } catch (error) {
+        if (!force) {
+          announceWorkspaceRecovery({
+            kind: 'corrupt',
+            message: error.message,
+            rawPrimary: currentText,
+            workspace: (await readWorkspaceBackup())?.workspace || null
+          });
+          throw workspaceError('WORKSPACE_CORRUPT', 'workspace.json 無法讀取，請先完成工作區恢復。');
+        }
+      }
+    }
+
+    const currentRevision = workspaceSignature(current);
+    if (!force && workspaceRevision != null && currentRevision !== workspaceRevision) {
+      const artifactFilename = recoveryFilename('conflict');
+      const localWorkspace = structuredClone(workspace);
+      const artifactPath = await writeRecoveryArtifact(
+        artifactFilename,
+        JSON.stringify(backupEnvelope(localWorkspace, 'unsaved-conflict-copy'), null, 2)
+      );
+      const recovery = {
+        kind: 'conflict',
+        workspace: localWorkspace,
+        diskWorkspace: current,
+        artifactFilename,
+        artifactPath
+      };
+      announceWorkspaceRecovery(recovery);
+      throw workspaceError('WORKSPACE_CONFLICT', '偵測到其他分頁或裝置寫入的較新版本，已停止覆蓋。', recovery);
+    }
+
+    if (current) {
+      await writeTextFile(
+        outputDirectoryHandle,
+        WORKSPACE_BACKUP_FILENAME,
+        JSON.stringify(backupEnvelope(current, `before-${reason}`), null, 2)
+      );
+    }
+
+    const next = structuredClone(workspace);
+    next.updatedAt = new Date().toISOString();
+    next.writeRevision = crypto.randomUUID();
+    await writeTextFile(outputDirectoryHandle, WORKSPACE_FILENAME, JSON.stringify(next, null, 2));
+    if (!current) {
+      await writeTextFile(
+        outputDirectoryHandle,
+        WORKSPACE_BACKUP_FILENAME,
+        JSON.stringify(backupEnvelope(next, 'initial-workspace-save'), null, 2)
+      );
+    }
+    workspaceRevision = workspaceSignature(next);
+    pendingWorkspaceRecovery = null;
+    window.dispatchEvent(new CustomEvent('storyflow:workspace-write-complete', {
+      detail: { revision: workspaceRevision, reason }
+    }));
     return `${outputDirectoryHandle.name}/${WORKSPACE_FILENAME}`;
   }
 
-  const loadWorkspace = () => readJsonFile(WORKSPACE_FILENAME);
+  function saveWorkspace(workspace, options = {}) {
+    const snapshot = structuredClone(workspace);
+    workspaceWritesPending += 1;
+    const task = workspaceWriteQueue.then(() => withWorkspaceWriteLock(() => performWorkspaceWrite(snapshot, options)));
+    workspaceWriteQueue = task.catch(() => {});
+    return task.finally(() => { workspaceWritesPending = Math.max(0, workspaceWritesPending - 1); });
+  }
 
   async function backupWorkspace(reason = 'manual-backup') {
     if (!(await ensureOutputPermission())) return null;
     const workspace = await readJsonFile(WORKSPACE_FILENAME);
     if (!workspace) return null;
-    const backup = {
-      schemaVersion: 1,
-      createdAt: new Date().toISOString(),
-      reason,
-      workspace
-    };
+    const backup = backupEnvelope(workspace, reason);
     await writeTextFile(outputDirectoryHandle, WORKSPACE_BACKUP_FILENAME, JSON.stringify(backup, null, 2));
     return backup;
+  }
+
+  function getWorkspaceRecovery() {
+    if (!pendingWorkspaceRecovery) return null;
+    return {
+      kind: pendingWorkspaceRecovery.kind,
+      recoverable: Boolean(pendingWorkspaceRecovery.workspace),
+      backupCreatedAt: pendingWorkspaceRecovery.backupCreatedAt || null,
+      artifactPath: pendingWorkspaceRecovery.artifactPath || null,
+      message: pendingWorkspaceRecovery.message || ''
+    };
+  }
+
+  async function restoreWorkspaceRecovery(strategy = 'backup') {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    await workspaceWriteQueue;
+    const recovery = pendingWorkspaceRecovery;
+    if (!recovery) throw new Error('目前沒有待處理的工作區恢復。');
+
+    let workspace = null;
+    if (strategy === 'backup' && recovery.kind === 'corrupt') workspace = recovery.workspace;
+    if (strategy === 'local' && recovery.kind === 'conflict') workspace = recovery.workspace;
+    if (!validWorkspace(workspace)) throw new Error('找不到可恢復的工作區內容。');
+
+    const currentText = await readTextFile(outputDirectoryHandle, WORKSPACE_FILENAME);
+    if (currentText) {
+      const filename = recoveryFilename(recovery.kind === 'corrupt' ? 'corrupt' : 'replaced');
+      await writeRecoveryArtifact(filename, currentText);
+    }
+    await saveWorkspace(workspace, { force: true, reason: `recovery-${strategy}` });
+    pendingWorkspaceRecovery = null;
+    return true;
+  }
+
+  async function importWorkspace(workspace) {
+    const candidate = workspace?.workspace || workspace;
+    if (!validWorkspace(candidate)) throw new Error('這個檔案不是可辨識的 StoryFlow 工作區。');
+    await saveWorkspace(candidate, { force: true, reason: 'workspace-import' });
+    pendingWorkspaceRecovery = null;
+    return true;
+  }
+
+  function workspaceSavePending() {
+    return workspaceWritesPending > 0;
   }
 
   async function savePart({ projectTitle, chapter, part, metadata }) {
@@ -402,5 +641,7 @@ const StoryFlowIntegrations = (() => {
 
   purgeLegacyBrowserStorage();
 
-  return { restoreOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
+  const api = { restoreOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
+  window.StoryFlowIntegrations = api;
+  return api;
 })();

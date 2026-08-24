@@ -14,7 +14,12 @@
     '手動作品已建立',
     'Google Docs 作品已建立',
     '文章已新增',
-    '來源已加入'
+    '來源已加入',
+    '來源已更新',
+    '已復原來源更新',
+    '章節已刪除',
+    '已刪除並退回切篇',
+    '發布狀態已更新'
   ]);
 
   function normalizeLoadedState(next) {
@@ -65,7 +70,12 @@
       return true;
     } catch (error) {
       console.warn('StoryFlow immediate workspace persistence failed', error);
-      window.StoryFlowSaveStatus?.set?.('同步失敗 · 請重試', true);
+      const message = error?.code === 'WORKSPACE_CONFLICT'
+        ? '同步已暫停 · 發現較新版本'
+        : error?.code === 'WORKSPACE_CORRUPT'
+          ? '工作資料損壞 · 請先恢復'
+          : '同步失敗 · 請重試';
+      window.StoryFlowSaveStatus?.set?.(message, true);
       return false;
     }
   }

@@ -1,0 +1,69 @@
+.workspace-recovery-alert {
+  border: 1px solid #e0a252;
+  border-radius: 999px;
+  background: #fff4dc;
+  color: #7c4a08;
+  min-height: 38px;
+  padding: 0 14px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.workspace-recovery-alert.is-conflict {
+  border-color: #d98282;
+  background: #fff0f0;
+  color: #8d3131;
+}
+
+.workspace-recovery-dialog {
+  width: min(92vw, 640px);
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.workspace-recovery-card {
+  width: 100%;
+}
+
+.workspace-recovery-message {
+  color: var(--ink, #24364b);
+  line-height: 1.75;
+}
+
+.workspace-recovery-details {
+  white-space: pre-wrap;
+  border: 1px solid var(--line, #dbe4ec);
+  border-radius: 12px;
+  background: var(--surface-soft, #f6f8fa);
+  color: var(--muted, #65758a);
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.workspace-recovery-details:empty,
+.workspace-recovery-status:empty {
+  display: none;
+}
+
+.workspace-recovery-status {
+  margin-top: 12px;
+  font-weight: 700;
+}
+
+.workspace-recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+@media (max-width: 640px) {
+  .workspace-recovery-actions .button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
