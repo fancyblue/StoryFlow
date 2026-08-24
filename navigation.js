@@ -22,6 +22,7 @@
     publishing: '發布',
     settings: '設定'
   };
+  const resumableViews = new Set(['workspace', 'projects', 'publishing']);
 
   window.addEventListener('keydown', event => {
     if (event.key === 'Tab' || event.key.startsWith('Arrow')) lastInputWasKeyboard = true;
@@ -121,7 +122,15 @@
     window.dispatchEvent(new CustomEvent('storyflow:view-changed', { detail: { view: currentView } }));
   }
 
-  function goTo(view) {
+  function rememberView(view) {
+    if (!resumableViews.has(view) || typeof state === 'undefined') return;
+    state.ui ||= {};
+    if (state.ui.lastView === view) return;
+    state.ui.lastView = view;
+    try { saveState('工作位置已更新'); } catch (_) {}
+  }
+
+  function goTo(view, { remember = true } = {}) {
     if (view === 'publishing') {
       currentView = 'publishing';
       showPublishing();
@@ -140,6 +149,7 @@
       setActive('workspace');
     }
     finishViewChange();
+    if (remember) rememberView(currentView);
   }
 
   function ensureSidebarToggle() {
@@ -232,7 +242,13 @@
   window.StoryFlowCurrentView = () => currentView;
   window.StoryFlowStartNewWork = startNewWorkFlow;
 
+  window.addEventListener('storyflow:workspace-loaded', () => {
+    const savedView = state?.ui?.lastView;
+    if (!resumableViews.has(savedView) || savedView === currentView) return;
+    goTo(savedView, { remember: false });
+  });
+
   installNavHints();
   ensureSidebarToggle();
-  goTo('workspace');
+  goTo('workspace', { remember: false });
 })();

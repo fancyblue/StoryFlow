@@ -217,13 +217,21 @@
       actions = document.createElement('div');
       actions.id = 'workspaceEmptyActions';
       actions.className = 'workspace-empty-actions';
-      actions.innerHTML = `
-        <button id="workspaceLoadSourceBtn" class="button primary" type="button">載入來源</button>
-        <button id="workspaceChooseWorkBtn" class="button ghost" type="button">選擇作品／章節</button>`;
       empty.appendChild(actions);
-      actions.querySelector('#workspaceLoadSourceBtn').addEventListener('click', () => document.getElementById('loadSourceBtn')?.click());
-      actions.querySelector('#workspaceChooseWorkBtn').addEventListener('click', () => window.StoryFlowNavigate?.('projects'));
     }
+    actions.replaceChildren();
+    if (isImplicitBlankWorkspace()) {
+      const hint = document.createElement('span');
+      hint.className = 'workspace-empty-next-step';
+      hint.textContent = '請先在「作品與章節」選擇 Google Docs 或手動建立。';
+      actions.appendChild(hint);
+      return;
+    }
+    actions.innerHTML = `
+      <button id="workspaceLoadSourceBtn" class="button primary" type="button">新增第一篇文章</button>
+      <button id="workspaceChooseWorkBtn" class="button ghost" type="button">切換作品</button>`;
+    actions.querySelector('#workspaceLoadSourceBtn').addEventListener('click', () => document.getElementById('loadSourceBtn')?.click());
+    actions.querySelector('#workspaceChooseWorkBtn').addEventListener('click', () => window.StoryFlowNavigate?.('projects'));
   }
 
   function syncEmptyCopy() {
@@ -234,8 +242,8 @@
     const hasProject = !isImplicitBlankWorkspace();
     if (strong) strong.textContent = hasProject ? '這個作品還沒有可切篇的章節' : '尚未載入作品內容';
     if (text) text.textContent = hasProject
-      ? '請先載入 Google Docs／手動內容，或到「作品」切換到已有章節的作品。'
-      : '請先載入 Google Docs／手動內容，或到「作品」選擇已有作品與章節。';
+      ? '新增第一篇文章後，StoryFlow 會在這裡顯示切篇建議。'
+      : '先選擇作品建立方式；建立完成後再進行切篇。';
     ensureEmptyActions();
   }
 
@@ -337,8 +345,10 @@
         list.innerHTML = `
           <div class="projects-empty-state">
             <strong>尚未建立作品</strong>
-            <span>你可以直接回工作台「載入來源」，StoryFlow 會依文件建立作品；也可以先新增一個空作品。</span>
+            <span>建立第一個作品後，即可載入章節、切篇並管理發布進度。</span>
+            <button class="button primary" type="button">建立第一個作品</button>
           </div>`;
+        list.querySelector('button')?.addEventListener('click', () => window.StoryFlowStartNewWork?.());
       }
       return result;
     };

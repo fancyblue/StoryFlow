@@ -77,10 +77,12 @@ function saveState(label = '已儲存') {
 }
 
 function notify(message, isError = false) {
+  const previousStatus = els.saveState.textContent;
   els.saveState.textContent = message;
   els.saveState.classList.toggle('error-text', isError);
   window.setTimeout(() => {
-    els.saveState.textContent = '已儲存';
+    if (window.StoryFlowSaveStatus?.render) window.StoryFlowSaveStatus.render();
+    else els.saveState.textContent = previousStatus;
     els.saveState.classList.remove('error-text');
   }, 3200);
 }

@@ -1,6 +1,7 @@
 const StoryFlowIntegrations = (() => {
   const SETTINGS_FILENAME = 'settings.json';
   const WORKSPACE_FILENAME = 'workspace.json';
+  const WORKSPACE_BACKUP_FILENAME = 'workspace.backup.json';
   const CONNECTION_DB = 'storyflow-connections-v1';
   const CONNECTION_STORE = 'handles';
   const OUTPUT_HANDLE_KEY = 'storyflow-output-directory';
@@ -156,6 +157,20 @@ const StoryFlowIntegrations = (() => {
   }
 
   const loadWorkspace = () => readJsonFile(WORKSPACE_FILENAME);
+
+  async function backupWorkspace(reason = 'manual-backup') {
+    if (!(await ensureOutputPermission())) return null;
+    const workspace = await readJsonFile(WORKSPACE_FILENAME);
+    if (!workspace) return null;
+    const backup = {
+      schemaVersion: 1,
+      createdAt: new Date().toISOString(),
+      reason,
+      workspace
+    };
+    await writeTextFile(outputDirectoryHandle, WORKSPACE_BACKUP_FILENAME, JSON.stringify(backup, null, 2));
+    return backup;
+  }
 
   async function savePart({ projectTitle, chapter, part, metadata }) {
     if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
@@ -387,5 +402,5 @@ const StoryFlowIntegrations = (() => {
 
   purgeLegacyBrowserStorage();
 
-  return { restoreOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
+  return { restoreOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
 })();

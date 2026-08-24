@@ -2,6 +2,7 @@
 // Existing Google Docs sources can be refreshed and reviewed before the workspace is changed.
 (function () {
   let pendingSourcePreview = null;
+  let lastSourceUndo = null;
 
   function normalizeText(value) {
     return String(value || '').replace(/\r\n/g, '\n').trimEnd();
@@ -130,6 +131,13 @@
     if (refresh) {
       refresh.hidden = !hasGoogleSource;
       refresh.disabled = !hasGoogleSource;
+    }
+    const undo = document.getElementById('undoSourceUpdateBtn');
+    if (undo) {
+      const sameProject = !lastSourceUndo?.projectId || lastSourceUndo.projectId === window.StoryFlowProjects?.activeId?.();
+      const canUndo = Boolean(lastSourceUndo?.chapterId === activeChapter()?.id && sameProject);
+      undo.hidden = !canUndo;
+      undo.disabled = !canUndo;
     }
   }
 
@@ -308,7 +316,7 @@
     document.getElementById('sourcePreviewDialog').showModal();
   }
 
-  function confirmRefreshPreview(preview) {
+  async function confirmRefreshPreview(preview) {
     const chapter = state.chapters.find(item => item.id === preview.targetChapterId);
     const incoming = preview.chapters[0];
     if (!chapter || !incoming) return;
@@ -329,6 +337,19 @@
       if (!proceed) return;
     }
 
+    lastSourceUndo = {
+      projectId: window.StoryFlowProjects?.activeId?.() || null,
+      chapterId: chapter.id,
+      chapter: structuredClone(chapter)
+    };
+    let backupCreated = false;
+    try {
+      await window.StoryFlowProjectPersistence?.flush?.('before-source-refresh');
+      backupCreated = Boolean(await StoryFlowIntegrations.backupWorkspace?.('before-source-refresh'));
+    } catch (error) {
+      console.warn('StoryFlow could not create workspace.backup.json', error);
+    }
+
     chapter.title = incoming.title || chapter.title;
     chapter.draft = incoming.draft;
     chapter.source = incoming.source;
@@ -339,16 +360,17 @@
     renderAll();
     syncSourceButtons();
     if (activeChapter()?.id === chapter.id && chapter.draft) suggestNextPart();
+    const backupNote = backupCreated ? '，並已建立 workspace.backup.json' : '';
     notify(preview.confirmedChanged
-      ? '來源已更新；既有發布篇保持不變，請確認後續切篇位置'
-      : '來源已更新，SMART SPLIT 已依最新內容重新計算');
+      ? `來源已更新${backupNote}；既有發布篇保持不變，請確認後續切篇位置`
+      : `來源已更新${backupNote}，SMART SPLIT 已依最新內容重新計算`);
   }
 
-  function confirmSourcePreview() {
+  async function confirmSourcePreview() {
     const preview = pendingSourcePreview;
     if (!preview?.chapters?.length) return;
     if (preview.mode === 'refresh') {
-      confirmRefreshPreview(preview);
+      await confirmRefreshPreview(preview);
       return;
     }
 
@@ -387,6 +409,31 @@
     notify('已解除來源連結，現有內容保留為手動文章');
   }
 
+  function undoLastSourceUpdate() {
+    if (!lastSourceUndo) return;
+    if (lastSourceUndo.projectId && lastSourceUndo.projectId !== window.StoryFlowProjects?.activeId?.()) {
+      window.StoryFlowProjects?.switchProject?.(lastSourceUndo.projectId, { quiet: true });
+    }
+    const chapter = state.chapters.find(item => item.id === lastSourceUndo.chapterId);
+    if (!chapter) {
+      notify('找不到可復原的章節', true);
+      lastSourceUndo = null;
+      syncSourceButtons();
+      return;
+    }
+    const restored = structuredClone(lastSourceUndo.chapter);
+    Object.keys(chapter).forEach(key => delete chapter[key]);
+    Object.assign(chapter, restored);
+    state.activeChapterId = chapter.id;
+    lastSourceUndo = null;
+    suggestion = null;
+    saveState('已復原來源更新');
+    renderAll();
+    syncSourceButtons();
+    if (chapter.draft) suggestNextPart();
+    notify('已復原上一次來源更新');
+  }
+
   function installSourceButton() {
     const panel = document.querySelector('.source-panel');
     const head = panel?.querySelector('.panel-head');
@@ -420,6 +467,17 @@
       button.textContent = '載入來源';
       button.onclick = openSourceDialog;
       actions.appendChild(button);
+    }
+
+    if (!document.getElementById('undoSourceUpdateBtn')) {
+      const undo = document.createElement('button');
+      undo.id = 'undoSourceUpdateBtn';
+      undo.type = 'button';
+      undo.className = 'button tiny ghost source-undo-update';
+      undo.textContent = '復原來源更新';
+      undo.hidden = true;
+      undo.onclick = undoLastSourceUpdate;
+      actions.appendChild(undo);
     }
 
     const add = document.getElementById('addChapterBtn');

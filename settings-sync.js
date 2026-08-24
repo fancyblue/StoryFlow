@@ -3,6 +3,28 @@
 (function () {
   let saveTimer = null;
   let applyingDriveState = false;
+  let canonicalSaveStatus = '正在檢查保存位置…';
+  let canonicalSaveError = false;
+
+  function renderSaveStatus() {
+    if (!els.saveState) return;
+    els.saveState.textContent = canonicalSaveStatus;
+    els.saveState.classList.toggle('error-text', canonicalSaveError);
+  }
+
+  function setSaveStatus(message, isError = false) {
+    canonicalSaveStatus = message;
+    canonicalSaveError = isError;
+    renderSaveStatus();
+  }
+
+  function syncedTimeLabel() {
+    return new Intl.DateTimeFormat('zh-TW', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(new Date());
+  }
 
   function cloneDefaultState() {
     return structuredClone(defaultState);
@@ -117,16 +139,28 @@
   }
 
   async function persistAll({ quiet = true } = {}) {
-    if (applyingDriveState || !(await folderConnected())) return;
+    if (applyingDriveState) return false;
+    if (!(await folderConnected())) {
+      setSaveStatus('尚未保存 · 請連接資料夾');
+      return false;
+    }
+    setSaveStatus('同步中…');
     try {
       await Promise.all([
         StoryFlowIntegrations.saveWorkspace(workspacePayload()),
         StoryFlowIntegrations.saveStoryFlowSettings(settingsPayload())
       ]);
+      setSaveStatus(`已同步 ${syncedTimeLabel()}`);
+      window.dispatchEvent(new CustomEvent('storyflow:workspace-persisted', {
+        detail: { reason: 'scheduled-save' }
+      }));
       if (!quiet) notify('已保存到 StoryFlow 資料夾');
+      return true;
     } catch (error) {
+      setSaveStatus('同步失敗 · 請重試', true);
       if (!quiet) notify(`尚未寫入 StoryFlow 資料夾：${error.message}`, true);
       else console.warn('Drive persistence failed', error);
+      return false;
     }
   }
 
@@ -137,9 +171,8 @@
 
   // Replace browser-local content persistence. In-memory state is only the live UI working copy.
   saveState = function saveStateToDrive(label = '準備同步') {
-    els.saveState.textContent = label;
+    setSaveStatus('準備同步…');
     schedulePersist();
-    window.setTimeout(() => { els.saveState.textContent = '已同步'; }, 900);
   };
 
   function applySavedSettings(saved) {
@@ -182,6 +215,10 @@
       const clientInput = document.getElementById('googleClientIdInput');
       if (clientInput) clientInput.value = googleClientId();
       notify(hasWorkspace || savedSettings ? '已從 StoryFlow 資料夾載入' : '新的 StoryFlow 資料夾');
+      setSaveStatus(hasWorkspace || savedSettings ? `已同步 ${syncedTimeLabel()}` : '新的資料夾 · 尚未有工作資料');
+      window.dispatchEvent(new CustomEvent('storyflow:workspace-loaded', {
+        detail: { hasWorkspace, hasSettings: Boolean(savedSettings) }
+      }));
       return Boolean(hasWorkspace || savedSettings);
     } finally {
       applyingDriveState = false;
@@ -370,6 +407,7 @@
       const folder = await StoryFlowIntegrations.restoreOutputDirectory();
       await refreshFolderStatus();
       if (folder.connected) await loadDriveData();
+      else setSaveStatus(folder.remembered ? '尚未保存 · 請重新連接資料夾' : '尚未保存 · 請連接資料夾');
     } catch (error) {
       console.warn('StoryFlow folder auto-restore failed', error);
     }
@@ -387,6 +425,8 @@
   }
 
   ensureGoogleSettingsFields();
+  window.StoryFlowSaveStatus = { render: renderSaveStatus, set: setSaveStatus };
+  renderSaveStatus();
   // Remove legacy content caches while preserving the connection-only database.
   StoryFlowIntegrations.purgeLegacyBrowserStorage();
   ensurePlatformManager();

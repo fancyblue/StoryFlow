@@ -153,6 +153,26 @@
     });
   }
 
+  function syncContinuePublishing(entries) {
+    const button = document.getElementById('continuePublishingBtn');
+    if (!button) return;
+    const target = entries.find(entry => entry.status.key !== 'complete');
+    button.hidden = !target;
+    button.textContent = platforms.length ? '繼續發布' : '設定發布平台';
+    button.onclick = () => {
+      if (!target) return;
+      const platform = platforms.find(name => !target.part.platformStatus?.[name]);
+      if (!platform) {
+        window.StoryFlowShowSettings?.();
+        return;
+      }
+      const api = window.StoryFlowProjects;
+      if (api?.activeId?.() !== target.project.id) api?.switchProject?.(target.project.id, { quiet: true });
+      window.StoryFlowNavigate?.('publishing');
+      window.setTimeout(() => window.StoryFlowPublishing?.openPending?.(target.key, platform), 80);
+    };
+  }
+
   function ensureFilterUi() {
     const toolbar = document.querySelector('.publishing-toolbar');
     const statusFilters = document.getElementById('publishingFilters');
@@ -355,6 +375,7 @@
 
     const selectedEntries = allSelectedEntries();
     updateStatusCounts(selectedEntries);
+    syncContinuePublishing(selectedEntries);
     const filter = activeStatusFilter();
     const filtered = filter === 'all' ? selectedEntries : selectedEntries.filter(entry => entry.status.key === filter);
 
@@ -373,7 +394,25 @@
     if (!filtered.length) {
       const empty = document.createElement('div');
       empty.className = 'empty-state publishing-empty publishing-filter-empty';
-      empty.innerHTML = '<strong>沒有符合目前篩選的文章</strong><span>調整作品或發布狀態篩選後再查看。</span>';
+      const allEntries = (snapshot.projects || []).flatMap(entriesForProject);
+      if (!snapshot.projects?.length) {
+        empty.innerHTML = '<strong>尚未建立作品</strong><span>先建立第一個作品，再載入內容並開始切篇。</span><button class="button primary" type="button">建立作品</button>';
+        empty.querySelector('button').onclick = () => window.StoryFlowNavigate?.('projects');
+      } else if (!allEntries.length) {
+        empty.innerHTML = '<strong>尚未有已確認文章</strong><span>先回到工作台載入內容並完成第一篇切篇。</span><button class="button primary" type="button">回到工作台開始切篇</button>';
+        empty.querySelector('button').onclick = () => window.StoryFlowNavigate?.('workspace');
+      } else if (!selectedProjectIds.size) {
+        empty.innerHTML = '<strong>尚未選擇作品</strong><span>至少選擇一個作品，才能查看發布文章。</span><button class="button ghost" type="button">選取全部作品</button>';
+        empty.querySelector('button').onclick = () => {
+          selectedProjectIds = new Set((snapshot.projects || []).map(project => project.id));
+          renderCombinedPublishingList();
+        };
+      } else {
+        empty.innerHTML = '<strong>沒有符合目前篩選的文章</strong><span>文章仍然存在，只是沒有符合目前選擇的發布狀態。</span><button class="button ghost" type="button">清除狀態篩選</button>';
+        empty.querySelector('button').onclick = () => {
+          document.querySelector('#publishingFilters [data-filter="all"]')?.click();
+        };
+      }
       fragment.appendChild(empty);
     }
     list.replaceChildren(fragment);
