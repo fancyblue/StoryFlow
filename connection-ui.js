@@ -30,7 +30,7 @@
       <button id="topFolderConnection" class="connection-chip" type="button">
         <span class="connection-chip-dot" aria-hidden="true"></span><span class="connection-chip-label">資料夾</span><strong class="connection-chip-state">連接</strong>
       </button>
-      <button id="storyflowLogoutBtn" class="button tiny ghost connection-logout" type="button">登出</button>`;
+      <button id="storyflowLogoutBtn" class="button tiny ghost connection-logout" type="button">離開</button>`;
 
     actions.insertBefore(group, actions.firstChild);
 
@@ -61,8 +61,8 @@
         <span class="sidebar-status-dot" aria-hidden="true"></span>
         <span class="sidebar-connection-copy"><b>資料夾</b><small>尚未連接</small></span>
       </button>
-      <button id="sidebarLogoutBtn" class="sidebar-logout" type="button" title="登出並清除連線" data-hint="登出並清除連線">
-        <span aria-hidden="true">↪</span><span class="sidebar-logout-label">登出並清除連線</span>
+      <button id="sidebarLogoutBtn" class="sidebar-logout" type="button" title="離開此裝置" data-hint="離開此裝置">
+        <span aria-hidden="true">↪</span><span class="sidebar-logout-label">離開此裝置</span>
       </button>`;
     if (note) note.insertAdjacentElement('afterend', block);
     else sidebar.appendChild(block);
@@ -112,10 +112,12 @@
     setSidebarRow(document.getElementById('sidebarGoogleConnection'), gConnected, gRestoring, '已登入', '尚未登入');
     setSidebarRow(document.getElementById('sidebarFolderConnection'), fConnected, false, '已連接', fNeedsPermission ? '需要重新連接' : '尚未連接');
 
-    // "登出" is an authentication action, not a generic connection reset. Stale
-    // session hints or an independently connected folder must never surface it.
-    const showLogout = gConnected;
-    document.querySelectorAll('#storyflowLogoutBtn,#sidebarLogoutBtn').forEach(button => { button.hidden = !showLogout; });
+    // Leaving is a device-privacy action. Keep it available whenever this browser
+    // holds a Google session, folder connection, or imported bootstrap settings.
+    let hasBootstrap = false;
+    try { hasBootstrap = Boolean(sessionStorage.getItem('storyflow.integration-bootstrap.v1')); } catch (_) {}
+    const showLeave = gConnected || fConnected || hasBootstrap;
+    document.querySelectorAll('#storyflowLogoutBtn,#sidebarLogoutBtn').forEach(button => { button.hidden = !showLeave; });
   }
 
   function deleteConnectionDatabase() {
@@ -140,7 +142,12 @@
   }
 
   async function logoutStoryFlow() {
-    const ok = window.confirm('登出 StoryFlow？\n\n會清除本次 Google 登入狀態與已記住的 StoryFlow 資料夾連線；不會刪除資料夾內的 workspace.json、settings.json 或 Markdown。');
+    if (window.StoryFlowLogout?.leaveDevice) {
+      await window.StoryFlowLogout.leaveDevice();
+      return;
+    }
+
+    const ok = window.confirm('離開此裝置？\n\n會清除這個瀏覽器中的 Google 登入、暫存設定與 StoryFlow 資料夾連線；不會刪除資料夾內的 workspace.json、settings.json 或 Markdown。');
     if (!ok) return;
 
     try { window.StoryFlowSessionAuth?.forgetSession?.(); } catch (_) {}

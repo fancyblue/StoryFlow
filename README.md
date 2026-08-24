@@ -34,4 +34,4 @@ StoryFlow/
    └─ <作品>/<章節>/*.md
 ```
 
-Google access token 不寫入 `settings.json`；為了讓單純重新整理頁面時不必再次登入，只會短暫存在目前瀏覽器工作階段的 `sessionStorage`。登出會清除該工作階段 token 與已記住的資料夾連線資訊，但不會刪除 StoryFlow 資料夾內的檔案。
+Google access token 不寫入 `settings.json`；為了讓單純重新整理頁面時不必再次登入，只會短暫存在目前瀏覽器工作階段的 `sessionStorage`。「離開此裝置」會清除該瀏覽器中的 token、暫存整合設定、`storyflow.*` 瀏覽器狀態與已記住的資料夾連線資訊，但不會修改或刪除 StoryFlow 資料夾內的 `settings.json`、`workspace.json` 或作品 Markdown。離開後可以重新連接既有 StoryFlow 資料夾，或匯入 `settings.json` 快速恢復 Google 整合設定。
