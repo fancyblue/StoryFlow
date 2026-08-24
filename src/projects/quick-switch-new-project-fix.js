@@ -123,24 +123,6 @@
     ensureNewProjectAction();
   }
 
-  function loadChapterManagement() {
-    if (document.getElementById('storyflowChapterManagementV2Js')) return;
-    const script = document.createElement('script');
-    script.id = 'storyflowChapterManagementV2Js';
-    script.src = './chapter-management-v2.js?v=20260818-1538';
-    script.async = false;
-    document.body.appendChild(script);
-  }
-
-  function loadProjectProgressBadges() {
-    if (document.getElementById('storyflowProjectProgressBadgesV1Js')) return;
-    const script = document.createElement('script');
-    script.id = 'storyflowProjectProgressBadgesV1Js';
-    script.src = './project-progress-badges-v1.js?v=20260818-1741';
-    script.async = false;
-    document.body.appendChild(script);
-  }
-
   // Empty workspace CTA used to click #loadSourceBtn, but project-source-mode-v2
   // intentionally removes that legacy action row. Intercept the real user action and
   // invoke the source chooser directly. Without integration settings, this CTA routes
@@ -152,7 +134,9 @@
     if (target.id === 'workspaceLoadSourceBtn') {
       event.preventDefault();
       event.stopImmediatePropagation();
-      openSourceChooser();
+      // Manual work must remain usable without Google integration settings. The
+      // Google choice itself is guarded below and routes to Settings when needed.
+      openSourceChooser({ allowManualBeforeSettings: true });
       return;
     }
 
@@ -177,8 +161,6 @@
   });
 
   sync();
-  loadChapterManagement();
-  loadProjectProgressBadges();
 
   window.StoryFlowSourceOnboarding = {
     hasIntegrationSettings,

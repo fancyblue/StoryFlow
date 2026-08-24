@@ -13,7 +13,6 @@
   const shell = document.querySelector('.app-shell');
   if (!nav || !sidebar || !shell) return;
 
-  const INTEGRATION_SESSION_KEY = 'storyflow.integration-bootstrap.v1';
   let currentView = 'workspace';
   let lastInputWasKeyboard = false;
   const viewLabels = {
@@ -177,38 +176,13 @@
     return toggle;
   }
 
-  function hasIntegrationSettings() {
-    if (String(window.STORYFLOW_CONFIG?.googleClientId || '').trim()) return true;
-    try {
-      return Boolean(sessionStorage.getItem(INTEGRATION_SESSION_KEY));
-    } catch (_) {
-      return false;
-    }
-  }
-
   function closeProjectQuickSwitch() {
     const menu = document.getElementById('workspaceProjectQuickSwitch');
     if (menu) menu.hidden = true;
     document.getElementById('quickSwitchProjectBtn')?.setAttribute('aria-expanded', 'false');
   }
 
-  function requireSettingsForNewWork() {
-    closeProjectQuickSwitch();
-    const message = '請先載入 StoryFlow 設定，完成後才能新增作品。';
-    if (window.StoryFlowSourceOnboarding?.showSettings) {
-      window.StoryFlowSourceOnboarding.showSettings(message);
-      return;
-    }
-    window.notify?.(message);
-    goTo('settings');
-  }
-
   function startNewWorkFlow() {
-    if (!hasIntegrationSettings()) {
-      requireSettingsForNewWork();
-      return false;
-    }
-
     const project = window.StoryFlowProjects?.createProject?.({ title: '未命名作品' });
     if (!project) return false;
 
@@ -216,7 +190,7 @@
     goTo('workspace');
     requestAnimationFrame(() => {
       window.StoryFlowProjectSourceModeV2?.syncUi?.();
-      window.StoryFlowSourceOnboarding?.openSourceChooser?.({ creation: true });
+      window.StoryFlowSourceOnboarding?.openSourceChooser?.({ creation: true, allowManualBeforeSettings: true });
     });
     return true;
   }

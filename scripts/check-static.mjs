@@ -30,6 +30,16 @@ if (missing.length) {
   throw new Error(`index.html references missing files:\n${[...new Set(missing)].join('\n')}`);
 }
 
+const rootScripts = readdirSync(root).filter(name => name.endsWith('.js')).sort();
+const unexpectedRootScripts = rootScripts.filter(name => name !== 'app-loader.js');
+const loadedLegacyScripts = manifestSources.filter(source => source.startsWith('src/legacy/'));
+if (unexpectedRootScripts.length || loadedLegacyScripts.length) {
+  throw new Error(`JavaScript architecture boundary failed:\n${[
+    ...unexpectedRootScripts.map(name => `root/${name}`),
+    ...loadedLegacyScripts.map(name => `manifest/${name}`)
+  ].join('\n')}`);
+}
+
 function collectJavaScript(directory) {
   if (!existsSync(directory)) return [];
   return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
@@ -40,9 +50,7 @@ function collectJavaScript(directory) {
 }
 
 const scripts = [
-  ...readdirSync(root)
-    .filter(name => name.endsWith('.js'))
-    .map(name => join(root, name)),
+  ...rootScripts.map(name => join(root, name)),
   ...collectJavaScript(join(root, 'src'))
 ].sort();
 
