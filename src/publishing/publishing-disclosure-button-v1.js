@@ -3,29 +3,6 @@
 // Publishing follows the same interaction vocabulary: "管理發布" controls disclosure,
 // while delete is available only from the final row overflow menu.
 (function () {
-  function ensureStyles() {
-    let link = document.getElementById('storyflowPublishingDisclosureButtonV1Css');
-    if (!link) {
-      link = document.createElement('link');
-      link.id = 'storyflowPublishingDisclosureButtonV1Css';
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
-    const href = './publishing-disclosure-button-v1.css?v=20260818-1836';
-    if (!link.href.endsWith(href.replace('./', '/')) && link.getAttribute('href') !== href) link.href = href;
-
-    // This refinement must win the legacy cascade. It is deliberately injected from a
-    // body script so it sits after every static stylesheet in <head>.
-    let refine = document.getElementById('storyflowPublishingGroupingRefineV2Css');
-    if (!refine) {
-      refine = document.createElement('link');
-      refine.id = 'storyflowPublishingGroupingRefineV2Css';
-      refine.rel = 'stylesheet';
-      refine.href = './publishing-grouping-refine-v2.css?v=20260818-1836';
-      document.head.appendChild(refine);
-    }
-  }
-
   function closeOverflowMenus(except = null) {
     document.querySelectorAll('.publish-row-overflow-menu').forEach(menu => {
       if (menu === except) return;
@@ -106,8 +83,6 @@
   }
 
   function decoratePublishingRows() {
-    ensureStyles();
-
     document.querySelectorAll('.publish-list-item').forEach(card => {
       const summary = card.querySelector('.publish-list-summary');
       const actions = card.querySelector('.publish-list-actions');
@@ -174,6 +149,5 @@
   });
   window.addEventListener('storyflow:view-changed', () => window.setTimeout(decoratePublishingRows, 0));
   window.addEventListener('storyflow:projects-changed', () => window.setTimeout(decoratePublishingRows, 0));
-  ensureStyles();
   decoratePublishingRows();
 })();

@@ -1,3 +1,9 @@
+/* Publishing domain stylesheet.
+   Consolidated in the original cascade order from:
+   - publishing-grouping-refine-v2.css
+*/
+
+/* --- publishing-grouping-refine-v2.css --- */
 /* Publishing grouping refinement v2.
    Make the WORK level unmistakable, then nest chapter cards inside it. This sheet is
    loaded last so legacy !important rules cannot bring destructive controls back into
