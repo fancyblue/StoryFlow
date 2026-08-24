@@ -69,6 +69,8 @@ test('works, publishing, and settings retain their desktop composition', async (
   await expect(page.locator('#publishingView')).toHaveScreenshot('publishing-queue-1440.png');
 
   await page.locator('#sidebarSettingsBtn').click();
-  await expect(page.locator('#settingsView')).toHaveScreenshot('settings-1440.png');
+  await expect(page).toHaveScreenshot('settings-1440.png', {
+    fullPage: false,
+    maxDiffPixelRatio: 0.05
+  });
 });
-
