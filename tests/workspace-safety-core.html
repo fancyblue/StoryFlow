@@ -16,6 +16,7 @@
 
     function directory(name, files) {
       return {
+        kind: 'directory',
         name,
         async queryPermission() { return 'granted'; },
         async requestPermission() { return 'granted'; },
@@ -27,9 +28,11 @@
         async getFileHandle(filename, options = {}) {
           if (!files.has(filename) && !options.create) throw notFound(filename);
           return {
+            kind: 'file',
             async getFile() {
               if (!files.has(filename)) throw notFound(filename);
-              return { async text() { return files.get(filename); } };
+              const content = files.get(filename);
+              return { name: filename, size: content.length, lastModified: Date.now(), async text() { return content; } };
             },
             async createWritable() {
               let pending = '';
@@ -47,6 +50,17 @@
               };
             }
           };
+        },
+        async *entries() {
+          for (const filename of files.keys()) {
+            yield [filename, {
+              kind: 'file',
+              async getFile() {
+                const content = files.get(filename);
+                return { name: filename, size: content.length, lastModified: Date.now(), async text() { return content; } };
+              }
+            }];
+          }
         }
       };
     }
@@ -105,6 +119,29 @@
         await StoryFlowIntegrations.restoreWorkspaceRecovery('backup');
         assert(Boolean(await StoryFlowIntegrations.loadWorkspace()), '可從備份恢復並重新載入');
         assert([...recoveryFiles.keys()].some(name => name.includes('corrupt')), '恢復前保留損壞原檔');
+
+        await StoryFlowIntegrations.saveWorkspace(workspace('手動備份目標'), { reason: 'manual-target' });
+        const manualBackup = await StoryFlowIntegrations.backupWorkspace('manual-backup-test');
+        assert(manualBackup?.workspace?.state?.projectTitle === '手動備份目標', '可手動建立目前工作區備份');
+        const storage = await StoryFlowIntegrations.inspectWorkspaceStorage();
+        assert(storage.connected && storage.primary?.valid && storage.backup?.valid, '備份中心可安全檢查主檔與備份');
+        assert(storage.recoveryArtifacts.length >= 2, '備份中心可列出 Recovery 安全副本');
+
+        const exported = await StoryFlowIntegrations.exportWorkspaceFile();
+        assert(JSON.parse(exported.text).state.projectTitle === '手動備份目標', '可下載目前 workspace.json');
+        assert(exported.filename.startsWith('storyflow-workspace-'), '下載檔名包含 StoryFlow 與時間');
+
+        await StoryFlowIntegrations.saveWorkspace(workspace('備份後版本'), { reason: 'after-manual-backup' });
+        await StoryFlowIntegrations.restoreLatestWorkspaceBackup();
+        assert(JSON.parse(rootFiles.get('workspace.json')).state.projectTitle === '手動備份目標', '可主動從最近備份恢復');
+        assert([...recoveryFiles.keys()].some(name => name.includes('before-backup-restore')), '主動恢復前保留目前版本');
+
+        const imported = workspace('匯入版本');
+        const importSummary = StoryFlowIntegrations.summarizeWorkspace(imported);
+        assert(importSummary.projectCount === 1 && importSummary.chapterCount === 1, '匯入前可預覽作品與章節數量');
+        await StoryFlowIntegrations.importWorkspace(imported);
+        assert(JSON.parse(rootFiles.get('workspace.json')).state.projectTitle === '匯入版本', '確認後可匯入工作區');
+        assert([...recoveryFiles.keys()].some(name => name.includes('before-import')), '匯入前保留目前 workspace.json');
         assert(!StoryFlowIntegrations.workspaceSavePending(), '測試完成後沒有未完成寫入');
 
         result.textContent = `${checks.join('\n')}\n\nALL PASS`;

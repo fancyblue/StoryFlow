@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StoryFlow backup center UI test</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../settings-page.css">
+  <link rel="stylesheet" href="../backup-center.css">
+</head>
+<body>
+  <main class="main">
+    <section id="settingsView" class="settings-view">
+      <header class="settings-page-head"><div><p class="eyebrow">TEST</p><h1>設定</h1></div></header>
+      <section id="storyflowDevicePrivacySection" class="settings-device-privacy"><strong>裝置與隱私</strong></section>
+    </section>
+  </main>
+  <script>
+    window.StoryFlowIntegrations = {
+      async restoreOutputDirectory() { return { connected: true, name: 'StoryFlow-test' }; },
+      async inspectWorkspaceStorage() {
+        return {
+          connected: true,
+          folderName: 'StoryFlow-test',
+          primary: { valid: true, updatedAt: '2026-08-25T01:00:00.000Z', projectCount: 2, chapterCount: 8, partCount: 3 },
+          backup: { valid: true, createdAt: '2026-08-25T00:30:00.000Z', projectCount: 2, chapterCount: 7, partCount: 3 },
+          recoveryArtifacts: [{ name: 'workspace.before-import-2026-08-25.json', lastModified: Date.now() }]
+        };
+      },
+      async backupWorkspace() { return { createdAt: new Date().toISOString() }; },
+      async exportWorkspaceFile() { return { filename: 'storyflow-workspace-test.json', text: '{}' }; },
+      summarizeWorkspace() { return { projectCount: 2, chapterCount: 8, partCount: 3 }; },
+      async importWorkspace() { return true; },
+      async restoreLatestWorkspaceBackup() { return { backupCreatedAt: '2026-08-25T00:30:00.000Z' }; }
+    };
+    window.StoryFlowNavigate = () => {};
+  </script>
+  <script src="../src/settings/backup-center.js"></script>
+</body>
+</html>

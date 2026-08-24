@@ -10,7 +10,7 @@ StoryFlow is a build-free static site. GitHub Pages serves the repository root, 
 | --- | --- | --- |
 | Active UI state | `src/core/app.js`, `src/projects/projects.js` | Memory only |
 | Workspace persistence | `src/persistence/integrations.js`, `src/persistence/settings-sync.js`, `src/persistence/project-persistence-guard.js` | `workspace.json` |
-| Backup and recovery | `src/persistence/integrations.js`, `src/persistence/workspace-safety.js` | `workspace.backup.json`, `Recovery/` |
+| Backup and recovery | `src/persistence/integrations.js`, `src/persistence/workspace-safety.js`, `src/settings/backup-center.js` | `workspace.backup.json`, `Recovery/` |
 | Google bootstrap and token session | `src/settings/settings-bootstrap.js`, `src/connection/session-auth.js` | `settings.json`, session storage |
 | Generated articles | `src/persistence/integrations.js` | `Works/<work>/<chapter>/` |
 
@@ -24,6 +24,8 @@ All `workspace.json` writes must go through `StoryFlowIntegrations.saveWorkspace
 4. `src/persistence/workspace-safety.js` owns recovery and conflict decisions.
 5. Domain folders under `src/` add projects, sources, splitting, publishing and responsive UI.
 6. `src/persistence/project-persistence-guard.js` accelerates critical structural saves through the same integration queue.
+
+The Settings backup center uses the same persistence queue. Manual import and backup restore always preserve the current `workspace.json` in `Recovery/` before replacement.
 
 The repository root contains entry assets only. Runtime JavaScript lives under domain folders in `src/`; dormant historical scripts are isolated in `src/legacy/` and are not part of the asset manifest. Script order remains explicit in `app-loader.js` until each domain can be migrated as one unit.
 
