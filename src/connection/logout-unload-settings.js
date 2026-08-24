@@ -33,6 +33,7 @@
 
   function clearBrowserState() {
     try { window.StoryFlowSessionAuth?.forgetSession?.(); } catch (_) {}
+    try { window.StoryFlowSourceSyncHistory?.clear?.(); } catch (_) {}
     try { KEYS.forEach(key => sessionStorage.removeItem(key)); } catch (_) {}
     removeStoryFlowStorage(sessionStorage);
     removeStoryFlowStorage(localStorage);

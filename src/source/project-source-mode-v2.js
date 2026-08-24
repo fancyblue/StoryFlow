@@ -129,6 +129,39 @@
     return meta?.docName || 'Google Docs';
   }
 
+  function restoreLastSourceSync() {
+    const projectId = window.StoryFlowProjects?.activeId?.() || null;
+    const available = StoryFlowSourceSyncHistory.peek();
+    if (!available || (available.projectId && projectId && available.projectId !== projectId)) return;
+    if (!confirm('復原上次來源更新？\n\n章節會回到套用更新前的狀態；更新後才做的編輯也會一併回復。Recovery 安全副本不會刪除。')) return;
+    const snapshot = StoryFlowSourceSyncHistory.take(projectId);
+    if (!snapshot?.state) return;
+    state = snapshot.state;
+    suggestion = null;
+    saveState('已復原來源更新');
+    renderAll();
+    syncUi();
+    if (activeChapter()?.draft) suggestNextPart();
+    notify(`已復原上次來源更新（${snapshot.affectedCount} 個章節）`);
+  }
+
+  function syncUndoUi() {
+    const bar = document.getElementById('sourceSyncUndoBarV2');
+    if (!bar) return;
+    const projectId = window.StoryFlowProjects?.activeId?.() || null;
+    const available = StoryFlowSourceSyncHistory.peek();
+    const visible = Boolean(available && (!available.projectId || !projectId || available.projectId === projectId));
+    bar.hidden = !visible;
+    if (!visible) return;
+    const count = available.affectedCount || 0;
+    const copy = bar.querySelector('#sourceSyncUndoCopyV2');
+    if (copy) {
+      copy.textContent = available.artifactPath
+        ? `剛才更新了 ${count} 個章節，並已建立 Recovery 安全副本。`
+        : `剛才更新了 ${count} 個章節，可在本次開啟期間復原。`;
+    }
+  }
+
   function ensureModeUi() {
     const panel = document.querySelector('.source-panel');
     if (!panel) return null;
@@ -186,6 +219,19 @@
       origin.querySelector('#projectRefreshSourceBtnV2').addEventListener('click', refreshWholeProjectV2);
     }
 
+    let undoBar = document.getElementById('sourceSyncUndoBarV2');
+    if (!undoBar) {
+      undoBar = document.createElement('section');
+      undoBar.id = 'sourceSyncUndoBarV2';
+      undoBar.className = 'source-sync-undo-bar-v2';
+      undoBar.hidden = true;
+      undoBar.innerHTML = `
+        <span id="sourceSyncUndoCopyV2"></span>
+        <button class="button tiny ghost" type="button">復原上次來源更新</button>`;
+      origin.insertAdjacentElement('afterend', undoBar);
+      undoBar.querySelector('button').addEventListener('click', restoreLastSourceSync);
+    }
+
     const add = document.getElementById('addChapterBtn');
     if (add) add.textContent = '＋ 新增文章';
     return panel;
@@ -215,6 +261,7 @@
     if (originName && mode === 'google') originName.textContent = projectSourceName();
 
     syncBlankChapterPresentation(mode);
+    syncUndoUi();
     ensureStyleLast();
   }
 
@@ -676,6 +723,14 @@
       if (!ok) return;
     }
 
+    const stagedUndo = await StoryFlowSourceSyncHistory.prepare(state, {
+      projectId: window.StoryFlowProjects?.activeId?.() || null,
+      changes: selected,
+      flush: () => window.StoryFlowProjectPersistence?.flush?.('before-source-sync'),
+      createArtifact: () => StoryFlowIntegrations.createWorkspaceRecoverySnapshot?.('before-source-sync'),
+      onSnapshotError: error => console.warn('StoryFlow could not create a durable source-sync snapshot', error)
+    });
+
     let added = 0;
     let updated = 0;
     for (const change of selected) {
@@ -713,6 +768,8 @@
       type: 'google',
       syncedAt: new Date().toISOString()
     };
+
+    StoryFlowSourceSyncHistory.commit(stagedUndo);
 
     pendingDiff = null;
     suggestion = null;
@@ -770,6 +827,7 @@
 
   window.addEventListener('storyflow:projects-changed', () => queueMicrotask(syncUi));
   window.addEventListener('storyflow:view-changed', () => queueMicrotask(syncUi));
+  window.addEventListener('storyflow:source-sync-undo-changed', () => queueMicrotask(syncUi));
   document.addEventListener('change', event => {
     if (event.target?.id === 'projectTitle') queueMicrotask(syncUi);
   });

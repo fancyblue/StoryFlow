@@ -477,6 +477,14 @@
       if (!ok) return;
     }
 
+    const stagedUndo = await StoryFlowSourceSyncHistory.prepare(state, {
+      projectId: window.StoryFlowProjects?.activeId?.() || null,
+      changes: selected,
+      flush: () => window.StoryFlowProjectPersistence?.flush?.('before-source-sync'),
+      createArtifact: () => StoryFlowIntegrations.createWorkspaceRecoverySnapshot?.('before-source-sync'),
+      onSnapshotError: error => console.warn('StoryFlow could not create a durable source-sync snapshot', error)
+    });
+
     let added = 0;
     let updated = 0;
     for (const change of selected) {
@@ -511,6 +519,8 @@
       scopeMap.set(scopeKey(change.scope), { ...scopeMap.get(scopeKey(change.scope)), ...change.scope });
     }
     state.sourceScopes = [...scopeMap.values()];
+
+    StoryFlowSourceSyncHistory.commit(stagedUndo);
 
     pendingDiff = null;
     suggestion = null;
