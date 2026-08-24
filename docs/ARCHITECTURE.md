@@ -31,6 +31,8 @@ Chrome stores only the selected directory handle in IndexedDB. `src/connection/f
 
 The repository root contains entry assets only. Runtime JavaScript lives under domain folders in `src/`; dormant historical scripts are isolated in `src/legacy/` and are not part of the asset manifest. Script order remains explicit in `app-loader.js` until each domain can be migrated as one unit.
 
+Structural CSS contracts live under `styles/domains/` and load after their related component styles. A domain contract owns page composition, grid placement, responsive order and overflow boundaries; feature styles should own only their component appearance. This prevents layout behavior from depending on a chain of late overrides.
+
 | Source directory | Responsibility |
 | --- | --- |
 | `src/core/` | Base configuration, state and rendering |
@@ -43,6 +45,7 @@ The repository root contains entry assets only. Runtime JavaScript lives under d
 | `src/publishing/` | Publishing queue, filters, grouping and platform guards |
 | `src/ui/` | Navigation, responsive layout and accessibility refinements |
 | `src/legacy/` | Unloaded historical scripts retained only for reference |
+| `styles/domains/` | Final page-level layout and responsive contracts |
 
 ## Validation
 
