@@ -1,3 +1,9 @@
+/* Settings domain stylesheet.
+   Consolidated in the original cascade order from:
+   - settings-layout-fix.css
+*/
+
+/* --- settings-layout-fix.css --- */
 /* Settings page layout guard.
    The settings form used to live inside a fixed-height dialog. After moving it to a
    full app page, those legacy dialog dimensions must not constrain the page grid. */
