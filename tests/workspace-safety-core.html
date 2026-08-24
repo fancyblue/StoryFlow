@@ -55,7 +55,7 @@
     try { delete window.indexedDB; } catch (_) {}
     window.showDirectoryPicker = async () => mockRoot;
   </script>
-  <script src="../integrations.js"></script>
+  <script src="../src/persistence/integrations.js"></script>
   <script>
     (async () => {
       const result = document.getElementById('result');
