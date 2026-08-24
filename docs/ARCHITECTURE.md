@@ -8,7 +8,7 @@ StoryFlow is a build-free static site. GitHub Pages serves the repository root, 
 
 | Data | Owner | Location |
 | --- | --- | --- |
-| Active UI state | `app.js`, `projects.js` | Memory only |
+| Active UI state | `src/core/app.js`, `src/projects/projects.js` | Memory only |
 | Workspace persistence | `src/persistence/integrations.js`, `src/persistence/settings-sync.js`, `src/persistence/project-persistence-guard.js` | `workspace.json` |
 | Backup and recovery | `src/persistence/integrations.js`, `src/persistence/workspace-safety.js` | `workspace.backup.json`, `Recovery/` |
 | Google bootstrap and token session | `src/settings/settings-bootstrap.js`, `src/connection/session-auth.js` | `settings.json`, session storage |
@@ -19,13 +19,26 @@ All `workspace.json` writes must go through `StoryFlowIntegrations.saveWorkspace
 ## Runtime layers
 
 1. `src/persistence/integrations.js` provides file and Google adapters.
-2. `app.js` defines the base state and rendering helpers.
+2. `src/core/app.js` defines the base state and rendering helpers.
 3. `src/persistence/settings-sync.js` owns debounced persistence and truthful save status.
 4. `src/persistence/workspace-safety.js` owns recovery and conflict decisions.
-5. Feature modules add projects, sources, splitting, publishing and responsive UI.
+5. Domain folders under `src/` add projects, sources, splitting, publishing and responsive UI.
 6. `src/persistence/project-persistence-guard.js` accelerates critical structural saves through the same integration queue.
 
-The current root still contains historical refinement modules loaded as classic scripts. Moving them into folders or bundling them would change script-order semantics, so that cleanup should be handled as a separate P1 refactor with dedicated regression coverage.
+The repository root contains entry assets only. Runtime JavaScript lives under domain folders in `src/`; dormant historical scripts are isolated in `src/legacy/` and are not part of the asset manifest. Script order remains explicit in `app-loader.js` until each domain can be migrated as one unit.
+
+| Source directory | Responsibility |
+| --- | --- |
+| `src/core/` | Base configuration, state and rendering |
+| `src/connection/` | Google session, folder session and connection controls |
+| `src/settings/` | Settings view, bootstrap and file import |
+| `src/persistence/` | Workspace IO, save queue, backup and recovery |
+| `src/projects/` | Work library, chapter management and project switching |
+| `src/source/` | Google/manual source ingestion, relinking and source modes |
+| `src/split/` | Smart Split preferences, boundaries and continuation |
+| `src/publishing/` | Publishing queue, filters, grouping and platform guards |
+| `src/ui/` | Navigation, responsive layout and accessibility refinements |
+| `src/legacy/` | Unloaded historical scripts retained only for reference |
 
 ## Validation
 
