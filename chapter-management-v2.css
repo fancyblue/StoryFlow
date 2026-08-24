@@ -47,12 +47,17 @@
    source rail from clipping the menu at the panel's rounded lower edge. Raise the
    source card only while a menu is open so it can paint above neighboring panels. */
 .workspace-grid.workspace-hierarchy-v2,
-.workspace-grid.workspace-hierarchy-v2 > .source-panel,
 .source-panel #chapterList{
   overflow:visible!important;
 }
+.workspace-grid.workspace-hierarchy-v2 > .source-panel{
+  overflow:auto!important;
+}
 .workspace-grid.workspace-hierarchy-v2 > .source-panel:has(.chapter-row-action-menu:not([hidden])){
   position:relative!important;
+  top:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
   z-index:90!important;
 }
 

@@ -30,6 +30,22 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
   await expect(page.locator('#chapterChars')).not.toHaveText('0');
   await expect(page.locator('#suggestionCard')).toBeVisible();
 
+  const longChapterRail = await page.evaluate(() => {
+    const list = document.getElementById('chapterList');
+    const source = document.querySelector('.source-panel');
+    const row = list?.querySelector('.chapter-row');
+    if (!list || !source || !row) return null;
+    for (let index = 0; index < 18; index += 1) list.appendChild(row.cloneNode(true));
+    return {
+      overflowY: getComputedStyle(source).overflowY,
+      clientHeight: source.clientHeight,
+      scrollHeight: source.scrollHeight
+    };
+  });
+  expect(longChapterRail).not.toBeNull();
+  expect(longChapterRail.overflowY).toBe('auto');
+  expect(longChapterRail.scrollHeight).toBeGreaterThan(longChapterRail.clientHeight);
+
   await page.locator('.nav-item[data-view="projects"]').click();
   await expect(page.getByRole('heading', { name: '作品', exact: true })).toBeVisible();
   await expect(page.locator('#projectsLibrary')).toContainText('未命名作品');
