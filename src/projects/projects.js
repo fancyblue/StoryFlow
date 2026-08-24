@@ -1,14 +1,6 @@
 // Multi-project workspace UX and persistence.
 // workspace.json may hold several independent works; only one work is active in the UI at a time.
 (function () {
-  if (!document.querySelector('link[data-storyflow-workspace-v2]')) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = './workspace-layout-v2.css';
-    link.dataset.storyflowWorkspaceV2 = '1';
-    document.head.appendChild(link);
-  }
-
   const WORKSPACE_SCHEMA_VERSION = 2;
   let store = { activeProjectId: null, projects: [] };
   let pendingRoute = null;

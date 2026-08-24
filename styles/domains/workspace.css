@@ -1,0 +1,135 @@
+/* Workspace layout contract.
+   This file owns the two-column hierarchy, context stats, processing order and
+   source-rail overflow. Component decoration remains in its feature stylesheet. */
+
+.workspace-grid.workspace-hierarchy-v2{
+  grid-template-columns:minmax(280px,320px) minmax(0,1fr)!important;
+  gap:16px!important;
+  align-items:start!important;
+  overflow:visible!important;
+}
+
+.workspace-grid.workspace-hierarchy-v2 > .source-panel{
+  grid-column:1!important;
+  grid-row:1 / span 2!important;
+  align-self:start!important;
+  overflow:auto!important;
+}
+
+.workspace-grid.workspace-hierarchy-v2 > .stats-grid{
+  grid-column:2!important;
+  grid-row:1!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:1px!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:1px solid #d7e5ef!important;
+  border-radius:14px!important;
+  background:#d7e5ef!important;
+  box-shadow:0 1px 2px rgba(31,72,107,.02),0 6px 20px rgba(31,72,107,.035)!important;
+}
+
+.workspace-grid.workspace-hierarchy-v2 > .stats-grid[hidden]{display:none!important}
+
+.workspace-grid.workspace-hierarchy-v2 > .stats-grid .stat-card{
+  min-width:0!important;
+  min-height:72px!important;
+  padding:10px 14px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+
+.workspace-grid.workspace-hierarchy-v2 > .stats-grid .stat-card > span{
+  margin:0 0 5px!important;
+  color:#6b8294!important;
+  font-size:11.5px!important;
+  font-weight:720!important;
+  line-height:1.25!important;
+}
+
+.workspace-grid.workspace-hierarchy-v2 > .stats-grid .stat-card > strong{
+  margin:0!important;
+  color:var(--denim-900,#234463)!important;
+  font-size:21px!important;
+  font-weight:850!important;
+  line-height:1!important;
+}
+
+.workspace-grid.workspace-hierarchy-v2 > .stats-grid .stat-card > small{
+  height:21px!important;
+  margin:0!important;
+  padding-top:1px!important;
+  color:#6b8294!important;
+  font-size:11.5px!important;
+  font-weight:700!important;
+  line-height:1!important;
+}
+
+/* Manual and Google-backed articles share one processing flow: context, then Smart Split. */
+.workspace-grid.workspace-hierarchy-v2 > .editor-panel{
+  display:none!important;
+}
+
+.workspace-grid.workspace-hierarchy-v2 > .splitter-panel{
+  grid-column:2!important;
+  grid-row:2!important;
+  min-width:0!important;
+  width:100%!important;
+}
+
+.workspace-grid.workspace-hierarchy-v2.workspace-hierarchy-no-stats > .splitter-panel{
+  grid-row:1!important;
+}
+
+.source-panel #chapterList{
+  overflow:visible!important;
+}
+
+.workspace-grid.workspace-hierarchy-v2 > .source-panel:has(.chapter-row-action-menu:not([hidden])){
+  position:relative!important;
+  top:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+  z-index:90!important;
+}
+
+@media(max-width:1100px) and (min-width:821px){
+  .workspace-grid.workspace-hierarchy-v2{
+    grid-template-columns:minmax(240px,280px) minmax(0,1fr)!important;
+  }
+
+  .workspace-grid.workspace-hierarchy-v2 > .stats-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+
+@media(max-width:820px){
+  .workspace-grid.workspace-hierarchy-v2{
+    grid-template-columns:1fr!important;
+  }
+
+  .workspace-grid.workspace-hierarchy-v2 > .source-panel{
+    grid-column:1!important;
+    grid-row:1!important;
+  }
+
+  .workspace-grid.workspace-hierarchy-v2 > .stats-grid{
+    grid-column:1!important;
+    grid-row:2!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+
+  .workspace-grid.workspace-hierarchy-v2 > .splitter-panel{
+    grid-column:1!important;
+    grid-row:3!important;
+  }
+
+  .workspace-grid.workspace-hierarchy-v2.workspace-hierarchy-no-stats > .splitter-panel{
+    grid-row:2!important;
+  }
+}
