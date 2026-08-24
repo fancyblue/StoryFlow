@@ -5,11 +5,25 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const index = readFileSync(join(root, 'index.html'), 'utf8');
+const loader = readFileSync(join(root, 'app-loader.js'), 'utf8');
 const missing = [];
 
 for (const match of index.matchAll(/(?:src|href)="\.\/([^"?#]+)(?:[?#][^"]*)?"/g)) {
   const relative = match[1];
   if (!existsSync(join(root, relative))) missing.push(relative);
+}
+
+const manifestSources = [...loader.matchAll(/\bsrc:\s*['"]\.\/([^'"?#]+)(?:[?#][^'"]*)?['"]/g)].map(match => match[1]);
+for (const relative of manifestSources) {
+  if (!existsSync(join(root, relative))) missing.push(relative);
+}
+
+const manifestIds = [...loader.matchAll(/\bid:\s*['"]([^'"]+)['"]/g)].map(match => match[1]);
+const duplicates = values => [...new Set(values.filter((value, index) => values.indexOf(value) !== index))];
+const duplicateSources = duplicates(manifestSources);
+const duplicateIds = duplicates(manifestIds);
+if (duplicateSources.length || duplicateIds.length) {
+  throw new Error(`app-loader.js contains duplicate entries:\n${[...duplicateSources, ...duplicateIds].join('\n')}`);
 }
 
 if (missing.length) {
@@ -24,4 +38,4 @@ for (const script of scripts) {
   execFileSync(process.execPath, ['--check', join(root, script)], { stdio: 'inherit' });
 }
 
-console.log(`Static validation passed: ${scripts.length} JavaScript files and all local index.html assets.`);
+console.log(`Static validation passed: ${scripts.length} JavaScript files, ${manifestSources.length} ordered app modules and all local assets.`);
