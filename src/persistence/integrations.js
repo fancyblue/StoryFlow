@@ -492,6 +492,22 @@ const StoryFlowIntegrations = (() => {
     return backup;
   }
 
+  async function createWorkspaceRecoverySnapshot(reason = 'before-source-sync') {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    await workspaceWriteQueue;
+    const currentText = await readTextFile(outputDirectoryHandle, WORKSPACE_FILENAME);
+    if (!currentText) throw new Error('目前資料夾中沒有可建立快照的 workspace.json。');
+    const workspace = JSON.parse(currentText);
+    summarizeWorkspace(workspace);
+    const filename = recoveryFilename(reason);
+    const createdAt = new Date().toISOString();
+    const artifactPath = await writeRecoveryArtifact(
+      filename,
+      JSON.stringify({ ...backupEnvelope(workspace, reason), createdAt }, null, 2)
+    );
+    return { filename, artifactPath, createdAt };
+  }
+
   async function exportWorkspaceFile() {
     if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾讀取權限。');
     await workspaceWriteQueue;
@@ -794,7 +810,7 @@ const StoryFlowIntegrations = (() => {
 
   purgeLegacyBrowserStorage();
 
-  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, inspectWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
+  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
   window.StoryFlowIntegrations = api;
   return api;
 })();

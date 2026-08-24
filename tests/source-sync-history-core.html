@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><title>StoryFlow source sync history core test</title></head>
+<body>
+  <h1>Source sync history core test</h1>
+  <pre id="result">RUNNING</pre>
+  <script src="../src/source/source-sync-history.js"></script>
+  <script>
+    (async () => {
+      const result = document.getElementById('result');
+      const checks = [];
+      const assert = (condition, message) => {
+        if (!condition) throw new Error(message);
+        checks.push(`PASS ${message}`);
+      };
+
+      try {
+        const calls = [];
+        const original = { projectTitle: '測試作品', chapters: [{ id: 'c1', title: '第一章', draft: '更新前' }] };
+        const staged = await StoryFlowSourceSyncHistory.prepare(original, {
+          projectId: 'project-1',
+          changes: [{ incoming: { title: '第一章' } }],
+          flush: async () => { calls.push('flush'); return true; },
+          createArtifact: async () => { calls.push('snapshot'); return { artifactPath: 'StoryFlow-test/Recovery/workspace.before-source-sync.json' }; }
+        });
+        original.chapters[0].draft = '更新後';
+        const available = StoryFlowSourceSyncHistory.commit(staged);
+        assert(calls.join(',') === 'flush,snapshot', '先保存目前工作區，再建立 Recovery 快照');
+        assert(available.affectedCount === 1 && available.artifactPath.includes('Recovery'), '復原資訊包含影響範圍與安全副本');
+        assert(StoryFlowSourceSyncHistory.take('another-project') === null, '切換到其他作品時不會錯誤復原');
+        const restored = StoryFlowSourceSyncHistory.take('project-1');
+        assert(restored.state.chapters[0].draft === '更新前', '可還原同步前的完整作品狀態');
+        assert(StoryFlowSourceSyncHistory.take('project-1') === null, '一次復原使用後即失效');
+        result.textContent = `${checks.join('\n')}\nALL PASS`;
+        document.body.dataset.testStatus = 'pass';
+      } catch (error) {
+        result.textContent = `${checks.join('\n')}\nFAIL ${error.message}`;
+        document.body.dataset.testStatus = 'fail';
+        throw error;
+      }
+    })();
+  </script>
+</body>
+</html>

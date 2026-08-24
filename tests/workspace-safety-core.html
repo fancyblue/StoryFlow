@@ -128,6 +128,10 @@
         await StoryFlowIntegrations.saveWorkspace(workspace('手動備份目標'), { reason: 'manual-target' });
         const manualBackup = await StoryFlowIntegrations.backupWorkspace('manual-backup-test');
         assert(manualBackup?.workspace?.state?.projectTitle === '手動備份目標', '可手動建立目前工作區備份');
+        const sourceSnapshot = await StoryFlowIntegrations.createWorkspaceRecoverySnapshot('before-source-sync');
+        const sourceSnapshotText = recoveryFiles.get(sourceSnapshot.filename);
+        assert(sourceSnapshot.artifactPath.includes('Recovery/workspace.before-source-sync'), '來源更新前建立獨立 Recovery 安全副本');
+        assert(JSON.parse(sourceSnapshotText).workspace.state.projectTitle === '手動備份目標', '來源同步快照保存更新前的完整工作區');
         const storage = await StoryFlowIntegrations.inspectWorkspaceStorage();
         assert(storage.connected && storage.primary?.valid && storage.backup?.valid, '備份中心可安全檢查主檔與備份');
         assert(storage.recoveryArtifacts.length >= 2, '備份中心可列出 Recovery 安全副本');

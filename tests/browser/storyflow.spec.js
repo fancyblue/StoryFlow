@@ -13,7 +13,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(49);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(50);
 
   await page.locator('#createProjectManually').click();
   await page.locator('#workspaceLoadSourceBtn').click();
@@ -116,5 +116,34 @@ test('source diff explains same-count text replacements', async ({ page }) => {
   await expect(page.getByText('字數相同，但文字內容不同。')).toBeVisible();
   await expect(page.getByText(/答案在舊信裡/)).toBeVisible();
   await expect(page.getByText(/答案在新信裡/)).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
+test('source sync offers a one-time undo for the active project', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/tests/source-sync-history-core.html');
+  await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
+  await expect(page.getByText('ALL PASS')).toBeVisible();
+
+  await page.goto('/');
+  await page.locator('#createProjectManually').click();
+  await page.evaluate(() => {
+    state.projectSource = { type: 'google', docName: '測試 Google Docs' };
+    const before = structuredClone(state);
+    before.projectTitle = '更新前作品';
+    state.projectTitle = '更新後作品';
+    StoryFlowSourceSyncHistory.commit(StoryFlowSourceSyncHistory.stage(before, {
+      projectId: StoryFlowProjects.activeId(),
+      changes: [{ incoming: { title: '第一章' } }]
+    }), { artifactPath: 'StoryFlow-test/Recovery/workspace.before-source-sync-test.json' });
+    renderAll();
+  });
+  const undo = page.getByRole('button', { name: '復原上次來源更新', exact: true });
+  await expect(undo).toBeVisible();
+  await expect(page.getByText(/已建立 Recovery 安全副本/)).toBeVisible();
+  page.once('dialog', dialog => dialog.accept());
+  await undo.click();
+  await expect(page.locator('#projectTitle')).toHaveValue('更新前作品');
+  await expect(undo).not.toBeVisible();
   expect(pageErrors).toEqual([]);
 });
