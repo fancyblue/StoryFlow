@@ -1,0 +1,13 @@
+{
+  "name": "storyflow",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:static": "node scripts/check-static.mjs",
+    "test:browser": "playwright test --config playwright.config.mjs",
+    "test": "npm run test:static && npm run test:browser"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1"
+  }
+}

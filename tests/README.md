@@ -5,4 +5,14 @@
 - `backup-center-ui.html` renders the connected-folder backup center with safe fixture metadata.
 - `quick-start-ui.html` verifies the remembered-folder cold-start prompt without touching a real folder.
 
-Serve the repository root over HTTP and open these pages in Chrome. No user files or Google credentials are used.
+No user files or Google credentials are used.
+
+Run the automated desktop Chromium suite:
+
+```sh
+npm ci
+npx playwright install chromium
+npm run test:browser
+```
+
+`npm test` runs both the static checks and browser suite. The Playwright web server starts the local static site automatically.
