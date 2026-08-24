@@ -9,21 +9,21 @@ StoryFlow is a build-free static site. GitHub Pages serves the repository root, 
 | Data | Owner | Location |
 | --- | --- | --- |
 | Active UI state | `app.js`, `projects.js` | Memory only |
-| Workspace persistence | `integrations.js`, `settings-sync.js`, `project-persistence-guard.js` | `workspace.json` |
-| Backup and recovery | `integrations.js`, `workspace-safety.js` | `workspace.backup.json`, `Recovery/` |
-| Google bootstrap and token session | `settings-bootstrap.js`, `session-auth.js` | `settings.json`, session storage |
-| Generated articles | `integrations.js` | `Works/<work>/<chapter>/` |
+| Workspace persistence | `src/persistence/integrations.js`, `src/persistence/settings-sync.js`, `src/persistence/project-persistence-guard.js` | `workspace.json` |
+| Backup and recovery | `src/persistence/integrations.js`, `src/persistence/workspace-safety.js` | `workspace.backup.json`, `Recovery/` |
+| Google bootstrap and token session | `src/settings/settings-bootstrap.js`, `src/connection/session-auth.js` | `settings.json`, session storage |
+| Generated articles | `src/persistence/integrations.js` | `Works/<work>/<chapter>/` |
 
 All `workspace.json` writes must go through `StoryFlowIntegrations.saveWorkspace()`. That function serializes writes, creates the latest-good backup and rejects stale revisions. Do not write `workspace.json` directly from feature modules.
 
 ## Runtime layers
 
-1. `integrations.js` provides file and Google adapters.
+1. `src/persistence/integrations.js` provides file and Google adapters.
 2. `app.js` defines the base state and rendering helpers.
-3. `settings-sync.js` owns debounced persistence and truthful save status.
-4. `workspace-safety.js` owns recovery and conflict decisions.
+3. `src/persistence/settings-sync.js` owns debounced persistence and truthful save status.
+4. `src/persistence/workspace-safety.js` owns recovery and conflict decisions.
 5. Feature modules add projects, sources, splitting, publishing and responsive UI.
-6. `project-persistence-guard.js` accelerates critical structural saves through the same integration queue.
+6. `src/persistence/project-persistence-guard.js` accelerates critical structural saves through the same integration queue.
 
 The current root still contains historical refinement modules loaded as classic scripts. Moving them into folders or bundling them would change script-order semantics, so that cleanup should be handled as a separate P1 refactor with dedicated regression coverage.
 

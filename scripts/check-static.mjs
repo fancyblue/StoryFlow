@@ -30,12 +30,24 @@ if (missing.length) {
   throw new Error(`index.html references missing files:\n${[...new Set(missing)].join('\n')}`);
 }
 
-const scripts = readdirSync(root)
-  .filter(name => name.endsWith('.js'))
-  .sort();
+function collectJavaScript(directory) {
+  if (!existsSync(directory)) return [];
+  return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) return collectJavaScript(path);
+    return entry.name.endsWith('.js') ? [path] : [];
+  });
+}
+
+const scripts = [
+  ...readdirSync(root)
+    .filter(name => name.endsWith('.js'))
+    .map(name => join(root, name)),
+  ...collectJavaScript(join(root, 'src'))
+].sort();
 
 for (const script of scripts) {
-  execFileSync(process.execPath, ['--check', join(root, script)], { stdio: 'inherit' });
+  execFileSync(process.execPath, ['--check', script], { stdio: 'inherit' });
 }
 
 console.log(`Static validation passed: ${scripts.length} JavaScript files, ${manifestSources.length} ordered app modules and all local assets.`);

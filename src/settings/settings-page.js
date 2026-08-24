@@ -2,26 +2,7 @@
 // on Workspace / Works / Publishing; settings lives with the persistent connection
 // utilities in the lower-left sidebar.
 (function () {
-  function loadStylesheet(id, href) {
-    if (document.getElementById(id)) return;
-    const link = document.createElement('link');
-    link.id = id;
-    link.rel = 'stylesheet';
-    link.href = href;
-    document.head.appendChild(link);
-  }
-
-  function loadScript(id, src) {
-    if (document.getElementById(id)) return;
-    const script = document.createElement('script');
-    script.id = id;
-    script.src = src;
-    script.async = false;
-    document.body.appendChild(script);
-  }
-
-  // Keep late-loaded layers deterministic. Component CSS comes first, then the
-  // brand/mobile refinements, the UI-system contract, and structural integrity last.
+  // Keep the final theme layers deterministic after settings creates its app view.
   function ensureThemeOrder() {
     const theme = document.getElementById('storyflowBlueThemeCss');
     const mobile = document.getElementById('storyflowMobileVisualPolishCss');
@@ -35,20 +16,6 @@
     if (connectionStatus && connectionStatus.parentElement === document.head) document.head.appendChild(connectionStatus);
     if (uiSystem && uiSystem.parentElement === document.head) document.head.appendChild(uiSystem);
     if (layoutIntegrity && layoutIntegrity.parentElement === document.head) document.head.appendChild(layoutIntegrity);
-  }
-
-  function loadLateUiAssets() {
-    loadStylesheet('storyflowPlatformSettingsV2Css', './platform-settings-v2.css?v=20260817-1632');
-    loadStylesheet('storyflowControlPolishCss', './control-polish.css?v=20260817-1632');
-    loadStylesheet('storyflowSettingsBootstrapCss', './settings-bootstrap.css?v=20260817-1703');
-    loadStylesheet('storyflowNavigationUtilityPolishCss', './navigation-utility-polish.css?v=20260817-1902');
-    loadStylesheet('storyflowMobileBottomNavFixCss', './mobile-bottom-nav-fix.css?v=20260817-2130');
-    loadStylesheet('storyflowUiSystemV4Css', './ui-system-v4.css?v=20260818-1041');
-    loadStylesheet('storyflowUiLayoutIntegrityCss', './ui-layout-integrity.css?v=20260818-1112');
-    loadScript('storyflowPlatformSettingsV2Js', './platform-settings-v2.js?v=20260817-1632');
-    loadScript('storyflowSettingsBootstrapJs', './settings-bootstrap.js?v=20260817-1703');
-    loadScript('storyflowSettingsFileImportFixJs', './settings-file-import-fix.js?v=20260817-1720');
-    ensureThemeOrder();
   }
 
   function ensureSettingsView() {
@@ -169,7 +136,7 @@
 
   ensureSettingsView();
   ensureSidebarSettingsButton();
-  loadLateUiAssets();
+  ensureThemeOrder();
   syncSettingsAvailability();
 
   window.addEventListener('storyflow:connection-changed', syncSettingsAvailability);
