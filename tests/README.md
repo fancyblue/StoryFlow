@@ -4,6 +4,8 @@
 - `workspace-safety-ui.html` renders the recovery dialog without reading or changing a real StoryFlow folder.
 - `backup-center-ui.html` renders the connected-folder backup center with safe fixture metadata.
 - `quick-start-ui.html` verifies the remembered-folder cold-start prompt without touching a real folder.
+- `source-diff-core.html` verifies same-count replacements, whitespace-only changes, title changes and line-ending normalization.
+- `source-diff-ui.html` renders the expandable before/after source preview with fixture prose only.
 - `browser/visual-regression.spec.js` captures the real app at 1280, 1440 and 1920 desktop widths, including a long chapter rail, works library, publishing queue and settings.
 
 No user files or Google credentials are used.
