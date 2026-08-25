@@ -1,4 +1,4 @@
-// Publishing disclosure UX v1.
+// Publishing disclosure UX.
 // Works uses explicit management buttons and keeps destructive actions behind "...".
 // Publishing follows the same interaction vocabulary: "管理發布" controls disclosure,
 // while delete is available only from the final row overflow menu.
@@ -131,13 +131,13 @@
   }
 
   const baseRenderParts = window.renderParts;
-  if (typeof baseRenderParts === 'function' && !baseRenderParts.__publishingDisclosureButtonV1) {
+  if (typeof baseRenderParts === 'function' && !baseRenderParts.__publishingDisclosure) {
     const wrapped = function (...args) {
       const result = baseRenderParts.apply(this, args);
       decoratePublishingRows();
       return result;
     };
-    wrapped.__publishingDisclosureButtonV1 = true;
+    wrapped.__publishingDisclosure = true;
     window.renderParts = wrapped;
   }
 

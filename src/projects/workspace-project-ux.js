@@ -1,4 +1,4 @@
-// Keep the quick-switch menu's "新增作品" action present after the legacy renderer
+// Workspace project UX keeps the quick-switch menu's "新增作品" action present after the renderer
 // rebuilds the menu on every open. This layer also owns the empty-workspace
 // onboarding hand-off so it does not depend on a source button that may be removed.
 (function () {
@@ -113,8 +113,8 @@
 
   function bindToggle() {
     const button = document.getElementById('quickSwitchProjectBtn');
-    if (!button || button.dataset.newProjectFixBound === '1') return;
-    button.dataset.newProjectFixBound = '1';
+    if (!button || button.dataset.newProjectBound === '1') return;
+    button.dataset.newProjectBound = '1';
     button.addEventListener('click', () => window.setTimeout(ensureNewProjectAction, 0));
   }
 
@@ -239,13 +239,13 @@
   window.addEventListener('storyflow:view-changed', () => queueMicrotask(syncHierarchy));
 
   const baseRenderAll = window.renderAll;
-  if (typeof baseRenderAll === 'function' && !baseRenderAll.__storyflowHierarchyRefined) {
+  if (typeof baseRenderAll === 'function' && !baseRenderAll.__storyflowHierarchy) {
     const refinedRenderAll = function (...args) {
       const result = baseRenderAll.apply(this, args);
       queueMicrotask(syncHierarchy);
       return result;
     };
-    refinedRenderAll.__storyflowHierarchyRefined = true;
+    refinedRenderAll.__storyflowHierarchy = true;
     window.renderAll = refinedRenderAll;
   }
 

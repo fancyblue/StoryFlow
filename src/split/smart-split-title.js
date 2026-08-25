@@ -1,4 +1,4 @@
-// Smart Split title rule v2.
+// Smart Split title rule.
 // Automatic titles follow the actual selected range everywhere:
 // - whole untouched chapter => chapter title only
 // - partial/multi-part range => chapter title + （part number）
@@ -75,13 +75,13 @@
   }, true);
 
   const previousRenderSuggestion = window.renderSuggestion;
-  if (typeof previousRenderSuggestion === 'function' && !previousRenderSuggestion.__titleRuleV2) {
+  if (typeof previousRenderSuggestion === 'function' && !previousRenderSuggestion.__titleRule) {
     const wrapped = function (...args) {
       const result = previousRenderSuggestion.apply(this, args);
       syncTitle();
       return result;
     };
-    wrapped.__titleRuleV2 = true;
+    wrapped.__titleRule = true;
     window.renderSuggestion = wrapped;
   }
 

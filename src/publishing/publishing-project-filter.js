@@ -1,4 +1,4 @@
-// Publishing project filter v1.
+// Publishing project filter.
 // The publishing view can browse several works at once without repeatedly switching the app state.
 // It reads workspace.json only on explicit lifecycle events, then reuses the in-memory snapshot.
 (function () {
@@ -436,13 +436,13 @@
   }
 
   const baseRenderParts = window.renderParts;
-  if (typeof baseRenderParts === 'function' && !baseRenderParts.__publishingProjectFilterV1) {
+  if (typeof baseRenderParts === 'function' && !baseRenderParts.__publishingProjectFilter) {
     const wrapped = function (...args) {
       const result = baseRenderParts.apply(this, args);
       renderCombinedPublishingList();
       return result;
     };
-    wrapped.__publishingProjectFilterV1 = true;
+    wrapped.__publishingProjectFilter = true;
     window.renderParts = wrapped;
   }
 

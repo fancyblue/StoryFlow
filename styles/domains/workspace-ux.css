@@ -1,4 +1,4 @@
-/* Final workspace/readability pass: clearer stats, simpler review controls, and faster work switching. */
+/* Workspace readability: clearer stats, simpler review controls, and faster work switching. */
 
 /* Stats: label is readable, number/unit share one visual baseline and vertical center. */
 .stat-card{display:grid!important;grid-template-columns:max-content max-content!important;grid-template-rows:auto auto!important;align-items:center!important;justify-content:start!important;column-gap:7px!important;row-gap:0!important}

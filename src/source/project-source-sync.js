@@ -165,7 +165,7 @@
   function ensureModeUi() {
     const panel = document.querySelector('.source-panel');
     if (!panel) return null;
-    panel.classList.add('project-source-mode-v2');
+    panel.classList.add('project-source-mode');
 
     // Remove the older mixed-purpose action row. The source controller owns this area.
     document.getElementById('sourcePanelActions')?.remove();
@@ -214,7 +214,7 @@
           <span class="project-source-origin-label">Google Docs 來源</span>
           <span id="projectSourceOriginName" class="project-source-origin-name"></span>
         </div>
-        <button id="projectRefreshSourceBtn" class="button ghost project-source-refresh-v2" type="button">更新作品來源</button>`;
+        <button id="projectRefreshSourceBtn" class="button ghost project-source-refresh" type="button">更新作品來源</button>`;
       titleInput.insertAdjacentElement('afterend', origin);
       origin.querySelector('#projectRefreshSourceBtn').addEventListener('click', refreshWholeProject);
     }
@@ -223,7 +223,7 @@
     if (!undoBar) {
       undoBar = document.createElement('section');
       undoBar.id = 'sourceSyncUndoBar';
-      undoBar.className = 'source-sync-undo-bar-v2';
+      undoBar.className = 'source-sync-undo-bar';
       undoBar.hidden = true;
       undoBar.innerHTML = `
         <span id="sourceSyncUndoCopy"></span>

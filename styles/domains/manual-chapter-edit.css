@@ -1,4 +1,4 @@
-/* Manual chapter edit affordances. Destructive actions stay visually separate from edit. */
+/* Manual article edit affordances. Destructive actions stay visually separate from edit. */
 .chapter-row-edit-menu-item{
   display:flex;
   align-items:center;
@@ -42,9 +42,9 @@
 }
 
 /* Edit mode explicitly opts into the shared sticky dialog footer. The dedicated
-   class is added by manual-chapter-edit-v1.js so creation mode keeps its compact
+   class is added by manual-chapter-edit.js so creation mode keeps its compact
    inline action row while editing always gets one predictable footer layout. */
-#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2.manual-chapter-edit-actions.sticky-dialog-actions{
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions.manual-chapter-edit-actions.sticky-dialog-actions{
   position:sticky!important;
   bottom:0!important;
   z-index:8!important;
@@ -60,7 +60,7 @@
   background:#fff!important;
   box-sizing:border-box!important;
 }
-#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2.manual-chapter-edit-actions .button{
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions.manual-chapter-edit-actions .button{
   flex:0 0 auto!important;
   width:auto!important;
   min-width:0!important;
@@ -73,7 +73,7 @@
 }
 
 @media(max-width:700px){
-  #manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2.manual-chapter-edit-actions.sticky-dialog-actions{
+  #manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions.manual-chapter-edit-actions.sticky-dialog-actions{
     display:grid!important;
     grid-template-columns:1fr 1fr!important;
     gap:10px!important;
@@ -81,7 +81,7 @@
     margin:14px 0 0!important;
     padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px))!important;
   }
-  #manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions-v2.manual-chapter-edit-actions .button{
+  #manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions.manual-chapter-edit-actions .button{
     width:100%!important;
   }
 }

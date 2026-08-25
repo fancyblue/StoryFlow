@@ -19,4 +19,7 @@ Feature-specific styles that still live at the repository root should be moved i
 5. `ui-system.css` and `layout-integrity.css`
 6. late feature refinements and domain overrides
 
+Feature-specific styles live under `styles/domains/` and use stable capability names.
+Version and migration labels belong in source comments or data-schema keys, not active asset filenames.
+
 File names describe responsibility rather than historical version numbers. Cache versions stay in `index.html`, not in filenames.

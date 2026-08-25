@@ -1,4 +1,4 @@
-// Manual chapter editing: manual articles can update both chapter title and source text.
+// Manual article editing: manual articles can update both chapter title and source text.
 // Reuses the same manual editor used for creation so add/edit follow one UI pattern.
 (function () {
   let editingChapterId = null;
@@ -22,7 +22,7 @@
       eyebrow: dialog?.querySelector('.sticky-dialog-head .eyebrow'),
       preview: document.getElementById('previewManualSourceBtn'),
       confirm: document.getElementById('confirmManualSourceBtn'),
-      actions: dialog?.querySelector('.manual-source-actions-v2, .source-flow-actions')
+      actions: dialog?.querySelector('.manual-source-actions, .source-flow-actions')
     };
   }
 
@@ -252,13 +252,13 @@
   }, true);
 
   const baseRenderChapters = window.renderChapters;
-  if (typeof baseRenderChapters === 'function' && !baseRenderChapters.__manualChapterEditV1) {
+  if (typeof baseRenderChapters === 'function' && !baseRenderChapters.__manualChapterEdit) {
     const wrapped = function (...args) {
       const result = baseRenderChapters.apply(this, args);
       queueMicrotask(decorateWorkspaceMenus);
       return result;
     };
-    wrapped.__manualChapterEditV1 = true;
+    wrapped.__manualChapterEdit = true;
     window.renderChapters = wrapped;
   }
 

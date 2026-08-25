@@ -1,4 +1,4 @@
-/* Manual source dialog layout v3.
+/* Manual source dialog layout.
    This is intentionally ID-scoped because older source/dialog layers have accumulated
    conflicting width rules. The dialog is a compact single-article editor, not a full-screen canvas. */
 
@@ -64,7 +64,7 @@
 }
 
 #manualSourceDialog#manualSourceDialog .source-flow-actions,
-#manualSourceDialog#manualSourceDialog .manual-source-actions-v2{
+#manualSourceDialog#manualSourceDialog .manual-source-actions{
   display:flex!important;
   align-items:center!important;
   justify-content:flex-end!important;
@@ -99,7 +99,7 @@
   #manualSourceDialog#manualSourceDialog #manualSourceTitle,
   #manualSourceDialog#manualSourceDialog #manualSourceText,
   #manualSourceDialog#manualSourceDialog .source-flow-actions,
-  #manualSourceDialog#manualSourceDialog .manual-source-actions-v2{
+  #manualSourceDialog#manualSourceDialog .manual-source-actions{
     width:calc(100% - 32px)!important;
     margin-left:16px!important;
     margin-right:16px!important;
@@ -109,7 +109,7 @@
     height:36dvh!important;
   }
   #manualSourceDialog#manualSourceDialog .source-flow-actions,
-  #manualSourceDialog#manualSourceDialog .manual-source-actions-v2{
+  #manualSourceDialog#manualSourceDialog .manual-source-actions{
     display:grid!important;
     grid-template-columns:1fr 1fr!important;
     margin-bottom:calc(18px + env(safe-area-inset-bottom,0px))!important;

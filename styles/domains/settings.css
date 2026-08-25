@@ -2,7 +2,7 @@
    Consolidated in the original cascade order from:
    - settings-page.css
    - backup-center.css
-   - platform-settings-v2.css
+   - platform settings
    - settings-bootstrap.css
 */
 
@@ -395,7 +395,7 @@
   .backup-center-actions .button,.backup-import-actions .button,.backup-center-disconnected .button{width:100%}
 }
 
-/* --- platform-settings-v2.css --- */
+/* --- platform settings --- */
 /* Publishing format settings: default + platforms share one compact row language. */
 .settings-view .settings-section:nth-of-type(3)>label[for="defaultIndent"],
 .settings-view .settings-section:nth-of-type(3)>#defaultIndent,
@@ -403,7 +403,7 @@
   display:none!important;
 }
 
-.settings-view .platform-manager-v2{
+.settings-view .platform-manager{
   margin:18px 0 0!important;
   padding:0!important;
   border:0!important;
@@ -421,7 +421,7 @@
   font-size:11px;
   line-height:1.5;
 }
-.settings-view .platform-add-button-v2{
+.settings-view .platform-add-button{
   flex:0 0 auto;
   min-height:32px!important;
   padding:0 10px!important;
@@ -432,16 +432,16 @@
   font-weight:750!important;
   white-space:nowrap;
 }
-.settings-view .platform-add-button-v2:hover{
+.settings-view .platform-add-button:hover{
   background:#f2efff!important;
   border-color:#cfc7f7!important;
 }
 
-.settings-view .platform-settings-v2{
+.settings-view .platform-settings-list{
   margin-top:8px!important;
   display:block!important;
 }
-.settings-view .platform-setting-row-v2{
+.settings-view .platform-setting-row{
   display:grid!important;
   grid-template-columns:minmax(160px,220px) minmax(200px,280px) max-content max-content 64px!important;
   justify-content:start;
@@ -451,7 +451,7 @@
   padding:10px 0!important;
   border-top:1px solid var(--line)!important;
 }
-.settings-view .platform-setting-row-v2:first-child{
+.settings-view .platform-setting-row:first-child{
   border-top:1px solid var(--line)!important;
 }
 .settings-view .platform-default-row{
@@ -527,7 +527,7 @@
 }
 
 @media(max-width:1180px){
-  .settings-view .platform-setting-row-v2{
+  .settings-view .platform-setting-row{
     grid-template-columns:minmax(140px,190px) minmax(180px,240px) max-content max-content 56px!important;
     gap:10px!important;
   }
@@ -536,7 +536,7 @@
 @media(max-width:900px){
   .settings-view .platform-editor-hint{display:none}
   .settings-view .platform-editor-toolbar{justify-content:flex-end}
-  .settings-view .platform-setting-row-v2{
+  .settings-view .platform-setting-row{
     grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
     gap:9px 12px!important;
     padding:12px 0!important;
@@ -556,7 +556,7 @@
 }
 
 @media(max-width:620px){
-  .settings-view .platform-setting-row-v2{
+  .settings-view .platform-setting-row{
     grid-template-columns:1fr!important;
     gap:8px!important;
   }

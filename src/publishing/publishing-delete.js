@@ -1,4 +1,4 @@
-// Publishing deletion should reuse the StoryFlow folder that is already connected.
+// Publishing deletion reuses the StoryFlow folder that is already connected.
 // The legacy publishing flow used its own showDirectoryPicker(), which forced users
 // to select the same folder again just to remove a Markdown file.
 (function () {

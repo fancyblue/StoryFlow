@@ -26,6 +26,17 @@ if (duplicateSources.length || duplicateIds.length) {
   throw new Error(`app-loader.js contains duplicate entries:\n${[...duplicateSources, ...duplicateIds].join('\n')}`);
 }
 
+const temporaryAssetName = /(?:^|\/)[^/]*(?:-v\d+|-fix|-refine)(?:\.[a-z]+)$/i;
+const unstableManifestSources = manifestSources.filter(source => temporaryAssetName.test(source));
+const indexAssets = [...index.matchAll(/(?:src|href)="\.\/([^"?#]+)(?:[?#][^"]*)?"/g)].map(match => match[1]);
+const unstableIndexAssets = indexAssets.filter(source => temporaryAssetName.test(source));
+if (unstableManifestSources.length || unstableIndexAssets.length) {
+  throw new Error(`Active assets must use stable capability names:\n${[
+    ...unstableManifestSources.map(name => `manifest/${name}`),
+    ...unstableIndexAssets.map(name => `index/${name}`)
+  ].join('\n')}`);
+}
+
 if (missing.length) {
   throw new Error(`index.html references missing files:\n${[...new Set(missing)].join('\n')}`);
 }

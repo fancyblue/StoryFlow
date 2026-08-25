@@ -1,4 +1,4 @@
-/* Source article UX v2: consistent source cards and single-article manual creation. */
+/* Source article UX: consistent source cards and single-article manual creation. */
 
 /* Google source metadata is a compact utility row, not a second title block. */
 .source-panel.project-source-google .project-source-origin{
@@ -29,7 +29,7 @@
   text-overflow:ellipsis!important;
 }
 .source-panel.project-source-google .project-source-origin-name[hidden]{display:none!important}
-.source-panel.project-source-google .project-source-refresh-v2{
+.source-panel.project-source-google .project-source-refresh{
   min-height:38px!important;
   height:38px!important;
 }
@@ -40,41 +40,41 @@
 .source-panel .chapter-group-label small{display:none!important}
 
 /* Manual article entry should read like a compact editor, not a full-screen document. */
-#manualSourceDialog.manual-source-dialog-v2{
+#manualSourceDialog.manual-source-dialog{
   width:min(760px,calc(100vw - 32px))!important;
   max-width:760px!important;
 }
-#manualSourceDialog.manual-source-dialog-v2 .source-editor-card{
+#manualSourceDialog.manual-source-dialog .source-editor-card{
   width:100%!important;
   max-width:none!important;
   max-height:min(82dvh,760px)!important;
   padding:0!important;
   overflow:auto!important;
 }
-#manualSourceDialog.manual-source-dialog-v2 .source-editor-card > .field-label,
-#manualSourceDialog.manual-source-dialog-v2 .source-editor-card > .text-input,
-#manualSourceDialog.manual-source-dialog-v2 .source-editor-card > .source-manual-text,
-#manualSourceDialog.manual-source-dialog-v2 .source-editor-card > .source-flow-actions{
+#manualSourceDialog.manual-source-dialog .source-editor-card > .field-label,
+#manualSourceDialog.manual-source-dialog .source-editor-card > .text-input,
+#manualSourceDialog.manual-source-dialog .source-editor-card > .source-manual-text,
+#manualSourceDialog.manual-source-dialog .source-editor-card > .source-flow-actions{
   width:auto!important;
   max-width:none!important;
   margin-left:22px!important;
   margin-right:22px!important;
   box-sizing:border-box!important;
 }
-#manualSourceDialog.manual-source-dialog-v2 .source-editor-card > .field-label{
+#manualSourceDialog.manual-source-dialog .source-editor-card > .field-label{
   margin-top:16px!important;
   margin-bottom:7px!important;
   color:#58748b!important;
   font-size:12.5px!important;
   font-weight:750!important;
 }
-#manualSourceDialog.manual-source-dialog-v2 #manualSourceTitle{
+#manualSourceDialog.manual-source-dialog #manualSourceTitle{
   min-height:44px!important;
   height:44px!important;
   font-size:15px!important;
   font-weight:700!important;
 }
-#manualSourceDialog.manual-source-dialog-v2 #manualSourceText{
+#manualSourceDialog.manual-source-dialog #manualSourceText{
   min-height:280px!important;
   height:min(40dvh,380px)!important;
   max-height:42dvh!important;
@@ -83,7 +83,7 @@
   font-size:15px!important;
   line-height:1.75!important;
 }
-#manualSourceDialog.manual-source-dialog-v2 .manual-source-actions-v2{
+#manualSourceDialog.manual-source-dialog .manual-source-actions{
   display:flex!important;
   align-items:center!important;
   justify-content:flex-end!important;
@@ -91,7 +91,7 @@
   margin-top:16px!important;
   margin-bottom:20px!important;
 }
-#manualSourceDialog.manual-source-dialog-v2 .manual-source-actions-v2 .button{
+#manualSourceDialog.manual-source-dialog .manual-source-actions .button{
   min-height:40px!important;
   padding:0 15px!important;
   font-size:13px!important;
@@ -99,19 +99,19 @@
 }
 
 /* Manual preview is a one-article review. No chapter tabs or aggregate statistics. */
-#sourcePreviewDialog.manual-single-preview-v2{
+#sourcePreviewDialog.manual-single-preview{
   width:min(780px,calc(100vw - 32px))!important;
   max-width:780px!important;
 }
-#sourcePreviewDialog.manual-single-preview-v2 .source-preview-card{
+#sourcePreviewDialog.manual-single-preview .source-preview-card{
   width:100%!important;
   max-width:none!important;
 }
-#sourcePreviewDialog.manual-single-preview-v2 #sourcePreviewSummary,
-#sourcePreviewDialog.manual-single-preview-v2 #sourcePreviewChapterTabs{
+#sourcePreviewDialog.manual-single-preview #sourcePreviewSummary,
+#sourcePreviewDialog.manual-single-preview #sourcePreviewChapterTabs{
   display:none!important;
 }
-#sourcePreviewDialog.manual-single-preview-v2 #sourcePreviewContent{
+#sourcePreviewDialog.manual-single-preview #sourcePreviewContent{
   min-height:340px!important;
   max-height:55dvh!important;
   margin-top:18px!important;
@@ -119,7 +119,7 @@
   font-size:15px!important;
   line-height:1.85!important;
 }
-#sourcePreviewDialog.manual-single-preview-v2 .sticky-dialog-actions{
+#sourcePreviewDialog.manual-single-preview .sticky-dialog-actions{
   justify-content:flex-end!important;
   padding:16px 22px 22px!important;
 }
@@ -159,32 +159,32 @@
 }
 
 @media(max-width:700px){
-  #manualSourceDialog.manual-source-dialog-v2,
-  #sourcePreviewDialog.manual-single-preview-v2{
+  #manualSourceDialog.manual-source-dialog,
+  #sourcePreviewDialog.manual-single-preview{
     width:calc(100vw - 12px)!important;
     max-width:none!important;
   }
-  #manualSourceDialog.manual-source-dialog-v2 .source-editor-card > .field-label,
-  #manualSourceDialog.manual-source-dialog-v2 .source-editor-card > .text-input,
-  #manualSourceDialog.manual-source-dialog-v2 .source-editor-card > .source-manual-text,
-  #manualSourceDialog.manual-source-dialog-v2 .source-editor-card > .source-flow-actions{
+  #manualSourceDialog.manual-source-dialog .source-editor-card > .field-label,
+  #manualSourceDialog.manual-source-dialog .source-editor-card > .text-input,
+  #manualSourceDialog.manual-source-dialog .source-editor-card > .source-manual-text,
+  #manualSourceDialog.manual-source-dialog .source-editor-card > .source-flow-actions{
     margin-left:16px!important;
     margin-right:16px!important;
   }
-  #manualSourceDialog.manual-source-dialog-v2 #manualSourceText{
+  #manualSourceDialog.manual-source-dialog #manualSourceText{
     min-height:240px!important;
     height:38dvh!important;
   }
-  #manualSourceDialog.manual-source-dialog-v2 .manual-source-actions-v2{
+  #manualSourceDialog.manual-source-dialog .manual-source-actions{
     display:grid!important;
     grid-template-columns:1fr 1fr!important;
   }
-  #manualSourceDialog.manual-source-dialog-v2 .manual-source-actions-v2 .button{width:100%!important}
-  #sourcePreviewDialog.manual-single-preview-v2 .sticky-dialog-actions{
+  #manualSourceDialog.manual-source-dialog .manual-source-actions .button{width:100%!important}
+  #sourcePreviewDialog.manual-single-preview .sticky-dialog-actions{
     padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px))!important;
   }
   .source-panel.project-source-google .project-source-origin{
     grid-template-columns:1fr!important;
   }
-  .source-panel.project-source-google .project-source-refresh-v2{width:100%!important}
+  .source-panel.project-source-google .project-source-refresh{width:100%!important}
 }

@@ -22,7 +22,7 @@
     const remaining = blocks.length - Number(current.confirmedBlockCount || 0);
     if (remaining <= 0) return;
 
-    // The scene-aware suggestNextPart installed by boundary-v2.js is used here,
+    // The scene-aware suggestNextPart installed by boundary-engine.js is used here,
     // so the next default cut still lands only on a real source scene boundary.
     suggestNextPart();
   };

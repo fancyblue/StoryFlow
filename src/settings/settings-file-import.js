@@ -1,4 +1,4 @@
-// Keep settings.json import compatible with macOS/iOS native file pickers.
+// Settings import compatibility for macOS/iOS native file pickers.
 // Some WebKit/macOS combinations grey out JSON files when a hidden file input
 // declares `accept="application/json,.json"`, especially for cloud-backed files.
 // StoryFlow already validates the selected file by parsing JSON and checking the

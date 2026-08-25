@@ -81,14 +81,14 @@
   }
 
   const baseRenderParts = window.renderParts;
-  if (typeof baseRenderParts === 'function' && !baseRenderParts.__publishingProjectSwitcherV2) {
+  if (typeof baseRenderParts === 'function' && !baseRenderParts.__publishingProjectSwitcher) {
     const wrapped = function renderPartsWithProjectSwitcher(...args) {
       const result = baseRenderParts.apply(this, args);
       ensurePublishingProjectSwitcher();
       renderMenu();
       return result;
     };
-    wrapped.__publishingProjectSwitcherV2 = true;
+    wrapped.__publishingProjectSwitcher = true;
     window.renderParts = wrapped;
   }
 

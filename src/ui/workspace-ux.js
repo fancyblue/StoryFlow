@@ -1,4 +1,4 @@
-// Final workspace UX refinements: quick work switching, clearer manual-source state,
+// Workspace UX: quick work switching, clearer manual-source state,
 // and a cleaner Smart Split review toolbar.
 (function () {
   function projectList() {
@@ -249,13 +249,13 @@
   }));
 
   const baseRenderAll = window.renderAll;
-  if (typeof baseRenderAll === 'function' && !baseRenderAll.__storyflowUxRefined) {
+  if (typeof baseRenderAll === 'function' && !baseRenderAll.__storyflowWorkspaceUx) {
     const refinedRenderAll = function (...args) {
       const result = baseRenderAll.apply(this, args);
       queueMicrotask(syncAll);
       return result;
     };
-    refinedRenderAll.__storyflowUxRefined = true;
+    refinedRenderAll.__storyflowWorkspaceUx = true;
     window.renderAll = refinedRenderAll;
   }
 

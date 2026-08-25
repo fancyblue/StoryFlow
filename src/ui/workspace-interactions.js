@@ -1,4 +1,4 @@
-// StoryFlow incremental behavior patches.
+// Workspace interaction dialogs and review controls.
 (function () {
   let suggestionPreviewPlatform = '';
 

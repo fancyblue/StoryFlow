@@ -1,10 +1,10 @@
 /* Publishing domain stylesheet.
    Consolidated in the original cascade order from:
    - publishing-flow.css
-   - publishing-disclosure-button-v1.css
+   - publishing disclosure
    - publishing-project-switcher.css
-   - publishing-grouping-v1.css
-   - publishing-project-filter-v1.css
+   - publishing grouping
+   - publishing project filter
 */
 
 /* --- publishing-flow.css --- */
@@ -314,7 +314,7 @@
   .platform-preview-actions .button:last-child{grid-column:1/-1}
 }
 
-/* --- publishing-disclosure-button-v1.css --- */
+/* --- publishing disclosure --- */
 /* Publishing row actions use the same disclosure/destructive-action pattern as Works.
    Primary/secondary actions stay visible; destructive delete lives behind a final overflow menu. */
 .publish-list-actions{position:relative!important}
@@ -464,8 +464,8 @@
 @media(max-width:820px){.publishing-project-badge.publishing-project-switcher{width:100%!important}.publishing-project-compact{justify-content:flex-start;width:100%}.publishing-project-switch-btn{flex:1 1 auto;max-width:none}.publishing-project-menu{left:0;right:auto;width:min(100%,320px)}}
 @media(max-width:520px){.publishing-project-compact{display:grid;grid-template-columns:auto minmax(0,1fr)}.publishing-project-label{font-size:11.5px}.publishing-project-switch-btn{min-width:0;width:100%}}
 
-/* --- publishing-grouping-v1.css --- */
-/* Publishing grouping v1 — work > chapter > article. */
+/* --- publishing grouping --- */
+/* Publishing grouping — work > chapter > article. */
 .publishing-stats{display:none!important}
 
 .publishing-project-group{
@@ -579,7 +579,7 @@ button.publish-delete-btn{
   .publishing-chapter-group-head{min-height:40px;padding:8px 10px}
 }
 
-/* --- publishing-project-filter-v1.css --- */
+/* --- publishing project filter --- */
 /* Multi-work publishing filter: one compact filter row, no duplicate dashboard stats/switcher. */
 .publishing-stats{display:none!important}
 .publishing-page-head .publishing-project-badge{display:none!important}
