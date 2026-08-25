@@ -88,6 +88,60 @@ test('backup center renders safe workspace metadata', async ({ page }) => {
   expect(pageErrors).toEqual([]);
 });
 
+test('publishing treats an empty project selection as all and keeps the continue action grouped', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await page.locator('#createProjectManually').click();
+  await page.evaluate(() => {
+    state.projectTitle = '發布篩選測試';
+    const chapter = state.chapters[0];
+    chapter.title = '測試章節';
+    chapter.draft = '測試內容';
+    chapter.confirmedBlockCount = 1;
+    chapter.parts = [{
+      id: 'publishing-filter-part',
+      title: '測試發布文章',
+      chars: 4,
+      startBlock: 0,
+      endBlock: 1,
+      formatted: '測試內容',
+      platformStatus: {}
+    }];
+    renderAll();
+  });
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.getByText('測試發布文章')).toBeVisible();
+  await page.locator('#publishingProjectFilterBtn').click();
+  const checkbox = page.locator('.publishing-project-filter-option input').first();
+  await expect(checkbox).toBeChecked();
+  await checkbox.click({ noWaitAfter: true });
+
+  await expect(page.locator('#publishingProjectFilterSummary')).toHaveText('全部');
+  await expect(page.locator('.publishing-project-filter-option input').first()).toBeChecked();
+  await expect(page.getByText('測試發布文章')).toBeVisible();
+  await expect(page.getByText('尚未選擇作品')).toHaveCount(0);
+
+  const layout = await page.evaluate(() => {
+    const stack = document.querySelector('.publishing-filter-stack')?.getBoundingClientRect();
+    const actions = document.querySelector('.publishing-toolbar-actions')?.getBoundingClientRect();
+    const button = document.getElementById('continuePublishingBtn')?.getBoundingClientRect();
+    const hint = document.querySelector('.publishing-toolbar-actions .muted')?.getBoundingClientRect();
+    if (!stack || !actions || !button || !hint) return null;
+    return {
+      actionsAfterFilters: actions.left >= stack.right,
+      buttonHintGap: Math.round(hint.left - button.right),
+      verticalDelta: Math.round(Math.abs((button.top + button.height / 2) - (hint.top + hint.height / 2)))
+    };
+  });
+  expect(layout).not.toBeNull();
+  expect(layout.actionsAfterFilters).toBe(true);
+  expect(layout.buttonHintGap).toBeLessThanOrEqual(16);
+  expect(layout.verticalDelta).toBeLessThanOrEqual(2);
+  expect(pageErrors).toEqual([]);
+});
+
 test('remembered folder supports fast reconnect and explicit leave suppression', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.goto('/tests/quick-start-ui.html');

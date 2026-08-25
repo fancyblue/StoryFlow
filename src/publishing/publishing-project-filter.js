@@ -109,6 +109,9 @@
     }
     const valid = new Set(ids);
     selectedProjectIds = new Set([...selectedProjectIds].filter(id => valid.has(id)));
+    // An empty project filter means "all works". This avoids a dead-end state
+    // where every checkbox is cleared and the publishing list disappears.
+    if (ids.length && !selectedProjectIds.size) selectedProjectIds = new Set(ids);
   }
 
   function entriesForProject(project) {
@@ -134,8 +137,12 @@
 
   function allSelectedEntries() {
     const snapshot = mergeActiveState(workspaceSnapshot || fallbackSnapshot());
-    return (snapshot.projects || [])
-      .filter(project => selectedProjectIds.has(project.id))
+    const projects = snapshot.projects || [];
+    const selected = selectedProjectIds.size
+      ? selectedProjectIds
+      : new Set(projects.map(project => project.id));
+    return projects
+      .filter(project => selected.has(project.id))
       .flatMap(entriesForProject);
   }
 
@@ -256,7 +263,7 @@
     });
 
     if (!projects.length) summary.textContent = '無作品';
-    else if (selectedProjectIds.size === projects.length) summary.textContent = '全部';
+    else if (!selectedProjectIds.size || selectedProjectIds.size === projects.length) summary.textContent = '全部';
     else if (selectedProjectIds.size === 1) {
       const only = projects.find(project => selectedProjectIds.has(project.id));
       summary.textContent = only?.title || only?.state?.projectTitle || '1 個';
@@ -401,12 +408,6 @@
       } else if (!allEntries.length) {
         empty.innerHTML = '<strong>尚未有已確認文章</strong><span>先回到工作台載入內容並完成第一篇切篇。</span><button class="button primary" type="button">回到工作台開始切篇</button>';
         empty.querySelector('button').onclick = () => window.StoryFlowNavigate?.('workspace');
-      } else if (!selectedProjectIds.size) {
-        empty.innerHTML = '<strong>尚未選擇作品</strong><span>至少選擇一個作品，才能查看發布文章。</span><button class="button ghost" type="button">選取全部作品</button>';
-        empty.querySelector('button').onclick = () => {
-          selectedProjectIds = new Set((snapshot.projects || []).map(project => project.id));
-          renderCombinedPublishingList();
-        };
       } else {
         empty.innerHTML = '<strong>沒有符合目前篩選的文章</strong><span>文章仍然存在，只是沒有符合目前選擇的發布狀態。</span><button class="button ghost" type="button">清除狀態篩選</button>';
         empty.querySelector('button').onclick = () => {

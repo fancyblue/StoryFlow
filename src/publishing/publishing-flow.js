@@ -124,8 +124,10 @@
             <button class="publishing-filter" type="button" data-filter="partial">部分發布</button>
             <button class="publishing-filter" type="button" data-filter="complete">已完成</button>
           </div>
-          <button id="continuePublishingBtn" class="button primary publishing-continue-btn" type="button" hidden>繼續發布</button>
-          <span class="muted">最新確認的文章顯示在最上面。</span>
+          <div class="publishing-toolbar-actions">
+            <button id="continuePublishingBtn" class="button primary publishing-continue-btn" type="button" hidden>繼續發布</button>
+            <span class="muted">最新確認的文章顯示在最上面。</span>
+          </div>
         </div>`;
       main.appendChild(publishingView);
       publishingView.appendChild(publishingPanel);
