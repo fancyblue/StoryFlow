@@ -67,6 +67,10 @@ test('workspace safety fixtures pass without a real folder', async ({ page }) =>
   await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
   await expect(page.getByText('ALL PASS')).toBeVisible();
 
+  await page.goto('/tests/destructive-action-guard-core.html');
+  await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
+  await expect(page.getByText('ALL PASS')).toBeVisible();
+
   await page.goto('/tests/workspace-safety-ui.html');
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByRole('button', { name: /備份/ })).toBeVisible();

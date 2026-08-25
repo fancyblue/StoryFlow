@@ -65,6 +65,22 @@ const scripts = [
   ...collectJavaScript(join(root, 'src'))
 ].sort();
 
+const protectedFlows = [
+  ['src/projects/projects.js', 'before-project-delete'],
+  ['src/ui/app-ux.js', 'before-chapter-delete'],
+  ['src/publishing/publishing-delete.js', 'before-publishing-delete'],
+  ['src/source/source-flow.js', 'before-source-refresh']
+];
+const unguardedFlows = protectedFlows.filter(([relative, reason]) => {
+  const source = readFileSync(join(root, relative), 'utf8');
+  return !source.includes('prepareRecovery') || !source.includes(reason) || source.includes(`createWorkspaceRecoverySnapshot('${reason}')`);
+});
+if (unguardedFlows.length) {
+  throw new Error(`High-risk flows must use StoryFlowProjectPersistence.prepareRecovery():\n${unguardedFlows
+    .map(([relative, reason]) => `${relative}: ${reason}`)
+    .join('\n')}`);
+}
+
 for (const script of scripts) {
   execFileSync(process.execPath, ['--check', script], { stdio: 'inherit' });
 }

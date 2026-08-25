@@ -142,9 +142,9 @@
     if (!confirm(`刪除章節「${chapter.title}」？\n\n會從目前作品移除這個章節與工作區內容；Google Docs 原稿不會刪除。`)) return;
 
     try {
-      const saved = await window.StoryFlowProjectPersistence?.flush?.('before-chapter-delete');
-      if (!saved) throw new Error('目前工作區尚未完整保存。');
-      await StoryFlowIntegrations.createWorkspaceRecoverySnapshot('before-chapter-delete');
+      const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
+      if (typeof prepare !== 'function') throw new Error('Recovery 安全元件尚未準備完成。');
+      await prepare('before-chapter-delete');
     } catch (error) {
       notify(`尚未刪除章節：無法建立 Recovery 安全副本（${error.message}）`, true);
       return;
