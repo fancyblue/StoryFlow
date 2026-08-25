@@ -309,6 +309,85 @@ test('publishing treats an empty project selection as all and keeps the continue
   expect(pageErrors).toEqual([]);
 });
 
+test('published articles keep an independent afterword and can exclude it from output', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '後記測試作品' }, { quiet: true });
+    const chapter = state.chapters[0];
+    chapter.title = '後記測試章節';
+    chapter.draft = '正文原稿。';
+    chapter.confirmedBlockCount = 1;
+    chapter.parts = [{
+      id: 'afterword-test-part',
+      title: '有後記的文章',
+      chars: 5,
+      startBlock: 0,
+      endBlock: 1,
+      raw: '正文原稿。',
+      formatted: '正文原稿。',
+      published: false,
+      platformStatus: {}
+    }];
+    renderAll();
+  });
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  const card = page.locator('.publish-list-item', { hasText: '有後記的文章' });
+  await card.getByRole('button', { name: /展開.*發布平台/ }).click();
+
+  const editor = card.locator('.publish-afterword-editor');
+  await expect(editor).toBeVisible();
+  await editor.locator('textarea').fill('這是寫給讀者的後記。');
+  await expect(editor.locator('.publish-afterword-count')).toContainText('10 字');
+  await editor.getByRole('button', { name: '保存後記', exact: true }).click();
+  await expect(card.locator('.publish-afterword-badge')).toContainText('有後記 10 字');
+
+  await card.getByRole('button', { name: '預覽預設設定', exact: true }).click();
+  const preview = page.locator('#platformPreviewDialog');
+  await expect(preview).toBeVisible();
+  await expect(preview.locator('#platformPreviewContent')).toContainText('正文原稿。');
+  await expect(preview.locator('#platformPreviewContent')).toContainText('後記');
+  await expect(preview.locator('#platformPreviewContent')).toContainText('這是寫給讀者的後記。');
+
+  const include = preview.locator('#platformPreviewIncludeAfterword');
+  await expect(include).toBeChecked();
+  await include.uncheck();
+  await expect(preview.locator('#platformPreviewContent')).not.toContainText('這是寫給讀者的後記。');
+  await preview.getByRole('button', { name: '關閉', exact: true }).last().click();
+
+  const stateResult = await page.evaluate(() => {
+    const chapter = state.chapters.find(item => item.title === '後記測試章節');
+    chapter.draft = '來源更新後的正文。';
+    const part = chapter.parts[0];
+    return {
+      afterword: part.afterword,
+      includeAfterword: part.includeAfterword,
+      output: StoryFlowPublishingOutput.forPart(part, '')
+    };
+  });
+  expect(stateResult).toEqual({
+    afterword: '這是寫給讀者的後記。',
+    includeAfterword: false,
+    output: '正文原稿。'
+  });
+
+  await page.evaluate(() => {
+    window.__afterwordDeleteMessages = [];
+    window.confirm = message => {
+      window.__afterwordDeleteMessages.push(message);
+      return false;
+    };
+  });
+  await card.locator('.publish-more-btn').click();
+  await card.getByRole('menuitem', { name: '刪除文章', exact: true }).click();
+  const deleteMessage = await page.evaluate(() => window.__afterwordDeleteMessages.at(-1));
+  expect(deleteMessage).toContain('1 篇有後記');
+  expect(deleteMessage).toContain('後記也會一併刪除');
+  expect(pageErrors).toEqual([]);
+});
+
 test('remembered folder supports fast reconnect and explicit leave suppression', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.goto('/tests/quick-start-ui.html');

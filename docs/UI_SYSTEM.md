@@ -33,6 +33,8 @@ Current shared disclosures include workspace work switching, Smart Split prefere
 
 Do not place a destructive action beside the primary action when an overflow menu can keep the decision hierarchy clearer.
 
+Publishing rows keep article-level editing inside the expanded “管理發布” region. The afterword editor appears before platform status because it affects every platform; its save action is local to that article. A compact “有後記 N 字” badge exposes the state without expanding the row, while the preview dialog owns the final include/exclude choice.
+
 ## Dialog behavior
 
 - One dialog represents one decision step.

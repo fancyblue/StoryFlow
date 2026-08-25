@@ -15,6 +15,7 @@
     next.chapters ||= [];
     next.chapters.forEach(chapter => {
       chapter.parts ||= [];
+      chapter.parts.forEach(normalizePartAfterword);
       chapter.source ||= null;
       if (typeof chapter.confirmedBlockCount !== 'number') chapter.confirmedBlockCount = 0;
     });

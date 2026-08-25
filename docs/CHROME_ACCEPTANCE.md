@@ -32,6 +32,10 @@ Use this checklist before treating a release as ready for daily writing. It exer
 ## 3. Publishing and destructive-action safety
 
 - [ ] Create and save one test publishing part, then confirm its Markdown exists under `Works/<work>/<chapter>/`.
+- [ ] Expand the publishing part, add an afterword and confirm body/afterword counts are separate; verify the Markdown contains body, separator and afterword.
+- [ ] In preview, turn off “附上後記”; confirm preview/copy output contains only the body and the article Markdown is rewritten consistently.
+- [ ] Refresh the source chapter and confirm the publishing part's afterword remains unchanged.
+- [ ] Start deleting the part, confirm the warning reports the affected afterword, then cancel before the destructive checks continue.
 - [ ] Delete the test publishing part and confirm a `workspace.before-publishing-delete-*.json` file appears in `Recovery/`.
 - [ ] Delete an empty test chapter and confirm a `workspace.before-chapter-delete-*.json` file appears.
 - [ ] Delete a disposable work and confirm a `workspace.before-project-delete-*.json` file appears.
