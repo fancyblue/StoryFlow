@@ -189,7 +189,7 @@
     closeProjectQuickSwitch();
     goTo('workspace');
     requestAnimationFrame(() => {
-      window.StoryFlowProjectSourceModeV2?.syncUi?.();
+      window.StoryFlowProjectSourceSync?.syncUi?.();
       window.StoryFlowSourceOnboarding?.openSourceChooser?.({ creation: true, allowManualBeforeSettings: true });
     });
     return true;

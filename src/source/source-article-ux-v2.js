@@ -3,7 +3,7 @@
 // redundant Google source labels from the chapter list.
 (function () {
   function mode() {
-    try { return window.StoryFlowProjectSourceModeV2?.mode?.() ?? null; }
+    try { return window.StoryFlowProjectSourceSync?.mode?.() ?? null; }
     catch (_) { return null; }
   }
 
@@ -84,7 +84,7 @@
     // orders. Explicitly invoke the final public renderer so mixed Google/manual works
     // immediately show the newly added manual article in the left chapter list.
     rerenderChapterList();
-    window.StoryFlowProjectSourceModeV2?.syncUi?.();
+    window.StoryFlowProjectSourceSync?.syncUi?.();
     if (chapter.draft) suggestNextPart();
     notify(`已新增文章：${title}`);
   }
@@ -224,11 +224,11 @@
         window.StoryFlowProjects?.createProject?.({ title: '未命名作品' });
         closeQuickSwitch();
         window.setTimeout(() => {
-          window.StoryFlowProjectSourceModeV2?.syncUi?.();
+          window.StoryFlowProjectSourceSync?.syncUi?.();
           const input = document.getElementById('projectTitle');
           // Source mode chooser intentionally owns focus for a brand-new work; only
           // focus the title if a mode has already been established by migration.
-          if (window.StoryFlowProjectSourceModeV2?.mode?.()) {
+          if (window.StoryFlowProjectSourceSync?.mode?.()) {
             input?.focus();
             input?.select();
           }
