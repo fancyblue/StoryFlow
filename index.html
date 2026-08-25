@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="./styles/domains/dialogs.css?v=20260825-p2b" />
   <link rel="stylesheet" href="./source-flow.css?v=20260824-flow2" />
   <link rel="stylesheet" href="./projects.css" />
-  <link rel="stylesheet" href="./styles/domains/publishing.css?v=20260826-p5a" data-storyflow-publishing-domain />
+  <link rel="stylesheet" href="./styles/domains/publishing.css?v=20260826-p6c" data-storyflow-publishing-domain />
   <link rel="stylesheet" href="./sidebar-layout.css" data-storyflow-sidebar-layout />
   <link rel="stylesheet" href="./app-ux.css" />
   <link rel="stylesheet" href="./connection-ui.css?v=20260825-p1e" />
@@ -40,6 +40,7 @@
   <link id="storyflowManualChapterEditCss" rel="stylesheet" href="./styles/domains/manual-chapter-edit.css?v=20260825-p2b" />
   <link id="storyflowWorksLibraryUxCss" rel="stylesheet" href="./styles/domains/works-library.css?v=20260825-p2b" />
   <link rel="stylesheet" href="./styles/domains/publishing-refinements.css?v=20260825-domain1" />
+  <link id="storyflowGlobalSearchCss" rel="stylesheet" href="./styles/domains/global-search.css?v=20260826-p6d" />
 </head>
 <body>
   <div class="app-shell">
@@ -50,6 +51,10 @@
         <button class="nav-item" data-view="projects"><span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">作品</span></button>
         <button class="nav-item" data-view="publishing"><span class="nav-icon" aria-hidden="true">↗</span><span class="nav-label">發布</span></button>
         <button class="nav-item" id="settingsNav" data-view="settings"><span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">設定</span></button>
+        <button class="nav-item nav-search-trigger" id="globalSearchBtn" type="button" data-hint="搜尋">
+          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg></span>
+          <span class="nav-label">搜尋 <kbd>⌘K</kbd></span>
+        </button>
       </nav>
       <div class="sidebar-note"><strong>安全設計</strong><span>公開 GitHub 只放程式。原稿從你授權的 Google Docs 讀取，產出檔只寫入你主動選擇的本機資料夾。</span></div>
     </aside>
@@ -123,6 +128,6 @@
 
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://apis.google.com/js/api.js" async defer></script>
-  <script src="./app-loader.js?v=20260826-p5a"></script>
+  <script src="./app-loader.js?v=20260826-p6c"></script>
 </body>
 </html>

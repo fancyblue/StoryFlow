@@ -48,6 +48,30 @@ Deletion, replacement and source refresh follow the safety rules in [ARCHITECTUR
 - Preview and copy use the article-level `includeAfterword` choice consistently across platforms.
 - Deleting an article or rewinding later split points warns how many affected articles contain afterwords before Recovery and deletion begin.
 
+## Publishing titles
+
+```text
+發布 → 展開文章 → 輸入發布標題 → 保存 → 預覽
+                         ↘ 留白 → 沿用內部文章名稱
+```
+
+- The internal article name remains the stable source and Markdown filename; editing the publishing title never renames either one.
+- The article list leads with the publishing title and shows the internal name as a quiet secondary line only when they differ.
+- Preview and copy present the publishing title separately from body/afterword content so each can be pasted into the matching platform field.
+- Source refresh keeps an existing publishing title unchanged.
+
+## Global search and quick jump
+
+```text
+搜尋／⌘K → 輸入名稱 → 選擇結果 → 切換作品並開啟章節／發布文章
+            ↘ 勾選「同時搜尋正文」→ 顯示片段 → 開啟內容位置或預覽
+```
+
+- Name search covers loaded works, chapters, internal article names and publishing titles.
+- Body search is opt-in because it is broader and may return both the source chapter and its publishing article.
+- Results are generated in memory from the current workspace and are discarded when the dialog closes; no persistent or remote index is created.
+- `↑` / `↓`, Enter and Escape support a keyboard-first desktop flow. Opening a result closes search before navigating, and an already-open decision dialog prevents search from appearing on top of it.
+
 ## Platform publication records
 
 ```text

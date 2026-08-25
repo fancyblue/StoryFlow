@@ -6,6 +6,10 @@ StoryFlow 是一個以瀏覽器執行的長篇內容切篇與多平台發布工�
 
 每個平台也可保存一筆輕量發布紀錄：發布時間與選填的文章網址。保存紀錄會同步把該平台標為已發布；取消已發布時會明確提示並清除這筆紀錄。這不是排程或平台串接，StoryFlow 不會自動登入發布平台。
 
+文章可另設「發布標題」供讀者看到，同時保留內部文章名稱與既有 Markdown 檔名。發布預覽會把標題和內容分開顯示、分開複製；留白則自動沿用內部名稱。
+
+側欄的「搜尋」或 `⌘K`（Windows / Linux 為 `Ctrl+K`）可跨目前工作區內的作品、章節、內部名稱與發布標題快速跳轉。正文搜尋預設關閉，需要時才勾選「同時搜尋正文」；搜尋索引只在當下記憶體建立，不會把私人內容另存進 GitHub Pages 或瀏覽器儲存空間。
+
 ## Clone / Fork 後使用
 
 Repo **不包含任何人的 Google OAuth Client ID 或 Picker API Key**。每個使用者可以使用自己的 Google Cloud 專案，不需要修改程式碼。
@@ -35,7 +39,7 @@ Google OAuth 在取得 Drive / Docs 存取權之前就必須知道 Web OAuth Cli
 ```text
 StoryFlow/
 ├─ settings.json      # Google Client ID、Picker API Key、平台與排版設定
-├─ workspace.json     # 作品、章節、切篇、後記、發布進度與平台發布紀錄
+├─ workspace.json     # 作品、章節、切篇、發布標題、後記、發布進度與平台發布紀錄
 ├─ workspace.backup.json # 最近一次正常寫入前的工作區備份
 ├─ Recovery/         # 循環備份、衝突副本與高風險操作前快照
 └─ Works/

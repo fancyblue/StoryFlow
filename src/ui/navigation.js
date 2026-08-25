@@ -37,7 +37,7 @@
 
   function installNavHints() {
     nav.querySelectorAll('.nav-item').forEach(item => {
-      const label = item.querySelector('.nav-label')?.textContent?.trim()
+      const label = item.id === 'globalSearchBtn' ? '搜尋' : item.querySelector('.nav-label')?.textContent?.trim()
         || item.querySelector('span:last-child')?.textContent?.trim();
       if (!label) return;
       item.dataset.hint = label;
@@ -215,7 +215,7 @@
 
   nav.addEventListener('click', event => {
     const button = event.target.closest('.nav-item');
-    if (!button) return;
+    if (!button || !button.dataset.view) return;
     event.preventDefault();
     goTo(button.dataset.view);
   });

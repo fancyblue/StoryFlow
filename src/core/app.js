@@ -105,6 +105,7 @@ function charCount(text) {
 
 function normalizePublishingPart(part) {
   if (!part || typeof part !== 'object') return part;
+  if (typeof part.publishTitle !== 'string') part.publishTitle = '';
   if (typeof part.afterword !== 'string') part.afterword = '';
   if (typeof part.includeAfterword !== 'boolean') part.includeAfterword = true;
   if (!part.publicationRecords || typeof part.publicationRecords !== 'object' || Array.isArray(part.publicationRecords)) {
@@ -267,7 +268,7 @@ function adjustSuggestion(delta) {
 
 function chapterMetadata(chapter) {
   return {
-    schemaVersion: 5,
+    schemaVersion: 6,
     projectTitle: state.projectTitle,
     chapter: chapter.title,
     source: chapter.source,
@@ -277,7 +278,8 @@ function chapterMetadata(chapter) {
     updatedAt: new Date().toISOString(),
     parts: chapter.parts.map(part => ({
       id: part.id, title: part.title, startBlock: part.startBlock, endBlock: part.endBlock,
-      chars: part.chars, afterwordChars: charCount(part.afterword), includeAfterword: part.includeAfterword !== false,
+      publishTitle: part.publishTitle || '', chars: part.chars,
+      afterwordChars: charCount(part.afterword), includeAfterword: part.includeAfterword !== false,
       publicationRecords: structuredClone(part.publicationRecords || {}),
       published: part.published, platformStatus: part.platformStatus
     }))
@@ -290,7 +292,7 @@ async function confirmSuggestion() {
   const part = {
     id: crypto.randomUUID(), title: suggestion.name, startBlock: suggestion.start, endBlock: suggestion.end,
     chars: suggestion.chars, raw: suggestion.raw, formatted: suggestion.formatted, published: false,
-    afterword: '', includeAfterword: true,
+    publishTitle: '', afterword: '', includeAfterword: true,
     publicationRecords: {},
     platformStatus: Object.fromEntries(platforms.map(platform => [platform, false]))
   };

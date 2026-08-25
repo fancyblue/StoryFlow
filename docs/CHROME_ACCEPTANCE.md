@@ -16,6 +16,8 @@ Use this checklist before treating a release as ready for daily writing. It exer
 - [ ] Create a manual work and add one test chapter.
 - [ ] Confirm the new work appears only after “確定新增” or preview confirmation.
 - [ ] Check that “切換作品”, “切篇偏好” and publishing work filters use the same down/up chevron behavior.
+- [ ] Open global search from the sidebar and with `⌘K` / `Ctrl+K`; search another work or chapter by name, use the arrow keys and Enter, and confirm StoryFlow switches to the correct location.
+- [ ] Search for a phrase that exists only in prose. Confirm it is absent by default, then enable “同時搜尋正文” and confirm the chapter/article result includes a useful excerpt.
 - [ ] Confirm the header changes from “保存中…” to “已保存 HH:mm”.
 - [ ] Check that `workspace.json`, `workspace.backup.json` and `settings.json` exist in the folder.
 - [ ] Reload the page and confirm the work and chapter are restored.
@@ -32,6 +34,7 @@ Use this checklist before treating a release as ready for daily writing. It exer
 ## 3. Publishing and destructive-action safety
 
 - [ ] Create and save one test publishing part, then confirm its Markdown exists under `Works/<work>/<chapter>/`.
+- [ ] Give the part a different publishing title. Confirm the list shows it as primary with the internal name beneath, the Markdown filename does not change, metadata contains `publishTitle`, and preview can copy title separately from content.
 - [ ] Expand the publishing part, add an afterword and confirm body/afterword counts are separate; verify the Markdown contains body, separator and afterword.
 - [ ] In preview, turn off “附上後記”; confirm preview/copy output contains only the body and the article Markdown is rewritten consistently.
 - [ ] For one platform, choose “記錄發布”, correct the time if needed, enter a URL without `https://`, then save. Confirm the row shows the date, the URL can be opened safely and the platform becomes “已發布”.
