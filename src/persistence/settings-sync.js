@@ -218,7 +218,11 @@
     const next = saved?.state;
     if (!next?.chapters?.length) return false;
     state = next;
-    state.chapters.forEach(chapter => { chapter.parts ||= []; chapter.source ||= null; });
+    state.chapters.forEach(chapter => {
+      chapter.parts ||= [];
+      chapter.parts.forEach(normalizePartAfterword);
+      chapter.source ||= null;
+    });
     state.activeChapterId = state.chapters.some(chapter => chapter.id === state.activeChapterId)
       ? state.activeChapterId : state.chapters[0].id;
     ensurePlatformConfigs();

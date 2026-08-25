@@ -19,7 +19,9 @@
     '已復原來源更新',
     '章節已刪除',
     '已刪除並退回切篇',
-    '發布狀態已更新'
+    '發布狀態已更新',
+    '後記已更新',
+    '後記輸出設定已更新'
   ]);
 
   function normalizeLoadedState(next) {
@@ -27,6 +29,7 @@
     state = next;
     state.chapters.forEach(chapter => {
       chapter.parts ||= [];
+      chapter.parts.forEach(normalizePartAfterword);
       chapter.source ||= null;
       if (typeof chapter.confirmedBlockCount !== 'number') chapter.confirmedBlockCount = 0;
     });

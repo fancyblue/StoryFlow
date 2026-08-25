@@ -34,6 +34,20 @@ Rules:
 
 Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). “離開此裝置” clears browser-held connection and settings state but does not delete files in the selected folder.
 
+## Article afterwords
+
+```text
+發布 → 管理發布 → 編輯後記 → 保存 → 預覽／複製
+                                  ↘ 可排除後記，只輸出正文
+```
+
+- One publishing article owns one shared afterword; platform-specific variants are intentionally out of scope.
+- The expanded article is the editing context. Body and afterword counts remain separate.
+- Saving updates `workspace.json` and, when the StoryFlow folder is connected, rewrites that article Markdown with `正文 → 分隔線 → 後記`.
+- Source refresh may update a chapter draft but must not change an existing publishing part or its afterword.
+- Preview and copy use the article-level `includeAfterword` choice consistently across platforms.
+- Deleting an article or rewinding later split points warns how many affected articles contain afterwords before Recovery and deletion begin.
+
 ## Phone editing
 
 ```text

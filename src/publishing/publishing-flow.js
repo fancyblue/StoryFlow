@@ -13,8 +13,18 @@
     return part?.id || `${part?.title || 'part'}:${part?.startBlock ?? ''}:${part?.endBlock ?? ''}`;
   }
 
-  function outputFor(part, platform) {
-    return platform ? platformFormat(part.raw, platform) : webFormat(part.raw);
+  function outputFor(part, platform, includeAfterword = part?.includeAfterword !== false) {
+    normalizePartAfterword(part);
+    const raw = part.raw ?? part.formatted ?? '';
+    const format = value => platform ? platformFormat(value, platform) : webFormat(value);
+    const body = format(raw);
+    const afterword = String(part.afterword || '').trim();
+    if (!includeAfterword || !afterword) return body;
+    return `${body}\n\n---\n\n後記\n\n${format(afterword)}`;
+  }
+
+  function afterwordChars(part) {
+    return charCount(part?.afterword || '');
   }
 
   function platformLabel(platform) {
@@ -164,6 +174,11 @@
         </div>
         <div class="platform-preview-body">
           <p id="platformPreviewMeta" class="muted"></p>
+          <label id="platformPreviewAfterwordOption" class="platform-preview-afterword-option" hidden>
+            <input id="platformPreviewIncludeAfterword" type="checkbox" />
+            <span>附上後記</span>
+            <small id="platformPreviewAfterwordCount"></small>
+          </label>
           <pre id="platformPreviewContent" class="platform-preview-content"></pre>
         </div>
         <div class="platform-preview-actions">
@@ -199,21 +214,45 @@
 
   function previewPublish(part, platform) {
     normalizePartStatus(part);
-    const text = outputFor(part, platform);
     const toggle = publishDialog.querySelector('#togglePlatformPublished');
+    const afterwordOption = publishDialog.querySelector('#platformPreviewAfterwordOption');
+    const includeAfterword = publishDialog.querySelector('#platformPreviewIncludeAfterword');
+    const afterwordCount = afterwordChars(part);
     const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
+
+    const refreshContent = () => {
+      publishDialog.querySelector('#platformPreviewContent').textContent = outputFor(part, platform, includeAfterword.checked);
+    };
 
     publishDialog.querySelector('#platformPreviewTitle').textContent = `${part.title} · ${platformLabel(platform)}`;
     publishDialog.querySelector('#platformPreviewMeta').textContent = platform
       ? `這是「${platform}」實際要貼出的內容。發布狀態只會修改這個平台。`
       : '這是預設設定的輸出預覽；預設設定不是發布平台，因此不會產生發布狀態。';
-    publishDialog.querySelector('#platformPreviewContent').textContent = text;
+    afterwordOption.hidden = afterwordCount === 0;
+    includeAfterword.checked = part.includeAfterword !== false;
+    publishDialog.querySelector('#platformPreviewAfterwordCount').textContent = `${afterwordCount.toLocaleString()} 字`;
+    includeAfterword.onchange = async () => {
+      part.includeAfterword = includeAfterword.checked;
+      saveState('後記輸出設定已更新');
+      refreshContent();
+      renderParts();
+      const entry = allEntries().find(item => item.part === part);
+      if (!entry) return;
+      try {
+        const updated = await writeArticleMarkdown(entry.chapter, part);
+        if (updated) notify('後記輸出設定與文章 Markdown 已更新');
+        else notify('輸出設定目前只保留在畫面；請重新連接資料夾後再調整一次。', true);
+      } catch (error) {
+        notify(`輸出設定已更新，但文章 Markdown 尚未寫入：${error.message}`, true);
+      }
+    };
+    refreshContent();
     toggle.hidden = !platform;
     toggle.textContent = isPublished ? '取消已發布標記' : '標註已發布';
 
     publishDialog.querySelector('#confirmPlatformCopy').onclick = async () => {
       try {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(outputFor(part, platform, includeAfterword.checked));
         notify(`已複製 ${platformLabel(platform)} 內容`);
       } catch (error) {
         notify(`複製失敗：${error.message}`, true);
@@ -237,6 +276,76 @@
     };
 
     publishDialog.showModal();
+  }
+
+  async function writeArticleMarkdown(chapter, part) {
+    const folder = await StoryFlowIntegrations.restoreOutputDirectory();
+    if (!folder?.connected) return false;
+    await StoryFlowIntegrations.savePart({
+      projectTitle: state.projectTitle,
+      chapter,
+      part: { ...part, formatted: outputFor(part, '') },
+      metadata: chapterMetadata(chapter)
+    });
+    return true;
+  }
+
+  async function saveAfterword(chapter, part, textarea, includeControl) {
+    const nextAfterword = textarea.value.trim();
+    part.afterword = nextAfterword;
+    part.includeAfterword = nextAfterword ? includeControl.checked : true;
+    saveState('後記已更新');
+    renderParts();
+
+    try {
+      const updated = await writeArticleMarkdown(chapter, part);
+      if (!updated) {
+        notify('後記目前只保留在畫面；請重新連接資料夾後再按一次「保存後記」。', true);
+        return;
+      }
+      notify(nextAfterword ? '後記與文章 Markdown 已更新' : '後記已移除，文章 Markdown 已更新');
+    } catch (error) {
+      notify(`後記已更新，但文章 Markdown 尚未寫入：${error.message}`, true);
+    }
+  }
+
+  function createAfterwordEditor(chapter, part) {
+    normalizePartAfterword(part);
+    const section = document.createElement('section');
+    section.className = 'publish-afterword-editor';
+    section.innerHTML = `
+      <div class="publish-afterword-head">
+        <div>
+          <strong>後記</strong>
+          <span class="muted">與來源正文分開保存，不計入正文篇幅</span>
+        </div>
+        <label class="publish-afterword-include">
+          <input type="checkbox" ${part.includeAfterword !== false ? 'checked' : ''} ${part.afterword.trim() ? '' : 'disabled'} />
+          <span>預覽與複製時附上</span>
+        </label>
+      </div>
+      <textarea class="publish-afterword-input" rows="5" aria-label="文章後記" placeholder="寫下完稿後想補充給讀者的話。後記不會回寫 Google Docs。"></textarea>
+      <div class="publish-afterword-footer">
+        <span class="muted publish-afterword-count">後記 ${afterwordChars(part).toLocaleString()} 字</span>
+        <button class="button tiny primary publish-afterword-save" type="button">保存後記</button>
+      </div>`;
+
+    const textarea = section.querySelector('.publish-afterword-input');
+    const includeControl = section.querySelector('.publish-afterword-include input');
+    const count = section.querySelector('.publish-afterword-count');
+    textarea.value = part.afterword;
+    textarea.addEventListener('input', () => {
+      const chars = charCount(textarea.value);
+      count.textContent = `後記 ${chars.toLocaleString()} 字`;
+      includeControl.disabled = chars === 0;
+      if (chars > 0 && !part.afterword.trim()) includeControl.checked = true;
+    });
+    section.querySelector('.publish-afterword-save').addEventListener('click', event => {
+      event.stopPropagation();
+      saveAfterword(chapter, part, textarea, includeControl);
+    });
+    section.addEventListener('click', event => event.stopPropagation());
+    return section;
   }
 
   async function getDeleteFolder() {
@@ -270,9 +379,13 @@
     if (!part) return;
     const affected = chapter.parts.slice(index);
     const laterCount = affected.length - 1;
-    const message = laterCount
-      ? `刪除「${part.title}」會使後續切點失去連續性。\n\n因此會一起移除這篇之後的 ${laterCount} 篇，並退回到「${part.title}」開始的位置重新切篇。\n\n確定繼續？`
-      : `刪除「${part.title}」？\n\n會移除 Markdown，並把切篇進度退回，讓你重新處理這一段。`;
+    const protectedAfterwords = affected.filter(item => String(item.afterword || '').trim()).length;
+    const afterwordWarning = protectedAfterwords
+      ? `\n\n其中 ${protectedAfterwords} 篇有後記，後記也會一併刪除。`
+      : '';
+    const message = `${laterCount
+      ? `刪除「${part.title}」會使後續切點失去連續性。\n\n因此會一起移除這篇之後的 ${laterCount} 篇，並退回到「${part.title}」開始的位置重新切篇。`
+      : `刪除「${part.title}」？\n\n會移除 Markdown，並把切篇進度退回，讓你重新處理這一段。`}${afterwordWarning}\n\n確定繼續？`;
     if (!confirm(message)) return;
 
     try {
@@ -329,6 +442,7 @@
     card.dataset.partKey = key;
 
     const statusCount = status.total ? ` · ${status.published}/${status.total}` : '';
+    const afterwordCount = afterwordChars(part);
     card.innerHTML = `
       <div class="publish-list-summary" role="button" tabindex="0" aria-expanded="${expanded}">
         <div class="publish-list-title-block">
@@ -336,6 +450,7 @@
           <div class="publish-list-title-row">
             <strong>${escapeHtml(part.title)}</strong>
             <span>${part.chars.toLocaleString()} 字</span>
+            ${afterwordCount ? `<span class="publish-afterword-badge">有後記 ${afterwordCount.toLocaleString()} 字</span>` : ''}
           </div>
         </div>
         <div class="publish-list-meta">
@@ -348,6 +463,7 @@
         </div>
       </div>
       <div class="publish-platform-details" ${expanded ? '' : 'hidden'}>
+        <div class="publish-afterword-slot"></div>
         <div class="publish-platform-details-head">
           <strong>發布平台</strong>
           <span class="muted">各平台狀態彼此獨立</span>
@@ -381,6 +497,7 @@
     });
 
     if (expanded) {
+      card.querySelector('.publish-afterword-slot').appendChild(createAfterwordEditor(chapter, part));
       const platformList = card.querySelector('.publish-platform-list');
       if (!platforms.length) {
         platformList.innerHTML = '<div class="publish-no-platform"><strong>目前沒有發布平台</strong><span>請到設定新增發布平台後再管理發布狀態。</span><button class="button tiny ghost" type="button">前往設定</button></div>';
@@ -490,6 +607,11 @@
       previewPublish(entry.part, platform || platforms.find(name => !entry.part.platformStatus?.[name]) || '');
       return true;
     }
+  };
+
+  window.StoryFlowPublishingOutput = {
+    forPart: outputFor,
+    afterwordChars
   };
 
   ensureViewStructure();

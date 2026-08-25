@@ -49,7 +49,11 @@ function loadState() {
     try {
       const parsed = JSON.parse(localStorage.getItem(key));
       if (parsed?.chapters?.length) {
-        parsed.chapters.forEach(chapter => { chapter.source ||= null; chapter.parts ||= []; });
+        parsed.chapters.forEach(chapter => {
+          chapter.source ||= null;
+          chapter.parts ||= [];
+          chapter.parts.forEach(normalizePartAfterword);
+        });
         parsed.formatting ||= {};
         parsed.formatting.defaultIndent ||= 'none';
         if (typeof parsed.formatting.defaultParagraphSpacing !== 'boolean') parsed.formatting.defaultParagraphSpacing = true;
@@ -97,6 +101,13 @@ function charCount(text) {
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/[*_~`>#\s]/g, '')
     .length;
+}
+
+function normalizePartAfterword(part) {
+  if (!part || typeof part !== 'object') return part;
+  if (typeof part.afterword !== 'string') part.afterword = '';
+  if (typeof part.includeAfterword !== 'boolean') part.includeAfterword = true;
+  return part;
 }
 
 function parseBlocks(text) {
@@ -247,7 +258,7 @@ function adjustSuggestion(delta) {
 
 function chapterMetadata(chapter) {
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
     projectTitle: state.projectTitle,
     chapter: chapter.title,
     source: chapter.source,
@@ -257,7 +268,8 @@ function chapterMetadata(chapter) {
     updatedAt: new Date().toISOString(),
     parts: chapter.parts.map(part => ({
       id: part.id, title: part.title, startBlock: part.startBlock, endBlock: part.endBlock,
-      chars: part.chars, published: part.published, platformStatus: part.platformStatus
+      chars: part.chars, afterwordChars: charCount(part.afterword), includeAfterword: part.includeAfterword !== false,
+      published: part.published, platformStatus: part.platformStatus
     }))
   };
 }
@@ -268,6 +280,7 @@ async function confirmSuggestion() {
   const part = {
     id: crypto.randomUUID(), title: suggestion.name, startBlock: suggestion.start, endBlock: suggestion.end,
     chars: suggestion.chars, raw: suggestion.raw, formatted: suggestion.formatted, published: false,
+    afterword: '', includeAfterword: true,
     platformStatus: Object.fromEntries(platforms.map(platform => [platform, false]))
   };
   chapter.parts.push(part);
@@ -323,7 +336,9 @@ function renderParts() {
     platforms.forEach(platform => select.add(new Option(platform, platform)));
     node.querySelector('.copy-btn').onclick = async () => {
       const platform = select.value;
-      await navigator.clipboard.writeText(platformFormat(part.raw, platform));
+      const output = window.StoryFlowPublishingOutput?.forPart?.(part, platform)
+        || platformFormat(part.raw, platform);
+      await navigator.clipboard.writeText(output);
       notify(`已複製 ${platform} 版本`);
     };
     const toggle = node.querySelector('.toggle-btn');

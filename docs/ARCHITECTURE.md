@@ -14,6 +14,8 @@ StoryFlow is a build-free static site. GitHub Pages serves the repository root, 
 | Google bootstrap and token session | `src/settings/settings-bootstrap.js`, `src/connection/session-auth.js` | `settings.json`, session storage |
 | Generated articles | `src/persistence/integrations.js` | `Works/<work>/<chapter>/` |
 
+Each publishing `part` owns `afterword` and `includeAfterword`. The afterword is stored in `workspace.json` beside publishing state, not in a source chapter draft. `src/publishing/publishing-flow.js` composes the body and optional afterword only at preview/copy/Markdown-output time. Source refresh therefore leaves afterwords unchanged, while publishing deletion removes them with their owning parts after the normal Recovery guard.
+
 All `workspace.json` writes must go through `StoryFlowIntegrations.saveWorkspace()`. That function serializes writes, creates the latest-good backup and rejects stale revisions. It also maintains content-deduplicated rolling snapshots in `Recovery/`: at most one per hour and the latest three only. Pruning applies only to `workspace.auto-*` artifacts; conflict and high-risk-operation snapshots are never removed by the rolling-backup policy. Do not write `workspace.json` directly from feature modules.
 
 ## Runtime layers
