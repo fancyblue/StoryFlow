@@ -69,7 +69,7 @@
   margin:7px 0 14px;
   line-height:1.7;
 }
-.settings-view .settings-section:nth-of-type(3){
+.settings-view .settings-section:has(#defaultIndent){
   grid-column:1 / -1;
   padding:22px 24px;
 }
@@ -79,10 +79,10 @@
 }
 
 /* Publishing-format settings: keep controls together instead of stretching actions to opposite edges. */
-.settings-view .settings-section:nth-of-type(3)>#defaultIndent{
+.settings-view .settings-section:has(#defaultIndent)>#defaultIndent{
   width:min(100%,320px);
 }
-.settings-view .settings-section:nth-of-type(3)>.default-format-checks{
+.settings-view .settings-section:has(#defaultIndent)>.default-format-checks{
   margin-top:12px;
 }
 .settings-view .platform-manager{
@@ -326,7 +326,7 @@
 
 @media(max-width:900px){
   .settings-view .settings-page-form{grid-template-columns:1fr}
-  .settings-view .settings-section:nth-of-type(3),
+  .settings-view .settings-section:has(#defaultIndent),
   .settings-view .security-note{grid-column:1}
   .settings-view .platform-format-controls{
     grid-template-columns:1fr!important;
@@ -397,9 +397,9 @@
 
 /* --- platform settings --- */
 /* Publishing format settings: default + platforms share one compact row language. */
-.settings-view .settings-section:nth-of-type(3)>label[for="defaultIndent"],
-.settings-view .settings-section:nth-of-type(3)>#defaultIndent,
-.settings-view .settings-section:nth-of-type(3)>.default-format-checks{
+.settings-view .settings-section:has(#defaultIndent)>label[for="defaultIndent"],
+.settings-view .settings-section:has(#defaultIndent)>#defaultIndent,
+.settings-view .settings-section:has(#defaultIndent)>.default-format-checks{
   display:none!important;
 }
 

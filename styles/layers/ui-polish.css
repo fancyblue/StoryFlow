@@ -231,10 +231,10 @@ h3{letter-spacing:-.01em}
 .settings-view .settings-section{padding:21px 22px}
 .settings-view .settings-section>strong{font-size:16px;letter-spacing:-.01em}
 .settings-view .settings-section p{max-width:720px;color:var(--muted)}
-.settings-view .settings-section:nth-of-type(1),
-.settings-view .settings-section:nth-of-type(2){min-height:190px}
-.settings-view .settings-section:nth-of-type(3){padding:24px!important}
-.settings-view .settings-section:nth-of-type(3)>#defaultIndent{max-width:300px}
+.settings-view .settings-section:has(#googleClientIdInput),
+.settings-view .settings-section:has(#settingsFolderBtn){min-height:190px}
+.settings-view .settings-section:has(#defaultIndent){padding:24px!important}
+.settings-view .settings-section:has(#defaultIndent)>#defaultIndent{max-width:300px}
 .settings-view .default-format-checks{gap:18px}
 .settings-view .platform-manager{
   margin-top:22px!important;
@@ -295,8 +295,8 @@ dialog::backdrop{background:rgba(17,24,39,.36);backdrop-filter:blur(2px)}
 @media(max-width:1100px){
   .main{padding-inline:22px}
   .workspace-grid,.workspace-grid.imported-source-mode{grid-template-columns:235px minmax(0,1fr)!important}
-  .settings-view .settings-section:nth-of-type(1),
-  .settings-view .settings-section:nth-of-type(2){min-height:0}
+  .settings-view .settings-section:has(#googleClientIdInput),
+  .settings-view .settings-section:has(#settingsFolderBtn){min-height:0}
 }
 
 @media(max-width:820px){
@@ -321,7 +321,7 @@ dialog::backdrop{background:rgba(17,24,39,.36);backdrop-filter:blur(2px)}
   .settings-view .settings-page-form{grid-template-columns:1fr!important;gap:12px}
   .settings-view .settings-section,.settings-view .security-note{grid-column:1!important}
   .settings-view .settings-section{padding:17px!important}
-  .settings-view .settings-section:nth-of-type(3){padding:18px!important}
+  .settings-view .settings-section:has(#defaultIndent){padding:18px!important}
   .settings-view .platform-add-row{grid-template-columns:1fr!important;width:100%!important}
   .settings-view .platform-add-row .button{width:100%}
   .settings-view .platform-format-controls{grid-template-columns:1fr!important;gap:10px!important}

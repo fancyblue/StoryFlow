@@ -5,19 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mobile safe mode fixture</title>
   <link rel="stylesheet" href="../styles/layers/foundation.css" />
+  <link rel="stylesheet" href="../styles/domains/settings.css" />
   <link rel="stylesheet" href="../styles/domains/mobile-safe-mode.css" />
 </head>
 <body>
   <main class="main">
-    <input id="projectTitle" value="測試作品" />
-    <button id="generateBtn" type="button">產生下一篇</button>
-    <button id="importSettingsJsonBtn" type="button">匯入 settings.json</button>
-    <span id="fixtureStatus"></span>
+    <section class="app-view">
+      <input id="projectTitle" value="測試作品" />
+      <button id="generateBtn" type="button">產生下一篇</button>
+      <button id="importSettingsJsonBtn" type="button">匯入 settings.json</button>
+      <span id="fixtureStatus" hidden></span>
+    </section>
+    <section id="settingsView" class="settings-view">
+      <header class="settings-page-head"><div><p class="eyebrow">STORYFLOW / SETTINGS</p><h1>設定</h1></div></header>
+      <form class="settings-page-form"></form>
+    </section>
   </main>
   <script>
     Object.defineProperty(navigator, 'userAgent', { configurable: true, value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile' });
     window.confirm = () => true;
-    window.fixtureCalls = { saveState: 0, workspace: 0, settings: 0, part: 0, rehydrate: 0, generate: 0 };
+    window.fixtureCalls = { saveState: 0, workspace: 0, settings: 0, part: 0, rehydrate: 0, flush: 0, generate: 0 };
     window.fixtureLastNotify = '';
     window.notify = message => {
       window.fixtureLastNotify = message;
@@ -40,6 +47,10 @@
       rehydrate: async () => {
         fixtureCalls.rehydrate += 1;
         return !new URLSearchParams(location.search).has('reloadFailure');
+      },
+      flush: async () => {
+        fixtureCalls.flush += 1;
+        return !new URLSearchParams(location.search).has('flushFailure');
       }
     };
     var saveState = () => { fixtureCalls.saveState += 1; return true; };
