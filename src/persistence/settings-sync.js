@@ -142,6 +142,7 @@
   }
 
   function saveFailureStatus(error) {
+    if (error?.code === 'MOBILE_READ_ONLY') return '手機唯讀 · 不會寫入資料夾';
     if (error?.code === 'WORKSPACE_CONFLICT') return '保存已暫停 · 發現較新版本';
     if (error?.code === 'WORKSPACE_CORRUPT') return '工作資料損壞 · 請先恢復';
     return '保存失敗 · 請重試';
@@ -149,6 +150,10 @@
 
   async function persistAllNow({ quiet = true } = {}) {
     if (applyingDriveState) return false;
+    if (window.StoryFlowMobileSafeMode?.isReadOnly?.()) {
+      setSaveStatus('手機唯讀 · 不會寫入資料夾');
+      return false;
+    }
     if (!(await folderConnected())) {
       setSaveStatus('尚未保存 · 請連接資料夾');
       return false;

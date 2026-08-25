@@ -53,4 +53,15 @@ The one-hour interval and three-file limit for `workspace.auto-*` rolling backup
 - [ ] Confirm files inside `StoryFlow-Acceptance` still exist.
 - [ ] Reconnect the folder or import `settings.json` and confirm setup can be restored without committing personal data to GitHub.
 
+## 6. Phone Drive safety
+
+- [ ] Use Chrome device emulation or a phone with a disposable cloud-backed StoryFlow folder; never use real manuscript data.
+- [ ] Open a new phone tab and confirm “手機唯讀” appears before any edit.
+- [ ] Confirm navigation, previews, folder reconnect and `settings.json` import remain available while text fields and mutating actions stay locked.
+- [ ] With the folder disconnected, confirm “本次允許編輯” refuses to unlock.
+- [ ] Reconnect the disposable folder, ensure its cloud provider reports no pending upload/download, then enable editing. Confirm StoryFlow reloads the workspace before unlocking.
+- [ ] Simulate an unreadable or conflicting workspace and confirm the page remains read-only.
+- [ ] Close the phone tab, reopen StoryFlow and confirm it starts read-only again.
+- [ ] On desktop Chrome, confirm the banner is absent and normal editing is unchanged.
+
 Record only failures, Chrome version and the tested StoryFlow commit. Never attach the test `settings.json` or folder contents to a public issue.

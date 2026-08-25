@@ -24,6 +24,8 @@ Google OAuth 在取得 Drive / Docs 存取權之前就必須知道 Web OAuth Cli
 
 匯入後，Google Client ID 與 Picker API Key 只會為目前瀏覽器工作階段保留一份 bootstrap 設定，讓單純重新整理不需要重新選檔；關閉該瀏覽器工作階段後可以再次匯入。文章內容不會因此寫進瀏覽器儲存空間。
 
+手機開啟 StoryFlow 時預設為唯讀，避免 Google Drive 在只限 Wi-Fi 傳輸或尚未下載最新版時，讓舊的 `workspace.json` 覆蓋新檔。唯讀時仍可重新連接資料夾、匯入 `settings.json` 與閱讀內容，但不會寫入 workspace、settings 或作品 Markdown。確定 Drive 已完成上傳／下載後，可按「本次允許編輯」；StoryFlow 會先從資料夾重新載入 `workspace.json`，只有載入成功且沒有 Recovery／版本衝突才會解鎖。權限只維持目前頁籤工作階段，關閉頁籤後再次回到唯讀。
+
 ## 本機資料
 
 ```text

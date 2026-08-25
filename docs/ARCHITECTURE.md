@@ -9,7 +9,7 @@ StoryFlow is a build-free static site. GitHub Pages serves the repository root, 
 | Data | Owner | Location |
 | --- | --- | --- |
 | Active UI state | `src/core/app.js`, `src/projects/projects.js` | Memory only |
-| Workspace persistence | `src/persistence/integrations.js`, `src/persistence/settings-sync.js`, `src/persistence/project-persistence-guard.js` | `workspace.json` |
+| Workspace persistence | `src/persistence/integrations.js`, `src/persistence/settings-sync.js`, `src/persistence/project-persistence-guard.js`, `src/persistence/mobile-safe-mode.js` | `workspace.json` |
 | Backup and recovery | `src/persistence/integrations.js`, `src/persistence/workspace-safety.js`, `src/settings/backup-center.js` | `workspace.backup.json`, `Recovery/` |
 | Google bootstrap and token session | `src/settings/settings-bootstrap.js`, `src/connection/session-auth.js` | `settings.json`, session storage |
 | Generated articles | `src/persistence/integrations.js` | `Works/<work>/<chapter>/` |
@@ -24,6 +24,7 @@ All `workspace.json` writes must go through `StoryFlowIntegrations.saveWorkspace
 4. `src/persistence/workspace-safety.js` owns recovery and conflict decisions.
 5. Domain folders under `src/` add projects, sources, splitting, publishing and responsive UI.
 6. `src/persistence/project-persistence-guard.js` accelerates critical structural saves through the same integration queue.
+7. `src/persistence/mobile-safe-mode.js` loads after the final persistence wrapper and blocks phone writes unless the current tab explicitly enables editing after a successful workspace reload.
 
 The Settings backup center uses the same persistence queue. Manual import and backup restore always preserve the current `workspace.json` in `Recovery/` before replacement.
 
@@ -32,6 +33,8 @@ Destructive or overwrite flows must call `StoryFlowProjectPersistence.prepareRec
 Save-state UI describes local file persistence as preparing, saving or saved. Avoid the word “sync” for ordinary folder writes; reserve source-sync language for comparing or applying Google Docs changes.
 
 Chrome stores only the selected directory handle in IndexedDB. `src/connection/folder-session.js` requires an explicit reconnect on a cold tab, while `src/connection/quick-start.js` presents the remembered folder name and routes the reconnect through the normal workspace/settings loader. “Leave this device” removes both the session values and directory handle.
+
+Phone sessions default to read-only because a browser can verify neither whether a cloud-backed file provider has downloaded the newest file nor whether pending uploads have completed. Read-only mode keeps folder reconnect, settings import and reading available, but guards `saveWorkspace`, `saveStoryFlowSettings`, Markdown writes, backup/recovery replacement and the final `saveState` wrapper. “本次允許編輯” must stay session-scoped, require an online connected folder, rehydrate `workspace.json`, and refuse to unlock when reload fails or Recovery is pending. Desktop behavior must remain unchanged.
 
 The repository root contains entry assets only. Runtime JavaScript lives under domain folders in `src/`; dormant historical scripts are isolated in `src/legacy/` and are not part of the asset manifest. Script order remains explicit in `app-loader.js` until each domain can be migrated as one unit.
 
