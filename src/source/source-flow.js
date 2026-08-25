@@ -337,18 +337,22 @@
       if (!proceed) return;
     }
 
+    let recoveryCreated = false;
+    try {
+      const saved = await window.StoryFlowProjectPersistence?.flush?.('before-source-refresh');
+      if (!saved) throw new Error('目前工作區尚未完整保存。');
+      recoveryCreated = Boolean(await StoryFlowIntegrations.createWorkspaceRecoverySnapshot?.('before-source-refresh'));
+    } catch (error) {
+      console.warn('StoryFlow could not create a source refresh recovery snapshot', error);
+      notify(`來源尚未更新：無法建立 Recovery 安全副本（${error.message}）`, true);
+      return;
+    }
+
     lastSourceUndo = {
       projectId: window.StoryFlowProjects?.activeId?.() || null,
       chapterId: chapter.id,
       chapter: structuredClone(chapter)
     };
-    let backupCreated = false;
-    try {
-      await window.StoryFlowProjectPersistence?.flush?.('before-source-refresh');
-      backupCreated = Boolean(await StoryFlowIntegrations.backupWorkspace?.('before-source-refresh'));
-    } catch (error) {
-      console.warn('StoryFlow could not create workspace.backup.json', error);
-    }
 
     chapter.title = incoming.title || chapter.title;
     chapter.draft = incoming.draft;
@@ -360,7 +364,7 @@
     renderAll();
     syncSourceButtons();
     if (activeChapter()?.id === chapter.id && chapter.draft) suggestNextPart();
-    const backupNote = backupCreated ? '，並已建立 workspace.backup.json' : '';
+    const backupNote = recoveryCreated ? '，並已建立 Recovery 安全副本' : '';
     notify(preview.confirmedChanged
       ? `來源已更新${backupNote}；既有發布篇保持不變，請確認後續切篇位置`
       : `來源已更新${backupNote}，SMART SPLIT 已依最新內容重新計算`);

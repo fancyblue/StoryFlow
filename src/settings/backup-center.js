@@ -24,7 +24,7 @@
         <div>
           <p class="eyebrow">DATA &amp; BACKUP</p>
           <h2>備份與復原</h2>
-          <p>管理 StoryFlow 資料夾中的工作進度。這些操作不會讀取或修改 Google Docs 原稿。</p>
+          <p>StoryFlow 會保留上一版工作區、最多 3 份循環備份，並在刪除或覆寫前建立 Recovery。這些操作不會修改 Google Docs 原稿。</p>
         </div>
         <button id="refreshBackupCenterBtn" class="button ghost" type="button">重新檢查</button>
       </div>
@@ -127,6 +127,7 @@
     const primary = storage.primary;
     const backup = storage.backup;
     const artifacts = storage.recoveryArtifacts || [];
+    const rollingCount = Number(storage.rollingBackupCount || 0);
     renderCard(
       section.querySelector('#backupPrimaryCard'),
       '目前工作區',
@@ -143,9 +144,11 @@
     );
     renderCard(
       section.querySelector('#backupRecoveryCard'),
-      'Recovery 安全副本',
+      'Recovery 備份',
       `${artifacts.length} 個檔案`,
-      artifacts[0] ? `最近：${artifacts[0].name}` : '發生衝突、匯入或恢復前才會建立'
+      artifacts[0]
+        ? `循環備份 ${rollingCount}/3 · 最近：${artifacts[0].name}`
+        : '有變更時循環保留；刪除、覆寫或衝突前另建副本'
     );
     section.querySelector('#createWorkspaceBackupBtn').disabled = busy || !primary?.valid;
     section.querySelector('#downloadWorkspaceBtn').disabled = busy || !primary?.valid;
