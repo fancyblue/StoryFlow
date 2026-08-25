@@ -13,7 +13,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(48);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(49);
 
   await page.locator('#createProjectManually').click();
   await expect(page.locator('#manualSourceDialog')).toBeVisible();
@@ -143,6 +143,72 @@ test('workspace safety fixtures pass without a real folder', async ({ page }) =>
   await page.goto('/tests/workspace-safety-ui.html');
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByRole('button', { name: /備份/ })).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
+test('mobile safe mode blocks file writes until the workspace is reloaded and editing is enabled', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/tests/mobile-safe-mode-ui.html');
+
+  await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'readonly');
+  await expect(page.getByText('手機唯讀', { exact: true })).toBeVisible();
+  await expect(page.locator('#projectTitle')).toHaveJSProperty('readOnly', true);
+  await expect(page.locator('#generateBtn')).toHaveAttribute('data-mobile-safe-write-control', 'true');
+  await expect(page.locator('#importSettingsJsonBtn')).not.toHaveAttribute('data-mobile-safe-write-control');
+
+  const blocked = await page.evaluate(async () => {
+    const saveStateResult = saveState('不應保存');
+    let workspaceError = null;
+    try { await StoryFlowIntegrations.saveWorkspace({ state: {} }); }
+    catch (error) { workspaceError = error.code; }
+    return { saveStateResult, workspaceError, calls: { ...fixtureCalls } };
+  });
+  expect(blocked.saveStateResult).toBe(false);
+  expect(blocked.workspaceError).toBe('MOBILE_READ_ONLY');
+  expect(blocked.calls.saveState).toBe(0);
+  expect(blocked.calls.workspace).toBe(0);
+
+  await page.locator('#generateBtn').click();
+  expect(await page.evaluate(() => fixtureCalls.generate)).toBe(0);
+
+  await page.getByRole('button', { name: '本次允許編輯', exact: true }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'editing');
+  await expect(page.getByText('手機編輯已開啟', { exact: true })).toBeVisible();
+  await expect(page.locator('#projectTitle')).toHaveJSProperty('readOnly', false);
+
+  const enabled = await page.evaluate(async () => {
+    const saveStateResult = saveState('可以保存');
+    const workspacePath = await StoryFlowIntegrations.saveWorkspace({ state: {} });
+    return { saveStateResult, workspacePath, calls: { ...fixtureCalls } };
+  });
+  expect(enabled.saveStateResult).toBe(true);
+  expect(enabled.workspacePath).toBe('workspace.json');
+  expect(enabled.calls.rehydrate).toBe(1);
+  expect(enabled.calls.saveState).toBe(1);
+  expect(enabled.calls.workspace).toBe(1);
+  expect(pageErrors).toEqual([]);
+});
+
+test('desktop does not enable mobile safe mode', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+  await expect(page.locator('#mobileSafeModeBanner')).toHaveCount(0);
+  await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-mobile-safe-mode');
+  await expect(page.locator('#projectTitle')).toHaveJSProperty('readOnly', false);
+  expect(pageErrors).toEqual([]);
+});
+
+test('mobile editing remains read-only when workspace reload fails', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/tests/mobile-safe-mode-ui.html?reloadFailure=1');
+
+  await page.getByRole('button', { name: '本次允許編輯', exact: true }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'readonly');
+  expect(await page.evaluate(() => fixtureLastNotify)).toContain('無法從資料夾重新載入');
+  await expect(page.locator('#projectTitle')).toHaveJSProperty('readOnly', true);
+  expect(await page.evaluate(() => fixtureCalls.rehydrate)).toBe(1);
   expect(pageErrors).toEqual([]);
 });
 

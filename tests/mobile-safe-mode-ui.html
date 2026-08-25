@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mobile safe mode fixture</title>
+  <link rel="stylesheet" href="../styles/layers/foundation.css" />
+  <link rel="stylesheet" href="../styles/domains/mobile-safe-mode.css" />
+</head>
+<body>
+  <main class="main">
+    <input id="projectTitle" value="測試作品" />
+    <button id="generateBtn" type="button">產生下一篇</button>
+    <button id="importSettingsJsonBtn" type="button">匯入 settings.json</button>
+    <span id="fixtureStatus"></span>
+  </main>
+  <script>
+    Object.defineProperty(navigator, 'userAgent', { configurable: true, value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile' });
+    window.confirm = () => true;
+    window.fixtureCalls = { saveState: 0, workspace: 0, settings: 0, part: 0, rehydrate: 0, generate: 0 };
+    window.fixtureLastNotify = '';
+    window.notify = message => {
+      window.fixtureLastNotify = message;
+      document.getElementById('fixtureStatus').textContent = message;
+    };
+    window.StoryFlowSaveStatus = { set: message => { document.getElementById('fixtureStatus').textContent = message; } };
+    window.StoryFlowIntegrations = {
+      restoreOutputDirectory: async () => ({ connected: true, name: 'StoryFlow-test' }),
+      saveWorkspace: async () => { fixtureCalls.workspace += 1; return 'workspace.json'; },
+      saveStoryFlowSettings: async () => { fixtureCalls.settings += 1; return 'settings.json'; },
+      savePart: async () => { fixtureCalls.part += 1; return 'part.md'; },
+      backupWorkspace: async () => 'workspace.backup.json',
+      createWorkspaceRecoverySnapshot: async () => ({ artifactPath: 'Recovery/test.json' }),
+      restoreLatestWorkspaceBackup: async () => true,
+      restoreWorkspaceRecovery: async () => true,
+      importWorkspace: async () => true,
+      getWorkspaceRecovery: () => null
+    };
+    window.StoryFlowProjectPersistence = {
+      rehydrate: async () => {
+        fixtureCalls.rehydrate += 1;
+        return !new URLSearchParams(location.search).has('reloadFailure');
+      }
+    };
+    var saveState = () => { fixtureCalls.saveState += 1; return true; };
+    document.getElementById('generateBtn').addEventListener('click', () => { fixtureCalls.generate += 1; });
+  </script>
+  <script src="../src/persistence/mobile-safe-mode.js"></script>
+</body>
+</html>

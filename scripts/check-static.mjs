@@ -26,6 +26,12 @@ if (duplicateSources.length || duplicateIds.length) {
   throw new Error(`app-loader.js contains duplicate entries:\n${[...duplicateSources, ...duplicateIds].join('\n')}`);
 }
 
+const persistenceGuardIndex = manifestSources.indexOf('src/persistence/project-persistence-guard.js');
+const mobileSafeModeIndex = manifestSources.indexOf('src/persistence/mobile-safe-mode.js');
+if (persistenceGuardIndex < 0 || mobileSafeModeIndex <= persistenceGuardIndex) {
+  throw new Error('Mobile safe mode must load after the final project persistence guard.');
+}
+
 const temporaryAssetName = /(?:^|\/)[^/]*(?:-v\d+|-fix|-refine)(?:\.[a-z]+)$/i;
 const unstableManifestSources = manifestSources.filter(source => temporaryAssetName.test(source));
 const indexAssets = [...index.matchAll(/(?:src|href)="\.\/([^"?#]+)(?:[?#][^"]*)?"/g)].map(match => match[1]);

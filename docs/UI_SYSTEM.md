@@ -44,3 +44,5 @@ Do not place a destructive action beside the primary action when an overflow men
 ## Responsive scope
 
 Desktop Chrome is the primary work environment. Controls still need to wrap safely at narrow widths, but mobile should preserve essential reading and recovery rather than duplicate every dense desktop composition.
+
+On phones, place the storage-safety banner at the start of the main content. The amber read-only state names the protection, explains exactly which file classes will not be written, and exposes one full-width “本次允許編輯” action at narrow widths. The blue enabled state remains visible as session context but has no repeated action. Mutating controls look unavailable; folder reconnect, settings import, navigation, filters and preview remain usable. Save status must say “手機唯讀 · 不會寫入資料夾” rather than implying a completed save or cloud sync.

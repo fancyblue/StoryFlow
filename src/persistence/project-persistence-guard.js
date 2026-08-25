@@ -47,6 +47,10 @@
 
   async function persistWorkspaceNow(reason = 'project-change') {
     if (hydrating) return false;
+    if (window.StoryFlowMobileSafeMode?.isReadOnly?.()) {
+      window.StoryFlowSaveStatus?.set?.('手機唯讀 · 不會寫入資料夾');
+      return false;
+    }
     const folder = await connectedFolder();
     if (!folder) {
       window.StoryFlowSaveStatus?.set?.('尚未保存 · 請連接資料夾');
@@ -74,6 +78,8 @@
         ? '保存已暫停 · 發現較新版本'
         : error?.code === 'WORKSPACE_CORRUPT'
           ? '工作資料損壞 · 請先恢復'
+          : error?.code === 'MOBILE_READ_ONLY'
+            ? '手機唯讀 · 不會寫入資料夾'
           : '保存失敗 · 請重試';
       window.StoryFlowSaveStatus?.set?.(message, true);
       return false;
@@ -94,11 +100,11 @@
   }
 
   async function rehydrateMultiProjectWorkspace() {
-    if (hydrating) return;
+    if (hydrating) return false;
     const folder = await connectedFolder();
     if (!folder) {
       ready = true;
-      return;
+      return false;
     }
 
     hydrating = true;
@@ -106,7 +112,8 @@
       // By the time this file runs, projects.js has replaced loadWorkspace. Calling it
       // again restores the full schema-v2 store instead of only the legacy active state.
       const saved = await StoryFlowIntegrations.loadWorkspace();
-      if (normalizeLoadedState(saved?.state)) {
+      const loaded = normalizeLoadedState(saved?.state);
+      if (loaded) {
         suggestion = null;
         renderAll();
         if (activeChapter()?.draft) suggestNextPart();
@@ -116,8 +123,10 @@
           detail: { hasWorkspace: true, source: 'multi-project-rehydrate' }
         }));
       }
+      return loaded;
     } catch (error) {
       console.warn('StoryFlow multi-project rehydrate failed', error);
+      return false;
     } finally {
       hydrating = false;
       ready = true;

@@ -33,3 +33,16 @@ Rules:
 ## Destructive actions
 
 Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). “離開此裝置” clears browser-held connection and settings state but does not delete files in the selected folder.
+
+## Phone editing
+
+```text
+手機開啟 → 唯讀閱讀／重新連接資料夾 → 使用者確認 Drive 已完成傳輸
+       → 本次允許編輯 → 重新載入 workspace.json → 成功且無 Recovery 衝突 → 解鎖
+                                               ↘ 失敗／衝突 → 保持唯讀
+```
+
+- Phone detection must not change desktop Chrome behavior.
+- Read-only mode permits reconnecting the folder and importing `settings.json`; these actions load data but do not edit manuscript files.
+- The enable action explicitly warns that unsaved screen state is discarded and that StoryFlow cannot determine Google Drive transfer completion.
+- Closing the tab ends the editing grant. A later phone session starts read-only again.
