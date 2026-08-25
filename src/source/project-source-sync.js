@@ -1,15 +1,16 @@
-// Whole-project Google Docs sync: compare every linked source scope before applying changes.
-// This intentionally treats Google Docs as source-of-truth input while preserving local
-// publishing history. Missing workspace chapters can be restored; source-side deletions
-// never silently delete local work.
+// Authoritative project source controller: a work is created as either Manual or Google Docs.
+// Manual works only add manual articles. Google works retain document provenance,
+// can refresh the whole source, and may also contain manual articles that are never
+// removed or overwritten by source refresh.
 (function () {
   const TOKEN_KEY = 'storyflow.google.access-token.v1';
-  let pendingDiff = null;
   let syncing = false;
+  let pendingDiff = null;
+  let confirmContext = null;
 
-  function esc(value) {
-    return String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[char]));
-  }
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
+  }[char]));
 
   function normalizeTitle(value) {
     return String(value || '').trim().replace(/\s+/g, ' ');
@@ -20,7 +21,7 @@
   }
 
   function scopeKey(scope) {
-    return `${scope.docId || ''}::${scope.tabId || ''}`;
+    return `${scope?.docId || ''}::${scope?.tabId || ''}`;
   }
 
   function sourceScope(source) {
@@ -34,74 +35,284 @@
     };
   }
 
-  function ensureSourceScopes({ persist = false } = {}) {
-    const current = Array.isArray(state.sourceScopes) ? state.sourceScopes : [];
-    const map = new Map(current.filter(item => item?.docId && item?.tabId).map(item => [scopeKey(item), { ...item }]));
-    for (const chapter of state.chapters || []) {
+  function meaningfulManualChapter(chapter) {
+    return Boolean(
+      chapter && !chapter.source && !chapter.detachedSource
+      && (String(chapter.draft || '').trim() || (chapter.parts || []).length)
+    );
+  }
+
+  function isBlankStarter() {
+    if (!Array.isArray(state?.chapters) || state.chapters.length !== 1) return false;
+    const chapter = state.chapters[0];
+    return Boolean(chapter && !chapter.source && !chapter.detachedSource
+      && !String(chapter.draft || '').trim() && !(chapter.parts || []).length);
+  }
+
+  function inferGoogleMetadata() {
+    const scopes = Array.isArray(state?.sourceScopes) ? state.sourceScopes : [];
+    const source = (state?.chapters || [])
+      .flatMap(chapter => [chapter?.source, chapter?.detachedSource])
+      .find(item => item?.id && item?.tabId);
+    const scope = scopes.find(item => item?.docId && item?.tabId);
+    if (!source && !scope) return null;
+    return {
+      type: 'google',
+      docId: source?.id || scope?.docId || '',
+      docName: source?.name || scope?.docName || 'Google Docs',
+      docUrl: source?.url || scope?.docUrl || '',
+      syncedAt: source?.syncedAt || null
+    };
+  }
+
+  function projectMode({ migrate = true } = {}) {
+    const explicit = state?.projectSource?.type;
+    if (explicit === 'google' || explicit === 'manual') return explicit;
+
+    const google = inferGoogleMetadata();
+    if (google) {
+      if (migrate) {
+        state.projectSource = google;
+        try { saveState(); } catch (_) {}
+      }
+      return 'google';
+    }
+
+    const hasManual = (state?.chapters || []).some(meaningfulManualChapter);
+    if (hasManual) {
+      if (migrate) {
+        state.projectSource = { type: 'manual' };
+        try { saveState(); } catch (_) {}
+      }
+      return 'manual';
+    }
+    return null;
+  }
+
+  function ensureScopesFromChapters() {
+    const map = new Map((Array.isArray(state?.sourceScopes) ? state.sourceScopes : [])
+      .filter(scope => scope?.docId && scope?.tabId)
+      .map(scope => [scopeKey(scope), { ...scope }]));
+
+    for (const chapter of state?.chapters || []) {
       for (const source of [chapter?.source, chapter?.detachedSource]) {
         const scope = sourceScope(source);
         if (scope) map.set(scopeKey(scope), { ...map.get(scopeKey(scope)), ...scope });
       }
     }
-    const next = [...map.values()];
-    const before = JSON.stringify(current);
-    const after = JSON.stringify(next);
-    state.sourceScopes = next;
-    if (persist && before !== after) saveState('來源範圍已更新');
-    return next;
+    state.sourceScopes = [...map.values()];
+    return state.sourceScopes;
   }
 
-  function syncSourcePanelUi() {
-    const scopes = ensureSourceScopes();
-    const refresh = document.getElementById('refreshSourceBtn');
-    if (refresh) {
-      const shouldHide = !scopes.length;
-      const shouldDisable = !scopes.length || syncing;
-      const nextText = syncing ? '檢查中…' : '更新作品來源';
-      if (refresh.hidden !== shouldHide) refresh.hidden = shouldHide;
-      if (refresh.disabled !== shouldDisable) refresh.disabled = shouldDisable;
-      if (refresh.textContent !== nextText) refresh.textContent = nextText;
-      refresh.setAttribute('aria-label', '檢查整個作品的 Google Docs 來源差異');
-      refresh.title = '比較整個作品與已連結 Google Docs 的差異';
+  function setManualMode() {
+    if (projectMode({ migrate: false }) === 'google') return;
+    state.projectSource = { type: 'manual' };
+    state.sourceScopes = [];
+    saveState('已選擇手動建立');
+    renderAll();
+    requestAnimationFrame(() => {
+      syncUi();
+      const title = document.getElementById('projectTitle');
+      title?.focus();
+      title?.select();
+    });
+  }
+
+  function startGoogleMode() {
+    if (projectMode({ migrate: false }) === 'manual') return;
+    if (typeof window.importGoogleDoc === 'function') window.importGoogleDoc();
+    else notify('Google Docs 載入功能尚未準備完成', true);
+  }
+
+  function projectSourceName() {
+    const meta = state?.projectSource || inferGoogleMetadata();
+    return meta?.docName || 'Google Docs';
+  }
+
+  function restoreLastSourceSync() {
+    const projectId = window.StoryFlowProjects?.activeId?.() || null;
+    const available = StoryFlowSourceSyncHistory.peek();
+    if (!available || (available.projectId && projectId && available.projectId !== projectId)) return;
+    if (!confirm('復原上次來源更新？\n\n章節會回到套用更新前的狀態；更新後才做的編輯也會一併回復。Recovery 安全副本不會刪除。')) return;
+    const snapshot = StoryFlowSourceSyncHistory.take(projectId);
+    if (!snapshot?.state) return;
+    state = snapshot.state;
+    suggestion = null;
+    saveState('已復原來源更新');
+    renderAll();
+    syncUi();
+    if (activeChapter()?.draft) suggestNextPart();
+    notify(`已復原上次來源更新（${snapshot.affectedCount} 個章節）`);
+  }
+
+  function syncUndoUi() {
+    const bar = document.getElementById('sourceSyncUndoBar');
+    if (!bar) return;
+    const projectId = window.StoryFlowProjects?.activeId?.() || null;
+    const available = StoryFlowSourceSyncHistory.peek();
+    const visible = Boolean(available && (!available.projectId || !projectId || available.projectId === projectId));
+    bar.hidden = !visible;
+    if (!visible) return;
+    const count = available.affectedCount || 0;
+    const copy = bar.querySelector('#sourceSyncUndoCopy');
+    if (copy) {
+      copy.textContent = available.artifactPath
+        ? `剛才更新了 ${count} 個章節，並已建立 Recovery 安全副本。`
+        : `剛才更新了 ${count} 個章節，可在本次開啟期間復原。`;
+    }
+  }
+
+  function ensureModeUi() {
+    const panel = document.querySelector('.source-panel');
+    if (!panel) return null;
+    panel.classList.add('project-source-mode-v2');
+
+    // Remove the older mixed-purpose action row. The source controller owns this area.
+    document.getElementById('sourcePanelActions')?.remove();
+    document.getElementById('manualSourceSyncHint')?.remove();
+
+    const head = panel.querySelector(':scope > .panel-head');
+    const titleLabel = panel.querySelector('label[for="projectTitle"]');
+    const titleInput = document.getElementById('projectTitle');
+    if (!head || !titleLabel || !titleInput) return panel;
+
+    let chooser = document.getElementById('projectCreationChooser');
+    if (!chooser) {
+      chooser = document.createElement('section');
+      chooser.id = 'projectCreationChooser';
+      chooser.className = 'project-creation-chooser';
+      chooser.setAttribute('aria-labelledby', 'projectCreationChooserTitle');
+      chooser.innerHTML = `
+        <div class="project-creation-copy">
+          <strong id="projectCreationChooserTitle">選擇作品建立方式</strong>
+          <span>建立後會固定使用這種來源模式，讓後續操作保持一致。</span>
+        </div>
+        <div class="project-creation-options">
+          <button id="createProjectFromGoogle" class="project-creation-option" type="button">
+            <span class="project-creation-option-icon" aria-hidden="true">G</span>
+            <span class="project-creation-option-copy"><strong>從 Google Docs 建立</strong><small>帶入作品名稱與章節，之後可更新整個作品來源。</small></span>
+            <span class="project-creation-option-arrow" aria-hidden="true">›</span>
+          </button>
+          <button id="createProjectManually" class="project-creation-option" type="button">
+            <span class="project-creation-option-icon" aria-hidden="true">＋</span>
+            <span class="project-creation-option-copy"><strong>手動建立</strong><small>作品名稱自行編輯，文章一篇一篇手動新增。</small></span>
+            <span class="project-creation-option-arrow" aria-hidden="true">›</span>
+          </button>
+        </div>`;
+      head.insertAdjacentElement('afterend', chooser);
+      chooser.querySelector('#createProjectFromGoogle').addEventListener('click', startGoogleMode);
+      chooser.querySelector('#createProjectManually').addEventListener('click', setManualMode);
     }
 
-    const label = document.querySelector('.source-panel label[for="projectTitle"]');
-    if (label && label.textContent !== '作品名稱') label.textContent = '作品名稱';
+    let origin = document.getElementById('projectSourceOrigin');
+    if (!origin) {
+      origin = document.createElement('div');
+      origin.id = 'projectSourceOrigin';
+      origin.className = 'project-source-origin';
+      origin.innerHTML = `
+        <div class="project-source-origin-copy">
+          <span class="project-source-origin-label">Google Docs 來源</span>
+          <span id="projectSourceOriginName" class="project-source-origin-name"></span>
+        </div>
+        <button id="projectRefreshSourceBtn" class="button ghost project-source-refresh-v2" type="button">更新作品來源</button>`;
+      titleInput.insertAdjacentElement('afterend', origin);
+      origin.querySelector('#projectRefreshSourceBtn').addEventListener('click', refreshWholeProject);
+    }
 
-    // Work switching belongs to the dedicated Works page. The workspace only edits
-    // the active work, so a second "current work" selector is redundant and was a
-    // source of stale-title confusion.
-    const switcher = document.getElementById('projectSwitcher');
-    if (switcher && !switcher.hidden) switcher.hidden = true;
+    let undoBar = document.getElementById('sourceSyncUndoBar');
+    if (!undoBar) {
+      undoBar = document.createElement('section');
+      undoBar.id = 'sourceSyncUndoBar';
+      undoBar.className = 'source-sync-undo-bar-v2';
+      undoBar.hidden = true;
+      undoBar.innerHTML = `
+        <span id="sourceSyncUndoCopy"></span>
+        <button class="button tiny ghost" type="button">復原上次來源更新</button>`;
+      origin.insertAdjacentElement('afterend', undoBar);
+      undoBar.querySelector('button').addEventListener('click', restoreLastSourceSync);
+    }
+
+    const add = document.getElementById('addChapterBtn');
+    if (add) add.textContent = '＋ 新增文章';
+    return panel;
   }
 
-  function syncLoadSourceDialogUi() {
-    const scopes = ensureSourceScopes();
-    const area = document.getElementById('detachSourceArea');
-    const refresh = document.getElementById('refreshLinkedSourceBtn');
-    const detach = document.getElementById('detachSourceBtn');
-    if (!area || !refresh) return;
+  function syncBlankChapterPresentation(mode) {
+    const list = document.getElementById('chapterList');
+    if (!list || mode === null || !isBlankStarter()) return;
+    list.innerHTML = '<div class="project-source-empty-articles">尚未新增文章</div>';
+  }
 
-    if (scopes.length) {
-      area.classList.remove('hidden');
-      const strong = area.querySelector('strong');
-      const label = document.getElementById('detachSourceLabel');
-      if (strong) strong.textContent = '目前作品已有 Google Docs 來源';
-      if (label) {
-        const docs = [...new Set(scopes.map(item => item.docName).filter(Boolean))];
-        label.textContent = `${docs.join('、')} · 更新前會先比較整個作品的差異`;
-      }
-      refresh.textContent = '更新作品來源';
-      refresh.onclick = () => {
-        document.getElementById('sourceDialog')?.close();
-        refreshWholeProject();
+  function syncUi() {
+    const panel = ensureModeUi();
+    if (!panel) return;
+    const mode = projectMode();
+    panel.classList.toggle('project-source-unset', mode === null);
+    panel.classList.toggle('project-source-manual', mode === 'manual');
+    panel.classList.toggle('project-source-google', mode === 'google');
+
+    const chooser = document.getElementById('projectCreationChooser');
+    const origin = document.getElementById('projectSourceOrigin');
+    const add = document.getElementById('addChapterBtn');
+    const originName = document.getElementById('projectSourceOriginName');
+    if (chooser) chooser.hidden = mode !== null;
+    if (origin) origin.hidden = mode !== 'google';
+    if (add) add.hidden = mode === null;
+    if (originName && mode === 'google') originName.textContent = projectSourceName();
+
+    syncBlankChapterPresentation(mode);
+    syncUndoUi();
+    ensureStyleLast();
+  }
+
+  function markConfirmedPreview() {
+    const target = document.getElementById('confirmSourcePreviewBtn');
+    if (!target) return;
+    if (target.dataset.sourceModeBound === '1') return;
+    target.dataset.sourceModeBound = '1';
+    target.addEventListener('click', () => {
+      const summaryText = document.getElementById('sourcePreviewSummary')?.textContent || '';
+      confirmContext = {
+        wasUnset: projectMode({ migrate: false }) === null,
+        google: /Google Docs/.test(summaryText),
+        manual: /手動內容/.test(summaryText),
+        docTitle: window.pendingGoogleDoc?.title || window.pendingGoogleDoc?.name || '',
+        docId: window.pendingGoogleDoc?.id || '',
+        docName: window.pendingGoogleDoc?.name || window.pendingGoogleDoc?.title || '',
+        docUrl: window.pendingGoogleDoc?.url || ''
       };
-      if (detach) {
-        const hasActiveSource = Boolean(activeChapter?.()?.source);
-        detach.hidden = !hasActiveSource;
-        if (hasActiveSource) detach.textContent = '解除目前章節連結';
+      window.setTimeout(finalizeConfirmedPreview, 0);
+    }, true);
+  }
+
+  function finalizeConfirmedPreview() {
+    const context = confirmContext;
+    confirmContext = null;
+    if (!context) return;
+
+    const google = inferGoogleMetadata();
+    if (context.google && google) {
+      const firstSource = (state.chapters || []).map(chapter => chapter.source).find(Boolean);
+      state.projectSource = {
+        type: 'google',
+        docId: firstSource?.id || context.docId || google.docId,
+        docName: context.docTitle || firstSource?.name || context.docName || google.docName || 'Google Docs',
+        docUrl: firstSource?.url || context.docUrl || google.docUrl || '',
+        syncedAt: firstSource?.syncedAt || new Date().toISOString()
+      };
+      ensureScopesFromChapters();
+      if (context.wasUnset && (context.docTitle || context.docName)) {
+        state.projectTitle = context.docTitle || context.docName;
       }
+      saveState('Google Docs 作品已建立');
+      renderAll();
+    } else if (context.manual && context.wasUnset) {
+      state.projectSource = { type: 'manual' };
+      state.sourceScopes = [];
+      saveState('手動作品已建立');
+      renderAll();
     }
+    syncUi();
   }
 
   async function accessToken() {
@@ -110,7 +321,7 @@
     }
     let token = '';
     try { token = sessionStorage.getItem(TOKEN_KEY) || ''; } catch (_) {}
-    if (!token) throw new Error('Google 登入已失效，請先重新登入後再更新作品來源。');
+    if (!token) throw new Error('Google 登入已失效，請重新登入後再更新作品來源。');
     return token;
   }
 
@@ -165,12 +376,26 @@
     return { markdown: markdown.trimEnd(), plain: plain.trimEnd(), namedStyle, empty: !plain.trim() && !markdown.trim() };
   }
 
-  function blocksToDraft(blocks) {
+  function detectChapterHeadingStyle(blocks) {
+    const counts = new Map();
+    for (const block of blocks) {
+      const match = /^HEADING_([1-6])$/.exec(block.namedStyle || '');
+      if (!match || block.empty) continue;
+      const level = Number(match[1]);
+      counts.set(level, (counts.get(level) || 0) + 1);
+    }
+    const levels = [...counts.keys()].sort((a, b) => a - b);
+    if (!levels.length) return null;
+    const repeated = levels.find(level => counts.get(level) >= 2);
+    return `HEADING_${repeated ?? levels[0]}`;
+  }
+
+  function blocksToDraft(blocks, chapterHeadingStyle = null) {
     const lines = [];
     for (const block of blocks) {
       if (block.empty) {
         if (lines.length && lines[lines.length - 1] !== '') lines.push('');
-      } else if (!/^HEADING_[1-6]$/.test(block.namedStyle)) {
+      } else if (!chapterHeadingStyle || block.namedStyle !== chapterHeadingStyle) {
         lines.push(block.markdown);
       }
     }
@@ -187,10 +412,13 @@
     for (const structural of content) {
       if (structural.paragraph) blocks.push(paragraphToBlock(structural.paragraph, inlineObjects, warnings));
     }
+    const headingStyle = detectChapterHeadingStyle(blocks);
     const headingIndexes = [];
-    blocks.forEach((block, index) => {
-      if (block.namedStyle === 'HEADING_1' && !block.empty) headingIndexes.push(index);
-    });
+    if (headingStyle) {
+      blocks.forEach((block, index) => {
+        if (block.namedStyle === headingStyle && !block.empty) headingIndexes.push(index);
+      });
+    }
     if (!headingIndexes.length) {
       return {
         chapters: [{ title: tab.tabProperties?.title || '未命名章節', draft: blocksToDraft(blocks), headingOrdinal: null }],
@@ -200,8 +428,9 @@
     return {
       chapters: headingIndexes.map((start, ordinal) => ({
         title: blocks[start].plain.trim() || `第 ${ordinal + 1} 章`,
-        draft: blocksToDraft(blocks.slice(start + 1, headingIndexes[ordinal + 1] ?? blocks.length)),
-        headingOrdinal: ordinal
+        draft: blocksToDraft(blocks.slice(start + 1, headingIndexes[ordinal + 1] ?? blocks.length), headingStyle),
+        headingOrdinal: ordinal,
+        headingStyle
       })),
       warnings: [...warnings]
     };
@@ -220,19 +449,6 @@
       flattenTabs(tab.childTabs || [], depth + 1, output);
     }
     return output;
-  }
-
-  function sourceMeta(scope, incoming) {
-    return {
-      id: scope.docId,
-      name: scope.docName || 'Google Docs',
-      url: scope.docUrl || `https://docs.google.com/document/d/${scope.docId}/edit`,
-      tabId: scope.tabId,
-      tabTitle: scope.tabTitle,
-      headingOrdinal: incoming.headingOrdinal,
-      headingTitle: incoming.title,
-      syncedAt: new Date().toISOString()
-    };
   }
 
   function blockSignature(block) {
@@ -274,6 +490,20 @@
     return match || null;
   }
 
+  function sourceMeta(scope, incoming) {
+    return {
+      id: scope.docId,
+      name: scope.docName || 'Google Docs',
+      url: scope.docUrl || `https://docs.google.com/document/d/${scope.docId}/edit`,
+      tabId: scope.tabId,
+      tabTitle: scope.tabTitle,
+      headingOrdinal: incoming.headingOrdinal,
+      headingTitle: incoming.title,
+      headingStyle: incoming.headingStyle || null,
+      syncedAt: new Date().toISOString()
+    };
+  }
+
   function buildScopeDiff(scope, tab) {
     const workspaceChapters = (state.chapters || []).filter(chapter => chapterBelongsToScope(chapter, scope));
     const used = new Set();
@@ -302,7 +532,7 @@
       } else if (draftChanged || titleChanged) {
         changes.push({
           id: crypto.randomUUID(), kind: 'update', selected: true, scope: syncedScope, incoming, chapterId: match.id,
-          label: '來源內容有更新', detail: StoryFlowSourceDiff.summaryText(preview),
+          label: `章節「${match.title || incoming.title || '未命名章節'}」有更新`, detail: StoryFlowSourceDiff.summaryText(preview),
           confirmedChanged: confirmedRangeChanged(match, incoming.draft), preview
         });
       }
@@ -315,12 +545,11 @@
         label: '來源找不到對應章節', detail: `「${chapter.title}」會保留在工作區，不會自動刪除。`, confirmedChanged: false
       });
     }
-
     return changes;
   }
 
   async function buildProjectDiff() {
-    const scopes = ensureSourceScopes({ persist: true });
+    const scopes = ensureScopesFromChapters();
     if (!scopes.length) throw new Error('目前作品還沒有已連結的 Google Docs 來源。');
 
     const docs = new Map();
@@ -341,6 +570,14 @@
       const syncedScope = { ...scope, docName: doc.title || scope.docName, tabTitle: tab.title || scope.tabTitle };
       changes.push(...buildScopeDiff(syncedScope, tab));
     }
+
+    for (const chapter of state.chapters || []) {
+      if (!meaningfulManualChapter(chapter)) continue;
+      changes.push({
+        id: crypto.randomUUID(), kind: 'manual', selected: false, chapterId: chapter.id,
+        label: '手動文章', detail: `「${chapter.title}」不參與 Google Docs 更新，會完整保留。`, confirmedChanged: false
+      });
+    }
     return { changes, errors, checkedAt: new Date().toISOString() };
   }
 
@@ -353,7 +590,7 @@
     dialog.innerHTML = `
       <div class="project-source-diff-card">
         <header class="project-source-diff-head">
-          <div><p class="eyebrow">SOURCE / PROJECT SYNC</p><h3>更新作品來源</h3><p class="muted">先比較 Google Docs 與目前工作區，再決定要套用哪些變更。</p></div>
+          <div><p class="eyebrow">SOURCE / PROJECT SYNC</p><h3>更新作品來源</h3><p class="muted">Google Docs 章節可以更新；手動文章永遠保留，不參與來源比對。</p></div>
           <button id="closeProjectSourceDiff" class="icon-button" type="button" aria-label="關閉">×</button>
         </header>
         <div id="projectSourceDiffSummary" class="project-source-diff-summary"></div>
@@ -375,7 +612,9 @@
     dialog.querySelector('#cancelProjectSourceDiff').onclick = close;
     dialog.querySelector('#selectAllProjectSourceChanges').onclick = () => {
       if (!pendingDiff) return;
-      pendingDiff.changes.forEach(change => { if (change.kind !== 'source-missing') change.selected = true; });
+      pendingDiff.changes.forEach(change => {
+        if (['add','update','relink'].includes(change.kind)) change.selected = true;
+      });
       renderDiffDialog();
     };
     dialog.querySelector('#clearProjectSourceChanges').onclick = () => {
@@ -391,6 +630,7 @@
     if (change.kind === 'add') return ['缺少', 'missing'];
     if (change.kind === 'update') return ['更新', 'changed'];
     if (change.kind === 'relink') return ['可重連', 'relink'];
+    if (change.kind === 'manual') return ['手動', 'manual'];
     return ['保留', 'warning'];
   }
 
@@ -401,18 +641,20 @@
     const list = dialog.querySelector('#projectSourceDiffList');
     const apply = dialog.querySelector('#applyProjectSourceDiff');
     const changes = pendingDiff?.changes || [];
-    const actionable = changes.filter(change => change.kind !== 'source-missing');
+    const actionable = changes.filter(change => ['add','update','relink'].includes(change.kind));
     const selected = actionable.filter(change => change.selected);
+    const manual = changes.filter(change => change.kind === 'manual');
+    const sourceRows = changes.filter(change => change.kind !== 'manual');
 
     const added = changes.filter(change => change.kind === 'add').length;
     const updated = changes.filter(change => change.kind === 'update').length;
     const relink = changes.filter(change => change.kind === 'relink').length;
     const missing = changes.filter(change => change.kind === 'source-missing').length;
 
-    if (!changes.length && !(pendingDiff?.errors || []).length) {
-      summary.innerHTML = '<strong>作品來源已是最新狀態</strong><span>Google Docs 與目前工作區沒有可套用的差異。</span>';
+    if (!sourceRows.length && !(pendingDiff?.errors || []).length) {
+      summary.innerHTML = `<strong>作品來源已是最新狀態</strong><span>${manual.length ? `另有 ${manual.length} 篇手動文章，更新時會保留。` : 'Google Docs 與目前工作區沒有差異。'}</span>`;
     } else {
-      summary.innerHTML = `<strong>找到 ${changes.length} 項差異</strong><span>${added} 個工作區缺少章節 · ${updated} 個內容更新 · ${relink} 個可重新連結 · ${missing} 個來源缺少對應</span>`;
+      summary.innerHTML = `<strong>來源差異 ${sourceRows.length} 項</strong><span>${added} 個缺少章節 · ${updated} 個內容更新 · ${relink} 個可重新連結 · ${missing} 個來源缺少對應${manual.length ? ` · ${manual.length} 篇手動文章保留` : ''}</span>`;
     }
 
     const errorItems = pendingDiff?.errors || [];
@@ -422,15 +664,19 @@
     list.innerHTML = '';
     changes.forEach(change => {
       const [badgeText, badgeClass] = changeBadge(change);
+      const readonly = change.kind === 'source-missing' || change.kind === 'manual';
       const row = document.createElement('article');
-      row.className = `project-source-diff-row ${change.kind === 'source-missing' ? 'readonly' : ''}`;
+      row.className = `project-source-diff-row ${readonly ? 'readonly' : ''} ${change.kind === 'manual' ? 'manual-row' : ''}`;
+      const context = change.kind === 'manual'
+        ? 'StoryFlow · 手動建立'
+        : `${esc(change.scope?.docName || 'Google Docs')} › ${esc(change.scope?.tabTitle || '未命名分頁')}`;
       row.innerHTML = `
         <label class="project-source-diff-select">
-          <input type="checkbox" ${change.selected ? 'checked' : ''} ${change.kind === 'source-missing' ? 'disabled' : ''} />
+          <input type="checkbox" ${change.selected ? 'checked' : ''} ${readonly ? 'disabled' : ''} />
           <span class="project-source-diff-badge ${badgeClass}">${badgeText}</span>
           <span class="project-source-diff-copy">
             <strong>${esc(change.label)}</strong>
-            <span>${esc(change.scope.docName)} › ${esc(change.scope.tabTitle)} · ${esc(change.detail)}</span>
+            <span>${context} · ${esc(change.detail)}</span>
             ${change.confirmedChanged ? '<em>包含已確認發布範圍；既有 Markdown／發布狀態不會自動改寫。</em>' : ''}
           </span>
         </label>
@@ -469,7 +715,7 @@
 
   async function applySelectedChanges() {
     if (!pendingDiff) return;
-    const selected = pendingDiff.changes.filter(change => change.selected && change.kind !== 'source-missing');
+    const selected = pendingDiff.changes.filter(change => change.selected && ['add','update','relink'].includes(change.kind));
     if (!selected.length) return;
     const affectsConfirmed = selected.some(change => change.confirmedChanged);
     if (affectsConfirmed) {
@@ -490,15 +736,14 @@
     for (const change of selected) {
       const incoming = change.incoming;
       if (change.kind === 'add') {
-        const chapter = {
+        insertRestoredChapter({
           id: crypto.randomUUID(),
           title: incoming.title || '未命名章節',
           draft: normalizeDraft(incoming.draft),
           confirmedBlockCount: 0,
           parts: [],
           source: sourceMeta(change.scope, incoming)
-        };
-        insertRestoredChapter(chapter, change.scope, incoming.headingOrdinal);
+        }, change.scope, incoming.headingOrdinal);
         added += 1;
         continue;
       }
@@ -512,13 +757,17 @@
       updated += 1;
     }
 
-    // Refresh persisted scope labels but retain scopes whose local chapters were
-    // intentionally removed, so a later sync can still offer recovery.
-    const scopeMap = new Map(ensureSourceScopes().map(item => [scopeKey(item), item]));
+    const scopeMap = new Map(ensureScopesFromChapters().map(item => [scopeKey(item), item]));
     for (const change of pendingDiff.changes) {
+      if (!change.scope?.docId || !change.scope?.tabId) continue;
       scopeMap.set(scopeKey(change.scope), { ...scopeMap.get(scopeKey(change.scope)), ...change.scope });
     }
     state.sourceScopes = [...scopeMap.values()];
+    state.projectSource = {
+      ...(state.projectSource || {}),
+      type: 'google',
+      syncedAt: new Date().toISOString()
+    };
 
     StoryFlowSourceSyncHistory.commit(stagedUndo);
 
@@ -527,15 +776,20 @@
     document.getElementById('projectSourceDiffDialog')?.close();
     saveState('作品來源已更新');
     renderAll();
-    syncSourcePanelUi();
+    syncUi();
     if (activeChapter()?.draft) suggestNextPart();
-    notify(`作品來源已更新：重新加入 ${added} 個章節，更新 ${updated} 個章節`);
+    notify(`作品來源已更新：重新加入 ${added} 個章節，更新 ${updated} 個章節；手動文章保持不變`);
   }
 
   async function refreshWholeProject() {
     if (syncing) return;
+    if (projectMode() !== 'google') return;
     syncing = true;
-    syncSourcePanelUi();
+    const button = document.getElementById('projectRefreshSourceBtn');
+    if (button) {
+      button.disabled = true;
+      button.textContent = '檢查中…';
+    }
     try {
       notify('正在比較整個作品與 Google Docs…');
       pendingDiff = await buildProjectDiff();
@@ -546,39 +800,46 @@
       notify(`作品來源檢查失敗：${error.message}`, true);
     } finally {
       syncing = false;
-      syncSourcePanelUi();
+      if (button) {
+        button.disabled = false;
+        button.textContent = '更新作品來源';
+      }
     }
   }
 
-  // Register source provenance before a chapter is removed. This means deleting the
-  // last local chapter from a linked tab is still recoverable on the next project sync.
-  document.addEventListener('click', event => {
-    const deleteButton = event.target.closest?.('.chapter-delete-button');
-    if (deleteButton) ensureSourceScopes({ persist: true });
-
-    if (event.target.closest?.('#refreshSourceBtn')) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      refreshWholeProject();
+  function ensureStyleLast() {
+    const link = document.getElementById('storyflowProjectSourceModeCss');
+    if (link && link.parentElement === document.head && document.head.lastElementChild !== link) {
+      document.head.appendChild(link);
     }
+  }
 
-    if (event.target.closest?.('#loadSourceBtn')) {
-      setTimeout(syncLoadSourceDialogUi, 0);
-    }
-  }, true);
+  const baseRenderAll = window.renderAll;
+  if (typeof baseRenderAll === 'function' && !baseRenderAll.__projectSourceSync) {
+    const wrapped = function (...args) {
+      const result = baseRenderAll.apply(this, args);
+      queueMicrotask(syncUi);
+      return result;
+    };
+    wrapped.__projectSourceSync = true;
+    window.renderAll = wrapped;
+  }
 
-  // source-flow.js can toggle the button based on the active chapter after renders;
-  // keep the whole-project affordance tied to project provenance instead.
-  const observer = new MutationObserver(() => syncSourcePanelUi());
-  const sourcePanel = document.querySelector('.source-panel');
-  if (sourcePanel) observer.observe(sourcePanel, { subtree: true, attributes: true, attributeFilter: ['hidden', 'disabled'] });
-
-  window.addEventListener('storyflow:projects-changed', () => {
-    ensureSourceScopes({ persist: true });
-    syncSourcePanelUi();
+  window.addEventListener('storyflow:projects-changed', () => queueMicrotask(syncUi));
+  window.addEventListener('storyflow:view-changed', () => queueMicrotask(syncUi));
+  window.addEventListener('storyflow:source-sync-undo-changed', () => queueMicrotask(syncUi));
+  document.addEventListener('change', event => {
+    if (event.target?.id === 'projectTitle') queueMicrotask(syncUi);
   });
 
-  ensureSourceScopes({ persist: false });
-  syncSourcePanelUi();
-  window.StoryFlowProjectSourceSync = { refresh: refreshWholeProject, ensureSourceScopes };
+  markConfirmedPreview();
+  syncUi();
+  window.StoryFlowProjectSourceSync = {
+    mode: () => projectMode(),
+    chooseManual: setManualMode,
+    chooseGoogle: startGoogleMode,
+    refresh: refreshWholeProject,
+    syncUi,
+    ensureSourceScopes: ensureScopesFromChapters
+  };
 })();

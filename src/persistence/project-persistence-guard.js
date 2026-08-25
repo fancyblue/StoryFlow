@@ -103,7 +103,7 @@
         renderAll();
         if (activeChapter()?.draft) suggestNextPart();
         window.StoryFlowRenderProjects?.();
-        window.StoryFlowProjectSourceModeV2?.syncUi?.();
+        window.StoryFlowProjectSourceSync?.syncUi?.();
         window.dispatchEvent(new CustomEvent('storyflow:workspace-loaded', {
           detail: { hasWorkspace: true, source: 'multi-project-rehydrate' }
         }));

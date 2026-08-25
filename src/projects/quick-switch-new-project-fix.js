@@ -85,7 +85,7 @@
     window.StoryFlowNavigate?.('workspace');
 
     window.setTimeout(() => {
-      window.StoryFlowProjectSourceModeV2?.syncUi?.();
+      window.StoryFlowProjectSourceSync?.syncUi?.();
       openSourceChooser({ allowManualBeforeSettings: true, creation: true });
     }, 0);
   }
@@ -123,7 +123,7 @@
     ensureNewProjectAction();
   }
 
-  // Empty workspace CTA used to click #loadSourceBtn, but project-source-mode-v2
+  // Empty workspace CTA used to click #loadSourceBtn, but the project source controller
   // intentionally removes that legacy action row. Intercept the real user action and
   // invoke the source chooser directly. Without integration settings, this CTA routes
   // to Settings as the user expects.
@@ -254,82 +254,4 @@
   if (splitter) observer.observe(splitter, { childList:true, subtree:true });
 
   syncHierarchy();
-})();
-
-// Source-diff rows should identify the chapter first. project-source-mode-v2 keeps
-// diff data private, so enrich the rendered rows from the stable workspace state.
-(function () {
-  function countChars(text) {
-    try {
-      if (typeof charCount === 'function') return charCount(text || '');
-    } catch (_) {}
-    return Array.from(String(text || '').replace(/\s/g, '')).length;
-  }
-
-  function chapterSource(chapter) {
-    return chapter?.source || chapter?.detachedSource || null;
-  }
-
-  function parseContext(text) {
-    const sourceText = String(text || '').split(' · ')[0].trim();
-    const parts = sourceText.split(' › ').map(item => item.trim());
-    return { docName: parts[0] || '', tabTitle: parts[1] || '' };
-  }
-
-  function oldCharCount(text) {
-    const match = String(text || '').match(/內容\s+([\d,]+)\s*→/);
-    return match ? Number(match[1].replace(/,/g, '')) : null;
-  }
-
-  function titleFromDetail(text) {
-    const match = String(text || '').match(/標題：(.+?)\s*→/);
-    return match?.[1]?.trim() || '';
-  }
-
-  function findChapterForRow(detailText) {
-    let chapters = [];
-    try { chapters = Array.isArray(state?.chapters) ? state.chapters : []; }
-    catch (_) { return null; }
-
-    const { docName, tabTitle } = parseContext(detailText);
-    const previousChars = oldCharCount(detailText);
-    const previousTitle = titleFromDetail(detailText);
-    let candidates = chapters.filter(chapter => {
-      const source = chapterSource(chapter);
-      if (!source) return false;
-      const sourceName = String(source.name || 'Google Docs');
-      const sourceTab = String(source.tabTitle || '未命名分頁');
-      return sourceName === docName && sourceTab === tabTitle;
-    });
-
-    if (previousTitle) {
-      const titleMatch = candidates.find(chapter => String(chapter.title || '').trim() === previousTitle);
-      if (titleMatch) return titleMatch;
-    }
-    if (previousChars != null) {
-      const charMatches = candidates.filter(chapter => countChars(chapter.draft) === previousChars);
-      if (charMatches.length === 1) return charMatches[0];
-      if (charMatches.length) candidates = charMatches;
-    }
-    return candidates.length === 1 ? candidates[0] : null;
-  }
-
-  function enrichDiffRows() {
-    document.querySelectorAll('#projectSourceDiffListV2 .project-source-diff-row').forEach(row => {
-      const strong = row.querySelector('.project-source-diff-copy > strong');
-      const detail = row.querySelector('.project-source-diff-copy > span');
-      if (!strong || !detail || strong.dataset.chapterNamed === '1') return;
-      if (strong.textContent.trim() !== '來源內容有更新') return;
-
-      const chapter = findChapterForRow(detail.textContent);
-      if (!chapter?.title) return;
-      strong.textContent = `章節「${chapter.title}」有更新`;
-      strong.dataset.chapterNamed = '1';
-    });
-  }
-
-  const observer = new MutationObserver(() => queueMicrotask(enrichDiffRows));
-  observer.observe(document.body, { childList:true, subtree:true });
-  window.addEventListener('storyflow:view-changed', () => queueMicrotask(enrichDiffRows));
-  enrichDiffRows();
 })();

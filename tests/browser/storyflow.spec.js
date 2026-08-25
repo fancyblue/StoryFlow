@@ -13,7 +13,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(50);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(49);
 
   await page.locator('#createProjectManually').click();
   await page.locator('#workspaceLoadSourceBtn').click();
@@ -144,6 +144,99 @@ test('source sync offers a one-time undo for the active project', async ({ page 
   page.once('dialog', dialog => dialog.accept());
   await undo.click();
   await expect(page.locator('#projectTitle')).toHaveValue('更新前作品');
+  await expect(undo).not.toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
+test('project source controller compares, applies, preserves manual articles, and undoes', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.route('https://docs.googleapis.com/v1/documents/doc-1?includeTabsContent=true', route => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({
+      title: '測試來源文件',
+      tabs: [{
+        tabProperties: { tabId: 'tab-1', title: '本文', index: 0 },
+        documentTab: {
+          body: {
+            content: [
+              { paragraph: { paragraphStyle: { namedStyleType: 'HEADING_1' }, elements: [{ textRun: { content: '第一章\n', textStyle: {} } }] } },
+              { paragraph: { paragraphStyle: { namedStyleType: 'NORMAL_TEXT' }, elements: [{ textRun: { content: '新貓\n', textStyle: {} } }] } },
+              { paragraph: { paragraphStyle: { namedStyleType: 'HEADING_1' }, elements: [{ textRun: { content: '第二章\n', textStyle: {} } }] } },
+              { paragraph: { paragraphStyle: { namedStyleType: 'NORMAL_TEXT' }, elements: [{ textRun: { content: '新增段落\n', textStyle: {} } }] } }
+            ]
+          },
+          inlineObjects: {}
+        }
+      }]
+    })
+  }));
+  await page.goto('/');
+
+  await page.evaluate(() => {
+    StoryFlowIntegrations.hasGoogleToken = () => true;
+    StoryFlowIntegrations.restoreGoogleAccess = async () => true;
+    sessionStorage.setItem('storyflow.google.access-token.v1', 'test-token');
+
+    const linkedId = crypto.randomUUID();
+    const manualId = crypto.randomUUID();
+    state = {
+      ...state,
+      projectTitle: '來源同步整合測試',
+      projectSource: { type: 'google', docId: 'doc-1', docName: '測試來源文件' },
+      sourceScopes: [{
+        docId: 'doc-1', docName: '測試來源文件',
+        docUrl: 'https://docs.google.com/document/d/doc-1/edit',
+        tabId: 'tab-1', tabTitle: '本文'
+      }],
+      chapters: [
+        {
+          id: linkedId, title: '第一章', draft: '舊狗', confirmedBlockCount: 0, parts: [],
+          source: {
+            id: 'doc-1', name: '測試來源文件',
+            url: 'https://docs.google.com/document/d/doc-1/edit',
+            tabId: 'tab-1', tabTitle: '本文', headingOrdinal: 0, headingTitle: '第一章'
+          }
+        },
+        { id: manualId, title: '手動番外', draft: '手動保留內容', confirmedBlockCount: 0, parts: [], source: null }
+      ],
+      activeChapterId: linkedId
+    };
+    renderAll();
+    StoryFlowProjectSourceSync.syncUi();
+  });
+
+  await page.getByRole('button', { name: '更新作品來源', exact: true }).click();
+  const dialog = page.locator('#projectSourceDiffDialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('1 個缺少章節');
+  await expect(dialog).toContainText('1 個內容更新');
+  await expect(dialog).toContainText('1 篇手動文章保留');
+  await expect(dialog).toContainText('內容 2 → 2 字（字數相同）');
+
+  await dialog.getByRole('button', { name: '套用所選 2 項變更', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect.poll(() => page.evaluate(() => state.chapters.map(chapter => ({
+    title: chapter.title,
+    draft: chapter.draft,
+    sourceId: chapter.source?.id || null
+  })))).toEqual([
+    { title: '第一章', draft: '新貓', sourceId: 'doc-1' },
+    { title: '第二章', draft: '新增段落', sourceId: 'doc-1' },
+    { title: '手動番外', draft: '手動保留內容', sourceId: null }
+  ]);
+
+  const undo = page.getByRole('button', { name: '復原上次來源更新', exact: true });
+  await expect(undo).toBeVisible();
+  page.once('dialog', confirmation => confirmation.accept());
+  await undo.click();
+  await expect.poll(() => page.evaluate(() => state.chapters.map(chapter => ({
+    title: chapter.title,
+    draft: chapter.draft,
+    sourceId: chapter.source?.id || null
+  })))).toEqual([
+    { title: '第一章', draft: '舊狗', sourceId: 'doc-1' },
+    { title: '手動番外', draft: '手動保留內容', sourceId: null }
+  ]);
   await expect(undo).not.toBeVisible();
   expect(pageErrors).toEqual([]);
 });
