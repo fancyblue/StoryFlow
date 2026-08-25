@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><title>StoryFlow destructive action guard core test</title></head>
+<body>
+  <h1>Destructive action guard core test</h1>
+  <pre id="result">RUNNING</pre>
+  <script>
+    const calls = [];
+    let connected = false;
+    let saveFailure = false;
+    let snapshotFailure = false;
+
+    window.state = {
+      projectTitle: '安全測試作品',
+      activeChapterId: 'chapter-1',
+      chapters: [{ id: 'chapter-1', title: '第一章', draft: '測試內容', parts: [], source: null }]
+    };
+    window.defaultState = structuredClone(state);
+    window.suggestion = null;
+    window.saveState = () => {};
+    window.renderAll = () => {};
+    window.activeChapter = () => state.chapters[0];
+    window.suggestNextPart = () => {};
+    window.StoryFlowIntegrations = {
+      async restoreOutputDirectory() { return { connected }; },
+      async saveWorkspace() {
+        calls.push('save');
+        if (saveFailure) throw new Error('save failed');
+      },
+      async createWorkspaceRecoverySnapshot(reason) {
+        calls.push(`snapshot:${reason}`);
+        if (snapshotFailure) throw new Error('snapshot failed');
+        return { artifactPath: `StoryFlow-test/Recovery/workspace.${reason}.json` };
+      },
+      async loadWorkspace() { return null; }
+    };
+  </script>
+  <script src="../src/persistence/project-persistence-guard.js"></script>
+  <script>
+    (async () => {
+      const result = document.getElementById('result');
+      const checks = [];
+      const assert = (condition, message) => {
+        if (!condition) throw new Error(message);
+        checks.push(`PASS ${message}`);
+      };
+
+      try {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        connected = true;
+        calls.length = 0;
+
+        const snapshot = await StoryFlowProjectPersistence.prepareRecovery('before-test-delete');
+        assert(calls.join(',') === 'save,snapshot:before-test-delete', '高風險操作會先保存，再建立 Recovery 快照');
+        assert(snapshot.artifactPath.includes('Recovery/'), '成功時回傳可追蹤的 Recovery 路徑');
+
+        calls.length = 0;
+        snapshotFailure = true;
+        let mutatedAfterSnapshotFailure = false;
+        try {
+          await StoryFlowProjectPersistence.prepareRecovery('before-snapshot-failure');
+          mutatedAfterSnapshotFailure = true;
+        } catch (_) {}
+        assert(!mutatedAfterSnapshotFailure, 'Recovery 建立失敗時不會繼續執行後續變更');
+        assert(calls.join(',') === 'save,snapshot:before-snapshot-failure', '快照失敗前仍先完成目前工作區保存');
+
+        calls.length = 0;
+        snapshotFailure = false;
+        saveFailure = true;
+        let mutatedAfterSaveFailure = false;
+        try {
+          await StoryFlowProjectPersistence.prepareRecovery('before-save-failure');
+          mutatedAfterSaveFailure = true;
+        } catch (_) {}
+        assert(!mutatedAfterSaveFailure, '工作區保存失敗時不會繼續執行後續變更');
+        assert(calls.join(',') === 'save', '保存失敗時不會建立過時的 Recovery 快照');
+
+        result.textContent = `${checks.join('\n')}\n\nALL PASS`;
+        document.body.dataset.testStatus = 'pass';
+      } catch (error) {
+        result.textContent = `${checks.join('\n')}\n\nFAIL ${error.stack || error.message}`;
+        document.body.dataset.testStatus = 'fail';
+      }
+    })();
+  </script>
+</body>
+</html>

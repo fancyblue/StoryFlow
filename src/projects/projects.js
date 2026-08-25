@@ -233,9 +233,9 @@
     if (!confirm(`刪除作品「${title}」？\n\n會從 StoryFlow 工作區移除這個作品、章節、切篇與發布進度。Google Docs 原稿不會刪除。${extra}`)) return false;
 
     try {
-      const saved = await window.StoryFlowProjectPersistence?.flush?.('before-project-delete');
-      if (!saved) throw new Error('目前工作區尚未完整保存。');
-      await StoryFlowIntegrations.createWorkspaceRecoverySnapshot('before-project-delete');
+      const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
+      if (typeof prepare !== 'function') throw new Error('Recovery 安全元件尚未準備完成。');
+      await prepare('before-project-delete');
     } catch (error) {
       notify(`尚未刪除作品：無法建立 Recovery 安全副本（${error.message}）`, true);
       return false;

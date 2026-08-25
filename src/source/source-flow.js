@@ -339,9 +339,9 @@
 
     let recoveryCreated = false;
     try {
-      const saved = await window.StoryFlowProjectPersistence?.flush?.('before-source-refresh');
-      if (!saved) throw new Error('目前工作區尚未完整保存。');
-      recoveryCreated = Boolean(await StoryFlowIntegrations.createWorkspaceRecoverySnapshot?.('before-source-refresh'));
+      const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
+      if (typeof prepare !== 'function') throw new Error('Recovery 安全元件尚未準備完成。');
+      recoveryCreated = Boolean(await prepare('before-source-refresh'));
     } catch (error) {
       console.warn('StoryFlow could not create a source refresh recovery snapshot', error);
       notify(`來源尚未更新：無法建立 Recovery 安全副本（${error.message}）`, true);

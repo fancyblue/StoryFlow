@@ -27,7 +27,7 @@ All `workspace.json` writes must go through `StoryFlowIntegrations.saveWorkspace
 
 The Settings backup center uses the same persistence queue. Manual import and backup restore always preserve the current `workspace.json` in `Recovery/` before replacement.
 
-Destructive or overwrite flows must flush the current project store and call `StoryFlowIntegrations.createWorkspaceRecoverySnapshot()` before changing state or deleting generated files. This applies to project, chapter and published-article deletion as well as source refresh/sync. If the durable snapshot fails, the destructive action must stop without mutating the in-memory workspace.
+Destructive or overwrite flows must call `StoryFlowProjectPersistence.prepareRecovery()` before changing state or deleting generated files. That single guard flushes the current project store and then calls `StoryFlowIntegrations.createWorkspaceRecoverySnapshot()`. This applies to project, chapter and published-article deletion as well as single-chapter source refresh. Full-project source sync uses `StoryFlowSourceSyncHistory.prepare()` to enforce the same save-then-snapshot order while staging its one-time undo. If either safety step fails, the destructive action must stop without mutating the in-memory workspace.
 
 Save-state UI describes local file persistence as preparing, saving or saved. Avoid the word “sync” for ordinary folder writes; reserve source-sync language for comparing or applying Google Docs changes.
 

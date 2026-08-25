@@ -80,6 +80,14 @@
     }
   }
 
+  async function prepareRecovery(reason = 'before-destructive-action') {
+    const saved = await persistWorkspaceNow(reason);
+    if (!saved) throw new Error('目前工作區尚未完整保存。');
+    const snapshot = await StoryFlowIntegrations.createWorkspaceRecoverySnapshot?.(reason);
+    if (!snapshot) throw new Error('Recovery 安全元件尚未準備完成。');
+    return snapshot;
+  }
+
   function scheduleImmediatePersist(reason) {
     clearTimeout(persistTimer);
     persistTimer = window.setTimeout(() => persistWorkspaceNow(reason), 30);
@@ -142,6 +150,7 @@
 
   window.StoryFlowProjectPersistence = {
     flush: persistWorkspaceNow,
+    prepareRecovery,
     rehydrate: rehydrateMultiProjectWorkspace
   };
 })();

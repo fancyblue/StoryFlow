@@ -45,3 +45,5 @@ StoryFlow 只會在 `workspace.json` 實際寫入完成後顯示「已保存」�
 當 `workspace.json` 無法解析時，頁面會自動開啟恢復介面：可一鍵從備份恢復，或匯入既有 `workspace.json` / `workspace.backup.json`。恢復前會先把損壞原檔留在 `Recovery/`。從 Google Docs 更新章節後，同一次開啟頁面期間也可用「復原來源更新」立即回到更新前的章節。
 
 Google access token 不寫入 `settings.json`；為了讓單純重新整理頁面時不必再次登入，只會短暫存在目前瀏覽器工作階段的 `sessionStorage`。「離開此裝置」會清除該瀏覽器中的 token、暫存整合設定、`storyflow.*` 瀏覽器狀態與已記住的資料夾連線資訊，但不會修改或刪除 StoryFlow 資料夾內的 `settings.json`、`workspace.json`、`workspace.backup.json`、`Recovery/` 或作品 Markdown。離開後可以重新連接既有 StoryFlow 資料夾，或匯入 `settings.json` 快速恢復 Google 整合設定。
+
+發版前需要使用 Chrome 與專用測試資料夾完成的人工驗收，請依照 [`docs/CHROME_ACCEPTANCE.md`](docs/CHROME_ACCEPTANCE.md) 執行。請勿使用真實作品資料做破壞性測試。
