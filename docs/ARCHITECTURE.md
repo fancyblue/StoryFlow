@@ -14,7 +14,7 @@ StoryFlow is a build-free static site. GitHub Pages serves the repository root, 
 | Google bootstrap and token session | `src/settings/settings-bootstrap.js`, `src/connection/session-auth.js` | `settings.json`, session storage |
 | Generated articles | `src/persistence/integrations.js` | `Works/<work>/<chapter>/` |
 
-All `workspace.json` writes must go through `StoryFlowIntegrations.saveWorkspace()`. That function serializes writes, creates the latest-good backup and rejects stale revisions. Do not write `workspace.json` directly from feature modules.
+All `workspace.json` writes must go through `StoryFlowIntegrations.saveWorkspace()`. That function serializes writes, creates the latest-good backup and rejects stale revisions. It also maintains content-deduplicated rolling snapshots in `Recovery/`: at most one per hour and the latest three only. Pruning applies only to `workspace.auto-*` artifacts; conflict and high-risk-operation snapshots are never removed by the rolling-backup policy. Do not write `workspace.json` directly from feature modules.
 
 ## Runtime layers
 
@@ -26,6 +26,10 @@ All `workspace.json` writes must go through `StoryFlowIntegrations.saveWorkspace
 6. `src/persistence/project-persistence-guard.js` accelerates critical structural saves through the same integration queue.
 
 The Settings backup center uses the same persistence queue. Manual import and backup restore always preserve the current `workspace.json` in `Recovery/` before replacement.
+
+Destructive or overwrite flows must flush the current project store and call `StoryFlowIntegrations.createWorkspaceRecoverySnapshot()` before changing state or deleting generated files. This applies to project, chapter and published-article deletion as well as source refresh/sync. If the durable snapshot fails, the destructive action must stop without mutating the in-memory workspace.
+
+Save-state UI describes local file persistence as preparing, saving or saved. Avoid the word “sync” for ordinary folder writes; reserve source-sync language for comparing or applying Google Docs changes.
 
 Chrome stores only the selected directory handle in IndexedDB. `src/connection/folder-session.js` requires an explicit reconnect on a cold tab, while `src/connection/quick-start.js` presents the remembered folder name and routes the reconnect through the normal workspace/settings loader. “Leave this device” removes both the session values and directory handle.
 
