@@ -88,7 +88,7 @@
       button.id = 'quickSwitchProjectBtn';
       button.className = 'quick-switch-project-btn';
       button.type = 'button';
-      button.textContent = '切換作品';
+      button.innerHTML = '<span>切換作品</span><span class="sf-chevron" aria-hidden="true"></span>';
       button.setAttribute('aria-haspopup', 'true');
       button.setAttribute('aria-expanded', 'false');
       button.addEventListener('click', event => {

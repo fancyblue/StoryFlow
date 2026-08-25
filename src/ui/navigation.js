@@ -15,6 +15,7 @@
 
   let currentView = 'workspace';
   let lastInputWasKeyboard = false;
+  let pendingNewWork = null;
   const viewLabels = {
     workspace: '工作台',
     projects: '作品',
@@ -182,17 +183,34 @@
     document.getElementById('quickSwitchProjectBtn')?.setAttribute('aria-expanded', 'false');
   }
 
-  function startNewWorkFlow() {
-    const project = window.StoryFlowProjects?.createProject?.({ title: '未命名作品' });
-    if (!project) return false;
+  function cancelNewWorkFlow() {
+    pendingNewWork = null;
+  }
 
-    closeProjectQuickSwitch();
+  function commitNewWorkFlow({ title, sourceDocId = null } = {}) {
+    if (!pendingNewWork) return null;
+    const normalizedTitle = String(title || '').trim();
+    if (!normalizedTitle) return null;
+    const project = window.StoryFlowProjects?.createProject?.({
+      title: normalizedTitle,
+      sourceDocId
+    }, { quiet: true });
+    if (!project) return null;
+    pendingNewWork = null;
     goTo('workspace');
-    requestAnimationFrame(() => {
-      window.StoryFlowProjectSourceSync?.syncUi?.();
-      window.StoryFlowSourceOnboarding?.openSourceChooser?.({ creation: true, allowManualBeforeSettings: true });
-    });
-    return true;
+    return project;
+  }
+
+  function startNewWorkFlow({ source = null } = {}) {
+    closeProjectQuickSwitch();
+    pendingNewWork = { source, returnView: currentView };
+    const onboarding = window.StoryFlowSourceOnboarding;
+    let opened = false;
+    if (source === 'manual') opened = Boolean(onboarding?.openManualCreation?.());
+    else if (source === 'google') opened = Boolean(onboarding?.openGoogleCreation?.());
+    else opened = Boolean(onboarding?.openSourceChooser?.({ creation: true, allowManualBeforeSettings: true }));
+    if (!opened) cancelNewWorkFlow();
+    return opened;
   }
 
   nav.addEventListener('click', event => {
@@ -215,6 +233,11 @@
   window.StoryFlowNavigate = goTo;
   window.StoryFlowCurrentView = () => currentView;
   window.StoryFlowStartNewWork = startNewWorkFlow;
+  window.StoryFlowNewWorkFlow = {
+    isPending: () => Boolean(pendingNewWork),
+    cancel: cancelNewWorkFlow,
+    commit: commitNewWorkFlow
+  };
 
   window.addEventListener('storyflow:workspace-loaded', () => {
     const savedView = state?.ui?.lastView;

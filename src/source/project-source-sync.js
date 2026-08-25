@@ -105,6 +105,10 @@
   }
 
   function setManualMode() {
+    if (window.StoryFlowProjects?.isActivePlaceholder?.() && typeof window.StoryFlowStartNewWork === 'function') {
+      window.StoryFlowStartNewWork({ source: 'manual' });
+      return;
+    }
     if (projectMode({ migrate: false }) === 'google') return;
     state.projectSource = { type: 'manual' };
     state.sourceScopes = [];
@@ -119,6 +123,10 @@
   }
 
   function startGoogleMode() {
+    if (window.StoryFlowProjects?.isActivePlaceholder?.() && typeof window.StoryFlowStartNewWork === 'function') {
+      window.StoryFlowStartNewWork({ source: 'google' });
+      return;
+    }
     if (projectMode({ migrate: false }) === 'manual') return;
     if (typeof window.importGoogleDoc === 'function') window.importGoogleDoc();
     else notify('Google Docs 載入功能尚未準備完成', true);

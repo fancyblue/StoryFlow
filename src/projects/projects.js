@@ -322,9 +322,7 @@
       switchProject(event.target.value);
     });
     box.querySelector('#newProjectBtn').addEventListener('click', () => {
-      createProject({ title: '未命名作品' });
-      const input = document.getElementById('projectTitle');
-      requestAnimationFrame(() => { input?.focus(); input?.select(); });
+      window.StoryFlowStartNewWork?.();
     });
     box.querySelector('#deleteProjectBtn').addEventListener('click', () => { deleteProject(store.activeProjectId); });
   }
@@ -394,7 +392,7 @@
       pendingRoute = null;
       if (owner && owner.id !== activeId) {
         pendingRoute = { kind: 'existing', projectId: owner.id, title: owner.title, sourceDocId: doc.id };
-      } else if (!owner && hasMeaningfulCurrentProject()) {
+      } else if (!owner && (window.StoryFlowNewWorkFlow?.isPending?.() || hasMeaningfulCurrentProject())) {
         pendingRoute = { kind: 'new', title: doc.title || doc.name || '未命名作品', sourceDocId: doc.id };
       }
 
@@ -409,7 +407,13 @@
     if (!event.target.closest?.('#confirmSourcePreviewBtn') || !pendingRoute) return;
     const route = pendingRoute;
     pendingRoute = null;
-    if (route.kind === 'new') createProject({ title: route.title, sourceDocId: route.sourceDocId }, { quiet: true });
+    if (route.kind === 'new') {
+      if (window.StoryFlowNewWorkFlow?.isPending?.()) {
+        window.StoryFlowNewWorkFlow.commit({ title: route.title, sourceDocId: route.sourceDocId });
+      } else {
+        createProject({ title: route.title, sourceDocId: route.sourceDocId }, { quiet: true });
+      }
+    }
     else if (route.kind === 'existing') switchProject(route.projectId, { quiet: true });
   }, true);
 
