@@ -1,4 +1,4 @@
-// StoryFlow UI System v4 interaction contract: keep state, menus, and segmented controls
+// StoryFlow UI interaction contract: keep state, menus, and segmented controls
 // semantically consistent without changing the product's underlying data flow.
 (function () {
   function syncLiveRegions() {

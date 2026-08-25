@@ -6,9 +6,9 @@
   function ensureThemeOrder() {
     const theme = document.getElementById('storyflowBlueThemeCss');
     const mobile = document.getElementById('storyflowMobileVisualPolishCss');
-    const workspaceUx = document.getElementById('storyflowWorkspaceUxRefineCss');
-    const connectionStatus = document.getElementById('storyflowConnectionStatusRefineCss');
-    const uiSystem = document.getElementById('storyflowUiSystemV4Css');
+    const workspaceUx = document.getElementById('storyflowWorkspaceUxCss');
+    const connectionStatus = document.getElementById('storyflowConnectionStatusCss');
+    const uiSystem = document.getElementById('storyflowUiSystemCss');
     const layoutIntegrity = document.getElementById('storyflowUiLayoutIntegrityCss');
     if (theme && theme.parentElement === document.head) document.head.appendChild(theme);
     if (mobile && mobile.parentElement === document.head) document.head.appendChild(mobile);

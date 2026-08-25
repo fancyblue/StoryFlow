@@ -1,4 +1,4 @@
-// Keep the visible Google login state aligned with the token that StoryFlow can
+// Google authentication controller: keep the visible login state aligned with the token StoryFlow can
 // actually use. This runs after the older auth/settings shims so it can repair the
 // bootstrap edge case where an old in-memory token survives after settings.json
 // clears the session cache, leaving the UI saying "已登入" while API calls fail.

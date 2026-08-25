@@ -1,6 +1,6 @@
 /* Project source-mode UX: creation method first, then a stable manual/Google work layout. */
 
-.source-panel.project-source-mode-v2 > .panel-head{
+.source-panel.project-source-mode > .panel-head{
   margin-bottom:18px!important;
 }
 
@@ -113,7 +113,7 @@
   white-space:nowrap;
   text-overflow:ellipsis;
 }
-.project-source-refresh-v2{
+.project-source-refresh{
   min-height:38px!important;
   padding:0 12px!important;
   border:1px solid #bfd8eb!important;
@@ -125,15 +125,15 @@
   line-height:1!important;
   white-space:nowrap!important;
 }
-.project-source-refresh-v2:hover,
-.project-source-refresh-v2:focus-visible{
+.project-source-refresh:hover,
+.project-source-refresh:focus-visible{
   border-color:#95c3e2!important;
   background:#eaf5fd!important;
   color:#245f8d!important;
   outline:none!important;
   box-shadow:0 0 0 3px rgba(54,118,173,.10)!important;
 }
-.source-sync-undo-bar-v2{
+.source-sync-undo-bar{
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -145,31 +145,31 @@
   background:#f1f8fd;
   color:#315f80;
 }
-.source-sync-undo-bar-v2[hidden]{display:none!important}
-.source-sync-undo-bar-v2>span{
+.source-sync-undo-bar[hidden]{display:none!important}
+.source-sync-undo-bar>span{
   min-width:0;
   font-size:10px;
   font-weight:700;
   line-height:1.45;
 }
-.source-sync-undo-bar-v2>.button{flex:0 0 auto}
+.source-sync-undo-bar>.button{flex:0 0 auto}
 
-.source-panel.project-source-mode-v2 label[for="projectTitle"]{
+.source-panel.project-source-mode label[for="projectTitle"]{
   margin-top:0!important;
   font-size:12px!important;
   font-weight:750!important;
   letter-spacing:.01em!important;
 }
-.source-panel.project-source-mode-v2 #projectTitle{
+.source-panel.project-source-mode #projectTitle{
   min-height:44px!important;
   height:44px!important;
   font-size:15px!important;
   font-weight:750!important;
 }
-.source-panel.project-source-mode-v2 #chapterList{
+.source-panel.project-source-mode #chapterList{
   margin-top:14px;
 }
-.source-panel.project-source-mode-v2 #addChapterBtn{
+.source-panel.project-source-mode #addChapterBtn{
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
@@ -183,8 +183,8 @@
   font-size:13px!important;
   font-weight:800!important;
 }
-.source-panel.project-source-mode-v2 #addChapterBtn:hover,
-.source-panel.project-source-mode-v2 #addChapterBtn:focus-visible{
+.source-panel.project-source-mode #addChapterBtn:hover,
+.source-panel.project-source-mode #addChapterBtn:focus-visible{
   border-color:#91b8d9!important;
   background:#eaf4fa!important;
   color:#234463!important;
@@ -222,7 +222,7 @@
   .project-creation-option{grid-template-columns:34px minmax(0,1fr) 16px;padding:10px}
   .project-creation-option-icon{width:34px;height:34px}
   .project-source-origin{grid-template-columns:1fr;align-items:start}
-  .project-source-refresh-v2{width:100%!important;min-height:42px!important}
-  .source-sync-undo-bar-v2{align-items:stretch;flex-direction:column}
-  .source-sync-undo-bar-v2>.button{width:100%}
+  .project-source-refresh{width:100%!important;min-height:42px!important}
+  .source-sync-undo-bar{align-items:stretch;flex-direction:column}
+  .source-sync-undo-bar>.button{width:100%}
 }

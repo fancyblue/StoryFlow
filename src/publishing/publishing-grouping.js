@@ -1,4 +1,4 @@
-// Publishing list grouping v1: keep the reading hierarchy explicit without adding another large panel.
+// Publishing list grouping keeps the reading hierarchy explicit without adding another large panel.
 // Current data is one active work at a time; the work wrapper is deliberate so the same structure can
 // later support a multi-work filter without changing article/chapter hierarchy.
 (function () {
@@ -59,13 +59,13 @@
   }
 
   const baseRenderParts = window.renderParts;
-  if (typeof baseRenderParts === 'function' && !baseRenderParts.__publishingGroupingV1) {
+  if (typeof baseRenderParts === 'function' && !baseRenderParts.__publishingGrouping) {
     const wrapped = function (...args) {
       const result = baseRenderParts.apply(this, args);
       groupPublishingList();
       return result;
     };
-    wrapped.__publishingGroupingV1 = true;
+    wrapped.__publishingGrouping = true;
     window.renderParts = wrapped;
   }
 

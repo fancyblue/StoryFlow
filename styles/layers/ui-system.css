@@ -1,4 +1,4 @@
-/* StoryFlow UI System v4
+/* StoryFlow UI system
    One final visual contract for hierarchy, controls, status, cards, dialogs, and responsive behavior.
    Denim palette remains the brand language; semantic colors are reserved for state/destructive meaning. */
 :root{
@@ -232,9 +232,9 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .settings-view .settings-section>strong{font-size:16px!important;font-weight:820!important;margin-bottom:5px!important}
 .settings-view .settings-section p{font-size:13.5px!important;line-height:1.65!important}
 .settings-view .platform-editor-hint{font-size:13px!important;line-height:1.5!important}
-.settings-view .platform-add-button-v2{height:36px!important;min-height:36px!important;padding:0 11px!important;background:#eef5fa!important;border-color:#b4cee5!important;color:var(--denim-700,#3975a7)!important;font-size:13px!important;font-weight:780!important}
-.settings-view .platform-add-button-v2:hover{background:#e5f0f7!important;border-color:#91b8d9!important}
-.settings-view .platform-setting-row-v2{min-height:62px!important;gap:14px!important}
+.settings-view .platform-add-button{height:36px!important;min-height:36px!important;padding:0 11px!important;background:#eef5fa!important;border-color:#b4cee5!important;color:var(--denim-700,#3975a7)!important;font-size:13px!important;font-weight:780!important}
+.settings-view .platform-add-button:hover{background:#e5f0f7!important;border-color:#91b8d9!important}
+.settings-view .platform-setting-row{min-height:62px!important;gap:14px!important}
 .settings-view .platform-default-name{font-size:14px!important;font-weight:800!important}
 .settings-view .platform-inline-check span{font-size:13px!important}
 .settings-view .platform-row-delete{height:34px!important;min-height:34px!important;padding:0 9px!important;font-size:13px!important;font-weight:780!important}
@@ -296,7 +296,7 @@ dialog::backdrop{background:rgba(24,52,79,.38)!important}
   .publishing-toolbar{align-items:flex-start!important;flex-direction:column!important}
   .publishing-filter{min-height:36px!important;font-size:13px!important}
   .settings-view .settings-section{padding:18px!important}
-  .settings-view .platform-setting-row-v2{grid-template-columns:1fr!important;gap:8px!important;padding:14px 0!important}
+  .settings-view .platform-setting-row{grid-template-columns:1fr!important;gap:8px!important;padding:14px 0!important}
   .settings-view .platform-name-input,.settings-view .platform-indent-select,.settings-view .platform-inline-check,.settings-view .platform-row-delete{grid-column:1!important}
 }
 

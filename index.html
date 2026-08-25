@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="./styles/layers/foundation.css?v=20260825-layer1" />
   <link rel="stylesheet" href="./styles/layers/legacy-patches.css?v=20260825-layer1" />
   <link rel="stylesheet" href="./smart-split-ui.css?v=20260817-2025" />
-  <link rel="stylesheet" href="./dialog-fixes.css" />
+  <link rel="stylesheet" href="./styles/domains/dialogs.css?v=20260825-p2b" />
   <link rel="stylesheet" href="./source-flow.css?v=20260824-flow2" />
   <link rel="stylesheet" href="./projects.css" />
   <link rel="stylesheet" href="./styles/domains/publishing.css?v=20260825-domain1" data-storyflow-publishing-domain />
@@ -24,21 +24,20 @@
   <link rel="stylesheet" href="./styles/domains/settings-layout.css?v=20260825-domain1" />
   <link id="storyflowControlPolishCss" rel="stylesheet" href="./styles/layers/controls.css?v=20260825-layer1" />
   <link id="storyflowNavigationUtilityPolishCss" rel="stylesheet" href="./styles/layers/navigation.css?v=20260825-layer1" />
-  <link id="storyflowMobileBottomNavFixCss" rel="stylesheet" href="./styles/layers/mobile-navigation.css?v=20260825-layer1" />
+  <link id="storyflowMobileNavigationCss" rel="stylesheet" href="./styles/layers/mobile-navigation.css?v=20260825-layer1" />
   <link id="storyflowBlueThemeCss" rel="stylesheet" href="./styles/layers/theme.css?v=20260825-layer1" />
   <link id="storyflowMobileVisualPolishCss" rel="stylesheet" href="./styles/layers/mobile-visual.css?v=20260825-layer1" />
-  <link id="storyflowWorkspaceUxRefineCss" rel="stylesheet" href="./workspace-ux-refine.css?v=20260818-0938" />
-  <link id="storyflowConnectionStatusRefineCss" rel="stylesheet" href="./connection-status-refine.css?v=20260819-1006" />
-  <link id="storyflowUiSystemV4Css" rel="stylesheet" href="./styles/layers/ui-system.css?v=20260825-layer1" />
+  <link id="storyflowWorkspaceUxCss" rel="stylesheet" href="./styles/domains/workspace-ux.css?v=20260825-p2b" />
+  <link id="storyflowConnectionStatusCss" rel="stylesheet" href="./styles/domains/connection-status.css?v=20260825-p2b" />
+  <link id="storyflowUiSystemCss" rel="stylesheet" href="./styles/layers/ui-system.css?v=20260825-layer1" />
   <link id="storyflowUiLayoutIntegrityCss" rel="stylesheet" href="./styles/layers/layout-integrity.css?v=20260825-layer1" />
-  <link id="storyflowProjectSourceModeCss" rel="stylesheet" href="./project-source-mode-v2.css?v=20260825-p1b" />
-  <link id="storyflowSourceArticleUxV2Css" rel="stylesheet" href="./source-article-ux-v2.css?v=20260818-1504" />
-  <link id="storyflowChapterManagementV2Css" rel="stylesheet" href="./chapter-management-v2.css?v=20260825-layout1" />
-  <link id="storyflowManualSourceLayoutV3Css" rel="stylesheet" href="./manual-source-layout-v3.css?v=20260818-1548" />
+  <link id="storyflowProjectSourceModeCss" rel="stylesheet" href="./styles/domains/project-source-mode.css?v=20260825-p2b" />
+  <link id="storyflowSourceArticleUxCss" rel="stylesheet" href="./styles/domains/source-article-ux.css?v=20260825-p2b" />
+  <link id="storyflowChapterManagementCss" rel="stylesheet" href="./styles/domains/chapter-management.css?v=20260825-p2b" />
+  <link id="storyflowManualSourceCss" rel="stylesheet" href="./styles/domains/manual-source.css?v=20260825-p2b" />
   <link rel="stylesheet" href="./styles/domains/workspace.css?v=20260825-domain1" data-storyflow-workspace-domain />
-  <link id="storyflowManualChapterEditV1Css" rel="stylesheet" href="./manual-chapter-edit-v1.css?v=20260819-1425" />
-  <link id="storyflowProjectProgressBadgesV1Css" rel="stylesheet" href="./project-progress-badges-v1.css?v=20260818-1647" />
-  <link id="storyflowWorksLibraryUxV2Css" rel="stylesheet" href="./works-library-ux-v2.css?v=20260819-1425" />
+  <link id="storyflowManualChapterEditCss" rel="stylesheet" href="./styles/domains/manual-chapter-edit.css?v=20260825-p2b" />
+  <link id="storyflowWorksLibraryUxCss" rel="stylesheet" href="./styles/domains/works-library.css?v=20260825-p2b" />
   <link rel="stylesheet" href="./styles/domains/publishing-refinements.css?v=20260825-domain1" />
 </head>
 <body>
@@ -73,7 +72,7 @@
         <article class="stat-card"><span>已建立發布篇</span><strong id="partCount">0</strong><small>篇</small></article>
       </section>
 
-      <section class="workspace-grid workspace-hierarchy-v2">
+      <section class="workspace-grid workspace-hierarchy">
         <aside class="panel source-panel">
           <div class="panel-head"><div><p class="eyebrow">SOURCE</p><h2>作品與章節</h2></div><button id="newChapterBtn" class="icon-button" title="新增章節">＋</button></div>
           <label class="field-label" for="projectTitle">作品名稱</label><input id="projectTitle" class="text-input" value="未命名作品" />
@@ -123,6 +122,6 @@
 
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://apis.google.com/js/api.js" async defer></script>
-  <script src="./app-loader.js?v=20260825-p2a"></script>
+  <script src="./app-loader.js?v=20260825-p2b"></script>
 </body>
 </html>

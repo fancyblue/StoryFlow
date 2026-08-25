@@ -1,16 +1,16 @@
-// Chapter management UX: avoid empty destructive-action columns in the workspace and
+// Chapter management: avoid empty destructive-action columns in the workspace and
 // let manual articles be fully edited from the Works page without conflating source titles
 // with Smart Split output titles.
 (function () {
   const expandedProjects = new Set();
 
   function ensureStyles() {
-    let link = document.getElementById('storyflowChapterManagementV2Css');
+    let link = document.getElementById('storyflowChapterManagementCss');
     if (!link) {
       link = document.createElement('link');
-      link.id = 'storyflowChapterManagementV2Css';
+      link.id = 'storyflowChapterManagementCss';
       link.rel = 'stylesheet';
-      link.href = './chapter-management-v2.css?v=20260818-1538';
+      link.href = './styles/domains/chapter-management.css?v=20260825-p2b';
       document.head.appendChild(link);
     }
     return link;
@@ -34,8 +34,8 @@
   function decorateWorkspaceChapterActions() {
     document.querySelectorAll('#chapterList .chapter-row').forEach(row => {
       const legacyDelete = row.querySelector(':scope > .chapter-delete-button');
-      if (!legacyDelete || legacyDelete.dataset.chapterMenuV2 === '1') return;
-      legacyDelete.dataset.chapterMenuV2 = '1';
+      if (!legacyDelete || legacyDelete.dataset.chapterMenuBound === '1') return;
+      legacyDelete.dataset.chapterMenuBound = '1';
 
       const deleteHandler = legacyDelete.onclick;
       legacyDelete.onclick = null;
@@ -305,18 +305,18 @@
   }
 
   const baseRenderChapters = window.renderChapters;
-  if (typeof baseRenderChapters === 'function' && !baseRenderChapters.__chapterManagementV2) {
+  if (typeof baseRenderChapters === 'function' && !baseRenderChapters.__chapterManagement) {
     const wrapped = function (...args) {
       const result = baseRenderChapters.apply(this, args);
       queueMicrotask(decorateWorkspaceChapterActions);
       return result;
     };
-    wrapped.__chapterManagementV2 = true;
+    wrapped.__chapterManagement = true;
     window.renderChapters = wrapped;
   }
 
   const baseRenderAll = window.renderAll;
-  if (typeof baseRenderAll === 'function' && !baseRenderAll.__chapterManagementV2) {
+  if (typeof baseRenderAll === 'function' && !baseRenderAll.__chapterManagement) {
     const wrapped = function (...args) {
       const result = baseRenderAll.apply(this, args);
       queueMicrotask(() => {
@@ -325,7 +325,7 @@
       });
       return result;
     };
-    wrapped.__chapterManagementV2 = true;
+    wrapped.__chapterManagement = true;
     window.renderAll = wrapped;
   }
 

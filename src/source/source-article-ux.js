@@ -1,4 +1,4 @@
-// Source article UX v2: keep manual/Google work panels visually consistent,
+// Source article UX keeps manual/Google work panels visually consistent,
 // make manual article creation a direct action with optional preview, and remove
 // redundant Google source labels from the chapter list.
 (function () {
@@ -92,7 +92,7 @@
   function prepareManualDialog() {
     const dialog = document.getElementById('manualSourceDialog');
     if (!dialog) return;
-    dialog.classList.add('manual-source-dialog-v2');
+    dialog.classList.add('manual-source-dialog');
 
     const actions = dialog.querySelector('.source-flow-actions');
     const preview = document.getElementById('previewManualSourceBtn');
@@ -112,7 +112,7 @@
       confirm.addEventListener('click', addManualArticleDirect);
       actions.appendChild(confirm);
     }
-    actions.classList.add('manual-source-actions-v2');
+    actions.classList.add('manual-source-actions');
   }
 
   function syncManualPreviewPresentation() {
@@ -125,7 +125,7 @@
     if (!dialog || !summary || !tabs || !heading || !confirm || !cancel) return;
 
     const isManual = dialog.open && /^手動內容\s*·/.test(String(summary.textContent || '').trim());
-    dialog.classList.toggle('manual-single-preview-v2', isManual);
+    dialog.classList.toggle('manual-single-preview', isManual);
     summary.hidden = isManual;
 
     if (isManual) {
@@ -144,8 +144,8 @@
     const dialog = document.getElementById('sourcePreviewDialog');
     const summary = document.getElementById('sourcePreviewSummary');
     const cancel = document.getElementById('cancelSourcePreviewBtn');
-    if (!dialog || !summary || dialog.dataset.manualPreviewUxV2 === '1') return;
-    dialog.dataset.manualPreviewUxV2 = '1';
+    if (!dialog || !summary || dialog.dataset.manualPreviewUx === '1') return;
+    dialog.dataset.manualPreviewUx = '1';
 
     const observer = new MutationObserver(() => queueMicrotask(syncManualPreviewPresentation));
     observer.observe(summary, { childList: true, subtree: true, characterData: true });
@@ -154,7 +154,7 @@
       window.setTimeout(syncManualPreviewPresentation, 0);
     });
     cancel?.addEventListener('click', () => {
-      const returnToEditor = dialog.classList.contains('manual-single-preview-v2');
+      const returnToEditor = dialog.classList.contains('manual-single-preview');
       if (!returnToEditor) return;
       window.setTimeout(() => {
         const editor = document.getElementById('manualSourceDialog');
@@ -245,7 +245,7 @@
     const stats = document.querySelector('.stats-grid');
     if (!grid || !stats) return;
 
-    grid.classList.add('workspace-hierarchy-v2');
+    grid.classList.add('workspace-hierarchy');
     if (stats.parentElement !== grid) {
       const editor = grid.querySelector(':scope > .editor-panel');
       const splitter = grid.querySelector(':scope > .splitter-panel');
@@ -258,7 +258,7 @@
   }
 
   function ensureStyleLast() {
-    const link = document.getElementById('storyflowSourceArticleUxV2Css');
+    const link = document.getElementById('storyflowSourceArticleUxCss');
     if (link && link.parentElement === document.head && document.head.lastElementChild !== link) {
       document.head.appendChild(link);
     }
@@ -275,13 +275,13 @@
   }
 
   const baseRenderAll = window.renderAll;
-  if (typeof baseRenderAll === 'function' && !baseRenderAll.__sourceArticleUxV2) {
+  if (typeof baseRenderAll === 'function' && !baseRenderAll.__sourceArticleUx) {
     const wrapped = function (...args) {
       const result = baseRenderAll.apply(this, args);
       queueMicrotask(syncAll);
       return result;
     };
-    wrapped.__sourceArticleUxV2 = true;
+    wrapped.__sourceArticleUx = true;
     window.renderAll = wrapped;
   }
 
@@ -295,7 +295,7 @@
     // final chapter list after it mutates state so the new manual article appears
     // immediately in mixed-source works as well.
     if (event.target?.closest?.('#confirmSourcePreviewBtn')
-      && document.getElementById('sourcePreviewDialog')?.classList.contains('manual-single-preview-v2')) {
+      && document.getElementById('sourcePreviewDialog')?.classList.contains('manual-single-preview')) {
       window.setTimeout(rerenderChapterList, 0);
     }
   });

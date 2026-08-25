@@ -1,4 +1,4 @@
-// Works library UX v2 — performance-safe edition.
+// Works library UX — performance-safe edition.
 // Keep the requested labels and overflow action without observing or repeatedly moving
 // card subtrees. The core Projects renderer remains the source of truth.
 (function () {

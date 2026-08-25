@@ -120,18 +120,18 @@
     const list = document.getElementById('platformFormatSettings');
     if (!manager || !list) return;
 
-    manager.className = 'platform-manager platform-manager-v2';
+    manager.className = 'platform-manager';
     manager.innerHTML = `
       <div class="platform-editor-toolbar">
         <span class="platform-editor-hint">預設格式會作為各平台的基準；平台可各自覆寫。</span>
-        <button id="addPlatformBtnV2" class="button tiny ghost platform-add-button-v2" type="button">＋ 新增平台</button>
+        <button id="addPlatformBtn" class="button tiny ghost platform-add-button" type="button">＋ 新增平台</button>
       </div>`;
-    document.getElementById('addPlatformBtnV2').onclick = addPlatform;
+    document.getElementById('addPlatformBtn').onclick = addPlatform;
   }
 
   function buildDefaultRow() {
     const row = document.createElement('div');
-    row.className = 'platform-setting-row platform-setting-row-v2 platform-default-row';
+    row.className = 'platform-setting-row platform-default-row';
     row.dataset.platform = '__default__';
 
     const name = document.createElement('div');
@@ -171,7 +171,7 @@
   function buildPlatformRow(name) {
     const config = ensureConfig(name);
     const row = document.createElement('div');
-    row.className = 'platform-setting-row platform-setting-row-v2';
+    row.className = 'platform-setting-row';
     row.dataset.platform = name;
 
     const nameInput = document.createElement('input');
@@ -232,7 +232,7 @@
     if (els.defaultSceneSeparator) els.defaultSceneSeparator.checked = state.formatting.defaultSceneSeparator;
 
     list.innerHTML = '';
-    list.classList.add('platform-settings-v2');
+    list.classList.add('platform-settings-list');
     list.appendChild(buildDefaultRow());
 
     platforms.forEach(name => list.appendChild(buildPlatformRow(name)));
