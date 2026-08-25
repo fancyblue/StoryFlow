@@ -31,12 +31,16 @@ StoryFlow/
 ├─ settings.json      # Google Client ID、Picker API Key、平台與排版設定
 ├─ workspace.json     # 作品、章節、切篇與發布進度
 ├─ workspace.backup.json # 最近一次正常寫入前的工作區備份
-├─ Recovery/         # 衝突副本、損壞原檔與被取代版本
+├─ Recovery/         # 循環備份、衝突副本與高風險操作前快照
 └─ Works/
    └─ <作品>/<章節>/*.md
 ```
 
-StoryFlow 只會在 `workspace.json` 實際寫入完成後顯示「已同步」；尚未連接資料夾、正在同步或寫入失敗都會分別顯示。所有工作區寫入都依序執行，並在改寫前把最近正常版本保存為 `workspace.backup.json`。若其他分頁或裝置先寫入了較新版本，StoryFlow 會停止覆蓋，並將本頁修改另存到 `Recovery/`。
+StoryFlow 只會在 `workspace.json` 實際寫入完成後顯示「已保存」；尚未連接資料夾、準備保存、保存中或寫入失敗都會分別顯示。所有工作區寫入都依序執行，並在改寫前把最近正常版本保存為 `workspace.backup.json`。
+
+為了提供個人使用剛好足夠的保護，內容有變更時，StoryFlow 每小時最多在 `Recovery/` 建立一份 `workspace.auto-*.json` 循環備份；相同內容不重複建立，並只保留最近 3 份。刪除作品、章節或發布稿，以及套用來源覆寫、匯入工作區或從備份恢復前，也會先建立獨立 Recovery 快照；若快照建立失敗，刪除或覆寫會停止。這些安全副本不會修改 Google Docs 原稿。
+
+若其他分頁或裝置先寫入了較新版本，StoryFlow 會停止覆蓋，並將本頁修改另存到 `Recovery/`。
 
 當 `workspace.json` 無法解析時，頁面會自動開啟恢復介面：可一鍵從備份恢復，或匯入既有 `workspace.json` / `workspace.backup.json`。恢復前會先把損壞原檔留在 `Recovery/`。從 Google Docs 更新章節後，同一次開啟頁面期間也可用「復原來源更新」立即回到更新前的章節。
 
