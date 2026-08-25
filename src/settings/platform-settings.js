@@ -66,9 +66,14 @@
 
     for (const chapter of state.chapters || []) {
       for (const part of chapter.parts || []) {
-        if (!part.platformStatus || !(oldName in part.platformStatus)) continue;
-        if (!(nextName in part.platformStatus)) part.platformStatus[nextName] = part.platformStatus[oldName];
-        delete part.platformStatus[oldName];
+        if (part.platformStatus && oldName in part.platformStatus) {
+          if (!(nextName in part.platformStatus)) part.platformStatus[nextName] = part.platformStatus[oldName];
+          delete part.platformStatus[oldName];
+        }
+        if (part.publicationRecords && oldName in part.publicationRecords) {
+          if (!(nextName in part.publicationRecords)) part.publicationRecords[nextName] = part.publicationRecords[oldName];
+          delete part.publicationRecords[oldName];
+        }
       }
     }
 
@@ -78,13 +83,14 @@
   }
 
   function removePlatform(name) {
-    if (!confirm(`移除「${name}」平台？\n\n會移除這個平台的排版與發布狀態，但不會刪除已產出的 Markdown。`)) return;
+    if (!confirm(`移除「${name}」平台？\n\n會移除這個平台的排版、發布狀態、時間與文章網址，但不會刪除已產出的 Markdown。`)) return;
     const index = platforms.indexOf(name);
     if (index >= 0) platforms.splice(index, 1);
     delete state.formatting.platforms?.[name];
     for (const chapter of state.chapters || []) {
       for (const part of chapter.parts || []) {
         if (part.platformStatus) delete part.platformStatus[name];
+        if (part.publicationRecords) delete part.publicationRecords[name];
       }
     }
     saveState('平台已移除');

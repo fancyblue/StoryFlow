@@ -29,7 +29,12 @@
     platforms.splice(0, platforms.length, ...names);
     for (const chapter of state.chapters || []) for (const part of chapter.parts || []) {
       const prior = part.platformStatus || {};
+      const priorRecords = part.publicationRecords || {};
       part.platformStatus = Object.fromEntries(names.map(name => [name, Boolean(prior[name])]));
+      part.publicationRecords = Object.fromEntries(names.map(name => [name, {
+        publishedAt: typeof priorRecords[name]?.publishedAt === 'string' ? priorRecords[name].publishedAt : '',
+        url: typeof priorRecords[name]?.url === 'string' ? priorRecords[name].url : ''
+      }]));
     }
     if (firstMigration) state.platformPresetVersion = PRESET_VERSION;
   }

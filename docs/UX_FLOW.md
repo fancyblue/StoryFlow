@@ -48,6 +48,21 @@ Deletion, replacement and source refresh follow the safety rules in [ARCHITECTUR
 - Preview and copy use the article-level `includeAfterword` choice consistently across platforms.
 - Deleting an article or rewinding later split points warns how many affected articles contain afterwords before Recovery and deletion begin.
 
+## Platform publication records
+
+```text
+發布 → 管理發布 → 平台「記錄發布」→ 確認時間、選填文章網址 → 保存並標為已發布
+                         ↘ 取消 → 不改變原狀態
+已發布 → 取消已發布 → 確認 → 清除該平台的時間與網址
+```
+
+- One publishing article may keep one lightweight record per configured platform; scheduling, platform APIs and revision history are intentionally out of scope.
+- The default time is the moment the record dialog opens, but the user can correct it before saving.
+- A URL without a scheme is normalized to `https://`; only `http` and `https` URLs may become an “開啟文章” link.
+- Preview/copy may mark a platform as published and records the current time when no time exists yet.
+- Existing published articles from older workspaces remain published and show “未記錄發布時間” until the user saves a record.
+- Renaming or removing a platform carries or removes its publication record together with its status.
+
 ## Phone editing
 
 ```text

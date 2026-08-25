@@ -52,7 +52,7 @@ function loadState() {
         parsed.chapters.forEach(chapter => {
           chapter.source ||= null;
           chapter.parts ||= [];
-          chapter.parts.forEach(normalizePartAfterword);
+          chapter.parts.forEach(normalizePublishingPart);
         });
         parsed.formatting ||= {};
         parsed.formatting.defaultIndent ||= 'none';
@@ -103,10 +103,19 @@ function charCount(text) {
     .length;
 }
 
-function normalizePartAfterword(part) {
+function normalizePublishingPart(part) {
   if (!part || typeof part !== 'object') return part;
   if (typeof part.afterword !== 'string') part.afterword = '';
   if (typeof part.includeAfterword !== 'boolean') part.includeAfterword = true;
+  if (!part.publicationRecords || typeof part.publicationRecords !== 'object' || Array.isArray(part.publicationRecords)) {
+    part.publicationRecords = {};
+  }
+  Object.entries(part.publicationRecords).forEach(([platform, record]) => {
+    part.publicationRecords[platform] = {
+      publishedAt: typeof record?.publishedAt === 'string' ? record.publishedAt : '',
+      url: typeof record?.url === 'string' ? record.url : ''
+    };
+  });
   return part;
 }
 
@@ -258,7 +267,7 @@ function adjustSuggestion(delta) {
 
 function chapterMetadata(chapter) {
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     projectTitle: state.projectTitle,
     chapter: chapter.title,
     source: chapter.source,
@@ -269,6 +278,7 @@ function chapterMetadata(chapter) {
     parts: chapter.parts.map(part => ({
       id: part.id, title: part.title, startBlock: part.startBlock, endBlock: part.endBlock,
       chars: part.chars, afterwordChars: charCount(part.afterword), includeAfterword: part.includeAfterword !== false,
+      publicationRecords: structuredClone(part.publicationRecords || {}),
       published: part.published, platformStatus: part.platformStatus
     }))
   };
@@ -281,6 +291,7 @@ async function confirmSuggestion() {
     id: crypto.randomUUID(), title: suggestion.name, startBlock: suggestion.start, endBlock: suggestion.end,
     chars: suggestion.chars, raw: suggestion.raw, formatted: suggestion.formatted, published: false,
     afterword: '', includeAfterword: true,
+    publicationRecords: {},
     platformStatus: Object.fromEntries(platforms.map(platform => [platform, false]))
   };
   chapter.parts.push(part);
@@ -326,7 +337,12 @@ function renderParts() {
       badge.className = `platform-badge ${part.platformStatus?.[platform] ? 'done' : ''}`;
       badge.textContent = `${platform}${part.platformStatus?.[platform] ? ' ✓' : ''}`;
       badge.onclick = () => {
-        part.platformStatus[platform] = !part.platformStatus[platform];
+        normalizePublishingPart(part);
+        const next = !part.platformStatus[platform];
+        part.platformStatus[platform] = next;
+        part.publicationRecords[platform] ||= { publishedAt: '', url: '' };
+        if (next && !part.publicationRecords[platform].publishedAt) part.publicationRecords[platform].publishedAt = new Date().toISOString();
+        if (!next) part.publicationRecords[platform] = { publishedAt: '', url: '' };
         part.published = Object.values(part.platformStatus).some(Boolean);
         saveState(); renderAll();
       };

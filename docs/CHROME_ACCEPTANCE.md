@@ -34,6 +34,8 @@ Use this checklist before treating a release as ready for daily writing. It exer
 - [ ] Create and save one test publishing part, then confirm its Markdown exists under `Works/<work>/<chapter>/`.
 - [ ] Expand the publishing part, add an afterword and confirm body/afterword counts are separate; verify the Markdown contains body, separator and afterword.
 - [ ] In preview, turn off “附上後記”; confirm preview/copy output contains only the body and the article Markdown is rewritten consistently.
+- [ ] For one platform, choose “記錄發布”, correct the time if needed, enter a URL without `https://`, then save. Confirm the row shows the date, the URL can be opened safely and the platform becomes “已發布”.
+- [ ] Cancel that platform's published state, accept the warning and confirm both its time and URL are cleared. Existing legacy published rows without a record should instead remain readable as “未記錄發布時間”.
 - [ ] Refresh the source chapter and confirm the publishing part's afterword remains unchanged.
 - [ ] Start deleting the part, confirm the warning reports the affected afterword, then cancel before the destructive checks continue.
 - [ ] Delete the test publishing part and confirm a `workspace.before-publishing-delete-*.json` file appears in `Recovery/`.

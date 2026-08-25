@@ -220,7 +220,7 @@
     state = next;
     state.chapters.forEach(chapter => {
       chapter.parts ||= [];
-      chapter.parts.forEach(normalizePartAfterword);
+      chapter.parts.forEach(normalizePublishingPart);
       chapter.source ||= null;
     });
     state.activeChapterId = state.chapters.some(chapter => chapter.id === state.activeChapterId)
@@ -319,12 +319,13 @@
   }
 
   function removePlatform(name) {
-    if (!confirm(`移除「${name}」平台設定？\n\n不會刪除已產出的 Markdown。`)) return;
+    if (!confirm(`移除「${name}」平台設定？\n\n會一併移除該平台的發布時間與文章網址，但不會刪除已產出的 Markdown。`)) return;
     const index = platforms.indexOf(name);
     if (index >= 0) platforms.splice(index, 1);
     delete state.formatting.platforms[name];
     for (const chapter of state.chapters || []) for (const part of chapter.parts || []) {
       if (part.platformStatus) delete part.platformStatus[name];
+      if (part.publicationRecords) delete part.publicationRecords[name];
     }
     refreshPlatformUI();
     saveState('平台已移除');

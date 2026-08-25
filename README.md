@@ -4,6 +4,8 @@ StoryFlow 是一個以瀏覽器執行的長篇內容切篇與多平台發布工�
 
 發布頁中的每篇文章可另外保存一則後記。後記屬於發布稿資料，不會回寫 Google Docs 或混入來源正文，字數也與正文分開顯示；平台預覽與複製時可選擇是否附上。來源更新會保留既有後記，刪除或退回重新切篇時則會先提示受影響的後記數量。
 
+每個平台也可保存一筆輕量發布紀錄：發布時間與選填的文章網址。保存紀錄會同步把該平台標為已發布；取消已發布時會明確提示並清除這筆紀錄。這不是排程或平台串接，StoryFlow 不會自動登入發布平台。
+
 ## Clone / Fork 後使用
 
 Repo **不包含任何人的 Google OAuth Client ID 或 Picker API Key**。每個使用者可以使用自己的 Google Cloud 專案，不需要修改程式碼。
@@ -33,7 +35,7 @@ Google OAuth 在取得 Drive / Docs 存取權之前就必須知道 Web OAuth Cli
 ```text
 StoryFlow/
 ├─ settings.json      # Google Client ID、Picker API Key、平台與排版設定
-├─ workspace.json     # 作品、章節、切篇、後記與發布進度
+├─ workspace.json     # 作品、章節、切篇、後記、發布進度與平台發布紀錄
 ├─ workspace.backup.json # 最近一次正常寫入前的工作區備份
 ├─ Recovery/         # 循環備份、衝突副本與高風險操作前快照
 └─ Works/
