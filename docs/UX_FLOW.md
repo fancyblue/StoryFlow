@@ -37,12 +37,16 @@ Deletion, replacement and source refresh follow the safety rules in [ARCHITECTUR
 ## Phone editing
 
 ```text
-手機開啟 → 唯讀閱讀／重新連接資料夾 → 使用者確認 Drive 已完成傳輸
-       → 本次允許編輯 → 重新載入 workspace.json → 成功且無 Recovery 衝突 → 解鎖
-                                               ↘ 失敗／衝突 → 保持唯讀
+手機開啟 → 主畫面顯示「唯讀」→ 閱讀／重新連接資料夾
+       → 設定 → 手機使用模式 → 使用者確認 Drive 已完成傳輸 → 開啟本次編輯
+       → 重新載入 workspace.json → 成功且無 Recovery 衝突 → 解鎖
+                                ↘ 失敗／衝突 → 保持唯讀
+       → 結束本次手機編輯 → 保存成功 → 唯讀
 ```
 
 - Phone detection must not change desktop Chrome behavior.
 - Read-only mode permits reconnecting the folder and importing `settings.json`; these actions load data but do not edit manuscript files.
+- The main surface shows only the compact state label; explanation and the editing switch live in Settings.
 - The enable action explicitly warns that unsaved screen state is discarded and that StoryFlow cannot determine Google Drive transfer completion.
+- Switching back to read-only must first flush the current workspace; a failed save leaves editing enabled.
 - Closing the tab ends the editing grant. A later phone session starts read-only again.

@@ -53,9 +53,10 @@
   let readOnly = sessionStorage.getItem(SESSION_EDIT_KEY) !== '1';
   let observer = null;
   let lastBlockedNoticeAt = 0;
+  let modeChangeInProgress = false;
 
   function readonlyError() {
-    const error = new Error('手機目前是唯讀模式。請先確認 Google Drive 已同步，再選擇「本次允許編輯」。');
+    const error = new Error('手機目前是唯讀模式。請先確認 Google Drive 已同步，再到「設定 → 手機使用模式」開啟本次編輯。');
     error.code = 'MOBILE_READ_ONLY';
     return error;
   }
@@ -69,18 +70,18 @@
     const now = Date.now();
     if (now - lastBlockedNoticeAt < 900) return;
     lastBlockedNoticeAt = now;
-    window.notify?.('手機目前是唯讀模式；確認 Drive 同步完成後，可開啟本次編輯。', true);
+    window.notify?.('手機目前是唯讀模式；確認 Drive 同步完成後，可到設定開啟本次編輯。', true);
     setSaveStatus();
   }
 
   function isUiOnlyControl(control) {
     return Boolean(control?.closest?.(
-      '.publishing-project-filter-control, #publishingFilters, .preview-mode-toggle, .source-preview-tabs'
+      '.publishing-project-filter-control, #publishingFilters, .preview-mode-toggle, .source-preview-tabs, .mobile-safe-mode-settings'
     ));
   }
 
   function isWriteButton(button) {
-    if (!button || button.id === 'mobileSafeModeEnableBtn') return false;
+    if (!button || button.id === 'mobileSafeModeToggle') return false;
     if (button.matches(SAFE_READ_CONTROL_SELECTOR)) return false;
     if (button.matches(EXPLICIT_WRITE_CONTROL_SELECTOR)) return true;
     const label = `${button.getAttribute('aria-label') || ''} ${button.title || ''} ${button.textContent || ''}`.trim();
@@ -127,26 +128,56 @@
     });
   }
 
-  function renderBanner() {
-    let banner = document.getElementById('mobileSafeModeBanner');
-    if (!banner) {
-      banner = document.createElement('section');
-      banner.id = 'mobileSafeModeBanner';
-      banner.className = 'mobile-safe-mode-banner';
-      banner.setAttribute('role', 'status');
+  function renderIndicator() {
+    let indicator = document.getElementById('mobileSafeModeIndicator');
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.id = 'mobileSafeModeIndicator';
+      indicator.className = 'mobile-safe-mode-indicator';
+      indicator.setAttribute('role', 'status');
       const main = document.querySelector('.main');
-      (main || document.body).insertBefore(banner, main?.firstChild || document.body.firstChild);
+      (main || document.body).insertBefore(indicator, main?.firstChild || document.body.firstChild);
     }
-    banner.classList.toggle('editing-enabled', !readOnly);
-    banner.innerHTML = readOnly
-      ? `<div><strong>手機唯讀</strong><span>避免 Google Drive 延遲同步覆蓋檔案；目前不會寫入 workspace、settings 或 Markdown。</span></div><button id="mobileSafeModeEnableBtn" class="button tiny ghost" type="button">本次允許編輯</button>`
-      : `<div><strong>手機編輯已開啟</strong><span>本分頁關閉前可寫入；儲存時仍會檢查 workspace 版本衝突。</span></div>`;
-    document.getElementById('mobileSafeModeEnableBtn')?.addEventListener('click', enableEditing);
+    indicator.classList.toggle('editing-enabled', !readOnly);
+    indicator.textContent = readOnly ? '唯讀' : '可編輯';
+    indicator.setAttribute('aria-label', readOnly ? '手機模式：唯讀' : '手機模式：本次可編輯');
+    indicator.title = readOnly ? '手機預設唯讀；可到設定開啟本次編輯。' : '本頁籤目前允許手機編輯。';
+  }
+
+  function renderSettingsControl() {
+    const form = document.querySelector('#settingsView .settings-page-form, #settingsDialog .settings-dialog');
+    if (!form) return;
+
+    let section = document.getElementById('mobileSafeModeSettings');
+    if (!section) {
+      section = document.createElement('section');
+      section.id = 'mobileSafeModeSettings';
+      section.className = 'settings-section mobile-safe-mode-settings';
+      form.prepend(section);
+    }
+
+    section.innerHTML = `
+      <div class="mobile-safe-mode-settings-head">
+        <div>
+          <strong>手機使用模式</strong>
+          <p>手機預設只供閱讀，避免 Google Drive 尚未完成上傳或下載時覆蓋檔案。需要修改時，請先確認 Drive 已完成傳輸，再開啟本次編輯。</p>
+        </div>
+        <button id="mobileSafeModeToggle" class="mobile-safe-mode-switch" type="button" role="switch" aria-checked="${readOnly ? 'false' : 'true'}"${modeChangeInProgress ? ' disabled' : ''}>
+          <span class="mobile-safe-mode-switch-track" aria-hidden="true"><span></span></span>
+          <span>${readOnly ? '允許本次手機編輯' : '結束本次手機編輯'}</span>
+        </button>
+      </div>
+      <div class="mobile-safe-mode-settings-status ${readOnly ? '' : 'editing-enabled'}">
+        <strong>${readOnly ? '目前：唯讀' : '目前：可編輯'}</strong>
+        <span>${readOnly ? '不會寫入 workspace、settings 或作品 Markdown。' : '只在本頁籤有效；儲存時仍會檢查 workspace 版本衝突。'}</span>
+      </div>`;
+    section.querySelector('#mobileSafeModeToggle')?.addEventListener('click', toggleEditing);
   }
 
   function applyMode() {
     document.body.dataset.storyflowMobileSafeMode = readOnly ? 'readonly' : 'editing';
-    renderBanner();
+    renderIndicator();
+    renderSettingsControl();
     if (readOnly) {
       decorateControls();
       setSaveStatus();
@@ -186,6 +217,7 @@
       readOnly = false;
       observer?.disconnect();
       applyMode();
+      observeNewControls();
       window.StoryFlowSaveStatus?.set?.('手機編輯已開啟 · 儲存前會檢查版本');
       window.notify?.('已重新載入 workspace.json；本次手機編輯已開啟。');
       return true;
@@ -194,6 +226,39 @@
       window.notify?.(`尚未開啟手機編輯：${error.message}`, true);
       setSaveStatus();
       return false;
+    }
+  }
+
+  async function disableEditing() {
+    if (readOnly) return true;
+    try {
+      const saved = await window.StoryFlowProjectPersistence?.flush?.('mobile-readonly');
+      if (!saved) {
+        window.notify?.('尚未切回唯讀：請先確認目前變更已保存。', true);
+        return false;
+      }
+      sessionStorage.removeItem(SESSION_EDIT_KEY);
+      readOnly = true;
+      applyMode();
+      observeNewControls();
+      window.notify?.('目前變更已保存，手機已切回唯讀。');
+      return true;
+    } catch (error) {
+      console.warn('StoryFlow could not return to mobile read-only mode safely', error);
+      window.notify?.(`尚未切回唯讀：${error.message}`, true);
+      return false;
+    }
+  }
+
+  async function toggleEditing() {
+    if (modeChangeInProgress) return false;
+    modeChangeInProgress = true;
+    renderSettingsControl();
+    try {
+      return readOnly ? await enableEditing() : await disableEditing();
+    } finally {
+      modeChangeInProgress = false;
+      renderSettingsControl();
     }
   }
 
@@ -242,21 +307,28 @@
     notifyBlocked();
   }, true);
 
-  observer = new MutationObserver(mutations => {
-    if (!readOnly) return;
-    mutations.forEach(mutation => mutation.addedNodes.forEach(node => {
-      if (node.nodeType !== Node.ELEMENT_NODE) return;
-      if (node.matches?.('input, textarea, select, [contenteditable="true"]')) decorateControls(node.parentElement || document);
-      decorateControls(node);
-      if (node.matches?.('button') && isWriteButton(node)) node.dataset.mobileSafeWriteControl = 'true';
-    }));
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
+  function observeNewControls() {
+    if (!observer) {
+      observer = new MutationObserver(mutations => {
+        if (!document.getElementById('mobileSafeModeSettings')) renderSettingsControl();
+        if (!readOnly) return;
+        mutations.forEach(mutation => mutation.addedNodes.forEach(node => {
+          if (node.nodeType !== Node.ELEMENT_NODE) return;
+          if (node.matches?.('input, textarea, select, [contenteditable="true"]')) decorateControls(node.parentElement || document);
+          decorateControls(node);
+          if (node.matches?.('button') && isWriteButton(node)) node.dataset.mobileSafeWriteControl = 'true';
+        }));
+      });
+    }
+    observer.disconnect();
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
 
   window.StoryFlowMobileSafeMode = {
     applies: () => true,
     isReadOnly: () => readOnly,
     enableEditing,
+    disableEditing,
     assertWritable: () => {
       if (readOnly) throw readonlyError();
       return true;
@@ -266,5 +338,6 @@
   window.addEventListener('storyflow:workspace-loaded', setSaveStatus);
   window.addEventListener('storyflow:workspace-persisted', setSaveStatus);
   applyMode();
+  observeNewControls();
   window.setTimeout(setSaveStatus, 120);
 })();

@@ -56,12 +56,14 @@ The one-hour interval and three-file limit for `workspace.auto-*` rolling backup
 ## 6. Phone Drive safety
 
 - [ ] Use Chrome device emulation or a phone with a disposable cloud-backed StoryFlow folder; never use real manuscript data.
-- [ ] Open a new phone tab and confirm “手機唯讀” appears before any edit.
+- [ ] Open a new phone tab and confirm the main surface shows only the compact “唯讀” label before any edit.
 - [ ] Confirm navigation, previews, folder reconnect and `settings.json` import remain available while text fields and mutating actions stay locked.
-- [ ] With the folder disconnected, confirm “本次允許編輯” refuses to unlock.
-- [ ] Reconnect the disposable folder, ensure its cloud provider reports no pending upload/download, then enable editing. Confirm StoryFlow reloads the workspace before unlocking.
+- [ ] Open Settings and confirm the explanation and editing switch appear under “手機使用模式”, not on the main work surface.
+- [ ] With the folder disconnected, confirm the Settings switch refuses to unlock.
+- [ ] Reconnect the disposable folder, ensure its cloud provider reports no pending upload/download, then enable editing from Settings. Confirm StoryFlow reloads the workspace before unlocking and the compact label changes to “可編輯”.
 - [ ] Simulate an unreadable or conflicting workspace and confirm the page remains read-only.
+- [ ] Switch back to read-only and confirm StoryFlow saves first; when saving fails, confirm editing remains enabled.
 - [ ] Close the phone tab, reopen StoryFlow and confirm it starts read-only again.
-- [ ] On desktop Chrome, confirm the banner is absent and normal editing is unchanged.
+- [ ] On desktop Chrome, confirm the phone state label and Settings control are absent and normal editing is unchanged.
 
 Record only failures, Chrome version and the tested StoryFlow commit. Never attach the test `settings.json` or folder contents to a public issue.

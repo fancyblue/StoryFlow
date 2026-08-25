@@ -152,7 +152,9 @@ test('mobile safe mode blocks file writes until the workspace is reloaded and ed
   await page.goto('/tests/mobile-safe-mode-ui.html');
 
   await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'readonly');
-  await expect(page.getByText('手機唯讀', { exact: true })).toBeVisible();
+  await expect(page.locator('#mobileSafeModeIndicator')).toHaveText('唯讀');
+  await expect(page.locator('#mobileSafeModeIndicator')).not.toContainText('Google Drive');
+  await expect(page.locator('#mobileSafeModeSettings')).toContainText('手機使用模式');
   await expect(page.locator('#projectTitle')).toHaveJSProperty('readOnly', true);
   await expect(page.locator('#generateBtn')).toHaveAttribute('data-mobile-safe-write-control', 'true');
   await expect(page.locator('#importSettingsJsonBtn')).not.toHaveAttribute('data-mobile-safe-write-control');
@@ -172,9 +174,12 @@ test('mobile safe mode blocks file writes until the workspace is reloaded and ed
   await page.locator('#generateBtn').click();
   expect(await page.evaluate(() => fixtureCalls.generate)).toBe(0);
 
-  await page.getByRole('button', { name: '本次允許編輯', exact: true }).click();
+  const mobileEditSwitch = page.getByRole('switch', { name: '允許本次手機編輯', exact: true });
+  await expect(mobileEditSwitch).toHaveAttribute('aria-checked', 'false');
+  await mobileEditSwitch.click();
   await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'editing');
-  await expect(page.getByText('手機編輯已開啟', { exact: true })).toBeVisible();
+  await expect(page.locator('#mobileSafeModeIndicator')).toHaveText('可編輯');
+  await expect(page.getByRole('switch', { name: '結束本次手機編輯', exact: true })).toHaveAttribute('aria-checked', 'true');
   await expect(page.locator('#projectTitle')).toHaveJSProperty('readOnly', false);
 
   const enabled = await page.evaluate(async () => {
@@ -187,13 +192,20 @@ test('mobile safe mode blocks file writes until the workspace is reloaded and ed
   expect(enabled.calls.rehydrate).toBe(1);
   expect(enabled.calls.saveState).toBe(1);
   expect(enabled.calls.workspace).toBe(1);
+
+  await page.getByRole('switch', { name: '結束本次手機編輯', exact: true }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'readonly');
+  await expect(page.locator('#mobileSafeModeIndicator')).toHaveText('唯讀');
+  await expect(page.locator('#projectTitle')).toHaveJSProperty('readOnly', true);
+  expect(await page.evaluate(() => fixtureCalls.flush)).toBe(1);
   expect(pageErrors).toEqual([]);
 });
 
 test('desktop does not enable mobile safe mode', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.goto('/');
-  await expect(page.locator('#mobileSafeModeBanner')).toHaveCount(0);
+  await expect(page.locator('#mobileSafeModeIndicator')).toHaveCount(0);
+  await expect(page.locator('#mobileSafeModeSettings')).toHaveCount(0);
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-mobile-safe-mode');
   await expect(page.locator('#projectTitle')).toHaveJSProperty('readOnly', false);
   expect(pageErrors).toEqual([]);
@@ -204,11 +216,27 @@ test('mobile editing remains read-only when workspace reload fails', async ({ pa
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tests/mobile-safe-mode-ui.html?reloadFailure=1');
 
-  await page.getByRole('button', { name: '本次允許編輯', exact: true }).click();
+  await page.getByRole('switch', { name: '允許本次手機編輯', exact: true }).click();
   await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'readonly');
   expect(await page.evaluate(() => fixtureLastNotify)).toContain('無法從資料夾重新載入');
   await expect(page.locator('#projectTitle')).toHaveJSProperty('readOnly', true);
   expect(await page.evaluate(() => fixtureCalls.rehydrate)).toBe(1);
+  expect(pageErrors).toEqual([]);
+});
+
+test('mobile editing stays enabled when returning to read-only cannot save', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/tests/mobile-safe-mode-ui.html?flushFailure=1');
+
+  await page.getByRole('switch', { name: '允許本次手機編輯', exact: true }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'editing');
+  await page.getByRole('switch', { name: '結束本次手機編輯', exact: true }).click();
+
+  await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'editing');
+  await expect(page.locator('#mobileSafeModeIndicator')).toHaveText('可編輯');
+  expect(await page.evaluate(() => fixtureLastNotify)).toContain('尚未切回唯讀');
+  expect(await page.evaluate(() => fixtureCalls.flush)).toBe(1);
   expect(pageErrors).toEqual([]);
 });
 

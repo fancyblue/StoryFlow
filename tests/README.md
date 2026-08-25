@@ -5,7 +5,7 @@
 - `workspace-safety-ui.html` renders the recovery dialog without reading or changing a real StoryFlow folder.
 - `backup-center-ui.html` renders the connected-folder backup center with safe fixture metadata.
 - `quick-start-ui.html` verifies the remembered-folder cold-start prompt without touching a real folder.
-- `mobile-safe-mode-ui.html` emulates a phone session and verifies that file writes and editing controls stay locked until a connected workspace reload succeeds; settings import remains available.
+- `mobile-safe-mode-ui.html` emulates a phone session and verifies the compact read-only label, Settings-only session switch, guarded writes, safe workspace reload and return-to-read-only save; settings import remains available.
 - `source-diff-core.html` verifies same-count replacements, whitespace-only changes, title changes and line-ending normalization.
 - `source-diff-ui.html` renders the expandable before/after source preview with fixture prose only.
 - `source-sync-history-core.html` verifies pre-sync staging, durable snapshot order, project isolation and one-time undo consumption.
