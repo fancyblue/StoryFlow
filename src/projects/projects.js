@@ -222,7 +222,7 @@
     return summary(record);
   }
 
-  function deleteProject(projectId) {
+  async function deleteProject(projectId) {
     ensureStore();
     const index = store.projects.findIndex(project => project.id === projectId);
     if (index < 0) return false;
@@ -231,6 +231,15 @@
     const hasParts = (target.state?.chapters || []).some(chapter => (chapter.parts || []).length);
     const extra = hasParts ? '\n\n這個作品仍有已確認文章；若連輸出的 Markdown 也不要，請先到「發布」逐篇刪除。' : '';
     if (!confirm(`刪除作品「${title}」？\n\n會從 StoryFlow 工作區移除這個作品、章節、切篇與發布進度。Google Docs 原稿不會刪除。${extra}`)) return false;
+
+    try {
+      const saved = await window.StoryFlowProjectPersistence?.flush?.('before-project-delete');
+      if (!saved) throw new Error('目前工作區尚未完整保存。');
+      await StoryFlowIntegrations.createWorkspaceRecoverySnapshot('before-project-delete');
+    } catch (error) {
+      notify(`尚未刪除作品：無法建立 Recovery 安全副本（${error.message}）`, true);
+      return false;
+    }
 
     store.projects.splice(index, 1);
     if (!store.projects.length) {
@@ -317,7 +326,7 @@
       const input = document.getElementById('projectTitle');
       requestAnimationFrame(() => { input?.focus(); input?.select(); });
     });
-    box.querySelector('#deleteProjectBtn').addEventListener('click', () => deleteProject(store.activeProjectId));
+    box.querySelector('#deleteProjectBtn').addEventListener('click', () => { deleteProject(store.activeProjectId); });
   }
 
   function renderProjectSwitcher() {

@@ -52,6 +52,9 @@
             }
           };
         },
+        async removeEntry(filename) {
+          if (!files.delete(filename)) throw notFound(filename);
+        },
         async *entries() {
           for (const filename of files.keys()) {
             yield [filename, {
@@ -100,6 +103,8 @@
         assert(maxWorkspaceWrites === 1, 'workspace 寫入保持單一序列');
         assert(JSON.parse(rootFiles.get('workspace.json')).state.projectTitle === '版本 3', '序列最後版本正確');
         assert(JSON.parse(rootFiles.get('workspace.backup.json')).workspace.state.projectTitle === '版本 2', '每次寫入前保留最近正常版本');
+        const automaticBackups = [...recoveryFiles.keys()].filter(name => name.startsWith('workspace.auto-'));
+        assert(automaticBackups.length === 1, '自動循環備份在短時間連續保存時不會重複建立');
 
         const external = JSON.parse(rootFiles.get('workspace.json'));
         external.writeRevision = crypto.randomUUID();
@@ -134,6 +139,7 @@
         assert(JSON.parse(sourceSnapshotText).workspace.state.projectTitle === '手動備份目標', '來源同步快照保存更新前的完整工作區');
         const storage = await StoryFlowIntegrations.inspectWorkspaceStorage();
         assert(storage.connected && storage.primary?.valid && storage.backup?.valid, '備份中心可安全檢查主檔與備份');
+        assert(storage.rollingBackupCount === 1, '備份中心可辨識輕量循環備份');
         assert(storage.recoveryArtifacts.length >= 2, '備份中心可列出 Recovery 安全副本');
 
         const exported = await StoryFlowIntegrations.exportWorkspaceFile();

@@ -114,6 +114,15 @@
     if (!confirm(message)) return;
 
     try {
+      const saved = await window.StoryFlowProjectPersistence?.flush?.('before-publishing-delete');
+      if (!saved) throw new Error('目前工作區尚未完整保存。');
+      await StoryFlowIntegrations.createWorkspaceRecoverySnapshot('before-publishing-delete');
+    } catch (error) {
+      notify(`尚未刪除文章：無法建立 Recovery 安全副本（${error.message}）`, true);
+      return;
+    }
+
+    try {
       chapter.parts.splice(index);
       chapter.confirmedBlockCount = chapter.parts.length ? chapter.parts[chapter.parts.length - 1].endBlock : 0;
       await deletePartFiles(chapter, affected);

@@ -115,9 +115,8 @@
         api.switchProject?.(project.id, { quiet: true });
         window.StoryFlowNavigate?.('publishing');
       });
-      card.querySelector('.project-library-delete').addEventListener('click', () => {
-        api.deleteProject?.(project.id);
-        renderProjectsView();
+      card.querySelector('.project-library-delete').addEventListener('click', async () => {
+        if (await api.deleteProject?.(project.id)) renderProjectsView();
       });
       list.appendChild(card);
     });
@@ -127,7 +126,7 @@
     return { id: crypto.randomUUID(), title: '第一章', draft: '', confirmedBlockCount: 0, parts: [], source: null };
   }
 
-  function removeChapter(chapterId) {
+  async function removeChapter(chapterId) {
     const index = state.chapters.findIndex(chapter => chapter.id === chapterId);
     if (index < 0) return;
     const chapter = state.chapters[index];
@@ -141,6 +140,15 @@
     }
 
     if (!confirm(`刪除章節「${chapter.title}」？\n\n會從目前作品移除這個章節與工作區內容；Google Docs 原稿不會刪除。`)) return;
+
+    try {
+      const saved = await window.StoryFlowProjectPersistence?.flush?.('before-chapter-delete');
+      if (!saved) throw new Error('目前工作區尚未完整保存。');
+      await StoryFlowIntegrations.createWorkspaceRecoverySnapshot('before-chapter-delete');
+    } catch (error) {
+      notify(`尚未刪除章節：無法建立 Recovery 安全副本（${error.message}）`, true);
+      return;
+    }
 
     state.chapters.splice(index, 1);
     if (!state.chapters.length) state.chapters.push(blankChapter());

@@ -3,6 +3,9 @@ const StoryFlowIntegrations = (() => {
   const WORKSPACE_FILENAME = 'workspace.json';
   const WORKSPACE_BACKUP_FILENAME = 'workspace.backup.json';
   const RECOVERY_DIRECTORY = 'Recovery';
+  const ROLLING_BACKUP_PREFIX = 'workspace.auto-';
+  const ROLLING_BACKUP_LIMIT = 3;
+  const ROLLING_BACKUP_INTERVAL_MS = 60 * 60 * 1000;
   const CONNECTION_DB = 'storyflow-connections-v1';
   const CONNECTION_STORE = 'handles';
   const OUTPUT_HANDLE_KEY = 'storyflow-output-directory';
@@ -14,6 +17,8 @@ const StoryFlowIntegrations = (() => {
   let workspaceWriteQueue = Promise.resolve();
   let workspaceWritesPending = 0;
   let pendingWorkspaceRecovery = null;
+  let lastRollingBackupAt = 0;
+  let lastRollingWorkspaceContent = null;
 
   function openConnectionDb() {
     return new Promise((resolve, reject) => {
@@ -173,6 +178,12 @@ const StoryFlowIntegrations = (() => {
     return workspace.writeRevision || workspace.updatedAt || `legacy:${JSON.stringify(workspace)}`;
   }
 
+  function workspaceContentSignature(workspace) {
+    return JSON.stringify(workspace, (key, value) => (
+      key === 'updatedAt' || key === 'writeRevision' ? undefined : value
+    ));
+  }
+
   function validWorkspace(workspace) {
     return Boolean(
       workspace && typeof workspace === 'object' && (
@@ -275,6 +286,48 @@ const StoryFlowIntegrations = (() => {
     return artifacts.sort((left, right) => (right.lastModified || 0) - (left.lastModified || 0));
   }
 
+  async function maintainRollingWorkspaceBackup(workspace) {
+    const contentSignature = workspaceContentSignature(workspace);
+    if (contentSignature === lastRollingWorkspaceContent) return null;
+    if (lastRollingBackupAt && Date.now() - lastRollingBackupAt < ROLLING_BACKUP_INTERVAL_MS) return null;
+
+    const existing = (await listRecoveryArtifacts())
+      .filter(artifact => artifact.name.startsWith(ROLLING_BACKUP_PREFIX));
+    const mostRecentAt = Math.max(lastRollingBackupAt, existing[0]?.lastModified || 0);
+    if (mostRecentAt && Date.now() - mostRecentAt < ROLLING_BACKUP_INTERVAL_MS) return null;
+
+    let directory = null;
+    if (existing[0]) {
+      directory = await recoveryDirectory();
+      const latestText = await readTextFile(directory, existing[0].name);
+      try {
+        const latestWorkspace = JSON.parse(latestText)?.workspace;
+        if (validWorkspace(latestWorkspace) && workspaceContentSignature(latestWorkspace) === contentSignature) {
+          lastRollingBackupAt = existing[0].lastModified || Date.now();
+          lastRollingWorkspaceContent = contentSignature;
+          return null;
+        }
+      } catch (_) {}
+    }
+
+    const filename = recoveryFilename('auto');
+    const artifactPath = await writeRecoveryArtifact(
+      filename,
+      JSON.stringify(backupEnvelope(workspace, 'automatic-rolling-backup'), null, 2)
+    );
+    lastRollingBackupAt = Date.now();
+    lastRollingWorkspaceContent = contentSignature;
+
+    directory ||= await recoveryDirectory();
+    const rolling = (await listRecoveryArtifacts())
+      .filter(artifact => artifact.name.startsWith(ROLLING_BACKUP_PREFIX));
+    for (const artifact of rolling.slice(ROLLING_BACKUP_LIMIT)) {
+      try { await directory.removeEntry(artifact.name); }
+      catch (error) { console.warn('StoryFlow could not prune an old automatic backup', error); }
+    }
+    return { filename, artifactPath };
+  }
+
   async function inspectWorkspaceStorage() {
     if (!outputDirectoryHandle) return { connected: false };
     if (!(await verifyPermission(outputDirectoryHandle, false))) {
@@ -311,12 +364,14 @@ const StoryFlowIntegrations = (() => {
       }
     }
 
+    const recoveryArtifacts = await listRecoveryArtifacts();
     return {
       connected: true,
       folderName: outputDirectoryHandle.name || '',
       primary,
       backup,
-      recoveryArtifacts: await listRecoveryArtifacts()
+      recoveryArtifacts,
+      rollingBackupCount: recoveryArtifacts.filter(artifact => artifact.name.startsWith(ROLLING_BACKUP_PREFIX)).length
     };
   }
 
@@ -465,6 +520,10 @@ const StoryFlowIntegrations = (() => {
         WORKSPACE_BACKUP_FILENAME,
         JSON.stringify(backupEnvelope(next, 'initial-workspace-save'), null, 2)
       );
+    }
+    if (current) {
+      try { await maintainRollingWorkspaceBackup(next); }
+      catch (error) { console.warn('StoryFlow could not create an automatic rolling backup', error); }
     }
     workspaceRevision = workspaceSignature(next);
     pendingWorkspaceRecovery = null;

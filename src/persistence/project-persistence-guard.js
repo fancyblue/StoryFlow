@@ -54,7 +54,7 @@
     }
 
     try {
-      window.StoryFlowSaveStatus?.set?.('同步中…');
+      window.StoryFlowSaveStatus?.set?.('保存中…');
       // projects.js owns StoryFlowIntegrations.saveWorkspace by this point. Passing
       // the active state lets that wrapper serialize the complete schema-v2 project store.
       await StoryFlowIntegrations.saveWorkspace({
@@ -63,7 +63,7 @@
         state
       });
       const time = new Intl.DateTimeFormat('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
-      window.StoryFlowSaveStatus?.set?.(`已同步 ${time}`);
+      window.StoryFlowSaveStatus?.set?.(`已保存 ${time}`);
       window.dispatchEvent(new CustomEvent('storyflow:workspace-persisted', {
         detail: { reason }
       }));
@@ -71,10 +71,10 @@
     } catch (error) {
       console.warn('StoryFlow immediate workspace persistence failed', error);
       const message = error?.code === 'WORKSPACE_CONFLICT'
-        ? '同步已暫停 · 發現較新版本'
+        ? '保存已暫停 · 發現較新版本'
         : error?.code === 'WORKSPACE_CORRUPT'
           ? '工作資料損壞 · 請先恢復'
-          : '同步失敗 · 請重試';
+          : '保存失敗 · 請重試';
       window.StoryFlowSaveStatus?.set?.(message, true);
       return false;
     }
@@ -128,7 +128,7 @@
   // get a fast workspace write. Routine typing keeps using settings-sync's debounce.
   try {
     const baseSaveState = saveState;
-    saveState = function guardedSaveState(label = '準備同步') {
+    saveState = function guardedSaveState(label = '準備保存') {
       const result = baseSaveState(label);
       if (CRITICAL_SAVE_LABELS.has(label)) scheduleImmediatePersist(label);
       return result;
