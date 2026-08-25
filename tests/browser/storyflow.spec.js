@@ -124,20 +124,25 @@ test('publishing treats an empty project selection as all and keeps the continue
   await expect(page.getByText('尚未選擇作品')).toHaveCount(0);
 
   const layout = await page.evaluate(() => {
+    const toolbar = document.querySelector('.publishing-toolbar')?.getBoundingClientRect();
     const stack = document.querySelector('.publishing-filter-stack')?.getBoundingClientRect();
     const actions = document.querySelector('.publishing-toolbar-actions')?.getBoundingClientRect();
     const button = document.getElementById('continuePublishingBtn')?.getBoundingClientRect();
-    const hint = document.querySelector('.publishing-toolbar-actions .muted')?.getBoundingClientRect();
-    if (!stack || !actions || !button || !hint) return null;
+    const hint = document.querySelector('.publishing-toolbar-hint')?.getBoundingClientRect();
+    if (!toolbar || !stack || !actions || !button || !hint) return null;
     return {
       actionsAfterFilters: actions.left >= stack.right,
-      buttonHintGap: Math.round(hint.left - button.right),
+      buttonAtRightEdge: Math.round(Math.abs(toolbar.right - button.right)),
+      hintBeforeButton: hint.right <= button.left,
+      buttonHintGap: Math.round(button.left - hint.right),
       verticalDelta: Math.round(Math.abs((button.top + button.height / 2) - (hint.top + hint.height / 2)))
     };
   });
   expect(layout).not.toBeNull();
   expect(layout.actionsAfterFilters).toBe(true);
-  expect(layout.buttonHintGap).toBeLessThanOrEqual(16);
+  expect(layout.buttonAtRightEdge).toBeLessThanOrEqual(2);
+  expect(layout.hintBeforeButton).toBe(true);
+  expect(layout.buttonHintGap).toBeLessThanOrEqual(12);
   expect(layout.verticalDelta).toBeLessThanOrEqual(2);
   expect(pageErrors).toEqual([]);
 });
