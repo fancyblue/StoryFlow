@@ -10,8 +10,7 @@ async function openManualWork(page) {
   await page.goto('/?visual-regression=1');
   await page.addStyleTag({ content: visualCss });
   await page.locator('#createProjectManually').click();
-  await page.locator('#workspaceLoadSourceBtn').click();
-  await page.locator('#sourceManualBtn').click();
+  await page.locator('#manualProjectTitle').fill('視覺測試');
   await page.locator('#manualSourceTitle').fill('08、印紋');
   await page.locator('#manualSourceText').fill([
     '鐘聲停下後，長廊只剩窗外落雨的聲音。',
@@ -21,6 +20,7 @@ async function openManualWork(page) {
   ].join('\n\n'));
   await page.locator('#previewManualSourceBtn').click();
   await page.locator('#confirmSourcePreviewBtn').click();
+  await expect(page.locator('#suggestionCard')).toBeVisible();
   await page.evaluate(() => {
     window.StoryFlowIntegrations.savePart = async () => 'Works/視覺測試/08、印紋/08、印紋（1）.md';
   });

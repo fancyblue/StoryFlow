@@ -12,7 +12,10 @@ Use this checklist before treating a release as ready for daily writing. It exer
 ## 1. Connect, save and reload
 
 - [ ] Open StoryFlow and connect `StoryFlow-Acceptance`.
+- [ ] From an existing work, choose “切換作品” → “新增作品” → “手動新增”, then close the dialog. Confirm the original work is still active and no empty work was added.
 - [ ] Create a manual work and add one test chapter.
+- [ ] Confirm the new work appears only after “確定新增” or preview confirmation.
+- [ ] Check that “切換作品”, “切篇偏好” and publishing work filters use the same down/up chevron behavior.
 - [ ] Confirm the header changes from “保存中…” to “已保存 HH:mm”.
 - [ ] Check that `workspace.json`, `workspace.backup.json` and `settings.json` exist in the folder.
 - [ ] Reload the page and confirm the work and chapter are restored.

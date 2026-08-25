@@ -20,6 +20,7 @@
   }
 
   function showSettings(message = '請先載入 StoryFlow 設定，再繼續載入來源。') {
+    window.StoryFlowNewWorkFlow?.cancel?.();
     document.getElementById('sourceDialog')?.close?.();
     document.getElementById('manualSourceDialog')?.close?.();
     if (message) window.notify?.(message);
@@ -56,6 +57,7 @@
   }
 
   function openSourceChooser({ allowManualBeforeSettings = false, creation = false } = {}) {
+    if (!creation) window.StoryFlowNewWorkFlow?.cancel?.();
     if (!hasIntegrationSettings() && !allowManualBeforeSettings) {
       showSettings();
       return false;
@@ -77,17 +79,26 @@
     return false;
   }
 
+  function openManualCreation() {
+    configureSourceDialog({ creation: true });
+    return Boolean(window.StoryFlowSourceFlow?.openManualSourceDialog?.({ creation: true }));
+  }
+
+  function openGoogleCreation() {
+    if (!hasIntegrationSettings()) {
+      showSettings('Google Docs 需要先載入 StoryFlow 設定；完成後即可建立作品。');
+      return false;
+    }
+    configureSourceDialog({ creation: true });
+    if (typeof window.importGoogleDoc !== 'function') return false;
+    window.importGoogleDoc();
+    return true;
+  }
+
   function createNewProject(event) {
     event?.preventDefault?.();
     event?.stopPropagation?.();
-    window.StoryFlowProjects?.createProject?.({ title: '未命名作品' });
-    closeQuickSwitch();
-    window.StoryFlowNavigate?.('workspace');
-
-    window.setTimeout(() => {
-      window.StoryFlowProjectSourceSync?.syncUi?.();
-      openSourceChooser({ allowManualBeforeSettings: true, creation: true });
-    }, 0);
+    window.StoryFlowStartNewWork?.();
   }
 
   function ensureNewProjectAction() {
@@ -165,6 +176,8 @@
   window.StoryFlowSourceOnboarding = {
     hasIntegrationSettings,
     openSourceChooser,
+    openManualCreation,
+    openGoogleCreation,
     showSettings
   };
 })();
@@ -204,7 +217,7 @@
       toggle = document.createElement('button');
       toggle.id = 'splitPreferencesToggle';
       toggle.type = 'button';
-      toggle.textContent = '切篇偏好';
+      toggle.innerHTML = '<span>切篇偏好</span><span class="sf-chevron" aria-hidden="true"></span>';
       toggle.setAttribute('aria-controls', 'smartSplitMiniSettings');
       toggle.setAttribute('aria-expanded', 'false');
       toggle.addEventListener('click', () => {

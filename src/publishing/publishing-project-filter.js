@@ -200,7 +200,7 @@
       control.className = 'publishing-project-filter-control';
       control.innerHTML = `
         <button id="publishingProjectFilterBtn" class="publishing-project-filter-btn" type="button" aria-haspopup="true" aria-expanded="false">
-          <span>作品</span><strong id="publishingProjectFilterSummary">全部</strong><span class="publishing-project-filter-chevron" aria-hidden="true">⌄</span>
+          <span>作品</span><strong id="publishingProjectFilterSummary">全部</strong><span class="sf-chevron publishing-project-filter-chevron" aria-hidden="true"></span>
         </button>
         <div id="publishingProjectFilterMenu" class="publishing-project-filter-menu" hidden>
           <div class="publishing-project-filter-menu-head"><strong>篩選作品</strong><button type="button" data-project-filter-all>全選</button></div>

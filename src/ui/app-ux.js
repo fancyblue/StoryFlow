@@ -61,15 +61,7 @@
     main.appendChild(view);
 
     view.querySelector('#projectsNewWorkBtn').addEventListener('click', () => {
-      const api = projectApi();
-      if (!api) return;
-      api.createProject?.({ title: '未命名作品' });
-      window.StoryFlowNavigate?.('workspace');
-      requestAnimationFrame(() => {
-        const input = document.getElementById('projectTitle');
-        input?.focus();
-        input?.select();
-      });
+      window.StoryFlowStartNewWork?.();
     });
     return view;
   }

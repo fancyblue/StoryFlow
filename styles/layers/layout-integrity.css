@@ -209,15 +209,6 @@
   background:#eef6fa!important;
   color:var(--sf-primary,#3975a7)!important;
 }
-.splitter-panel #splitPreferencesToggle::after{
-  content:'⌄';
-  font-size:12px;
-  transform:translateY(-1px);
-}
-.splitter-panel #splitPreferencesToggle[aria-expanded="true"]::after{
-  content:'⌃';
-  transform:translateY(1px);
-}
 .splitter-panel .smart-split-mini-settings{
   width:100%!important;
   clear:both!important;

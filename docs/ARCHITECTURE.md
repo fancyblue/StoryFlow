@@ -37,6 +37,8 @@ The repository root contains entry assets only. Runtime JavaScript lives under d
 
 CSS owned by a page domain lives under `styles/domains/`. A domain may keep a foundation file and one explicitly late layout/refinement file when the existing cascade boundary is part of the UI contract. Page composition, grid placement, responsive order and overflow boundaries belong there instead of being spread across feature styles or injected by JavaScript.
 
+Shared interaction vocabulary is documented in [UI_SYSTEM.md](UI_SYSTEM.md), and cross-page user flows are documented in [UX_FLOW.md](UX_FLOW.md). New-work creation is a pending transaction owned by `src/ui/navigation.js`: source modules may collect and preview data, but must call `StoryFlowNewWorkFlow.commit()` only after confirmation or `.cancel()` on dismissal. Opening a creation dialog must never create an empty project.
+
 | Source directory | Responsibility |
 | --- | --- |
 | `src/core/` | Base configuration, state and rendering |

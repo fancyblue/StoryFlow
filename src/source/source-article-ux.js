@@ -44,7 +44,8 @@
     const titleInput = document.getElementById('manualSourceTitle');
     const textInput = document.getElementById('manualSourceText');
     const draft = String(textInput?.value || '').replace(/\r\n/g, '\n').trim();
-    const sequence = (state?.chapters || []).filter(chapter => !isBlankStarter() || chapter !== state.chapters[0]).length + 1;
+    const creation = document.getElementById('manualSourceDialog')?.dataset.storyflowCreationMode === '1';
+    const sequence = creation ? 1 : (state?.chapters || []).filter(chapter => !isBlankStarter() || chapter !== state.chapters[0]).length + 1;
     const title = String(titleInput?.value || '').trim() || `第${sequence}章`;
     return { title, draft };
   }
@@ -57,11 +58,27 @@
   }
 
   function addManualArticleDirect() {
+    const dialog = document.getElementById('manualSourceDialog');
+    const creation = dialog?.dataset.storyflowCreationMode === '1';
+    const projectTitle = creation ? document.getElementById('manualProjectTitle')?.value.trim() : '';
+    if (creation && !projectTitle) {
+      notify('請先輸入作品名稱', true);
+      document.getElementById('manualProjectTitle')?.focus();
+      return;
+    }
     const { title, draft } = manualInput();
     if (!draft) {
       notify('請先輸入文章內容', true);
       document.getElementById('manualSourceText')?.focus();
       return;
+    }
+
+    if (creation) {
+      const created = window.StoryFlowNewWorkFlow?.commit?.({ title: projectTitle });
+      if (!created) {
+        notify('尚未建立作品：請重新開啟建立流程', true);
+        return;
+      }
     }
 
     if (isBlankStarter()) state.chapters = [];
@@ -78,7 +95,7 @@
     if (!state.projectSource?.type) state.projectSource = { type: 'manual' };
     suggestion = null;
     saveState('文章已新增');
-    document.getElementById('manualSourceDialog')?.close();
+    dialog?.close();
     renderAll();
     // renderAll still reaches an older lexical chapter renderer in some script-load
     // orders. Explicitly invoke the final public renderer so mixed Google/manual works
@@ -221,18 +238,7 @@
       add.addEventListener('click', event => {
         event.preventDefault();
         event.stopPropagation();
-        window.StoryFlowProjects?.createProject?.({ title: '未命名作品' });
-        closeQuickSwitch();
-        window.setTimeout(() => {
-          window.StoryFlowProjectSourceSync?.syncUi?.();
-          const input = document.getElementById('projectTitle');
-          // Source mode chooser intentionally owns focus for a brand-new work; only
-          // focus the title if a mode has already been established by migration.
-          if (window.StoryFlowProjectSourceSync?.mode?.()) {
-            input?.focus();
-            input?.select();
-          }
-        }, 0);
+        window.StoryFlowStartNewWork?.();
       });
     }
     const title = menu.querySelector('.workspace-project-quick-switch-title');

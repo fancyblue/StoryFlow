@@ -16,8 +16,8 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
   await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(48);
 
   await page.locator('#createProjectManually').click();
-  await page.locator('#workspaceLoadSourceBtn').click();
-  await page.locator('#sourceManualBtn').click();
+  await expect(page.locator('#manualSourceDialog')).toBeVisible();
+  await page.locator('#manualProjectTitle').fill('自動測試作品');
   await page.locator('#manualSourceTitle').fill('自動測試章節');
   await page.locator('#manualSourceText').fill('第一段測試內容。\n\n第二段測試內容，確認可以安全切篇。');
   await page.locator('#previewManualSourceBtn').click();
@@ -48,7 +48,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await page.locator('.nav-item[data-view="projects"]').click();
   await expect(page.getByRole('heading', { name: '作品', exact: true })).toBeVisible();
-  await expect(page.locator('#projectsLibrary')).toContainText('未命名作品');
+  await expect(page.locator('#projectsLibrary')).toContainText('自動測試作品');
 
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.getByRole('heading', { name: '發布', exact: true })).toBeVisible();
@@ -58,6 +58,75 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
   await expect(page.getByRole('heading', { name: '設定', exact: true })).toBeVisible();
   await expect(page.getByText('備份與復原')).toBeVisible();
   await expect(page.getByRole('button', { name: '離開此裝置', exact: true })).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
+test('canceling a new manual work does not create an empty project', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+
+  await page.locator('#createProjectManually').click();
+  await page.locator('#manualProjectTitle').fill('原作品');
+  await page.locator('#manualSourceTitle').fill('第一章');
+  await page.locator('#manualSourceText').fill('原作品的第一段內容。');
+  await page.locator('#confirmManualSourceBtn').click();
+
+  await expect(page.locator('#projectTitle')).toHaveValue('原作品');
+  const original = await page.evaluate(() => ({
+    activeId: StoryFlowProjects.activeId(),
+    count: StoryFlowProjects.list().length
+  }));
+
+  const switchButton = page.locator('#quickSwitchProjectBtn');
+  const closedTransform = await switchButton.locator('.sf-chevron').evaluate(element => getComputedStyle(element).transform);
+  await switchButton.click();
+  await expect(switchButton).toHaveAttribute('aria-expanded', 'true');
+  await page.waitForTimeout(200);
+  const openTransform = await switchButton.locator('.sf-chevron').evaluate(element => getComputedStyle(element).transform);
+  expect(openTransform).not.toBe(closedTransform);
+
+  await page.locator('#workspaceQuickNewProject').click();
+  await page.locator('#sourceManualBtn').click();
+  await expect(page.locator('#manualProjectTitleField')).toBeVisible();
+  await page.locator('#closeManualSourceDialog').click();
+
+  const afterCancel = await page.evaluate(() => ({
+    activeId: StoryFlowProjects.activeId(),
+    count: StoryFlowProjects.list().length,
+    pending: StoryFlowNewWorkFlow.isPending()
+  }));
+  expect(afterCancel).toEqual({ ...original, pending: false });
+  await expect(page.locator('#projectTitle')).toHaveValue('原作品');
+
+  await switchButton.click();
+  await page.locator('#workspaceQuickNewProject').click();
+  await page.locator('#sourceManualBtn').click();
+  await page.locator('#manualProjectTitle').fill('第二作品');
+  await page.locator('#manualSourceTitle').fill('新章節');
+  await page.locator('#manualSourceText').fill('第二作品的內容。');
+  await page.locator('#confirmManualSourceBtn').click();
+
+  const afterConfirm = await page.evaluate(() => ({
+    count: StoryFlowProjects.list().length,
+    pending: StoryFlowNewWorkFlow.isPending()
+  }));
+  expect(afterConfirm).toEqual({ count: original.count + 1, pending: false });
+  await expect(page.locator('#projectTitle')).toHaveValue('第二作品');
+
+  const preferences = page.locator('#splitPreferencesToggle');
+  await expect(preferences.locator('.sf-chevron')).toHaveCount(1);
+  await preferences.click();
+  await expect(preferences).toHaveAttribute('aria-expanded', 'true');
+  await preferences.click();
+  await expect(preferences).toHaveAttribute('aria-expanded', 'false');
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  const publishingSwitch = page.locator('#publishingProjectSwitchBtn');
+  const publishingFilter = page.locator('#publishingProjectFilterBtn');
+  await expect(publishingSwitch.locator('.sf-chevron')).toHaveCount(1);
+  await expect(publishingFilter.locator('.sf-chevron')).toHaveCount(1);
+  await expect(publishingSwitch).not.toContainText(/[⌄⌃▾▴]/);
+  await expect(publishingFilter).not.toContainText(/[⌄⌃▾▴]/);
   expect(pageErrors).toEqual([]);
 });
 
@@ -92,9 +161,8 @@ test('publishing treats an empty project selection as all and keeps the continue
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
-  await page.locator('#createProjectManually').click();
   await page.evaluate(() => {
-    state.projectTitle = '發布篩選測試';
+    StoryFlowProjects.createProject({ title: '發布篩選測試' }, { quiet: true });
     const chapter = state.chapters[0];
     chapter.title = '測試章節';
     chapter.draft = '測試內容';
@@ -189,8 +257,8 @@ test('source sync offers a one-time undo for the active project', async ({ page 
   await expect(page.getByText('ALL PASS')).toBeVisible();
 
   await page.goto('/');
-  await page.locator('#createProjectManually').click();
   await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '更新後作品' }, { quiet: true });
     state.projectSource = { type: 'google', docName: '測試 Google Docs' };
     const before = structuredClone(state);
     before.projectTitle = '更新前作品';

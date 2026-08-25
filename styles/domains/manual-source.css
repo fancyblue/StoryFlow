@@ -34,6 +34,16 @@
   box-sizing:border-box!important;
 }
 
+#manualSourceDialog#manualSourceDialog .manual-project-title-field{
+  display:block;
+  width:calc(100% - 44px);
+  margin:16px 22px 0;
+  box-sizing:border-box;
+}
+#manualSourceDialog#manualSourceDialog .manual-project-title-field[hidden]{display:none!important}
+#manualSourceDialog#manualSourceDialog .manual-project-title-field > .field-label{display:block;margin-bottom:7px}
+#manualSourceDialog#manualSourceDialog #manualProjectTitle{width:100%;box-sizing:border-box}
+
 #manualSourceDialog#manualSourceDialog #manualSourceTitle,
 #manualSourceDialog#manualSourceDialog #manualSourceText{
   display:block!important;
@@ -95,6 +105,11 @@
     width:calc(100% - 32px)!important;
     margin-left:16px!important;
     margin-right:16px!important;
+  }
+  #manualSourceDialog#manualSourceDialog .manual-project-title-field{
+    width:calc(100% - 32px);
+    margin-left:16px;
+    margin-right:16px;
   }
   #manualSourceDialog#manualSourceDialog #manualSourceTitle,
   #manualSourceDialog#manualSourceDialog #manualSourceText,

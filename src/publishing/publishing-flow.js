@@ -344,7 +344,7 @@
         <div class="publish-list-actions">
           <button class="button tiny ghost default-preview-btn" type="button">預覽預設設定</button>
           <button class="button tiny ghost publish-delete-btn" type="button">刪除</button>
-          <span class="publish-expand-indicator" aria-hidden="true">${expanded ? '⌃' : '⌄'}</span>
+          <span class="sf-chevron publish-expand-indicator" aria-hidden="true"></span>
         </div>
       </div>
       <div class="publish-platform-details" ${expanded ? '' : 'hidden'}>

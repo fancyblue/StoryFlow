@@ -4,6 +4,28 @@
   let pendingSourcePreview = null;
   let lastSourceUndo = null;
 
+  function closeForHandoff(dialog) {
+    if (!dialog) return;
+    dialog.dataset.storyflowHandoff = '1';
+    dialog.close();
+  }
+
+  function closeAndCancelNewWork(dialog) {
+    window.StoryFlowNewWorkFlow?.cancel?.();
+    dialog?.close();
+  }
+
+  function cancelNewWorkOnClose(dialog) {
+    if (!dialog) return;
+    dialog.addEventListener('close', () => {
+      if (dialog.dataset.storyflowHandoff === '1') {
+        delete dialog.dataset.storyflowHandoff;
+        return;
+      }
+      window.StoryFlowNewWorkFlow?.cancel?.();
+    });
+  }
+
   function normalizeText(value) {
     return String(value || '').replace(/\r\n/g, '\n').trimEnd();
   }
@@ -49,20 +71,24 @@
           </div>
         </div>`;
       document.body.appendChild(dialog);
-      document.getElementById('closeSourceDialog').onclick = () => dialog.close();
+      document.getElementById('closeSourceDialog').onclick = () => closeAndCancelNewWork(dialog);
       document.getElementById('sourceGoogleBtn').onclick = () => {
-        dialog.close();
-        importGoogleDoc();
+        const creation = dialog.dataset.storyflowCreationMode === '1';
+        closeForHandoff(dialog);
+        if (creation) window.StoryFlowSourceOnboarding?.openGoogleCreation?.();
+        else importGoogleDoc();
       };
       document.getElementById('sourceManualBtn').onclick = () => {
-        dialog.close();
-        openManualSourceDialog();
+        const creation = dialog.dataset.storyflowCreationMode === '1';
+        closeForHandoff(dialog);
+        openManualSourceDialog({ creation });
       };
       document.getElementById('refreshLinkedSourceBtn').onclick = () => {
         dialog.close();
         refreshActiveSource();
       };
       document.getElementById('detachSourceBtn').onclick = () => detachActiveSource();
+      cancelNewWorkOnClose(dialog);
     }
 
     if (!document.getElementById('manualSourceDialog')) {
@@ -75,6 +101,10 @@
             <div><p class="eyebrow">MANUAL SOURCE</p><h3>手動新增文章</h3></div>
             <button id="closeManualSourceDialog" class="icon-button" type="button">×</button>
           </div>
+          <label id="manualProjectTitleField" class="manual-project-title-field" hidden>
+            <span class="field-label">作品名稱</span>
+            <input id="manualProjectTitle" class="text-input" placeholder="例如：我的新作品" />
+          </label>
           <label class="field-label">章節標題</label>
           <input id="manualSourceTitle" class="text-input" placeholder="例如：第一章" />
           <label class="field-label">文章內容</label>
@@ -84,8 +114,9 @@
           </div>
         </div>`;
       document.body.appendChild(dialog);
-      document.getElementById('closeManualSourceDialog').onclick = () => dialog.close();
+      document.getElementById('closeManualSourceDialog').onclick = () => closeAndCancelNewWork(dialog);
       document.getElementById('previewManualSourceBtn').onclick = previewManualSource;
+      cancelNewWorkOnClose(dialog);
     }
 
     if (!document.getElementById('sourcePreviewDialog')) {
@@ -112,9 +143,13 @@
           </div>
         </div>`;
       document.body.appendChild(dialog);
-      document.getElementById('closeSourcePreviewDialog').onclick = () => dialog.close();
-      document.getElementById('cancelSourcePreviewBtn').onclick = () => dialog.close();
+      document.getElementById('closeSourcePreviewDialog').onclick = () => closeAndCancelNewWork(dialog);
+      document.getElementById('cancelSourcePreviewBtn').onclick = () => {
+        if (pendingSourcePreview?.type === 'manual') closeForHandoff(dialog);
+        else dialog.close();
+      };
       document.getElementById('confirmSourcePreviewBtn').onclick = confirmSourcePreview;
+      cancelNewWorkOnClose(dialog);
     }
   }
 
@@ -152,24 +187,42 @@
     document.getElementById('sourceDialog').showModal();
   }
 
-  function openManualSourceDialog() {
+  function openManualSourceDialog({ creation = false } = {}) {
     ensureSourceDialogs();
+    const dialog = document.getElementById('manualSourceDialog');
+    const titleField = document.getElementById('manualProjectTitleField');
+    const projectTitle = document.getElementById('manualProjectTitle');
+    const heading = dialog.querySelector('.sticky-dialog-head h3');
+    dialog.dataset.storyflowCreationMode = creation ? '1' : '0';
+    titleField.hidden = !creation;
+    if (heading) heading.textContent = creation ? '建立手動作品' : '手動新增文章';
+    if (projectTitle) projectTitle.value = '';
     document.getElementById('manualSourceTitle').value = '';
     document.getElementById('manualSourceText').value = '';
-    document.getElementById('manualSourceDialog').showModal();
+    dialog.showModal();
+    requestAnimationFrame(() => (creation ? projectTitle : document.getElementById('manualSourceTitle'))?.focus());
+    return true;
   }
 
   function previewManualSource() {
-    const title = document.getElementById('manualSourceTitle').value.trim() || `第${state.chapters.length + 1}章`;
+    const dialog = document.getElementById('manualSourceDialog');
+    const creation = dialog?.dataset.storyflowCreationMode === '1';
+    const projectTitle = creation ? document.getElementById('manualProjectTitle')?.value.trim() : state.projectTitle;
+    if (creation && !projectTitle) {
+      notify('請先輸入作品名稱', true);
+      document.getElementById('manualProjectTitle')?.focus();
+      return;
+    }
+    const title = document.getElementById('manualSourceTitle').value.trim() || `第${creation ? 1 : state.chapters.length + 1}章`;
     const draft = document.getElementById('manualSourceText').value.replace(/\r\n/g, '\n').trim();
     if (!draft) return notify('請先輸入文章內容', true);
     pendingSourcePreview = {
       type: 'manual',
       mode: 'add',
-      projectTitle: state.projectTitle,
+      projectTitle,
       chapters: [{ title, draft, source: null }]
     };
-    document.getElementById('manualSourceDialog').close();
+    closeForHandoff(dialog);
     showSourcePreview();
   }
 
@@ -378,6 +431,17 @@
       return;
     }
 
+    if (window.StoryFlowNewWorkFlow?.isPending?.()) {
+      const created = window.StoryFlowNewWorkFlow.commit({
+        title: String(preview.projectTitle || '').trim(),
+        sourceDocId: preview.type === 'google' ? preview.doc?.id || null : null
+      });
+      if (!created) {
+        notify('尚未建立作品：請先確認作品名稱', true);
+        return;
+      }
+    }
+
     const imported = preview.chapters.map(chapter => ({
       id: crypto.randomUUID(),
       title: chapter.title,
@@ -540,4 +604,5 @@
   installSourceButton();
   cleanLegacyInstructions();
   renderParts();
+  window.StoryFlowSourceFlow = { openManualSourceDialog };
 })();

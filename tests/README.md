@@ -8,7 +8,7 @@
 - `source-diff-core.html` verifies same-count replacements, whitespace-only changes, title changes and line-ending normalization.
 - `source-diff-ui.html` renders the expandable before/after source preview with fixture prose only.
 - `source-sync-history-core.html` verifies pre-sync staging, durable snapshot order, project isolation and one-time undo consumption.
-- `browser/storyflow.spec.js` exercises the authoritative project source controller end to end with a mocked Google Docs response, and verifies that an empty publishing-project selection falls back to all projects without breaking the desktop action layout.
+- `browser/storyflow.spec.js` exercises the authoritative project source controller end to end with a mocked Google Docs response, verifies transactional new-work cancel/confirm behavior and the shared disclosure chevron, and confirms that an empty publishing-project selection falls back to all projects without breaking the desktop action layout.
 - `browser/visual-regression.spec.js` captures the real app at 1280, 1440 and 1920 desktop widths, including a long chapter rail, works library, publishing queue and settings.
 
 No user files or Google credentials are used.

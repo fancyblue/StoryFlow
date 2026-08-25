@@ -448,9 +448,8 @@
 .publishing-project-label{color:#6f879a;font-size:12px;font-weight:750;line-height:1;white-space:nowrap}
 .publishing-project-switch-btn{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:176px;max-width:min(320px,34vw);min-height:40px;padding:0 12px 0 14px;border:1px solid #c9ddea;border-radius:10px;background:#f5faff;color:#2f6f9f;box-shadow:0 1px 3px rgba(35,68,99,.04);cursor:pointer;transition:border-color .16s ease,background .16s ease,box-shadow .16s ease}
 .publishing-project-switch-btn strong{min-width:0;overflow:hidden;color:#234463;font-size:14px;font-weight:850;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
-.publishing-project-chevron{flex:0 0 auto;color:#3b75a3;font-size:18px;font-weight:700;line-height:1;transform:translateY(-1px);transition:transform .16s ease}
+.publishing-project-chevron{flex:0 0 14px;color:#3b75a3}
 .publishing-project-switch-btn:hover:not(:disabled),.publishing-project-switch-btn:focus-visible,.publishing-project-switch-btn[aria-expanded="true"]{border-color:#9fc5de;background:#eaf4fa;box-shadow:0 4px 12px rgba(35,68,99,.07);outline:none}
-.publishing-project-switch-btn[aria-expanded="true"] .publishing-project-chevron{transform:translateY(1px) rotate(180deg)}
 .publishing-project-switch-btn:disabled{cursor:default;opacity:1;border-color:#d7e5ee;background:#f8fbfd}
 .publishing-project-switch-btn.single-project strong{color:#385a76}
 .publishing-project-menu{position:absolute;top:calc(100% + 8px);right:0;z-index:150;display:grid;gap:4px;width:min(300px,72vw);max-height:min(320px,55vh);overflow:auto;padding:8px;border:1px solid #cfdfea;border-radius:12px;background:#fff;box-shadow:0 14px 34px rgba(35,68,99,.16)}
@@ -634,7 +633,7 @@ button.publish-delete-btn{
   text-overflow:ellipsis;
   white-space:nowrap;
 }
-.publishing-project-filter-chevron{font-size:14px;line-height:1;transition:transform .16s ease}
+.publishing-project-filter-chevron{color:#55738b}
 .publishing-project-filter-btn:hover,
 .publishing-project-filter-btn:focus-visible,
 .publishing-project-filter-btn[aria-expanded="true"]{
@@ -642,7 +641,6 @@ button.publish-delete-btn{
   background:#eef7fd;
   outline:none;
 }
-.publishing-project-filter-btn[aria-expanded="true"] .publishing-project-filter-chevron{transform:rotate(180deg)}
 .publishing-project-filter-menu{
   position:absolute;
   top:calc(100% + 7px);

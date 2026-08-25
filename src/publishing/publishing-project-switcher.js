@@ -58,7 +58,7 @@
           <span class="publishing-project-label">目前作品</span>
           <button id="publishingProjectSwitchBtn" class="publishing-project-switch-btn" type="button" aria-haspopup="menu" aria-expanded="false">
             <strong id="publishingProjectCurrentTitle"></strong>
-            <span class="publishing-project-chevron" aria-hidden="true">⌄</span>
+            <span class="sf-chevron publishing-project-chevron" aria-hidden="true"></span>
           </button>
           <div id="publishingProjectMenu" class="publishing-project-menu" role="menu" hidden></div>
         </div>`;
