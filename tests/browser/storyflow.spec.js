@@ -13,7 +13,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(49);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(50);
 
   await page.locator('#createProjectManually').click();
   await expect(page.locator('#manualSourceDialog')).toBeVisible();
@@ -454,6 +454,158 @@ test('each platform can store a lightweight publication date and article URL', a
     return record;
   });
   expect(cleared).toEqual({ publishedAt: '', url: '' });
+  expect(pageErrors).toEqual([]);
+});
+
+test('publishing title stays separate from the internal name and article body', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async value => { window.__copiedPublishingValue = value; } }
+    });
+    StoryFlowProjects.createProject({ title: '發布標題測試作品' }, { quiet: true });
+    const chapter = state.chapters[0];
+    chapter.title = '內部章節名稱';
+    chapter.draft = '只應出現在內容區的正文。';
+    chapter.confirmedBlockCount = 1;
+    chapter.parts = [{
+      id: 'publish-title-test-part',
+      title: '內部文章名稱',
+      publishTitle: '',
+      chars: 12,
+      startBlock: 0,
+      endBlock: 1,
+      raw: '只應出現在內容區的正文。',
+      formatted: '只應出現在內容區的正文。',
+      published: false,
+      platformStatus: {}
+    }];
+    renderAll();
+  });
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  let card = page.locator('.publish-list-item', { hasText: '內部文章名稱' });
+  await card.getByRole('button', { name: /展開.*發布平台/ }).click();
+  await card.getByRole('textbox', { name: '發布標題', exact: true }).fill('給讀者看的正式標題');
+  await card.getByRole('button', { name: '保存標題', exact: true }).click();
+
+  card = page.locator('.publish-list-item', { hasText: '給讀者看的正式標題' });
+  await expect(card).toContainText('內部名稱：內部文章名稱');
+  const saved = await page.evaluate(() => {
+    const chapter = state.chapters.find(item => item.title === '內部章節名稱');
+    const part = chapter.parts[0];
+    const metadata = chapterMetadata(chapter);
+    return {
+      internalTitle: part.title,
+      publishTitle: part.publishTitle,
+      output: StoryFlowPublishingOutput.forPart(part, ''),
+      metadataVersion: metadata.schemaVersion,
+      metadataTitle: metadata.parts[0].publishTitle
+    };
+  });
+  expect(saved).toEqual({
+    internalTitle: '內部文章名稱',
+    publishTitle: '給讀者看的正式標題',
+    output: '只應出現在內容區的正文。',
+    metadataVersion: 6,
+    metadataTitle: '給讀者看的正式標題'
+  });
+
+  await card.getByRole('button', { name: '預覽預設設定', exact: true }).click();
+  const preview = page.locator('#platformPreviewDialog');
+  await expect(preview).toBeVisible();
+  await expect(preview.locator('#platformPreviewPublishTitle')).toHaveText('給讀者看的正式標題');
+  await expect(preview.locator('#platformPreviewMeta')).toContainText('內部文章名稱：內部文章名稱');
+  await expect(preview.locator('#platformPreviewContent')).toHaveText('只應出現在內容區的正文。');
+  await preview.getByRole('button', { name: '複製標題', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('給讀者看的正式標題');
+  await preview.getByRole('button', { name: '複製內容', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('只應出現在內容區的正文。');
+  expect(pageErrors).toEqual([]);
+});
+
+test('global search jumps across works and only searches body text when requested', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const targetProjectId = await page.evaluate(() => {
+    const target = StoryFlowProjects.createProject({ title: '銀河作品' }, { quiet: true });
+    const chapter = state.chapters[0];
+    chapter.title = '星光章節';
+    chapter.draft = '這是一段獨特的銀河關鍵字內容。';
+    chapter.confirmedBlockCount = 1;
+    chapter.parts = [{
+      id: 'global-search-part',
+      title: '內部星光文章',
+      publishTitle: '銀河盡頭的第一封信',
+      chars: 16,
+      startBlock: 0,
+      endBlock: 1,
+      raw: '這是一段獨特的銀河關鍵字內容。',
+      formatted: '這是一段獨特的銀河關鍵字內容。',
+      published: false,
+      platformStatus: {}
+    }];
+    StoryFlowProjects.createProject({ title: '目前工作作品' }, { quiet: true });
+    return target.id;
+  });
+
+  await page.keyboard.press('Control+K');
+  const searchDialog = page.locator('#globalSearchDialog');
+  const searchbox = searchDialog.getByRole('searchbox', { name: '搜尋作品、章節與文章' });
+  await expect(searchDialog).toBeVisible();
+  await expect(searchbox).toBeFocused();
+  await searchbox.fill('銀河盡頭');
+  await expect(searchDialog.getByRole('option')).toHaveCount(1);
+  await expect(searchDialog.getByRole('option')).toContainText(['銀河盡頭的第一封信']);
+  await searchbox.press('Enter');
+
+  await expect(page.locator('#publishingView')).toBeVisible();
+  await expect(page.locator('.publish-list-item.expanded')).toContainText('銀河盡頭的第一封信');
+  expect(await page.evaluate(() => StoryFlowProjects.activeId())).toBe(targetProjectId);
+
+  await page.keyboard.press('Control+K');
+  await searchbox.fill('獨特的銀河關鍵字');
+  await expect(searchDialog.getByRole('option')).toHaveCount(0);
+  await expect(searchDialog).toContainText('找不到符合內容');
+  await searchDialog.getByRole('checkbox', { name: '同時搜尋正文' }).check();
+  await expect(searchDialog.getByRole('option')).toHaveCount(2);
+  await expect(searchDialog.getByRole('option').first()).toContainText('獨特的銀河關鍵字');
+  await searchDialog.getByRole('option', { name: /銀河盡頭的第一封信/ }).click();
+  await expect(page.locator('#platformPreviewDialog')).toBeVisible();
+  await expect(page.locator('#platformPreviewContent')).toContainText('獨特的銀河關鍵字');
+  expect(pageErrors).toEqual([]);
+});
+
+test('global search and five-item navigation fit a narrow Chrome viewport', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByRole('button', { name: '搜尋', exact: true }).click();
+  await expect(page.locator('#globalSearchDialog')).toBeVisible();
+
+  const layout = await page.evaluate(() => {
+    const dialog = document.getElementById('globalSearchDialog')?.getBoundingClientRect();
+    const navItems = [...document.querySelectorAll('.sidebar .nav .nav-item')]
+      .filter(item => getComputedStyle(item).display !== 'none')
+      .map(item => item.getBoundingClientRect());
+    return {
+      dialogLeft: dialog?.left,
+      dialogRight: dialog?.right,
+      visibleNavItems: navItems.length,
+      navSameRow: navItems.every(item => Math.abs(item.top - navItems[0].top) <= 1),
+      documentWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth
+    };
+  });
+  expect(layout.visibleNavItems).toBe(5);
+  expect(layout.navSameRow).toBe(true);
+  expect(layout.dialogLeft).toBeGreaterThanOrEqual(0);
+  expect(layout.dialogRight).toBeLessThanOrEqual(layout.viewportWidth);
+  expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth);
   expect(pageErrors).toEqual([]);
 });
 

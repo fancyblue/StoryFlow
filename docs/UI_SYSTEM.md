@@ -33,7 +33,7 @@ Current shared disclosures include workspace work switching, Smart Split prefere
 
 Do not place a destructive action beside the primary action when an overflow menu can keep the decision hierarchy clearer.
 
-Publishing rows keep article-level editing inside the expanded “管理發布” region. The afterword editor appears before platform status because it affects every platform; its save action is local to that article. A compact “有後記 N 字” badge exposes the state without expanding the row, while the preview dialog owns the final include/exclude choice.
+Publishing rows keep article-level editing inside the expanded “管理發布” region. The publishing-title editor appears first, followed by the afterword editor and platform status because both article-level values affect every platform. The list uses the reader-facing publishing title as the primary label and adds the internal name only when different. A compact “有後記 N 字” badge exposes afterword state without expanding the row, while the preview dialog owns the final include/exclude choice. Preview keeps “複製標題” and “複製內容” separate.
 
 Each platform row uses two information lines: platform/status first, publication date and URL presence second. Keep the three actions ordered as “預覽／複製”, “記錄發布／發布紀錄”, then the status toggle. The record dialog is the only editor for date and URL; the row remains a readable summary rather than an inline form. On narrow screens the three actions share one row when space permits and wrap without horizontal overflow.
 
@@ -45,8 +45,15 @@ Each platform row uses two information lines: platform/status first, publication
 - Closing a creation dialog preserves the existing work and creates nothing.
 - Validation happens in place before the dialog advances.
 
+## Command search
+
+- The sidebar search action uses a magnifier and displays `⌘K` as a shortcut hint on desktop; it is a command, not a destination with persistent selected navigation state.
+- The command dialog keeps one search field, one optional body-search checkbox and one scrollable result list. Result type, primary title and location form a consistent three-level hierarchy.
+- Keyboard focus begins in the search field. Arrow keys move the active result, Enter opens it and Escape closes the dialog.
+- Do not open command search over another visible modal decision. The search footer states that only currently loaded private data is searched.
+
 ## Responsive scope
 
 Desktop Chrome is the primary work environment. Controls still need to wrap safely at narrow widths, but mobile should preserve essential reading and recovery rather than duplicate every dense desktop composition.
 
-On phones, the main surface shows only a compact amber “唯讀” state label (or blue “可編輯” while the current session is unlocked). Explanation and the two-way editing switch live in the full Settings page under “手機使用模式”; the control becomes full-width at narrow widths. Mutating controls look unavailable while read-only; folder reconnect, settings import, navigation, filters and preview remain usable. Hide the normal workspace save copy while read-only so it cannot imply a completed save or cloud sync.
+On phones, the main surface shows only a compact amber “唯讀” state label (or blue “可編輯” while the current session is unlocked). The bottom navigation keeps workspace, works, publishing, settings and search in one five-column row; shortcut text is hidden, but search remains available for reading. Explanation and the two-way editing switch live in the full Settings page under “手機使用模式”; the control becomes full-width at narrow widths. Mutating controls look unavailable while read-only; folder reconnect, settings import, navigation, filters and preview remain usable. Hide the normal workspace save copy while read-only so it cannot imply a completed save or cloud sync.

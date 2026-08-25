@@ -286,12 +286,27 @@
     return null;
   }
 
+  function searchSnapshot() {
+    ensureStore();
+    return store.projects
+      .filter(project => project.placeholder !== true)
+      .map(project => ({
+        id: project.id,
+        title: project.id === store.activeProjectId
+          ? (state.projectTitle || project.title || '未命名作品')
+          : (project.title || project.state?.projectTitle || '未命名作品'),
+        updatedAt: project.updatedAt || null,
+        state: clone(project.id === store.activeProjectId ? state : project.state)
+      }));
+  }
+
   window.StoryFlowProjects = {
     list: listProjects,
     activeId: () => { ensureStore(); return store.activeProjectId; },
     isActivePlaceholder: () => activeRecord()?.placeholder === true,
     findBySourceDocId,
     findSourceTab,
+    searchSnapshot,
     switchProject,
     createProject,
     deleteProject
