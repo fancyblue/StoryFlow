@@ -14,7 +14,7 @@
   }
 
   function outputFor(part, platform, includeAfterword = part?.includeAfterword !== false) {
-    normalizePartAfterword(part);
+    normalizePublishingPart(part);
     const raw = part.raw ?? part.formatted ?? '';
     const format = value => platform ? platformFormat(value, platform) : webFormat(value);
     const body = format(raw);
@@ -31,7 +31,40 @@
     return platform || '預設設定';
   }
 
+  function publicationRecord(part, platform) {
+    normalizePublishingPart(part);
+    part.publicationRecords[platform] ||= { publishedAt: '', url: '' };
+    return part.publicationRecords[platform];
+  }
+
+  function publicationDateLabel(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('zh-TW', {
+      year: 'numeric', month: 'numeric', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: false
+    }).format(date);
+  }
+
+  function datetimeLocalValue(value = new Date().toISOString()) {
+    const date = new Date(value);
+    const current = Number.isNaN(date.getTime()) ? new Date() : date;
+    const pad = number => String(number).padStart(2, '0');
+    return `${current.getFullYear()}-${pad(current.getMonth() + 1)}-${pad(current.getDate())}T${pad(current.getHours())}:${pad(current.getMinutes())}`;
+  }
+
+  function normalizedPublicationUrl(value) {
+    const input = String(value || '').trim();
+    if (!input) return '';
+    const candidate = /^[a-z][a-z\d+.-]*:/i.test(input) ? input : `https://${input}`;
+    const parsed = new URL(candidate);
+    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('網址必須使用 http 或 https。');
+    return parsed.href;
+  }
+
   function normalizePartStatus(part) {
+    normalizePublishingPart(part);
     part.platformStatus ||= {};
     const next = {};
     platforms.forEach(name => { next[name] = Boolean(part.platformStatus[name]); });
@@ -195,21 +228,80 @@
 
   const publishDialog = rebuildPublishPreviewDialog();
 
+  function rebuildPublicationRecordDialog() {
+    document.getElementById('publicationRecordDialog')?.remove();
+    const dialog = document.createElement('dialog');
+    dialog.id = 'publicationRecordDialog';
+    dialog.className = 'publication-record-dialog';
+    dialog.innerHTML = `
+      <form class="dialog-card publication-record-card" method="dialog">
+        <div class="panel-head">
+          <div><p class="eyebrow">PUBLICATION RECORD</p><h3 id="publicationRecordTitle">發布紀錄</h3></div>
+          <button id="closePublicationRecord" class="icon-button" type="button" aria-label="關閉">×</button>
+        </div>
+        <p id="publicationRecordMeta" class="muted publication-record-meta"></p>
+        <label class="field-label" for="publicationRecordDate">發布時間</label>
+        <input id="publicationRecordDate" class="text-input" type="datetime-local" required />
+        <label class="field-label" for="publicationRecordUrl">文章網址（選填）</label>
+        <input id="publicationRecordUrl" class="text-input" type="url" inputmode="url" autocomplete="url" placeholder="https://…" />
+        <p id="publicationRecordError" class="publication-record-error" role="alert" hidden></p>
+        <div class="publication-record-actions">
+          <a id="openPublicationRecordUrl" class="button ghost" target="_blank" rel="noopener noreferrer" hidden>開啟文章</a>
+          <span class="publication-record-actions-spacer"></span>
+          <button id="cancelPublicationRecord" class="button ghost" type="button">取消</button>
+          <button id="savePublicationRecord" class="button primary" type="button">保存發布紀錄</button>
+        </div>
+      </form>`;
+    document.body.appendChild(dialog);
+    dialog.querySelector('#closePublicationRecord').onclick = () => dialog.close();
+    dialog.querySelector('#cancelPublicationRecord').onclick = () => dialog.close();
+    return dialog;
+  }
+
+  const publicationDialog = rebuildPublicationRecordDialog();
+
   function setPlatformPublished(part, platform, nextValue) {
     if (!platform) return;
     normalizePartStatus(part);
-    part.platformStatus[platform] = Boolean(nextValue);
+    const next = Boolean(nextValue);
+    const record = publicationRecord(part, platform);
+    part.platformStatus[platform] = next;
+    if (next && !record.publishedAt) record.publishedAt = new Date().toISOString();
+    if (!next) {
+      record.publishedAt = '';
+      record.url = '';
+    }
     part.published = Object.values(part.platformStatus).some(Boolean);
     saveState('發布狀態已更新');
   }
 
-  function togglePlatformPublished(part, platform) {
-    if (!platform) return;
+  async function persistPublicationChange(part, message) {
+    const entry = allEntries().find(item => item.part === part);
+    if (!entry) return false;
+    try {
+      const updated = await writeArticleMarkdown(entry.chapter, part);
+      if (updated && message) notify(message);
+      else if (!updated) notify('發布紀錄目前只保留在畫面；請重新連接資料夾後再操作一次。', true);
+      return updated;
+    } catch (error) {
+      notify(`發布紀錄已更新，但 metadata.json 尚未寫入：${error.message}`, true);
+      return false;
+    }
+  }
+
+  async function togglePlatformPublished(part, platform) {
+    if (!platform) return false;
     normalizePartStatus(part);
     const next = !part.platformStatus[platform];
+    const record = publicationRecord(part, platform);
+    if (!next && (record.publishedAt || record.url)) {
+      const confirmed = window.confirm(`取消「${platform}」的已發布標記？\n\n這會一併清除已記錄的發布時間與文章網址。`);
+      if (!confirmed) return false;
+    }
     setPlatformPublished(part, platform, next);
     renderParts();
-    notify(`${platform} 已${next ? '標註已發布' : '取消已發布標記'}`);
+    await persistPublicationChange(part, `${platform} 已${next ? '標註已發布並記錄時間' : '取消已發布標記'}`);
+    return true;
   }
 
   function previewPublish(part, platform) {
@@ -263,16 +355,16 @@
         if (markPublished) {
           setPlatformPublished(part, platform, true);
           renderParts();
-          notify(`${platform} 已標註為已發布`);
+          await persistPublicationChange(part, `${platform} 已標註為已發布並記錄時間`);
         }
       }
       publishDialog.close();
     };
 
-    toggle.onclick = () => {
+    toggle.onclick = async () => {
       if (!platform) return;
-      togglePlatformPublished(part, platform);
-      publishDialog.close();
+      const changed = await togglePlatformPublished(part, platform);
+      if (changed) publishDialog.close();
     };
 
     publishDialog.showModal();
@@ -288,6 +380,65 @@
       metadata: chapterMetadata(chapter)
     });
     return true;
+  }
+
+  function openPublicationRecord(chapter, part, platform) {
+    const record = publicationRecord(part, platform);
+    const dateInput = publicationDialog.querySelector('#publicationRecordDate');
+    const urlInput = publicationDialog.querySelector('#publicationRecordUrl');
+    const error = publicationDialog.querySelector('#publicationRecordError');
+    const openLink = publicationDialog.querySelector('#openPublicationRecordUrl');
+    let safeExistingUrl = '';
+    try { safeExistingUrl = normalizedPublicationUrl(record.url); } catch (_) {}
+
+    publicationDialog.querySelector('#publicationRecordTitle').textContent = `${part.title} · ${platform}`;
+    publicationDialog.querySelector('#publicationRecordMeta').textContent = '保存後會同步標註為已發布；網址可留白，之後再補。';
+    dateInput.value = datetimeLocalValue(record.publishedAt || new Date().toISOString());
+    urlInput.value = record.url || '';
+    error.hidden = true;
+    error.textContent = '';
+    openLink.hidden = !safeExistingUrl;
+    if (safeExistingUrl) openLink.href = safeExistingUrl;
+    else openLink.removeAttribute('href');
+
+    publicationDialog.querySelector('#savePublicationRecord').onclick = async () => {
+      if (!dateInput.value) {
+        error.textContent = '請選擇發布時間。';
+        error.hidden = false;
+        dateInput.focus();
+        return;
+      }
+
+      let url = '';
+      try {
+        url = normalizedPublicationUrl(urlInput.value);
+      } catch (validationError) {
+        error.textContent = validationError.message;
+        error.hidden = false;
+        urlInput.focus();
+        return;
+      }
+
+      const publishedAt = new Date(dateInput.value);
+      if (Number.isNaN(publishedAt.getTime())) {
+        error.textContent = '發布時間格式不正確。';
+        error.hidden = false;
+        dateInput.focus();
+        return;
+      }
+
+      part.publicationRecords[platform] = { publishedAt: publishedAt.toISOString(), url };
+      part.platformStatus ||= {};
+      part.platformStatus[platform] = true;
+      part.published = Object.values(part.platformStatus).some(Boolean);
+      saveState('發布紀錄已更新');
+      publicationDialog.close();
+      renderParts();
+      await persistPublicationChange(part, `${platform} 的發布紀錄已保存`);
+    };
+
+    publicationDialog.showModal();
+    window.setTimeout(() => dateInput.focus(), 0);
   }
 
   async function saveAfterword(chapter, part, textarea, includeControl) {
@@ -310,7 +461,7 @@
   }
 
   function createAfterwordEditor(chapter, part) {
-    normalizePartAfterword(part);
+    normalizePublishingPart(part);
     const section = document.createElement('section');
     section.className = 'publish-afterword-editor';
     section.innerHTML = `
@@ -409,22 +560,35 @@
   }
 
   function createPlatformRow(entry, platform) {
-    const { part } = entry;
+    const { chapter, part } = entry;
     const published = Boolean(part.platformStatus?.[platform]);
+    const record = publicationRecord(part, platform);
+    const publishedAt = publicationDateLabel(record.publishedAt);
+    const recordSummary = published
+      ? `${publishedAt || '未記錄發布時間'}${record.url ? ' · 已記錄網址' : ''}`
+      : '';
     const row = document.createElement('div');
     row.className = 'publish-platform-row';
     row.innerHTML = `
       <div class="publish-platform-state">
-        <strong>${escapeHtml(platform)}</strong>
-        <span class="publish-platform-status ${published ? 'done' : ''}">${published ? '已發布' : '尚未發布'}</span>
+        <div class="publish-platform-state-line">
+          <strong>${escapeHtml(platform)}</strong>
+          <span class="publish-platform-status ${published ? 'done' : ''}">${published ? '已發布' : '尚未發布'}</span>
+        </div>
+        ${recordSummary ? `<small class="publish-platform-record-summary">${escapeHtml(recordSummary)}</small>` : ''}
       </div>
       <div class="publish-platform-actions">
         <button class="button tiny ghost platform-preview-btn" type="button">預覽／複製</button>
+        <button class="button tiny ghost platform-record-btn" type="button">${published ? '發布紀錄' : '記錄發布'}</button>
         <button class="button tiny ghost platform-status-btn ${published ? 'is-published' : ''}" type="button">${published ? '取消已發布' : '標註已發布'}</button>
       </div>`;
     row.querySelector('.platform-preview-btn').addEventListener('click', event => {
       event.stopPropagation();
       previewPublish(part, platform);
+    });
+    row.querySelector('.platform-record-btn').addEventListener('click', event => {
+      event.stopPropagation();
+      openPublicationRecord(chapter, part, platform);
     });
     row.querySelector('.platform-status-btn').addEventListener('click', event => {
       event.stopPropagation();

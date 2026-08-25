@@ -388,6 +388,75 @@ test('published articles keep an independent afterword and can exclude it from o
   expect(pageErrors).toEqual([]);
 });
 
+test('each platform can store a lightweight publication date and article URL', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '發布紀錄測試作品' }, { quiet: true });
+    const chapter = state.chapters[0];
+    chapter.title = '發布紀錄測試章節';
+    chapter.draft = '發布紀錄正文。';
+    chapter.confirmedBlockCount = 1;
+    chapter.parts = [{
+      id: 'publication-record-test-part',
+      title: '等待發布的文章',
+      chars: 7,
+      startBlock: 0,
+      endBlock: 1,
+      raw: '發布紀錄正文。',
+      formatted: '發布紀錄正文。',
+      published: false,
+      platformStatus: {}
+    }];
+    renderAll();
+  });
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  const card = page.locator('.publish-list-item', { hasText: '等待發布的文章' });
+  await card.getByRole('button', { name: /展開.*發布平台/ }).click();
+  const platformRow = card.locator('.publish-platform-row', { hasText: '巴哈小屋' });
+  await platformRow.getByRole('button', { name: '記錄發布', exact: true }).click();
+
+  const dialog = page.locator('#publicationRecordDialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('#publicationRecordDate')).not.toHaveValue('');
+  await dialog.locator('#publicationRecordUrl').fill('example.com/story/1');
+  await dialog.getByRole('button', { name: '保存發布紀錄', exact: true }).click();
+
+  await expect(platformRow.getByText('已發布', { exact: true })).toBeVisible();
+  await expect(platformRow.locator('.publish-platform-record-summary')).toContainText('已記錄網址');
+  await expect(platformRow.getByRole('button', { name: '發布紀錄', exact: true })).toBeVisible();
+
+  const saved = await page.evaluate(() => {
+    const part = state.chapters.find(chapter => chapter.title === '發布紀錄測試章節').parts[0];
+    return {
+      status: part.platformStatus['巴哈小屋'],
+      record: part.publicationRecords['巴哈小屋']
+    };
+  });
+  expect(saved.status).toBe(true);
+  expect(saved.record.url).toBe('https://example.com/story/1');
+  expect(Number.isNaN(Date.parse(saved.record.publishedAt))).toBe(false);
+
+  await platformRow.getByRole('button', { name: '發布紀錄', exact: true }).click();
+  await expect(dialog.locator('#openPublicationRecordUrl')).toHaveAttribute('href', 'https://example.com/story/1');
+  await dialog.getByRole('button', { name: '取消', exact: true }).click();
+
+  page.once('dialog', async confirmation => {
+    expect(confirmation.message()).toContain('清除已記錄的發布時間與文章網址');
+    await confirmation.accept();
+  });
+  await platformRow.getByRole('button', { name: '取消已發布', exact: true }).click();
+  await expect(platformRow.getByText('尚未發布', { exact: true })).toBeVisible();
+  const cleared = await page.evaluate(() => {
+    const record = state.chapters.find(chapter => chapter.title === '發布紀錄測試章節').parts[0].publicationRecords['巴哈小屋'];
+    return record;
+  });
+  expect(cleared).toEqual({ publishedAt: '', url: '' });
+  expect(pageErrors).toEqual([]);
+});
+
 test('remembered folder supports fast reconnect and explicit leave suppression', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.goto('/tests/quick-start-ui.html');

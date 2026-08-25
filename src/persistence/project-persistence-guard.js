@@ -20,6 +20,7 @@
     '章節已刪除',
     '已刪除並退回切篇',
     '發布狀態已更新',
+    '發布紀錄已更新',
     '後記已更新',
     '後記輸出設定已更新'
   ]);
@@ -29,7 +30,7 @@
     state = next;
     state.chapters.forEach(chapter => {
       chapter.parts ||= [];
-      chapter.parts.forEach(normalizePartAfterword);
+      chapter.parts.forEach(normalizePublishingPart);
       chapter.source ||= null;
       if (typeof chapter.confirmedBlockCount !== 'number') chapter.confirmedBlockCount = 0;
     });

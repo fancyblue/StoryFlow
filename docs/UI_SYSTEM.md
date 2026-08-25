@@ -35,6 +35,8 @@ Do not place a destructive action beside the primary action when an overflow men
 
 Publishing rows keep article-level editing inside the expanded “管理發布” region. The afterword editor appears before platform status because it affects every platform; its save action is local to that article. A compact “有後記 N 字” badge exposes the state without expanding the row, while the preview dialog owns the final include/exclude choice.
 
+Each platform row uses two information lines: platform/status first, publication date and URL presence second. Keep the three actions ordered as “預覽／複製”, “記錄發布／發布紀錄”, then the status toggle. The record dialog is the only editor for date and URL; the row remains a readable summary rather than an inline form. On narrow screens the three actions share one row when space permits and wrap without horizontal overflow.
+
 ## Dialog behavior
 
 - One dialog represents one decision step.
