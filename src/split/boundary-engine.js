@@ -133,14 +133,16 @@
     return document.getElementById('reviewManualBoundaryBtn')?.getAttribute('aria-pressed') === 'true';
   }
 
-  function boundaryTarget(end, currentEnd) {
+  function boundaryTarget(end, currentEnd, sceneBoundary = false) {
     const current = end === currentEnd;
     const classes = ['manual-boundary-target'];
     if (current) classes.push('range-boundary', 'range-end', 'is-current');
-    const label = current
+    if (sceneBoundary) classes.push('is-scene-boundary');
+    const accessibleLabel = current
       ? '這一篇結束 · 拖曳調整'
       : '設為本篇結尾';
-    return `<button type="button" class="${classes.join(' ')}" data-boundary-end="${end}"${current ? ' draggable="true"' : ''} aria-label="${label}"><span aria-hidden="true">${current ? '⠿' : ''}</span><span>${label}</span></button>`;
+    const visibleLabel = current ? '本篇結尾' : '設為結尾';
+    return `<button type="button" class="${classes.join(' ')}" data-boundary-end="${end}"${current ? ' draggable="true"' : ''} aria-label="${accessibleLabel}"><span class="manual-boundary-handle" aria-hidden="true">${current ? '⠿' : ''}</span><span class="manual-boundary-label">${visibleLabel}</span></button>`;
   }
 
   function formattedFullChapterHTML() {
@@ -159,11 +161,14 @@
       out.push(manual
         ? `<span class="review-source-block${highlighted ? ' current-range-highlight' : ''}" data-block-index="${index}">${line}</span>`
         : highlighted ? `<span class="current-range-highlight">${line}</span>` : line);
-      if (manual && index >= start) out.push(`\n${boundaryTarget(index + 1, end)}`);
+      if (manual && index >= start) out.push(boundaryTarget(index + 1, end, Boolean(block.strongBoundaryAfter)));
       else if (index === end - 1) out.push('\n<span class="range-boundary range-end">──── 這一篇結束 ────</span>');
       if (index >= blocks.length - 1) return;
 
-      out.push(escapeHtml(formattedBlockBreak(block, options)));
+      // In manual mode every paragraph boundary is already represented by a
+      // full-width button. Literal newlines around block elements create large
+      // anonymous line boxes inside the <pre>, so spacing belongs to CSS there.
+      if (!manual) out.push(escapeHtml(formattedBlockBreak(block, options)));
     });
     return out.join('');
   }
@@ -289,9 +294,25 @@
       hint.id = 'manualBoundaryHint';
       hint.className = 'manual-boundary-hint';
       hint.hidden = true;
-      hint.textContent = '拖曳「這一篇結束」，或點選任一段落間的「設為本篇結尾」。切點只會落在段落之間，不會修改原稿。';
+      hint.textContent = '點段落間細線設定結尾；藍色「本篇結尾」也可拖曳。只調整切點，不修改原稿。';
       document.querySelector('#reviewDialog .review-format-bar')?.insertAdjacentElement('afterend', hint);
     }
+  }
+
+  function alignReviewMarker(selector, focus = false) {
+    const full = document.getElementById('dialogReviewFull');
+    if (!full) return;
+    const align = () => {
+      const marker = full.querySelector(selector);
+      if (!marker || !full.isConnected) return;
+      const fullRect = full.getBoundingClientRect();
+      const markerRect = marker.getBoundingClientRect();
+      const centered = full.scrollTop + markerRect.top - fullRect.top - (full.clientHeight - markerRect.height) / 2;
+      full.scrollTop = Math.max(0, centered);
+      if (focus) marker.focus({ preventScroll: true });
+    };
+    requestAnimationFrame(() => requestAnimationFrame(align));
+    window.setTimeout(align, 90);
   }
 
   function setManualBoundaryMode(active) {
@@ -300,6 +321,7 @@
     const dialog = document.getElementById('reviewDialog');
     const hint = document.getElementById('manualBoundaryHint');
     if (!button || !dialog) return;
+    const wasActive = button.getAttribute('aria-pressed') === 'true';
     button.setAttribute('aria-pressed', String(active));
     button.textContent = active ? '結束微調' : '手動微調';
     dialog.classList.toggle('manual-boundary-active', active);
@@ -310,19 +332,8 @@
     }
     if (active) window.StoryFlowPreviewMode?.setMode?.('review', 'preview');
     refreshReview(false);
-    if (active) {
-      const full = document.getElementById('dialogReviewFull');
-      const align = () => {
-        const marker = full?.querySelector('.manual-boundary-target.is-current');
-        if (!full || !marker) return;
-        const fullRect = full.getBoundingClientRect();
-        const markerRect = marker.getBoundingClientRect();
-        full.scrollTop = Math.max(0, full.scrollTop + markerRect.top - fullRect.top - full.clientHeight / 2);
-        marker.focus({ preventScroll: true });
-      };
-      requestAnimationFrame(() => requestAnimationFrame(align));
-      window.setTimeout(align, 90);
-    }
+    if (active) alignReviewMarker('.manual-boundary-target.is-current', true);
+    else if (wasActive && dialog.open) alignReviewMarker('.range-end');
   }
 
   function clearManualDropState() {

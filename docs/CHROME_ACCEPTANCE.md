@@ -39,6 +39,8 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Open “切篇確認” and confirm “少一個場景／多一個場景” still perform coarse scene-level movement.
 - [ ] Choose “手動微調”. Confirm the full chapter shows one selectable boundary after each eligible paragraph and the current “這一篇結束” line is visibly draggable.
 - [ ] Drag the ending to another paragraph, then use a different paragraph's click target. Confirm “本篇／後續” counts, highlight and current preview update immediately.
+- [ ] Confirm manual mode shows only the current-part and chapter columns; candidate endings are thin lines whose labels appear on hover/focus, while the blue current ending stays visible without creating large gaps between paragraphs.
+- [ ] Choose an ending in the middle of a long chapter and press “結束微調”. Confirm the normal chapter view stays at “這一篇結束” instead of jumping to the chapter bottom.
 - [ ] Give the suggestion a custom title before moving it and confirm the title is preserved.
 - [ ] Close and reopen confirmation; confirm manual mode resets. Confirm the source draft is byte-for-byte unchanged and no confirmed publishing article was rewritten.
 - [ ] Turn off “段落間空一行” for a disposable platform. Confirm ordinary paragraphs are compact but an original scene boundary still shows the configured marker.

@@ -40,8 +40,9 @@ SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認�
 
 - Automatic suggestions and the coarse arrow actions use real source-scene boundaries. Preferred character counts rank valid scene endings but do not manufacture a cut inside a scene.
 - “手動微調” is deliberately paragraph-level. It changes only the current unconfirmed suggestion end, snaps after a complete source paragraph and never edits the source draft.
-- Manual mode renders one lightweight target after every eligible paragraph. The current “這一篇結束” target is draggable; every target is also clickable for reliable positioning in long scrollable text.
+- Manual mode gives the chapter text most of the width, hides the previous-part column and renders one compact full-width line after every eligible paragraph. Quiet candidate labels appear only on hover or keyboard focus; the current “本篇結尾” line stays visible and draggable.
 - The review toolbar shows both current-part and remaining-unconfirmed character counts while manual mode is active. The current title, start boundary and source text remain unchanged when the end moves.
+- Leaving manual mode rerenders the normal chapter view and keeps the confirmed “這一篇結束” marker in view, so the author can verify the surrounding prose without searching for the cut again.
 - Scene-level controls remain available outside manual mode. Closing the confirmation dialog exits manual mode, and confirmed or published parts are never retroactively re-split by this interaction.
 - A single source paragraph cannot be cut internally. The author must first add a real paragraph break to the source if sentence-level splitting is required.
 - Platform paragraph spacing and scene separation are independent. Compact paragraph output uses one newline between ordinary paragraphs, but every original scene boundary keeps either the configured marker or, when the marker is hidden, one blank line.
