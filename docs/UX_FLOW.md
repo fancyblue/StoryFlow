@@ -2,6 +2,110 @@
 
 StoryFlow is a personal desktop writing tool. Flows should stay short, preserve the current work until an action is confirmed, and avoid account-style ceremony that does not protect the user's files.
 
+## Page-level use cases and action priority
+
+Button weight follows the user's current task, not how often a control happens to appear. A solid button marks the single recommended next step inside one card, dialog or decision stage. Repeated row actions, disclosures, previews and optional shortcuts remain tinted or outlined even when they are frequently used.
+
+### Works library
+
+The Works page is the structural management hub. For the active work, managing chapters is the most likely next step; the “目前作品” badge and active-card treatment already communicate selection, so “工作台” must not also be styled as if it were the current page.
+
+| ID | User goal | Main action | Supporting actions | Visual priority |
+| --- | --- | --- | --- | --- |
+| W-01 | Review, add, edit or remove chapters in the active work | 管理章節 | `⋯` for infrequent or destructive chapter actions | Solid primary for the active work; expanded state keeps the selected treatment |
+| W-02 | Return to splitting and writing work | 工作台 | — | Tinted or outlined navigation action |
+| W-03 | Jump directly to this work's publishing queue | 管理發布 | — | Tinted secondary shortcut |
+| W-04 | Make another work current | 開啟／切換並開啟 | Then manage its chapters or enter its workspace | Outlined until selected; selection is shown by the card and badge |
+| W-05 | Create another work | ＋ 新作品 | Source chooser and creation preview | Outlined or tinted while works already exist |
+| W-06 | Create the first work | 建立第一個作品 | — | The only solid action in the empty state; do not show a competing solid header action |
+| W-07 | Rename or delete a work | `⋯` | Confirmation and Recovery for deletion | Tertiary overflow; deletion uses the danger treatment only inside the decision |
+
+Only the active work's “管理章節” receives the strongest emphasis. Other cards stay quiet until selected, preventing a long works list from becoming a grid of identical solid buttons.
+
+### Workspace
+
+The Workspace is a staged flow rather than a page with one permanently primary button. Its recommended action changes with the manuscript state.
+
+| ID | User goal | Main action | Supporting actions | Visual priority |
+| --- | --- | --- | --- | --- |
+| WS-01 | Start an empty work or chapter | 從 Google Docs 建立／手動建立／新增第一篇文章 | 切換作品 | Emphasize the source-choice stage; keep the alternative source cards equal until one is chosen |
+| WS-02 | Select the work and chapter to process | 切換作品／章節列 | Add, edit or delete a chapter | Selection and disclosure styling, never primary CTA styling |
+| WS-03 | Refresh a linked Google Docs chapter | 更新來源 | 復原來源更新 | Tinted action that opens comparison; only “套用所選變更” is solid after review |
+| WS-04 | Adjust an automatic split suggestion | 少一個場景／多一個場景 | 切篇偏好 | Outlined directional and disclosure controls |
+| WS-05 | Move the ending within a long scene | 手動微調 | Drag or choose a paragraph boundary | Selected/toggled treatment; boundary targets are not buttons competing for primary emphasis |
+| WS-06 | Commit the reviewed article | 切篇確認／確認並存成 Markdown | 返回修改、取消 | The single solid action for the review stage |
+| WS-07 | Continue processing the remaining chapter | 產生下一篇 | Review the current ending again | Solid only when a valid next suggestion is ready |
+| WS-08 | Move from confirmed articles to publication | 前往發布 | Publishing summary | Solid only when a confirmed pending article exists; hide or demote it when there is nothing to publish |
+| WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | Editing is a normal menu action; deletion stays in overflow and requires confirmation |
+
+At any moment, the workspace should visually answer one question: “What can I safely do next?” It must not simultaneously emphasize source loading, split confirmation and publishing navigation.
+
+### Publishing
+
+The Publishing page separates queue navigation from the actual publishing commit. A global “繼續發布” may point to the most relevant unfinished article; repeated article rows remain scannable and do not each introduce a solid button.
+
+| ID | User goal | Main action | Supporting actions | Visual priority |
+| --- | --- | --- | --- | --- |
+| P-01 | Resume the latest unfinished publication | 繼續發布 | Filters and project selector | One solid page action, visible only when pending or partial work exists |
+| P-02 | Choose a specific article to process | 管理發布 | 預覽預設設定、`⋯` | Tinted row action; preview is outlined and overflow is tertiary |
+| P-03 | Verify platform formatting | 預覽預設設定 | Copy title, include/exclude afterword | Outlined until the preview dialog opens |
+| P-04 | Copy content to a platform | 複製內容 | 複製標題、關閉 | The single solid action in the preview dialog |
+| P-05 | Store publication time and URL | 保存發布紀錄 | 取消、開啟文章 | The single solid action in the record dialog |
+| P-06 | Edit publishing title, afterword or image metadata | Save the active editor | Preview and ordering controls | One local solid save action only while that editor is active |
+| P-07 | Mark or undo platform publication | 標註已發布／取消已發布 | Publication record | State control, not a global primary action; reversal requires a clear warning |
+| P-08 | Find articles by work or status | 作品／發布狀態 filters | — | Soft selected state, never solid CTA styling |
+| P-09 | Perform infrequent article management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation |
+| P-10 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
+
+An expanded “收合發布” control is still a disclosure. Use a stronger soft selection, border or adjacent panel treatment instead of the full primary fill; the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task.
+
+### Settings
+
+The Settings page is a collection of independent decision cards. It may contain one primary action per card or setup stage, but should not make every configurable feature look simultaneously urgent. A save action becomes prominent only when its fields are editable or dirty.
+
+| ID | User goal | Main action | Supporting actions | Visual priority |
+| --- | --- | --- | --- | --- |
+| S-01 | Load private Google configuration on a new device | 匯入 settings.json | Manual Client ID and API Key entry | Solid only when import is the recommended missing setup step; otherwise outlined |
+| S-02 | Save changed Google integration values | 保存 Google 整合設定 | 取消更新、重新匯入 | Solid only while valid unsaved changes exist; disabled or quiet when unchanged |
+| S-03 | Authenticate after configuration is ready | 登入 Google | 更新設定、重新匯入 | The single solid action for this setup stage |
+| S-04 | Choose or reconnect the StoryFlow folder | 連接資料夾／重新連接 | 重新檢查 | Solid only while the folder is required and disconnected; connected state becomes status, not a button CTA |
+| S-05 | Add or maintain publishing platforms | 新增平台 | Rename, reorder or remove platform | Tinted or outlined list-management action; removal uses danger treatment after confirmation |
+| S-06 | Change platform formatting | 保存 changed setting through normal workspace persistence | Preview or reset individual values | Controls and status, not a permanent solid CTA; surface unsaved/error state instead |
+| S-07 | Inspect or create a manual backup | 建立目前備份 | 重新檢查、下載、匯入、恢復 | Normally tinted or outlined; an explicit import/restore confirmation becomes solid inside its decision panel |
+| S-08 | Temporarily unlock phone editing | 開啟本次編輯 | Return to read-only | State switch with warning, not a blue primary CTA; saving or conflict resolution owns any primary action |
+| S-09 | Clear browser-held private state | 離開此裝置 | — | Danger outline/text followed by confirmation; never blue primary |
+
+Settings cards may each have a task action, but visual emphasis should follow state: missing setup, dirty values or an active confirmation. Completed configuration is displayed as readable status with quiet maintenance controls.
+
+### Global navigation and search
+
+Global controls help the user move or locate content; they do not compete with the active page's task action.
+
+| ID | User goal | Main action | Supporting actions | Visual priority |
+| --- | --- | --- | --- | --- |
+| G-01 | Move between Workspace, Works, Publishing and Settings | Sidebar or mobile navigation item | Collapse sidebar | Active-location treatment in navigation chrome, not page-primary styling |
+| G-02 | Find a work, chapter or publishing article | 搜尋／keyboard shortcut | Optional body search | Search trigger stays neutral; the selected result uses a soft active state |
+| G-03 | Open the selected search result | Enter／click result | Arrow-key navigation, Escape or `×` | The active row is emphasized; no persistent solid confirmation button is needed |
+| G-04 | Check Google and folder readiness | Connection status chips | Open the relevant connection action | Status-first treatment; disconnected chips may invite action without becoming the page's dominant CTA |
+| G-05 | Collapse or expand desktop navigation | Sidebar toggle | — | Tertiary icon control with clear focus state |
+
+The active sidebar item may use a dark selected background because it communicates location inside persistent navigation. That treatment is separate from a solid page CTA and does not imply that clicking it is the recommended next task.
+
+### First use, reconnect and recovery
+
+Connection and recovery surfaces are global states that may interrupt any page. They use progressive disclosure so only the action that resolves the current blocker is primary.
+
+| ID | User goal | Main action | Supporting actions | Visual priority |
+| --- | --- | --- | --- | --- |
+| O-01 | Configure StoryFlow for the first time | 匯入 settings.json or save manually entered integration values | Explanatory setup copy | One solid action matching the currently chosen setup route |
+| O-02 | Restore a remembered folder permission | 快速重新連接 | Choose another folder | One solid recovery action; alternatives outlined |
+| O-03 | Open existing work without Google Docs access | 連接 StoryFlow 資料夾 | Import settings later | Folder access may be primary because manuscript data is local; Google remains a separate optional prerequisite for source refresh |
+| O-04 | Resolve a newer file on disk | 載入較新版本 | 保留目前版本並覆蓋、稍後處理 | The safest recommended resolution is solid; overwrite is secondary and requires explicit confirmation |
+| O-05 | Recover an unreadable workspace | 從備份恢復 | 匯入工作區檔案、稍後處理 | One recoverable path is solid; file import becomes solid only after a candidate passes validation |
+| O-06 | Use StoryFlow on a phone | Read and preview in “唯讀” mode | Reconnect folder, open Settings | “唯讀” is a status label, not a button; editing remains an explicit Settings decision |
+
+Recovery is the exception where a solid button may appear outside the normal page task. It should still present only one recommended safe action at a time; potentially destructive overwrite paths stay visually secondary until their confirmation step.
+
 ## Create a work
 
 Creating a work is a transaction, not a navigation side effect.
