@@ -41,6 +41,8 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Drag the ending to another paragraph, then use a different paragraph's click target. Confirm “本篇／後續” counts, highlight and current preview update immediately.
 - [ ] Confirm manual mode shows only the current-part and chapter columns; candidate endings are thin lines whose labels appear on hover/focus, while the blue current ending stays visible without creating large gaps between paragraphs.
 - [ ] Choose an ending in the middle of a long chapter and press “結束微調”. Confirm the normal chapter view stays at “這一篇結束” instead of jumping to the chapter bottom.
+- [ ] Confirm “本篇／後續” counts are visually smaller than the article title and “結束微調” action, while remaining readable without wrapping.
+- [ ] In the works library, confirm “工作台／開啟／管理發布／管理章節” use the same text size and control height. Management actions should be clearly medium-blue, while the current Workbench remains the darkest destination.
 - [ ] Give the suggestion a custom title before moving it and confirm the title is preserved.
 - [ ] Close and reopen confirmation; confirm manual mode resets. Confirm the source draft is byte-for-byte unchanged and no confirmed publishing article was rewritten.
 - [ ] Turn off “段落間空一行” for a disposable platform. Confirm ordinary paragraphs are compact but an original scene boundary still shows the configured marker.

@@ -51,7 +51,7 @@
 /* Small metrics and status pills need to remain readable at a glance. */
 .splitter-panel #suggestionChars{font-size:15px!important;font-weight:800!important;line-height:1.2!important;color:var(--denim-700,#3975a7)!important}
 .splitter-panel .suggestion-title-row .pill{display:inline-flex!important;align-items:center!important;min-height:30px!important;padding:5px 10px!important;font-size:13px!important;font-weight:800!important;line-height:1!important}
-.review-current-chars{color:#58748b!important;font-size:15px!important;font-weight:800!important;line-height:1.2!important}
+#reviewCurrentChars.review-current-chars{color:#6b8294!important;font-size:12.5px!important;font-weight:750!important;line-height:1.2!important;white-space:nowrap!important}
 .project-current-badge,.publish-overall-status,.publish-platform-status,.platform-badge{display:inline-flex!important;align-items:center!important;min-height:28px!important;padding:4px 9px!important;font-size:12px!important;font-weight:800!important;line-height:1!important}
 .publishing-filter{font-size:12px!important;font-weight:750!important}
 
@@ -155,7 +155,7 @@
   .sidebar-connection-copy small{font-size:15px!important;font-weight:800!important}
   .sidebar-utility-actions{grid-template-columns:repeat(2,44px)!important;gap:8px!important;width:96px!important}
   .sidebar-settings-button,.sidebar-logout{width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;border-radius:12px!important}
-  .splitter-panel #suggestionChars,.review-current-chars{font-size:15px!important}
+  .splitter-panel #suggestionChars{font-size:15px!important}#reviewCurrentChars.review-current-chars{font-size:12.5px!important}
   .splitter-panel .suggestion-title-row .pill{font-size:13px!important;min-height:30px!important}
 }
 @media(max-width:560px){
