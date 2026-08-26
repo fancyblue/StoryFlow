@@ -44,7 +44,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Confirm manual mode shows only the current-part and chapter columns; candidate endings are thin lines whose labels appear on hover/focus, while the blue current ending stays visible without creating large gaps between paragraphs.
 - [ ] Choose an ending in the middle of a long chapter and press “結束微調”. Confirm the normal chapter view stays at “這一篇結束” instead of jumping to the chapter bottom.
 - [ ] Confirm “本篇／後續” counts are visually smaller than the article title and “結束微調” action, while remaining readable without wrapping.
-- [ ] In the works library, confirm “工作台／開啟／管理發布／管理章節” use the same text size and control height. Management actions should be clearly medium-blue, while the current Workbench remains the darkest destination.
+- [ ] In the works library, confirm “工作台／開啟／管理發布／管理章節” use the same text size and control height. Management actions should use a discoverable light-blue fill, while the current Workbench remains the only solid destination.
 - [ ] Give the suggestion a custom title before moving it and confirm the title is preserved.
 - [ ] Close and reopen confirmation; confirm manual mode resets. Confirm the source draft is byte-for-byte unchanged and no confirmed publishing article was rewritten.
 - [ ] Turn off “段落間空一行” for a disposable platform. Confirm ordinary paragraphs are compact but an original scene boundary still shows the configured marker.
@@ -55,8 +55,8 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Create or load a disposable work with enough chapters to scroll the source rail. Select a chapter near the bottom and confirm neither the page nor chapter rail jumps to the top.
 - [ ] Open the bottom chapter's `⋯` menu. Confirm it opens upward inside the visible rail and SMART SPLIT does not move down or change width.
 - [ ] Open “編輯章節”, record its dialog size, then open “手動新增文章”. Confirm both use the same large editor, the textarea fills the available height, and the footer meets the card bottom without a blank region below the buttons.
-- [ ] In Works, confirm “管理章節” and “管理發布” share the same visible solid-denim 40 px style with readable white text; opening chapter management may use the stronger selected state. Confirm “＋ 新作品” and the empty-state “建立第一個作品” action both use the 40 px / 14 px primary scale.
-- [ ] In Publishing, confirm each row's “管理發布” uses the same solid-denim management identity as Works while retaining compact row sizing. “預覽預設設定” stays outlined, “⋯” stays tertiary, and the expanded “收合發布” state becomes the darkest denim.
+- [ ] In Works, confirm “管理章節” and “管理發布” share the same light-blue 40 px / 14 px style; only an expanded management region becomes solid denim. Confirm “＋ 新作品” and the empty-state “建立第一個作品” action both use the 40 px / 14 px primary scale.
+- [ ] In Publishing, confirm each row's “預覽預設設定／管理發布／⋯” actions align to the same 40 px height and management text uses 14 px. “管理發布” shares the light-blue identity used in Works, “預覽預設設定” stays white and outlined, “⋯” stays tertiary, and the expanded “收合發布” state becomes solid denim.
 - [ ] Confirm the workspace, Works and Publishing empty-state CTAs use the same 40 px / 14 px primary scale, while publishing filters remain compact pills.
 - [ ] Confirm Settings decision buttons use one 40 px / 14 px scale within each group instead of mixing compact and standard controls.
 - [ ] Check the expanded and collapsed sidebar on macOS and Windows Chrome. Workspace, Works, Publishing, Settings, Search and the collapse control should all use the same stroke-icon language without platform-dependent text glyphs.

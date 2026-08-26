@@ -103,20 +103,20 @@
   background:#fff!important;
   color:#285f88!important;
 }
-/* Chapter and publishing management are frequent destination actions. Give them a
-   clear medium-blue fill; the darker Workbench button still indicates current context. */
+/* Chapter and publishing management are frequent secondary destinations. A tinted
+   fill keeps them discoverable without competing with the solid Workbench action. */
 .project-library-card .project-library-actions > .project-manage-chapters-btn,
 .project-library-card .project-library-actions > .project-publish-btn,
 .project-library-card .project-publishing-cluster > .project-publish-btn{
   min-height:40px!important;
   height:40px!important;
   padding:0 14px!important;
-  border-color:var(--sf-primary,#3975a7)!important;
-  background:var(--sf-primary,#3975a7)!important;
-  color:#fff!important;
+  border-color:#91b8d9!important;
+  background:var(--sf-primary-soft,#eaf3f9)!important;
+  color:var(--denim-800,#2d5d85)!important;
   font-size:14px!important;
   font-weight:850!important;
-  box-shadow:0 2px 6px rgba(45,93,133,.12)!important;
+  box-shadow:none!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible,
@@ -124,14 +124,14 @@
 .project-library-card .project-library-actions > .project-publish-btn:focus-visible,
 .project-library-card .project-publishing-cluster > .project-publish-btn:hover,
 .project-library-card .project-publishing-cluster > .project-publish-btn:focus-visible{
-  border-color:var(--sf-primary-hover,#2d5d85)!important;
-  background:var(--sf-primary-hover,#2d5d85)!important;
-  color:#fff!important;
-  box-shadow:0 3px 9px rgba(45,93,133,.18)!important;
+  border-color:#6fa2cf!important;
+  background:#dcebf5!important;
+  color:var(--denim-900,#234463)!important;
+  box-shadow:0 2px 6px rgba(45,93,133,.08)!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:#234463!important;
-  background:#234463!important;
+  border-color:var(--denim-700,#3975a7)!important;
+  background:var(--denim-700,#3975a7)!important;
   color:#fff!important;
 }
 

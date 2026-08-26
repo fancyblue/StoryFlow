@@ -74,15 +74,18 @@ test('primary action scale and navigation icon language stay consistent', async 
   const manageStyle = await controlStyle(rowManage);
   const previewStyle = await controlStyle(rowPreview);
   expect(manageStyle).toMatchObject({
-    backgroundColor: 'rgb(57, 117, 167)',
-    color: 'rgb(255, 255, 255)'
+    height: 40,
+    fontSize: 14,
+    backgroundColor: 'rgb(234, 243, 249)',
+    color: 'rgb(45, 93, 133)'
   });
   expect(manageStyle.height).toBe(previewStyle.height);
+  expect(manageStyle.fontSize).toBe(previewStyle.fontSize);
   expect(previewStyle.backgroundColor).toBe('rgb(255, 255, 255)');
   await rowManage.click();
   await expect(publishingRow.getByRole('button', { name: /收合.*發布平台/ })).toBeVisible();
   expect(await controlStyle(publishingRow.locator('.publish-manage-btn'))).toMatchObject({
-    backgroundColor: 'rgb(35, 68, 99)',
+    backgroundColor: 'rgb(57, 117, 167)',
     color: 'rgb(255, 255, 255)'
   });
 
@@ -292,8 +295,8 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   expect(managementStyles.chapters).toEqual(managementStyles.publishing);
   expect(managementStyles.chapters.height).toBe('40px');
   expect(managementStyles.chapters.fontSize).toBe('14px');
-  expect(managementStyles.chapters.backgroundColor).toBe('rgb(57, 117, 167)');
-  expect(managementStyles.chapters.color).toBe('rgb(255, 255, 255)');
+  expect(managementStyles.chapters.backgroundColor).toBe('rgb(234, 243, 249)');
+  expect(managementStyles.chapters.color).toBe('rgb(45, 93, 133)');
   expect(managementStyles.open.height).toBe(managementStyles.chapters.height);
   expect(managementStyles.open.fontSize).toBe(managementStyles.chapters.fontSize);
   expect(managementStyles.open.fontWeight).toBe(managementStyles.chapters.fontWeight);

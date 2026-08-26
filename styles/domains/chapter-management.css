@@ -96,26 +96,26 @@
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn{
   white-space:nowrap!important;
-  border-color:var(--sf-primary,#3975a7)!important;
-  background:var(--sf-primary,#3975a7)!important;
-  color:#fff!important;
+  border-color:#91b8d9!important;
+  background:var(--sf-primary-soft,#eaf3f9)!important;
+  color:var(--denim-800,#2d5d85)!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible{
-  border-color:var(--sf-primary-hover,#2d5d85)!important;
-  background:var(--sf-primary-hover,#2d5d85)!important;
-  color:#fff!important;
+  border-color:#6fa2cf!important;
+  background:#dcebf5!important;
+  color:var(--denim-900,#234463)!important;
   outline:none!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:#234463!important;
-  background:#234463!important;
+  border-color:var(--denim-700,#3975a7)!important;
+  background:var(--denim-700,#3975a7)!important;
   color:#fff!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]:focus-visible{
-  border-color:#1d3b56!important;
-  background:#1d3b56!important;
+  border-color:var(--denim-800,#2d5d85)!important;
+  background:var(--denim-800,#2d5d85)!important;
   color:#fff!important;
   outline:none!important;
 }
