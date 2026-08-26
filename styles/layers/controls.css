@@ -127,21 +127,23 @@ input.text-input:focus{
   justify-content:center!important;
 }
 
-/* Utility actions should never look like oversized hero buttons. */
-.settings-view .settings-section .button,
-.projects-view .button,
-.publishing-view .button,
-.workspace-publishing-summary .button{
-  min-height:34px!important;
-  padding:6px 11px!important;
-  font-size:11.5px!important;
+/* Empty-state and workflow CTAs advance the page's primary task. Keep the standard
+   action scale; compact sizing is opt-in through `.tiny` or a row action cluster. */
+.workspace-publishing-summary .button,
+.projects-empty-state .button,
+.publishing-empty .button{
+  min-height:40px!important;
+  height:40px!important;
+  padding:0 14px!important;
+  font-size:14px!important;
 }
 .settings-view #settingsFolderBtn{
   width:auto!important;
   min-width:0!important;
-  min-height:34px!important;
-  padding:6px 12px!important;
-  font-size:12px!important;
+  min-height:40px!important;
+  height:40px!important;
+  padding:0 14px!important;
+  font-size:14px!important;
 }
 
 /* Same-row settings actions: Save/Clear use identical dimensions. */
@@ -151,10 +153,10 @@ input.text-input:focus{
   align-items:stretch!important;
 }
 .settings-view .settings-actions .button{
-  height:36px!important;
-  min-height:36px!important;
-  padding:0 12px!important;
-  font-size:11.5px!important;
+  height:40px!important;
+  min-height:40px!important;
+  padding:0 14px!important;
+  font-size:14px!important;
   display:inline-flex!important;
   align-items:center!important;
   justify-content:center!important;

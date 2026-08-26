@@ -163,15 +163,15 @@
     toggle.setAttribute('aria-label', '收合左側選單');
     toggle.setAttribute('aria-expanded', 'true');
     toggle.title = '收合選單';
-    toggle.innerHTML = '<span aria-hidden="true">‹</span>';
+    toggle.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"></path></svg>';
     sidebar.appendChild(toggle);
 
     toggle.addEventListener('click', () => {
       const collapsed = shell.classList.toggle('sidebar-collapsed');
+      toggle.classList.toggle('points-right', collapsed);
       toggle.setAttribute('aria-expanded', String(!collapsed));
       toggle.setAttribute('aria-label', collapsed ? '展開左側選單' : '收合左側選單');
       toggle.title = collapsed ? '展開選單' : '收合選單';
-      toggle.innerHTML = `<span aria-hidden="true">${collapsed ? '›' : '‹'}</span>`;
     });
 
     return toggle;

@@ -111,8 +111,8 @@
   min-height:40px!important;
   height:40px!important;
   padding:0 14px!important;
-  border-color:#4f8fbe!important;
-  background:#4f8fbe!important;
+  border-color:var(--sf-primary,#3975a7)!important;
+  background:var(--sf-primary,#3975a7)!important;
   color:#fff!important;
   font-size:14px!important;
   font-weight:850!important;
@@ -124,14 +124,14 @@
 .project-library-card .project-library-actions > .project-publish-btn:focus-visible,
 .project-library-card .project-publishing-cluster > .project-publish-btn:hover,
 .project-library-card .project-publishing-cluster > .project-publish-btn:focus-visible{
-  border-color:#3975a7!important;
-  background:#3975a7!important;
+  border-color:var(--sf-primary-hover,#2d5d85)!important;
+  background:var(--sf-primary-hover,#2d5d85)!important;
   color:#fff!important;
   box-shadow:0 3px 9px rgba(45,93,133,.18)!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:#2d5d85!important;
-  background:#2d5d85!important;
+  border-color:#234463!important;
+  background:#234463!important;
   color:#fff!important;
 }
 

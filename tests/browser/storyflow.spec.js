@@ -7,6 +7,62 @@ async function prepare(page) {
   return pageErrors;
 }
 
+test('primary action scale and navigation icon language stay consistent', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+
+  const controlStyle = locator => locator.evaluate(element => {
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return {
+      height: Math.round(rect.height),
+      fontSize: parseFloat(style.fontSize),
+      backgroundColor: style.backgroundColor,
+      color: style.color
+    };
+  });
+
+  await expect(page.locator('.nav-item .nav-icon svg')).toHaveCount(5);
+  await expect(page.locator('#sidebarToggle svg')).toHaveCount(1);
+  expect(await controlStyle(page.locator('#openPublishingFromWorkspace'))).toMatchObject({
+    height: 40,
+    fontSize: 14,
+    backgroundColor: 'rgb(57, 117, 167)',
+    color: 'rgb(255, 255, 255)'
+  });
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await expect(page.locator('.projects-empty-state .button')).toBeVisible();
+  const newWork = await controlStyle(page.locator('#projectsNewWorkBtn'));
+  const emptyWork = await controlStyle(page.locator('.projects-empty-state .button'));
+  expect(emptyWork).toEqual(newWork);
+  expect(emptyWork).toMatchObject({ height: 40, fontSize: 14 });
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('.publishing-empty .button')).toBeVisible();
+  expect(await controlStyle(page.locator('.publishing-empty .button'))).toMatchObject({
+    height: 40,
+    fontSize: 14,
+    backgroundColor: 'rgb(57, 117, 167)',
+    color: 'rgb(255, 255, 255)'
+  });
+
+  await page.locator('#sidebarSettingsBtn').click();
+  await expect(page.locator('#settingsView')).toBeVisible();
+  const settingsActions = await Promise.all([
+    '#savePickerKeyBtn',
+    '#clearPickerKeyBtn',
+    '#settingsFolderBtn'
+  ].map(selector => controlStyle(page.locator(selector))));
+  settingsActions.forEach(style => expect(style).toMatchObject({ height: 40, fontSize: 14 }));
+
+  await page.locator('#sidebarToggle').click();
+  await expect(page.locator('#sidebarToggle')).toHaveClass(/points-right/);
+  await expect(page.locator('#sidebarToggle')).toHaveAttribute('aria-expanded', 'false');
+  expect(pageErrors).toEqual([]);
+});
+
 test('manual project can reach workspace, works, publishing, and settings', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.goto('/');
@@ -198,7 +254,7 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   expect(managementStyles.chapters).toEqual(managementStyles.publishing);
   expect(managementStyles.chapters.height).toBe('40px');
   expect(managementStyles.chapters.fontSize).toBe('14px');
-  expect(managementStyles.chapters.backgroundColor).toBe('rgb(79, 143, 190)');
+  expect(managementStyles.chapters.backgroundColor).toBe('rgb(57, 117, 167)');
   expect(managementStyles.chapters.color).toBe('rgb(255, 255, 255)');
   expect(managementStyles.open.height).toBe(managementStyles.chapters.height);
   expect(managementStyles.open.fontSize).toBe(managementStyles.chapters.fontSize);

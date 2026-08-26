@@ -53,7 +53,10 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Create or load a disposable work with enough chapters to scroll the source rail. Select a chapter near the bottom and confirm neither the page nor chapter rail jumps to the top.
 - [ ] Open the bottom chapter's `⋯` menu. Confirm it opens upward inside the visible rail and SMART SPLIT does not move down or change width.
 - [ ] Open “編輯章節”, record its dialog size, then open “手動新增文章”. Confirm both use the same large editor, the textarea fills the available height, and the footer meets the card bottom without a blank region below the buttons.
-- [ ] In Works, confirm “管理章節” and “管理發布” share the same visible light-blue 40 px secondary style; opening chapter management may use the stronger shared blue selected state. Confirm “＋ 新作品” has a compact 40 px frame and readable 14 px-or-larger text.
+- [ ] In Works, confirm “管理章節” and “管理發布” share the same visible solid-denim 40 px style with readable white text; opening chapter management may use the stronger selected state. Confirm “＋ 新作品” and the empty-state “建立第一個作品” action both use the 40 px / 14 px primary scale.
+- [ ] Confirm the workspace, Works and Publishing empty-state CTAs use the same 40 px / 14 px primary scale, while publishing filters remain compact pills.
+- [ ] Confirm Settings decision buttons use one 40 px / 14 px scale within each group instead of mixing compact and standard controls.
+- [ ] Check the expanded and collapsed sidebar on macOS and Windows Chrome. Workspace, Works, Publishing, Settings, Search and the collapse control should all use the same stroke-icon language without platform-dependent text glyphs.
 
 ## 5. Publishing and destructive-action safety
 
