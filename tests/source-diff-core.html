@@ -21,6 +21,7 @@
       assert(sameCount.changed && sameCount.category === 'content', '同字數文字替換判定為正文變更');
       assert(sameCount.sameCharCount, '同字數變更會明確標記');
       assert(sameCount.hunks[0].before.includes('甲') && sameCount.hunks[0].after.includes('乙'), '差異包含更新前後實文');
+      assert(sameCount.hunks[0].beforeSnippet.changed === '甲' && sameCount.hunks[0].afterSnippet.changed === '乙', '預覽只標出真正替換的字');
 
       const formatting = StoryFlowSourceDiff.compareChapter(
         { title: '章節', draft: '第一段。\n\n第二段。' },
@@ -41,7 +42,14 @@
       assert(!lineEndings.changed, 'CRLF 與 LF 不製造假差異');
 
       const html = StoryFlowSourceDiff.renderPreviewHtml(sameCount);
-      assert(html.includes('字數相同，但文字內容不同') && html.includes('他的回答是甲') && html.includes('他的回答是乙'), '預覽清楚說明同字數更新');
+      assert(html.includes('字數相同，但文字內容不同') && html.includes('source-diff-change">甲') && html.includes('source-diff-change">乙'), '預覽清楚說明同字數更新');
+
+      const longContext = StoryFlowSourceDiff.compareChapter(
+        { title: '長段落', draft: `${'前文'.repeat(80)}舊字${'後文'.repeat(80)}` },
+        { title: '長段落', draft: `${'前文'.repeat(80)}新字${'後文'.repeat(80)}` }
+      );
+      assert(longContext.hunks[0].beforeSnippet.changed === '舊' && longContext.hunks[0].afterSnippet.changed === '新', '長段落仍聚焦精確變更');
+      assert(longContext.hunks[0].beforeSnippet.prefixOmitted && longContext.hunks[0].beforeSnippet.suffixOmitted, '長段落只保留必要上下文');
       result.textContent = `${checks.join('\n')}\nALL PASS`;
       document.body.dataset.testStatus = 'pass';
     } catch (error) {

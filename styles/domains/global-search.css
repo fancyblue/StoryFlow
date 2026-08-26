@@ -62,15 +62,22 @@
 }
 #globalSearchInput::placeholder{color:#8aa0af;font-weight:650}
 .global-search-close{
-  min-width:44px;
-  padding:5px 8px;
+  display:grid;
+  place-items:center;
+  width:36px;
+  min-width:36px;
+  height:36px;
+  padding:0;
   border:1px solid #d8e7f1;
-  border-radius:7px;
+  border-radius:9px;
   background:#f7fbfd;
-  color:#58748b;
-  font-size:10px;
+  color:#365f80;
+  font-size:24px;
+  line-height:1;
   font-weight:800;
 }
+.global-search-close:hover,
+.global-search-close:focus-visible{border-color:#afd0e4;background:#eaf4fa;color:#234463}
 .global-search-options{
   display:flex;
   align-items:center;
@@ -163,6 +170,9 @@
   body .sidebar .nav{grid-template-columns:repeat(5,minmax(0,1fr))!important}
   .nav-search-trigger kbd{display:none}
   .nav-search-trigger .nav-label{display:block!important;width:auto}
+}
+@media(hover:none),(pointer:coarse){
+  .nav-search-trigger kbd{display:none}
 }
 @media(max-width:600px){
   .global-search-dialog{width:calc(100vw - 12px);margin-top:6px}

@@ -2,7 +2,9 @@
 // Kept independent from application state so it can be regression-tested alone.
 (function () {
   const MAX_HUNKS = 5;
-  const MAX_SNIPPET = 320;
+  const INLINE_CONTEXT = 42;
+  const MAX_CHANGED_TEXT = 140;
+  const MAX_LEGACY_SNIPPET = 320;
 
   function esc(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -32,9 +34,59 @@
     return normalized.split(/\n{2,}/).map(item => item.trim()).filter(Boolean);
   }
 
+  function visibleWhitespace(value) {
+    return String(value || '').replace(/\n/g, ' ↵ ');
+  }
+
   function shorten(value) {
-    const text = String(value || '').replace(/\n/g, ' ↵ ');
-    return text.length > MAX_SNIPPET ? `${text.slice(0, MAX_SNIPPET - 1)}…` : text;
+    const text = visibleWhitespace(value);
+    return text.length > MAX_LEGACY_SNIPPET ? `${text.slice(0, MAX_LEGACY_SNIPPET - 1)}…` : text;
+  }
+
+  function shortenChanged(value) {
+    const characters = [...String(value || '')];
+    if (characters.length <= MAX_CHANGED_TEXT) return characters.join('');
+    const start = characters.slice(0, 82).join('');
+    const end = characters.slice(-(MAX_CHANGED_TEXT - 83)).join('');
+    return `${start}…${end}`;
+  }
+
+  function compactInlineChange(beforeValue, afterValue) {
+    const before = [...String(beforeValue || '')];
+    const after = [...String(afterValue || '')];
+    let prefix = 0;
+    while (prefix < before.length && prefix < after.length && before[prefix] === after[prefix]) prefix += 1;
+
+    let beforeEnd = before.length;
+    let afterEnd = after.length;
+    while (beforeEnd > prefix && afterEnd > prefix && before[beforeEnd - 1] === after[afterEnd - 1]) {
+      beforeEnd -= 1;
+      afterEnd -= 1;
+    }
+
+    const contextStart = Math.max(0, prefix - INLINE_CONTEXT);
+    const contextEnd = Math.min(before.length, beforeEnd + INLINE_CONTEXT);
+    const beforePrefix = before.slice(contextStart, prefix).join('');
+    const afterPrefix = after.slice(contextStart, prefix).join('');
+    const beforeSuffix = before.slice(beforeEnd, contextEnd).join('');
+    const afterSuffix = after.slice(afterEnd, Math.min(after.length, afterEnd + INLINE_CONTEXT)).join('');
+
+    return {
+      before: {
+        prefix: visibleWhitespace(beforePrefix),
+        changed: visibleWhitespace(shortenChanged(before.slice(prefix, beforeEnd).join(''))),
+        suffix: visibleWhitespace(beforeSuffix),
+        prefixOmitted: contextStart > 0,
+        suffixOmitted: contextEnd < before.length
+      },
+      after: {
+        prefix: visibleWhitespace(afterPrefix),
+        changed: visibleWhitespace(shortenChanged(after.slice(prefix, afterEnd).join(''))),
+        suffix: visibleWhitespace(afterSuffix),
+        prefixOmitted: contextStart > 0,
+        suffixOmitted: afterEnd + INLINE_CONTEXT < after.length
+      }
+    };
   }
 
   function lcsPairs(before, after) {
@@ -76,10 +128,13 @@
       if (beforeAnchor > beforeStart || afterAnchor > afterStart) {
         const removed = before.slice(beforeStart, beforeAnchor).join('\n\n');
         const added = after.slice(afterStart, afterAnchor).join('\n\n');
+        const compact = compactInlineChange(removed, added);
         hunks.push({
           kind: removed && added ? 'replace' : removed ? 'delete' : 'add',
           before: shorten(removed),
           after: shorten(added),
+          beforeSnippet: compact.before,
+          afterSnippet: compact.after,
           beforeParagraph: beforeStart + 1,
           afterParagraph: afterStart + 1
         });
@@ -143,18 +198,28 @@
     const title = preview.titleChanged
       ? `<div class="source-diff-title-change"><del>${esc(preview.beforeTitle || '未命名')}</del><span aria-hidden="true">→</span><ins>${esc(preview.afterTitle || '未命名')}</ins></div>`
       : '';
+    const renderSnippet = (snippet, tagName) => {
+      if (!snippet) return '';
+      const changed = snippet.changed
+        ? `<${tagName} class="source-diff-change">${esc(snippet.changed)}</${tagName}>`
+        : `<${tagName} class="source-diff-change source-diff-empty">（無文字）</${tagName}>`;
+      return `${snippet.prefixOmitted ? '<span class="source-diff-ellipsis" aria-hidden="true">…</span>' : ''}`
+        + `<span class="source-diff-context">${esc(snippet.prefix)}</span>${changed}`
+        + `<span class="source-diff-context">${esc(snippet.suffix)}</span>`
+        + `${snippet.suffixOmitted ? '<span class="source-diff-ellipsis" aria-hidden="true">…</span>' : ''}`;
+    };
     const hunks = preview.hunks.length
       ? preview.hunks.map((hunk, index) => `
           <section class="source-diff-hunk">
             <span class="source-diff-hunk-label">差異 ${index + 1}</span>
-            <div class="source-diff-before"><small>目前內容${hunk.before ? ` · 第 ${hunk.beforeParagraph} 段附近` : ''}</small>${hunk.before ? `<del>${esc(hunk.before)}</del>` : '<em>此處原本沒有內容</em>'}</div>
-            <div class="source-diff-after"><small>來源內容${hunk.after ? ` · 第 ${hunk.afterParagraph} 段附近` : ''}</small>${hunk.after ? `<ins>${esc(hunk.after)}</ins>` : '<em>來源已移除此段</em>'}</div>
+            <div class="source-diff-before"><small>修改前${hunk.before ? ` · 第 ${hunk.beforeParagraph} 段附近` : ''}</small><p>${renderSnippet(hunk.beforeSnippet, 'del')}</p></div>
+            <div class="source-diff-after"><small>修改後${hunk.after ? ` · 第 ${hunk.afterParagraph} 段附近` : ''}</small><p>${renderSnippet(hunk.afterSnippet, 'ins')}</p></div>
           </section>`).join('')
       : '';
 
     return `
       <details class="source-diff-preview">
-        <summary>查看實際差異 <span>${tags.join('')}</span></summary>
+        <summary>查看變更片段 <span>${tags.join('')}</span></summary>
         <div class="source-diff-preview-body">
           ${sameCount}${title}${hunks}
         </div>

@@ -16,7 +16,7 @@
     { src: './src/persistence/workspace-safety.js?v=20260824-p0', owner: 'persistence' },
     { src: './src/split/smart-split-ui.js?v=20260826-p9a', owner: 'split' },
     { src: './src/publishing/platform-lock.js?v=20260826-p5a', owner: 'publishing' },
-    { src: './src/source/source-diff.js?v=20260825-p1', owner: 'source' },
+    { src: './src/source/source-diff.js?v=20260826-p10a', owner: 'source' },
     { src: './src/source/source-sync-history.js?v=20260825-p1', owner: 'source' },
     { src: './src/source/source-flow.js?v=20260825-p3a', owner: 'source' },
     { src: './src/projects/projects.js?v=20260826-p6c', owner: 'projects' },
@@ -54,7 +54,7 @@
     { id: 'storyflowSmartSplitTitleJs', src: './src/split/smart-split-title.js?v=20260825-p2b', owner: 'split' },
     { id: 'storyflowWorksLibraryUxJs', src: './src/projects/works-library-ux.js?v=20260825-p2b', owner: 'projects' },
     { src: './src/projects/workspace-project-ux.js?v=20260825-p3a', owner: 'projects' },
-    { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260826-p6c', owner: 'ui' },
+    { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260826-p10a', owner: 'ui' },
     { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260826-p7a', owner: 'publishing' }
   ];
 

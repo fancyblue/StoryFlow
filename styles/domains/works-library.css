@@ -8,10 +8,13 @@
   max-width:680px!important;
   margin-top:6px!important;
 }
-.projects-page-head > .button{
-  min-height:42px!important;
-  padding:0 16px!important;
-  border-radius:11px!important;
+.projects-page-head > #projectsNewWorkBtn{
+  min-height:40px!important;
+  height:40px!important;
+  padding:0 14px!important;
+  border-radius:10px!important;
+  font-size:14.5px!important;
+  font-weight:850!important;
 }
 .projects-library{gap:9px!important}
 .project-library-card{
@@ -92,22 +95,34 @@
   background:#f4f9fd!important;
   color:#2f6f9f!important;
 }
-/* Chapter and publishing management are sibling disclosure actions. */
-.project-library-actions > .project-manage-chapters-btn{
-  border-color:#d4e2ec!important;
-  background:#fff!important;
-  color:#2d5d85!important;
+/* Chapter and publishing management are frequent sibling actions. A light blue fill
+   makes them discoverable without competing with the solid primary Workbench action. */
+.project-library-card .project-library-actions > .project-manage-chapters-btn,
+.project-library-card .project-library-actions > .project-publish-btn,
+.project-library-card .project-publishing-cluster > .project-publish-btn{
+  min-height:40px!important;
+  height:40px!important;
+  padding:0 14px!important;
+  border-color:#a9cde2!important;
+  background:#eaf4fa!important;
+  color:#285f88!important;
+  font-size:13.5px!important;
+  font-weight:850!important;
 }
-.project-library-actions > .project-manage-chapters-btn:hover,
-.project-library-actions > .project-manage-chapters-btn:focus-visible{
-  border-color:#acd0e6!important;
-  background:#eaf5fd!important;
-  color:#2f6f9f!important;
+.project-library-card .project-library-actions > .project-manage-chapters-btn:hover,
+.project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible,
+.project-library-card .project-library-actions > .project-publish-btn:hover,
+.project-library-card .project-library-actions > .project-publish-btn:focus-visible,
+.project-library-card .project-publishing-cluster > .project-publish-btn:hover,
+.project-library-card .project-publishing-cluster > .project-publish-btn:focus-visible{
+  border-color:#78acd0!important;
+  background:#dceefa!important;
+  color:#234f72!important;
 }
-.project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:#9fc8df!important;
-  background:#e5f2fa!important;
-  color:#2f6f9f!important;
+.project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
+  border-color:#78acd0!important;
+  background:#d7ebf7!important;
+  color:#234f72!important;
 }
 
 /* Publishing progress + its management action live together inside the metadata row.
@@ -148,16 +163,6 @@
   border-color:#d6e8f3!important;
   background:#f1f8fd!important;
   color:#3b75a3!important;
-}
-.project-publishing-cluster .project-publish-btn{
-  border-color:#c9deeb!important;
-  background:#f5fafe!important;
-  color:#2f6f9f!important;
-}
-.project-publishing-cluster .project-publish-btn:hover,
-.project-publishing-cluster .project-publish-btn:focus-visible{
-  border-color:#acd0e6!important;
-  background:#eaf5fd!important;
 }
 .project-library-actions .project-library-delete{display:none!important}
 

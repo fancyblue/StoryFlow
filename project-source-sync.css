@@ -239,8 +239,8 @@
 .source-diff-hunk{
   position:relative;
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
+  grid-template-columns:1fr;
+  gap:6px;
   padding-top:16px;
 }
 .source-diff-hunk-label{
@@ -257,21 +257,36 @@
   align-content:start;
   gap:5px;
   min-width:0;
-  padding:8px 9px;
+  padding:9px 11px;
+  border:1px solid #dfe8ef;
   border-radius:8px;
+  background:#fff;
   font-size:11px;
-  line-height:1.55;
+  line-height:1.65;
 }
-.source-diff-before{background:#fff3f3}
-.source-diff-after{background:#edf9f1}
+.source-diff-before{border-left:3px solid #e7b8b8}
+.source-diff-after{border-left:3px solid #aad7bb}
 .source-diff-before small{color:#9b5151}
 .source-diff-after small{color:#3c7650}
-.source-diff-before del,
-.source-diff-after ins{
+.source-diff-before p,
+.source-diff-after p{
+  margin:0;
   overflow-wrap:anywhere;
+  color:#405b70;
   text-decoration:none;
   white-space:pre-wrap;
 }
+.source-diff-change{
+  padding:1px 3px;
+  border-radius:4px;
+  font-weight:800;
+  text-decoration:none;
+}
+.source-diff-before .source-diff-change{background:#ffe4e4;color:#8e2f36}
+.source-diff-after .source-diff-change{background:#dff4e6;color:#246640}
+.source-diff-context{color:#657d90}
+.source-diff-ellipsis{color:#93a5b3}
+.source-diff-empty{font-size:10px;font-weight:700}
 .source-diff-before em,
 .source-diff-after em{color:var(--muted);font-size:10px;font-style:normal}
 .project-source-diff-actions{

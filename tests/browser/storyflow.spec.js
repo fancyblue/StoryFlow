@@ -61,7 +61,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
   expect(pageErrors).toEqual([]);
 });
 
-test('long chapter rail keeps its scroll position, menus contained, and edit dialog compact', async ({ page }) => {
+test('long chapter rail stays stable and manual add/edit share a large filled editor', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
@@ -127,20 +127,48 @@ test('long chapter rail keeps its scroll position, menus contained, and edit dia
   const editLayout = await page.locator('#manualSourceDialog').evaluate(dialog => {
     const card = dialog.querySelector('.source-editor-card').getBoundingClientRect();
     const actions = dialog.querySelector('.manual-source-actions').getBoundingClientRect();
+    const textarea = dialog.querySelector('#manualSourceText').getBoundingClientRect();
     const rect = dialog.getBoundingClientRect();
     return {
       dialogHeight: rect.height,
       viewportHeight: innerHeight,
       cardBottom: card.bottom,
       actionsBottom: actions.bottom,
+      actionsTop: actions.top,
       actionsHeight: actions.height,
+      textareaBottom: textarea.bottom,
+      textareaHeight: textarea.height,
       footerPosition: getComputedStyle(dialog.querySelector('.manual-source-actions')).position
     };
   });
-  expect(editLayout.dialogHeight).toBeLessThan(editLayout.viewportHeight - 40);
+  expect(editLayout.dialogHeight).toBeGreaterThanOrEqual(editLayout.viewportHeight * 0.85);
   expect(editLayout.cardBottom - editLayout.actionsBottom).toBeLessThanOrEqual(2);
+  expect(editLayout.actionsTop - editLayout.textareaBottom).toBeLessThanOrEqual(18);
   expect(editLayout.actionsHeight).toBeLessThanOrEqual(82);
+  expect(editLayout.textareaHeight).toBeGreaterThan(editLayout.dialogHeight * 0.45);
   expect(editLayout.footerPosition).toBe('static');
+
+  await page.locator('#closeManualSourceDialog').click();
+  await page.locator('#addChapterBtn').click();
+  await expect(page.locator('#manualSourceDialog')).toBeVisible();
+  const addLayout = await page.locator('#manualSourceDialog').evaluate(dialog => {
+    const card = dialog.querySelector('.source-editor-card').getBoundingClientRect();
+    const actions = dialog.querySelector('.manual-source-actions').getBoundingClientRect();
+    const textarea = dialog.querySelector('#manualSourceText').getBoundingClientRect();
+    const rect = dialog.getBoundingClientRect();
+    return {
+      dialogHeight: rect.height,
+      cardBottom: card.bottom,
+      actionsBottom: actions.bottom,
+      actionsTop: actions.top,
+      textareaBottom: textarea.bottom,
+      textareaHeight: textarea.height
+    };
+  });
+  expect(Math.abs(addLayout.dialogHeight - editLayout.dialogHeight)).toBeLessThanOrEqual(2);
+  expect(addLayout.cardBottom - addLayout.actionsBottom).toBeLessThanOrEqual(2);
+  expect(addLayout.actionsTop - addLayout.textareaBottom).toBeLessThanOrEqual(18);
+  expect(addLayout.textareaHeight).toBeGreaterThan(addLayout.dialogHeight * 0.45);
 
   await page.locator('#closeManualSourceDialog').click();
   await page.locator('.nav-item[data-view="projects"]').click();
@@ -167,6 +195,18 @@ test('long chapter rail keeps its scroll position, menus contained, and edit dia
     };
   });
   expect(managementStyles.chapters).toEqual(managementStyles.publishing);
+  expect(managementStyles.chapters.height).toBe('40px');
+  expect(managementStyles.chapters.fontSize).toBe('13.5px');
+  expect(managementStyles.chapters.backgroundColor).not.toBe('rgb(255, 255, 255)');
+
+  const newWorkStyle = await page.locator('#projectsNewWorkBtn').evaluate(button => {
+    const rect = button.getBoundingClientRect();
+    const style = getComputedStyle(button);
+    return { height: rect.height, width: rect.width, fontSize: parseFloat(style.fontSize) };
+  });
+  expect(newWorkStyle.height).toBeLessThanOrEqual(42);
+  expect(newWorkStyle.fontSize).toBeGreaterThanOrEqual(14);
+  expect(newWorkStyle.width / newWorkStyle.height).toBeLessThan(3.2);
   expect(pageErrors).toEqual([]);
 });
 
@@ -985,10 +1025,16 @@ test('global search jumps across works and only searches body text when requeste
 
 test('global search and five-item navigation fit a narrow Chrome viewport', async ({ page }) => {
   const pageErrors = await prepare(page);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'platform', { configurable: true, get: () => 'Win32' });
+  });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await expect(page.locator('#globalSearchBtn kbd')).toHaveText('Ctrl K');
+  await expect(page.locator('#globalSearchBtn kbd')).toBeHidden();
   await page.getByRole('button', { name: '搜尋', exact: true }).click();
   await expect(page.locator('#globalSearchDialog')).toBeVisible();
+  await expect(page.getByRole('button', { name: '關閉搜尋', exact: true })).toHaveText('×');
 
   const layout = await page.evaluate(() => {
     const dialog = document.getElementById('globalSearchDialog')?.getBoundingClientRect();
@@ -1040,10 +1086,12 @@ test('source diff explains same-count text replacements', async ({ page }) => {
   await page.goto('/tests/source-diff-ui.html');
   await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
   await expect(page.getByText('內容 8,645 → 8,645 字（字數相同）')).toBeVisible();
-  await page.getByText('查看實際差異').click();
+  await page.getByText('查看變更片段').click();
   await expect(page.getByText('字數相同，但文字內容不同。')).toBeVisible();
   await expect(page.getByText(/答案在舊信裡/)).toBeVisible();
   await expect(page.getByText(/答案在新信裡/)).toBeVisible();
+  await expect(page.locator('.source-diff-before .source-diff-change')).toHaveText('舊');
+  await expect(page.locator('.source-diff-after .source-diff-change')).toHaveText('新');
   expect(pageErrors).toEqual([]);
 });
 

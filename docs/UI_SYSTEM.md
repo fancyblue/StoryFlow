@@ -33,7 +33,7 @@ Current shared disclosures include workspace work switching, Smart Split prefere
 
 Do not place a destructive action beside the primary action when an overflow menu can keep the decision hierarchy clearer.
 
-“管理章節” and “管理發布” are sibling disclosure/navigation actions in a work card. They use the same secondary button size, border, background and typography; only the open state may add a blue selected treatment. Do not assign a separate warm palette to one of them.
+“管理章節” and “管理發布” are frequent sibling disclosure/navigation actions in a work card. They use the same high-discovery secondary style: a light blue fill, blue border, 40 px height and matching typography. This keeps both easier to find than a white ghost button without competing with the solid primary “工作台” action. Only the open state may add a stronger blue selected treatment; do not assign a separate warm palette to one of them.
 
 Split confirmation has two precision levels. “少一個場景／多一個場景” are coarse directional actions and keep their arrows; “手動微調” is a pressed-state mode button, not a disclosure. In manual mode, the full-chapter column is the editing surface: the current ending is a solid draggable blue line, alternative paragraph endings are quiet dashed full-width targets, and every drag target must also work by click and keyboard. The toolbar reports “本篇／後續” character counts. Manual targets appear only for the current unconfirmed range and never imply that source prose is editable.
 
@@ -50,7 +50,7 @@ Each platform row uses two information lines: platform/status first, publication
 - Source chooser → editor → preview are handoffs, so only one dialog is open at a time.
 - Closing a creation dialog preserves the existing work and creates nothing.
 - Validation happens in place before the dialog advances.
-- Manual chapter editing uses a compact fit-content dialog. Its textarea may grow within a viewport cap, but the action footer stays directly after the form instead of stretching to the bottom of the screen.
+- Manual article creation and chapter editing use the same large dialog dimensions. The textarea flexes to consume the available writing area and owns its scrolling; the action footer closes the card at the bottom. Reducing blank space must never be implemented by shrinking edit mode or leaving an empty region below its footer.
 
 ## Long lists and contextual menus
 
@@ -60,9 +60,9 @@ Each platform row uses two information lines: platform/status first, publication
 
 ## Command search
 
-- The sidebar search action uses a magnifier and displays `⌘K` as a shortcut hint on desktop; it is a command, not a destination with persistent selected navigation state.
+- The sidebar search action uses a magnifier and displays the detected desktop shortcut: `⌘ K` on Apple platforms and `Ctrl K` on Windows/Linux. Touch/coarse-pointer layouts hide the keyboard hint; search remains a command, not a destination with persistent selected navigation state.
 - The command dialog keeps one search field, one optional body-search checkbox and one scrollable result list. Result type, primary title and location form a consistent three-level hierarchy.
-- Keyboard focus begins in the search field. Arrow keys move the active result, Enter opens it and Escape closes the dialog.
+- Keyboard focus begins in the search field. Arrow keys move the active result, Enter opens it and Escape closes the dialog. The visible close control is always `×`; `Esc` remains a keyboard affordance in the desktop footer, not the close-button label.
 - Do not open command search over another visible modal decision. The search footer states that only currently loaded private data is searched.
 
 ## Responsive scope
