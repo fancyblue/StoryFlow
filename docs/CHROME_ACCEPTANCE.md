@@ -2,6 +2,8 @@
 
 Use this checklist before treating a release as ready for daily writing. It exercises Chrome's real File System Access behavior, which CI replaces with safe in-memory fixtures.
 
+StoryFlow is a private, single-user site, so this is not a mandatory checklist for every change. For an isolated UI or documentation adjustment, run only the section directly affected. Complete the whole checklist only for a major release, a change spanning several workflows, or work involving real Chrome folder/file behavior. Automated tests should follow the proportional policy in `tests/README.md`.
+
 ## Safety setup
 
 - [ ] Use current desktop Chrome.

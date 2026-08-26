@@ -67,4 +67,6 @@ StoryFlow 只會在 `workspace.json` 實際寫入完成後顯示「已保存」�
 
 Google access token 不寫入 `settings.json`；為了讓單純重新整理頁面時不必再次登入，只會短暫存在目前瀏覽器工作階段的 `sessionStorage`。「離開此裝置」會清除該瀏覽器中的 token、暫存整合設定、`storyflow.*` 瀏覽器狀態與已記住的資料夾連線資訊，但不會修改或刪除 StoryFlow 資料夾內的 `settings.json`、`workspace.json`、`workspace.backup.json`、`Recovery/` 或作品 Markdown。離開後可以重新連接既有 StoryFlow 資料夾，或匯入 `settings.json` 快速恢復 Google 整合設定。
 
-發版前需要使用 Chrome 與專用測試資料夾完成的人工驗收，請依照 [`docs/CHROME_ACCEPTANCE.md`](docs/CHROME_ACCEPTANCE.md) 執行。請勿使用真實作品資料做破壞性測試。
+StoryFlow 是私人單人使用工具，測試採風險導向：一般文字、文件或單一樣式調整只需靜態檢查、相關測試與受影響畫面確認，不必每次重跑完整瀏覽器套件、多尺寸視覺基準或全份人工驗收。涉及檔案寫入、Recovery、刪除、來源同步、切篇輸出或發布資料等可能影響作品安全的變更，才維持完整或相應的高風險驗證。細節見 [`tests/README.md`](tests/README.md)。
+
+需要檢查真實 Chrome File System Access 行為或準備大型發版時，使用專用測試資料夾並依照 [`docs/CHROME_ACCEPTANCE.md`](docs/CHROME_ACCEPTANCE.md) 的相關章節執行；請勿使用真實作品資料做破壞性測試。

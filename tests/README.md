@@ -1,5 +1,17 @@
 # Browser smoke tests
 
+## Proportional testing for this project
+
+StoryFlow is a private, single-user site whose primary working environment is desktop Chrome. Verification should therefore be risk-based instead of automatically running every test for every change.
+
+- Small copy, documentation, isolated style, icon, spacing, color or cache-version changes: run `npm run test:static`, one relevant Playwright test when available, and inspect the affected page at its normal desktop width.
+- Shared navigation/layout or responsive changes: run the related browser tests and only the visual baselines that can actually change.
+- Persistence, Google/Drive, folder/file, Recovery, destructive-action, source-sync, split/output or publishing-data changes: run the relevant safety tests and the full `npm test` suite when the impact crosses several flows.
+- A passing GitHub Actions run can be used as the full-suite result after push; avoid duplicating a full local run unless debugging.
+- Do not regenerate all visual baselines or complete the entire real-Chrome acceptance checklist for a small isolated UI change.
+
+The goal is fast feedback appropriate for one private user while retaining stricter verification anywhere manuscript data could be lost or corrupted.
+
 - `workspace-safety-core.html` uses an in-memory File System Access API double to verify serialized writes, the latest-good backup, deduplicated rolling Recovery snapshots, conflict copies and corrupt-file recovery.
 - `destructive-action-guard-core.html` verifies that high-risk actions save first, snapshot second and stop before mutation when either safety step fails.
 - `workspace-safety-ui.html` renders the recovery dialog without reading or changing a real StoryFlow folder.
@@ -25,7 +37,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-`npm test` runs both the static checks and browser suite. The Playwright web server starts the local static site automatically.
+`npm test` runs both the static checks and browser suite. Reserve it for the higher-risk or cross-flow cases described above. The Playwright web server starts the local static site automatically.
 Static validation also requires project, chapter, publishing and single-chapter source-refresh flows to use the centralized Recovery guard.
 
 When an intentional visual change is approved, refresh the committed Chrome baselines with:
