@@ -55,6 +55,10 @@
   background:#fff;
   box-shadow:0 12px 30px rgba(31,72,107,.16);
 }
+.chapter-row-action-menu.opens-up{
+  top:auto;
+  bottom:calc(50% + 20px);
+}
 .chapter-row-action-menu[hidden]{display:none!important}
 .chapter-row-delete-menu-item{
   display:flex;
@@ -86,36 +90,33 @@
   line-height:1;
 }
 
-/* Works library: chapter maintenance is disclosure-based so it does not compete with
-   the primary actions (open / publish / delete work). This selector intentionally owns
-   more specificity than generic .ghost/library button rules so the disclosure palette
-   cannot be reset by later component layers. */
+/* Works library: chapter and publishing management are sibling disclosure actions. */
 .project-library-card.chapters-expanded{
   align-items:start!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn{
   white-space:nowrap!important;
-  border-color:#e1cfad!important;
-  background:#fff8ef!important;
-  color:#7a5f35!important;
+  border-color:#d4e2ec!important;
+  background:#fff!important;
+  color:#2d5d85!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible{
-  border-color:#c8a76a!important;
-  background:#f2e2c4!important;
-  color:#5a4326!important;
+  border-color:#acd0e6!important;
+  background:#eaf5fd!important;
+  color:#2f6f9f!important;
   outline:none!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:#c7a96f!important;
-  background:#f4e5c9!important;
-  color:#5d4525!important;
+  border-color:#9fc8df!important;
+  background:#e5f2fa!important;
+  color:#2f6f9f!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]:focus-visible{
-  border-color:#b88e49!important;
-  background:#e9cf9e!important;
-  color:#503b20!important;
+  border-color:#8fbdd7!important;
+  background:#dcecf6!important;
+  color:#285b82!important;
   outline:none!important;
 }
 .project-chapter-manager{

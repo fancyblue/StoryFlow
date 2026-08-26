@@ -91,10 +91,6 @@
 }
 
 .workspace-grid.workspace-hierarchy > .source-panel:has(.chapter-row-action-menu:not([hidden])){
-  position:relative!important;
-  top:auto!important;
-  max-height:none!important;
-  overflow:visible!important;
   z-index:90!important;
 }
 

@@ -92,24 +92,22 @@
   background:#f4f9fd!important;
   color:#2f6f9f!important;
 }
-/* Disclosure action owns a warm neutral color so it reads differently from
-   navigation/publishing actions. Keep this rule here because Works-library styles
-   are the final visual owner for buttons inside project cards. */
+/* Chapter and publishing management are sibling disclosure actions. */
 .project-library-actions > .project-manage-chapters-btn{
-  border-color:#dfc79d!important;
-  background:#fff6e8!important;
-  color:#72562e!important;
+  border-color:#d4e2ec!important;
+  background:#fff!important;
+  color:#2d5d85!important;
 }
 .project-library-actions > .project-manage-chapters-btn:hover,
 .project-library-actions > .project-manage-chapters-btn:focus-visible{
-  border-color:#c9ab76!important;
-  background:#f8ead2!important;
-  color:#5e4524!important;
+  border-color:#acd0e6!important;
+  background:#eaf5fd!important;
+  color:#2f6f9f!important;
 }
 .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:#bd9960!important;
-  background:#f1dfbf!important;
-  color:#563f20!important;
+  border-color:#9fc8df!important;
+  background:#e5f2fa!important;
+  color:#2f6f9f!important;
 }
 
 /* Publishing progress + its management action live together inside the metadata row.

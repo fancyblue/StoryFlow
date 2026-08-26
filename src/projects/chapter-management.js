@@ -3,6 +3,7 @@
 // with Smart Split output titles.
 (function () {
   const expandedProjects = new Set();
+  let pendingChapterRailScroll = null;
 
   function ensureStyles() {
     let link = document.getElementById('storyflowChapterManagementCss');
@@ -10,7 +11,7 @@
       link = document.createElement('link');
       link.id = 'storyflowChapterManagementCss';
       link.rel = 'stylesheet';
-      link.href = './styles/domains/chapter-management.css?v=20260825-p2b';
+      link.href = './styles/domains/chapter-management.css?v=20260826-p9a';
       document.head.appendChild(link);
     }
     return link;
@@ -29,6 +30,27 @@
       menu.hidden = true;
       menu.closest('.chapter-row')?.querySelector('.chapter-more-button')?.setAttribute('aria-expanded', 'false');
     });
+  }
+
+  function positionChapterMenu(menu) {
+    const row = menu?.closest('.chapter-row');
+    const panel = menu?.closest('.source-panel');
+    if (!row || !panel || menu.hidden) return;
+    menu.classList.remove('opens-up');
+    const panelRect = panel.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    const menuHeight = menu.getBoundingClientRect().height;
+    const spaceBelow = panelRect.bottom - (rowRect.top + rowRect.height / 2 + 20);
+    const spaceAbove = rowRect.top + rowRect.height / 2 - 20 - panelRect.top;
+    if (spaceBelow < menuHeight + 8 && spaceAbove >= menuHeight + 8) {
+      menu.classList.add('opens-up');
+    }
+  }
+
+  function restoreChapterRailScroll(panel, scrollTop) {
+    if (!panel || !Number.isFinite(scrollTop)) return;
+    panel.scrollTop = scrollTop;
+    requestAnimationFrame(() => { panel.scrollTop = scrollTop; });
   }
 
   function decorateWorkspaceChapterActions() {
@@ -73,7 +95,10 @@
         closeChapterMenus(opening ? menu : null);
         menu.hidden = !opening;
         legacyDelete.setAttribute('aria-expanded', opening ? 'true' : 'false');
-        if (opening) remove.focus({ preventScroll: true });
+        if (opening) {
+          positionChapterMenu(menu);
+          menu.querySelector('button')?.focus({ preventScroll: true });
+        }
       });
     });
   }
@@ -307,8 +332,12 @@
   const baseRenderChapters = window.renderChapters;
   if (typeof baseRenderChapters === 'function' && !baseRenderChapters.__chapterManagement) {
     const wrapped = function (...args) {
+      const panel = document.querySelector('.source-panel');
+      const scrollTop = pendingChapterRailScroll;
+      pendingChapterRailScroll = null;
       const result = baseRenderChapters.apply(this, args);
       queueMicrotask(decorateWorkspaceChapterActions);
+      queueMicrotask(() => restoreChapterRailScroll(panel, scrollTop));
       return result;
     };
     wrapped.__chapterManagement = true;
@@ -330,8 +359,11 @@
   }
 
   document.addEventListener('click', event => {
+    if (event.target.closest?.('#chapterList .chapter-main-button')) {
+      pendingChapterRailScroll = document.querySelector('.source-panel')?.scrollTop ?? null;
+    }
     if (!event.target.closest?.('.chapter-more-button, .chapter-row-action-menu')) closeChapterMenus();
-  });
+  }, true);
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') closeChapterMenus();
   });
