@@ -24,7 +24,7 @@
   <script>
     Object.defineProperty(navigator, 'userAgent', { configurable: true, value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile' });
     window.confirm = () => true;
-    window.fixtureCalls = { saveState: 0, workspace: 0, settings: 0, part: 0, rehydrate: 0, flush: 0, generate: 0 };
+    window.fixtureCalls = { saveState: 0, workspace: 0, settings: 0, part: 0, imageImport: 0, imageDelete: 0, rehydrate: 0, flush: 0, generate: 0 };
     window.fixtureLastNotify = '';
     window.notify = message => {
       window.fixtureLastNotify = message;
@@ -36,6 +36,9 @@
       saveWorkspace: async () => { fixtureCalls.workspace += 1; return 'workspace.json'; },
       saveStoryFlowSettings: async () => { fixtureCalls.settings += 1; return 'settings.json'; },
       savePart: async () => { fixtureCalls.part += 1; return 'part.md'; },
+      importPartImages: async () => { fixtureCalls.imageImport += 1; return [{ fileName: 'image.png' }]; },
+      removePartImage: async () => { fixtureCalls.imageDelete += 1; return 'Recovery/Assets/image.png'; },
+      getPartImageFile: async () => new File(['image'], 'image.png', { type: 'image/png' }),
       backupWorkspace: async () => 'workspace.backup.json',
       createWorkspaceRecoverySnapshot: async () => ({ artifactPath: 'Recovery/test.json' }),
       restoreLatestWorkspaceBackup: async () => true,

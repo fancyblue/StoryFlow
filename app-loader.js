@@ -6,8 +6,8 @@
 (function () {
   const scripts = [
     { src: './src/core/config.js?v=20260817-1625', owner: 'core' },
-    { src: './src/persistence/integrations.js?v=20260825-p2c', owner: 'persistence' },
-    { src: './src/core/app.js?v=20260826-p6c', owner: 'core' },
+    { src: './src/persistence/integrations.js?v=20260826-p7a', owner: 'persistence' },
+    { src: './src/core/app.js?v=20260826-p7a', owner: 'core' },
     { src: './src/connection/session-auth.js?v=20260817-1522', owner: 'connection' },
     { src: './src/connection/folder-session.js?v=20260825-p1e', owner: 'connection' },
     { src: './src/ui/ui-bootstrap.js?v=20260824-p1c', owner: 'ui' },
@@ -21,7 +21,7 @@
     { src: './src/source/source-flow.js?v=20260825-p3a', owner: 'source' },
     { src: './src/projects/projects.js?v=20260826-p6c', owner: 'projects' },
     { src: './src/split/boundary-engine.js?v=20260825-p2b', owner: 'split' },
-    { src: './src/publishing/publishing-flow.js?v=20260826-p6c', owner: 'publishing' },
+    { src: './src/publishing/publishing-flow.js?v=20260826-p7a', owner: 'publishing' },
     { id: 'storyflowPublishingDisclosureJs', src: './src/publishing/publishing-disclosure.js?v=20260825-p2b', owner: 'publishing' },
     { src: './src/publishing/publishing-project-switcher.js?v=20260825-p3a', owner: 'publishing' },
     { id: 'storyflowPublishingGroupingJs', src: './src/publishing/publishing-grouping.js?v=20260825-p2b', owner: 'publishing' },
@@ -38,14 +38,14 @@
     { id: 'storyflowQuickStartJs', src: './src/connection/quick-start.js?v=20260825-p1e', owner: 'connection' },
     { src: './src/ui/navigation.js?v=20260826-p6c', owner: 'ui' },
     { src: './src/split/confirm-continuation.js', owner: 'split' },
-    { src: './src/ui/preview-mode.js?v=20260817-1405', owner: 'ui' },
+    { src: './src/ui/preview-mode.js?v=20260826-p7a', owner: 'ui' },
     { src: './src/connection/google-auth.js?v=20260825-p2b', owner: 'connection' },
     { src: './src/connection/mobile-google-auth.js?v=20260817-1858', owner: 'connection' },
     { src: './src/ui/workspace-ux.js?v=20260825-p3a', owner: 'ui' },
     { src: './src/ui/ui-system.js?v=20260825-p2b', owner: 'ui' },
-    { id: 'storyflowPublishingDeleteJs', src: './src/publishing/publishing-delete.js?v=20260825-p4a', owner: 'publishing' },
-    { id: 'storyflowProjectPersistenceGuardJs', src: './src/persistence/project-persistence-guard.js?v=20260826-p6c', owner: 'persistence' },
-    { id: 'storyflowMobileSafeModeJs', src: './src/persistence/mobile-safe-mode.js?v=20260825-p3c', owner: 'persistence' },
+    { id: 'storyflowPublishingDeleteJs', src: './src/publishing/publishing-delete.js?v=20260826-p7a', owner: 'publishing' },
+    { id: 'storyflowProjectPersistenceGuardJs', src: './src/persistence/project-persistence-guard.js?v=20260826-p7a', owner: 'persistence' },
+    { id: 'storyflowMobileSafeModeJs', src: './src/persistence/mobile-safe-mode.js?v=20260826-p7a', owner: 'persistence' },
     { id: 'storyflowProjectSourceSyncJs', src: './src/source/project-source-sync.js?v=20260825-p3a', owner: 'source', attributes: { 'data-storyflow-project-source-sync': '' } },
     { id: 'storyflowSourceArticleUxJs', src: './src/source/source-article-ux.js?v=20260825-p3a', owner: 'source' },
     { id: 'storyflowChapterManagementJs', src: './src/projects/chapter-management.js?v=20260825-p2b', owner: 'projects' },
@@ -54,7 +54,8 @@
     { id: 'storyflowSmartSplitTitleJs', src: './src/split/smart-split-title.js?v=20260825-p2b', owner: 'split' },
     { id: 'storyflowWorksLibraryUxJs', src: './src/projects/works-library-ux.js?v=20260825-p2b', owner: 'projects' },
     { src: './src/projects/workspace-project-ux.js?v=20260825-p3a', owner: 'projects' },
-    { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260826-p6c', owner: 'ui' }
+    { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260826-p6c', owner: 'ui' },
+    { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260826-p7a', owner: 'publishing' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));

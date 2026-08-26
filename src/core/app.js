@@ -108,6 +108,23 @@ function normalizePublishingPart(part) {
   if (typeof part.publishTitle !== 'string') part.publishTitle = '';
   if (typeof part.afterword !== 'string') part.afterword = '';
   if (typeof part.includeAfterword !== 'boolean') part.includeAfterword = true;
+  if (!Array.isArray(part.images)) part.images = [];
+  const placements = new Set(['before-body', 'after-body', 'after-afterword']);
+  part.images = part.images.filter(image => image && typeof image === 'object' && image.fileName);
+  part.images.forEach(image => {
+    image.id = typeof image.id === 'string' && image.id ? image.id : crypto.randomUUID();
+    image.fileName = String(image.fileName);
+    image.originalName = typeof image.originalName === 'string' ? image.originalName : image.fileName;
+    image.relativePath = typeof image.relativePath === 'string' ? image.relativePath : '';
+    image.mimeType = typeof image.mimeType === 'string' ? image.mimeType : '';
+    image.size = Number.isFinite(Number(image.size)) ? Number(image.size) : 0;
+    image.width = Number.isFinite(Number(image.width)) ? Number(image.width) : 0;
+    image.height = Number.isFinite(Number(image.height)) ? Number(image.height) : 0;
+    image.alt = typeof image.alt === 'string' ? image.alt : '';
+    image.caption = typeof image.caption === 'string' ? image.caption : '';
+    image.placement = placements.has(image.placement) ? image.placement : 'after-body';
+    image.createdAt = typeof image.createdAt === 'string' ? image.createdAt : '';
+  });
   if (!part.publicationRecords || typeof part.publicationRecords !== 'object' || Array.isArray(part.publicationRecords)) {
     part.publicationRecords = {};
   }
@@ -268,7 +285,7 @@ function adjustSuggestion(delta) {
 
 function chapterMetadata(chapter) {
   return {
-    schemaVersion: 6,
+    schemaVersion: 7,
     projectTitle: state.projectTitle,
     chapter: chapter.title,
     source: chapter.source,
@@ -280,6 +297,7 @@ function chapterMetadata(chapter) {
       id: part.id, title: part.title, startBlock: part.startBlock, endBlock: part.endBlock,
       publishTitle: part.publishTitle || '', chars: part.chars,
       afterwordChars: charCount(part.afterword), includeAfterword: part.includeAfterword !== false,
+      images: structuredClone(part.images || []),
       publicationRecords: structuredClone(part.publicationRecords || {}),
       published: part.published, platformStatus: part.platformStatus
     }))
@@ -292,7 +310,7 @@ async function confirmSuggestion() {
   const part = {
     id: crypto.randomUUID(), title: suggestion.name, startBlock: suggestion.start, endBlock: suggestion.end,
     chars: suggestion.chars, raw: suggestion.raw, formatted: suggestion.formatted, published: false,
-    publishTitle: '', afterword: '', includeAfterword: true,
+    publishTitle: '', afterword: '', includeAfterword: true, images: [],
     publicationRecords: {},
     platformStatus: Object.fromEntries(platforms.map(platform => [platform, false]))
   };

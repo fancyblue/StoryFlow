@@ -112,9 +112,13 @@
     const afterwordWarning = protectedAfterwords
       ? `\n\n其中 ${protectedAfterwords} 篇有後記，後記也會一併刪除。`
       : '';
+    const protectedImages = affected.reduce((total, item) => total + (item.images?.length || 0), 0);
+    const imageWarning = protectedImages
+      ? `\n\n這些文章共附有 ${protectedImages} 張圖片；文章記錄會移除，但私人 assets 圖檔會保留，避免誤刪原圖。`
+      : '';
     const message = `${laterCount
       ? `刪除「${part.title}」會使後續切點失去連續性。\n\n因此會一起移除這篇之後的 ${laterCount} 篇，並退回到「${part.title}」開始的位置重新切篇。`
-      : `刪除「${part.title}」？\n\n會移除 Markdown，並把切篇進度退回，讓你重新處理這一段。`}${afterwordWarning}\n\n確定繼續？`;
+      : `刪除「${part.title}」？\n\n會移除 Markdown，並把切篇進度退回，讓你重新處理這一段。`}${afterwordWarning}${imageWarning}\n\n確定繼續？`;
     if (!confirm(message)) return;
 
     try {

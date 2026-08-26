@@ -60,6 +60,26 @@ Deletion, replacement and source refresh follow the safety rules in [ARCHITECTUR
 - Preview and copy present the publishing title separately from body/afterword content so each can be pasted into the matching platform field.
 - Source refresh keeps an existing publishing title unchanged.
 
+## Article images
+
+```text
+發布 → 展開文章 → 匯入圖片 → 系統檔案選擇器 → 複製到私人 assets 資料夾
+                         ↓
+        替代文字／圖說／位置／排序 → 保存 → 發布預覽
+                                              ↘ 平台逐張上傳
+移除 → 只從文章移除 → 檔案保留
+    ↘ 備份後刪除檔案 → Recovery/Assets → 刪除來源副本
+```
+
+- Use “匯入圖片”, not “上傳圖片”: the browser copies a user-selected local/provider file into the connected StoryFlow folder and sends nothing to StoryFlow hosting.
+- Supported formats are JPEG, PNG, WebP and GIF. SVG is intentionally excluded because it may contain active content; files above 8 MB remain allowed but visibly warn.
+- Every image belongs to one publishing part and uses its stable ID directory. Name collisions create a numbered filename instead of overwriting.
+- The manager exposes alternative text, optional caption, three placement groups and explicit ordering. Preview loads private object URLs only for the current page and supports a modal enlargement.
+- Markdown output includes relative image references. Platform content copy remains text-only and preview explicitly reminds the user to upload binaries separately.
+- Missing files stay visible as actionable warnings instead of silently disappearing.
+- Phone read-only mode may read and preview existing assets but blocks import, metadata edits, reordering and removal until the current session is unlocked.
+- Deleting a publishing article removes image records but intentionally retains binary assets. Individual file deletion is explicit and creates a Recovery copy first.
+
 ## Global search and quick jump
 
 ```text

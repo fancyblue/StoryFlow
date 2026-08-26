@@ -13,7 +13,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(50);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(51);
 
   await page.locator('#createProjectManually').click();
   await expect(page.locator('#manualSourceDialog')).toBeVisible();
@@ -140,6 +140,10 @@ test('workspace safety fixtures pass without a real folder', async ({ page }) =>
   await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
   await expect(page.getByText('ALL PASS')).toBeVisible();
 
+  await page.goto('/tests/article-image-assets-core.html');
+  await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
+  await expect(page.getByText('ALL PASS')).toBeVisible();
+
   await page.goto('/tests/workspace-safety-ui.html');
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByRole('button', { name: /備份/ })).toBeVisible();
@@ -162,14 +166,24 @@ test('mobile safe mode blocks file writes until the workspace is reloaded and ed
   const blocked = await page.evaluate(async () => {
     const saveStateResult = saveState('不應保存');
     let workspaceError = null;
+    let imageImportError = null;
+    let imageDeleteError = null;
     try { await StoryFlowIntegrations.saveWorkspace({ state: {} }); }
     catch (error) { workspaceError = error.code; }
-    return { saveStateResult, workspaceError, calls: { ...fixtureCalls } };
+    try { await StoryFlowIntegrations.importPartImages({ files: [] }); }
+    catch (error) { imageImportError = error.code; }
+    try { await StoryFlowIntegrations.removePartImage({}); }
+    catch (error) { imageDeleteError = error.code; }
+    return { saveStateResult, workspaceError, imageImportError, imageDeleteError, calls: { ...fixtureCalls } };
   });
   expect(blocked.saveStateResult).toBe(false);
   expect(blocked.workspaceError).toBe('MOBILE_READ_ONLY');
+  expect(blocked.imageImportError).toBe('MOBILE_READ_ONLY');
+  expect(blocked.imageDeleteError).toBe('MOBILE_READ_ONLY');
   expect(blocked.calls.saveState).toBe(0);
   expect(blocked.calls.workspace).toBe(0);
+  expect(blocked.calls.imageImport).toBe(0);
+  expect(blocked.calls.imageDelete).toBe(0);
 
   await page.locator('#generateBtn').click();
   expect(await page.evaluate(() => fixtureCalls.generate)).toBe(0);
@@ -185,6 +199,7 @@ test('mobile safe mode blocks file writes until the workspace is reloaded and ed
   const enabled = await page.evaluate(async () => {
     const saveStateResult = saveState('可以保存');
     const workspacePath = await StoryFlowIntegrations.saveWorkspace({ state: {} });
+    await StoryFlowIntegrations.importPartImages({ files: [] });
     return { saveStateResult, workspacePath, calls: { ...fixtureCalls } };
   });
   expect(enabled.saveStateResult).toBe(true);
@@ -192,6 +207,7 @@ test('mobile safe mode blocks file writes until the workspace is reloaded and ed
   expect(enabled.calls.rehydrate).toBe(1);
   expect(enabled.calls.saveState).toBe(1);
   expect(enabled.calls.workspace).toBe(1);
+  expect(enabled.calls.imageImport).toBe(1);
 
   await page.getByRole('switch', { name: '結束本次手機編輯', exact: true }).click();
   await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'readonly');
@@ -327,6 +343,11 @@ test('published articles keep an independent afterword and can exclude it from o
       endBlock: 1,
       raw: '正文原稿。',
       formatted: '正文原稿。',
+      images: [{
+        id: 'delete-warning-image', fileName: 'retained.png', originalName: 'retained.png',
+        relativePath: './assets/afterword-test-part/retained.png', mimeType: 'image/png',
+        size: 100, width: 1, height: 1, alt: '保留圖片', caption: '', placement: 'after-body'
+      }],
       published: false,
       platformStatus: {}
     }];
@@ -336,6 +357,8 @@ test('published articles keep an independent afterword and can exclude it from o
   await page.locator('.nav-item[data-view="publishing"]').click();
   const card = page.locator('.publish-list-item', { hasText: '有後記的文章' });
   await card.getByRole('button', { name: /展開.*發布平台/ }).click();
+  await expect(card.getByRole('button', { name: '＋ 匯入圖片', exact: true }))
+    .toHaveAttribute('data-mobile-safe-write-control', 'true');
 
   const editor = card.locator('.publish-afterword-editor');
   await expect(editor).toBeVisible();
@@ -385,6 +408,8 @@ test('published articles keep an independent afterword and can exclude it from o
   const deleteMessage = await page.evaluate(() => window.__afterwordDeleteMessages.at(-1));
   expect(deleteMessage).toContain('1 篇有後記');
   expect(deleteMessage).toContain('後記也會一併刪除');
+  expect(deleteMessage).toContain('共附有 1 張圖片');
+  expect(deleteMessage).toContain('私人 assets 圖檔會保留');
   expect(pageErrors).toEqual([]);
 });
 
@@ -510,7 +535,7 @@ test('publishing title stays separate from the internal name and article body', 
     internalTitle: '內部文章名稱',
     publishTitle: '給讀者看的正式標題',
     output: '只應出現在內容區的正文。',
-    metadataVersion: 6,
+    metadataVersion: 7,
     metadataTitle: '給讀者看的正式標題'
   });
 
@@ -524,6 +549,182 @@ test('publishing title stays separate from the internal name and article body', 
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('給讀者看的正式標題');
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('只應出現在內容區的正文。');
+  expect(pageErrors).toEqual([]);
+});
+
+test('article images import private copies, preview, reorder, describe, and remove safely', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/');
+  await page.evaluate(() => {
+    window.__imageFiles = new Map();
+    window.__allImageFiles = new Map();
+    window.__deletedImageFiles = [];
+    window.__copiedImageMarkdown = '';
+    window.__savedArticleMarkdown = '';
+    window.__savedArticleMetadata = null;
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async value => { window.__copiedImageMarkdown = value; } }
+    });
+    StoryFlowIntegrations.restoreOutputDirectory = async () => ({ connected: true, name: 'StoryFlow-test' });
+    StoryFlowIntegrations.saveWorkspace = async () => 'workspace.json';
+    StoryFlowIntegrations.importPartImages = async ({ partId, files }) => Array.from(files).map(file => {
+      const dot = file.name.lastIndexOf('.');
+      const base = dot >= 0 ? file.name.slice(0, dot) : file.name;
+      const extension = dot >= 0 ? file.name.slice(dot) : '';
+      let fileName = file.name;
+      let index = 2;
+      while (window.__imageFiles.has(fileName)) fileName = `${base}-${index++}${extension}`;
+      window.__imageFiles.set(fileName, file);
+      window.__allImageFiles.set(fileName, file);
+      return {
+        fileName,
+        originalName: file.name,
+        relativePath: `./assets/${partId}/${fileName}`,
+        mimeType: file.type,
+        size: file.size,
+        large: false
+      };
+    });
+    StoryFlowIntegrations.getPartImageFile = async ({ fileName }) => {
+      const file = window.__imageFiles.get(fileName);
+      if (!file) throw new DOMException(`${fileName} missing`, 'NotFoundError');
+      return file;
+    };
+    StoryFlowIntegrations.removePartImage = async ({ fileName }) => {
+      if (!window.__imageFiles.has(fileName)) throw new DOMException(`${fileName} missing`, 'NotFoundError');
+      window.__imageFiles.delete(fileName);
+      window.__deletedImageFiles.push(fileName);
+      return `StoryFlow-test/Recovery/Assets/${fileName}`;
+    };
+    StoryFlowIntegrations.savePart = async ({ part, metadata }) => {
+      window.__savedArticleMarkdown = part.formatted;
+      window.__savedArticleMetadata = metadata;
+      return 'StoryFlow-test/Works/圖片測試作品/圖片章節';
+    };
+
+    StoryFlowProjects.createProject({ title: '圖片測試作品' }, { quiet: true });
+    const chapter = state.chapters[0];
+    chapter.title = '圖片章節';
+    chapter.draft = '圖片文章正文。';
+    chapter.confirmedBlockCount = 1;
+    chapter.parts = [{
+      id: 'image-test-part',
+      title: '附圖文章',
+      publishTitle: '',
+      chars: 7,
+      startBlock: 0,
+      endBlock: 1,
+      raw: '圖片文章正文。',
+      formatted: '圖片文章正文。',
+      images: [],
+      published: false,
+      platformStatus: {}
+    }];
+    renderAll();
+  });
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  let card = page.locator('.publish-list-item', { hasText: '附圖文章' });
+  await card.getByRole('button', { name: /展開.*發布平台/ }).click();
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z8xQAAAAASUVORK5CYII=', 'base64');
+  await card.locator('.article-image-manager input[type="file"]').setInputFiles([
+    { name: '插圖.png', mimeType: 'image/png', buffer: png },
+    { name: '插圖.png', mimeType: 'image/png', buffer: png }
+  ]);
+
+  card = page.locator('.publish-list-item', { hasText: '附圖文章' });
+  await expect(card.locator('.article-image-row')).toHaveCount(2);
+  await expect(card.locator('.publish-image-badge')).toHaveText('附圖 2 張');
+  let firstRow = card.locator('.article-image-row').first();
+  await firstRow.locator('input').nth(0).fill('夜空中的城堡');
+  await firstRow.locator('input').nth(1).fill('抵達王都前的夜景');
+  await firstRow.locator('select').selectOption('before-body');
+  await firstRow.getByRole('button', { name: '保存圖片資訊', exact: true }).click();
+
+  card = page.locator('.publish-list-item', { hasText: '附圖文章' });
+  await card.locator('.article-image-row').nth(1).getByRole('button', { name: '上移', exact: true }).click();
+  const reordered = await page.evaluate(() => {
+    const part = state.chapters.find(chapter => chapter.title === '圖片章節').parts[0];
+    return {
+      filenames: part.images.map(image => image.fileName),
+      firstAlt: part.images.find(image => image.fileName === '插圖.png').alt,
+      firstPlacement: part.images.find(image => image.fileName === '插圖.png').placement,
+      metadataVersion: window.__savedArticleMetadata.schemaVersion,
+      metadataImages: window.__savedArticleMetadata.parts[0].images.length,
+      markdown: window.__savedArticleMarkdown
+    };
+  });
+  expect(reordered.filenames).toEqual(['插圖-2.png', '插圖.png']);
+  expect(reordered.firstAlt).toBe('夜空中的城堡');
+  expect(reordered.firstPlacement).toBe('before-body');
+  expect(reordered.metadataVersion).toBe(7);
+  expect(reordered.metadataImages).toBe(2);
+  expect(reordered.markdown).toContain('![夜空中的城堡](<./assets/image-test-part/插圖.png>)');
+  expect(reordered.markdown).toContain('_抵達王都前的夜景_');
+
+  firstRow = card.locator('.article-image-row').nth(1);
+  await firstRow.getByRole('button', { name: '複製 Markdown', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.__copiedImageMarkdown)).toContain('夜空中的城堡');
+
+  await card.getByRole('button', { name: '預覽預設設定', exact: true }).click();
+  const preview = page.locator('#platformPreviewDialog');
+  await expect(preview).toBeVisible();
+  await expect(preview.locator('.platform-preview-image')).toHaveCount(2);
+  await expect(preview.locator('#platformPreviewContent')).toContainText('圖片文章正文。');
+  await expect(preview.locator('#platformPreviewContent')).toContainText('抵達王都前的夜景');
+  await expect(preview.locator('.platform-preview-image-notice')).toContainText('逐張上傳');
+  await preview.locator('.platform-preview-image img').first().click();
+  await expect(page.locator('#articleImageLightbox')).toBeVisible();
+  await page.getByRole('button', { name: '關閉圖片', exact: true }).click();
+  await preview.getByRole('button', { name: '關閉', exact: true }).last().click();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await card.locator('.article-image-row').first().scrollIntoViewIfNeeded();
+  const narrowLayout = await page.evaluate(() => {
+    const row = document.querySelector('.article-image-row')?.getBoundingClientRect();
+    const manager = document.querySelector('.article-image-manager')?.getBoundingClientRect();
+    return {
+      rowLeft: row?.left,
+      rowRight: row?.right,
+      managerLeft: manager?.left,
+      managerRight: manager?.right,
+      documentWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth
+    };
+  });
+  expect(narrowLayout.rowLeft).toBeGreaterThanOrEqual(narrowLayout.managerLeft);
+  expect(narrowLayout.rowRight).toBeLessThanOrEqual(narrowLayout.managerRight);
+  expect(narrowLayout.documentWidth).toBeLessThanOrEqual(narrowLayout.viewportWidth);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+
+  await page.evaluate(() => {
+    window.__imageFiles.delete('插圖.png');
+    renderParts();
+  });
+  await expect(page.locator('.article-image-thumb.missing')).toContainText('找不到檔案');
+  await page.evaluate(() => window.__imageFiles.set('插圖.png', window.__allImageFiles.get('插圖.png')));
+
+  card = page.locator('.publish-list-item', { hasText: '附圖文章' });
+  await card.locator('.article-image-row').first().getByRole('button', { name: '移除', exact: true }).click();
+  const removeDialog = page.locator('#articleImageRemoveDialog');
+  await expect(removeDialog).toBeVisible();
+  await removeDialog.getByRole('button', { name: '只從文章移除', exact: true }).click();
+  await expect(card.locator('.article-image-row')).toHaveCount(1);
+  expect(await page.evaluate(() => window.__imageFiles.has('插圖-2.png'))).toBe(true);
+
+  await card.locator('.article-image-row').first().getByRole('button', { name: '移除', exact: true }).click();
+  await removeDialog.getByRole('button', { name: '備份後刪除檔案', exact: true }).click();
+  await expect(card.locator('.article-image-row')).toHaveCount(0);
+  const removed = await page.evaluate(() => ({
+    deleted: window.__deletedImageFiles,
+    remainingState: state.chapters.find(chapter => chapter.title === '圖片章節').parts[0].images.length,
+    finalMarkdown: window.__savedArticleMarkdown
+  }));
+  expect(removed.deleted).toEqual(['插圖.png']);
+  expect(removed.remainingState).toBe(0);
+  expect(removed.finalMarkdown).toBe('圖片文章正文。');
   expect(pageErrors).toEqual([]);
 });
 

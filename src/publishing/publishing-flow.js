@@ -13,14 +13,19 @@
     return part?.id || `${part?.title || 'part'}:${part?.startBlock ?? ''}:${part?.endBlock ?? ''}`;
   }
 
-  function outputFor(part, platform, includeAfterword = part?.includeAfterword !== false) {
+  function outputSections(part, platform, includeAfterword = part?.includeAfterword !== false) {
     normalizePublishingPart(part);
     const raw = part.raw ?? part.formatted ?? '';
     const format = value => platform ? platformFormat(value, platform) : webFormat(value);
     const body = format(raw);
     const afterword = String(part.afterword || '').trim();
-    if (!includeAfterword || !afterword) return body;
-    return `${body}\n\n---\n\n後記\n\n${format(afterword)}`;
+    return { body, afterword: includeAfterword && afterword ? format(afterword) : '' };
+  }
+
+  function outputFor(part, platform, includeAfterword = part?.includeAfterword !== false) {
+    const sections = outputSections(part, platform, includeAfterword);
+    if (!sections.afterword) return sections.body;
+    return `${sections.body}\n\n---\n\n後記\n\n${sections.afterword}`;
   }
 
   function afterwordChars(part) {
@@ -221,7 +226,7 @@
             <span>附上後記</span>
             <small id="platformPreviewAfterwordCount"></small>
           </label>
-          <pre id="platformPreviewContent" class="platform-preview-content"></pre>
+          <div id="platformPreviewContent" class="platform-preview-content"></div>
         </div>
         <div class="platform-preview-actions">
           <button id="confirmPlatformCopy" class="button primary" type="button">複製內容</button>
@@ -323,7 +328,16 @@
     const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
 
     const refreshContent = () => {
-      publishDialog.querySelector('#platformPreviewContent').textContent = outputFor(part, platform, includeAfterword.checked);
+      const container = publishDialog.querySelector('#platformPreviewContent');
+      const sections = outputSections(part, platform, includeAfterword.checked);
+      if (window.StoryFlowArticleImages?.renderPreview) {
+        window.StoryFlowArticleImages.renderPreview(container, part, sections, {
+          projectTitle: state.projectTitle,
+          chapterTitle: allEntries().find(entry => entry.part === part)?.chapter?.title || ''
+        });
+      } else {
+        container.textContent = outputFor(part, platform, includeAfterword.checked);
+      }
     };
 
     publishDialog.querySelector('#platformPreviewTitle').textContent = `${publishTitle} · ${platformLabel(platform)}`;
@@ -395,10 +409,14 @@
   async function writeArticleMarkdown(chapter, part) {
     const folder = await StoryFlowIntegrations.restoreOutputDirectory();
     if (!folder?.connected) return false;
+    const sections = outputSections(part, '', part.includeAfterword !== false);
+    const formatted = window.StoryFlowArticleImages?.markdownForPart
+      ? window.StoryFlowArticleImages.markdownForPart(part, sections)
+      : outputFor(part, '');
     await StoryFlowIntegrations.savePart({
       projectTitle: state.projectTitle,
       chapter,
-      part: { ...part, formatted: outputFor(part, '') },
+      part: { ...part, formatted },
       metadata: chapterMetadata(chapter)
     });
     return true;
@@ -602,9 +620,13 @@
     const afterwordWarning = protectedAfterwords
       ? `\n\n其中 ${protectedAfterwords} 篇有後記，後記也會一併刪除。`
       : '';
+    const protectedImages = affected.reduce((total, item) => total + (item.images?.length || 0), 0);
+    const imageWarning = protectedImages
+      ? `\n\n這些文章共附有 ${protectedImages} 張圖片；文章記錄會移除，但私人 assets 圖檔會保留，避免誤刪原圖。`
+      : '';
     const message = `${laterCount
       ? `刪除「${part.title}」會使後續切點失去連續性。\n\n因此會一起移除這篇之後的 ${laterCount} 篇，並退回到「${part.title}」開始的位置重新切篇。`
-      : `刪除「${part.title}」？\n\n會移除 Markdown，並把切篇進度退回，讓你重新處理這一段。`}${afterwordWarning}\n\n確定繼續？`;
+      : `刪除「${part.title}」？\n\n會移除 Markdown，並把切篇進度退回，讓你重新處理這一段。`}${afterwordWarning}${imageWarning}\n\n確定繼續？`;
     if (!confirm(message)) return;
 
     try {
@@ -677,6 +699,7 @@
 
     const statusCount = status.total ? ` · ${status.published}/${status.total}` : '';
     const afterwordCount = afterwordChars(part);
+    const imageCount = part.images.length;
     card.innerHTML = `
       <div class="publish-list-summary" role="button" tabindex="0" aria-expanded="${expanded}">
         <div class="publish-list-title-block">
@@ -685,6 +708,7 @@
             <strong>${escapeHtml(publishTitle)}</strong>
             <span>${part.chars.toLocaleString()} 字</span>
             ${afterwordCount ? `<span class="publish-afterword-badge">有後記 ${afterwordCount.toLocaleString()} 字</span>` : ''}
+            ${imageCount ? `<span class="publish-image-badge">附圖 ${imageCount.toLocaleString()} 張</span>` : ''}
           </div>
           ${hasCustomPublishTitle ? `<small class="publish-internal-title">內部名稱：${escapeHtml(part.title)}</small>` : ''}
         </div>
@@ -699,6 +723,7 @@
       </div>
       <div class="publish-platform-details" ${expanded ? '' : 'hidden'}>
         <div class="publish-title-editor-slot"></div>
+        <div class="publish-image-manager-slot"></div>
         <div class="publish-afterword-slot"></div>
         <div class="publish-platform-details-head">
           <strong>發布平台</strong>
@@ -734,6 +759,8 @@
 
     if (expanded) {
       card.querySelector('.publish-title-editor-slot').appendChild(createPublishTitleEditor(chapter, part));
+      const imageManager = window.StoryFlowArticleImages?.createManager?.(chapter, part);
+      if (imageManager) card.querySelector('.publish-image-manager-slot').appendChild(imageManager);
       card.querySelector('.publish-afterword-slot').appendChild(createAfterwordEditor(chapter, part));
       const platformList = card.querySelector('.publish-platform-list');
       if (!platforms.length) {
@@ -835,6 +862,7 @@
   };
 
   window.StoryFlowPublishing = {
+    persistPart: writeArticleMarkdown,
     openPart(key, { preview = false } = {}) {
       const entry = allEntries().find(item => partKey(item.part) === key);
       if (!entry) return false;
@@ -860,6 +888,7 @@
 
   window.StoryFlowPublishingOutput = {
     forPart: outputFor,
+    sectionsFor: outputSections,
     afterwordChars,
     titleFor: publishTitleFor
   };
