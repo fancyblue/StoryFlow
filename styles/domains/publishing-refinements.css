@@ -101,6 +101,31 @@
   font-weight:850!important;
 }
 
+/* "管理發布" is the same frequent management action used in Works. Keep its
+   solid-denim identity inside the denser publishing row; preview stays outlined
+   and the final overflow remains tertiary. */
+#publishingView .publish-list-actions>.publish-manage-btn{
+  border-color:var(--denim-700,#3975a7)!important;
+  background:var(--denim-700,#3975a7)!important;
+  color:#fff!important;
+  box-shadow:0 2px 6px rgba(45,93,133,.12)!important;
+}
+#publishingView .publish-list-actions>.publish-manage-btn:hover:not(:disabled),
+#publishingView .publish-list-actions>.publish-manage-btn:focus-visible{
+  border-color:var(--denim-800,#2d5d85)!important;
+  background:var(--denim-800,#2d5d85)!important;
+  color:#fff!important;
+}
+#publishingView .publish-list-actions>.publish-manage-btn:focus-visible{
+  box-shadow:0 0 0 3px rgba(57,117,167,.2)!important;
+  outline:none!important;
+}
+#publishingView .publish-list-actions>.publish-manage-btn[aria-expanded="true"]{
+  border-color:var(--denim-900,#234463)!important;
+  background:var(--denim-900,#234463)!important;
+  color:#fff!important;
+}
+
 /* Chapters are a second-level container: lighter and inset under the work header. */
 #publishingView .publishing-project-group>.publishing-chapter-group{
   margin:0!important;

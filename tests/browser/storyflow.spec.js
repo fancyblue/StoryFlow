@@ -48,6 +48,44 @@ test('primary action scale and navigation icon language stay consistent', async 
     color: 'rgb(255, 255, 255)'
   });
 
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '發布按鈕樣式測試' }, { quiet: true });
+    const chapter = state.chapters[0];
+    chapter.title = '樣式測試章節';
+    chapter.draft = '測試正文。';
+    chapter.confirmedBlockCount = 1;
+    chapter.parts = [{
+      id: 'publishing-action-style-part',
+      title: '樣式測試文章',
+      chars: 5,
+      startBlock: 0,
+      endBlock: 1,
+      raw: '測試正文。',
+      formatted: '測試正文。',
+      published: false,
+      platformStatus: {}
+    }];
+    renderAll();
+  });
+  const publishingRow = page.locator('.publish-list-item', { hasText: '樣式測試文章' });
+  const rowManage = publishingRow.getByRole('button', { name: /展開.*發布平台/ });
+  const rowPreview = publishingRow.getByRole('button', { name: '預覽預設設定', exact: true });
+  await expect(rowManage).toBeVisible();
+  const manageStyle = await controlStyle(rowManage);
+  const previewStyle = await controlStyle(rowPreview);
+  expect(manageStyle).toMatchObject({
+    backgroundColor: 'rgb(57, 117, 167)',
+    color: 'rgb(255, 255, 255)'
+  });
+  expect(manageStyle.height).toBe(previewStyle.height);
+  expect(previewStyle.backgroundColor).toBe('rgb(255, 255, 255)');
+  await rowManage.click();
+  await expect(publishingRow.getByRole('button', { name: /收合.*發布平台/ })).toBeVisible();
+  expect(await controlStyle(publishingRow.locator('.publish-manage-btn'))).toMatchObject({
+    backgroundColor: 'rgb(35, 68, 99)',
+    color: 'rgb(255, 255, 255)'
+  });
+
   await page.locator('#sidebarSettingsBtn').click();
   await expect(page.locator('#settingsView')).toBeVisible();
   const settingsActions = await Promise.all([
