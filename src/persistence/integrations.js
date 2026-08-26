@@ -6,6 +6,9 @@ const StoryFlowIntegrations = (() => {
   const ROLLING_BACKUP_PREFIX = 'workspace.auto-';
   const ROLLING_BACKUP_LIMIT = 3;
   const ROLLING_BACKUP_INTERVAL_MS = 60 * 60 * 1000;
+  const LARGE_IMAGE_BYTES = 8 * 1024 * 1024;
+  const IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+  const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
   const CONNECTION_DB = 'storyflow-connections-v1';
   const CONNECTION_STORE = 'handles';
   const OUTPUT_HANDLE_KEY = 'storyflow-output-directory';
@@ -160,6 +163,114 @@ const StoryFlowIntegrations = (() => {
     const writable = await fileHandle.createWritable();
     await writable.write(text);
     await writable.close();
+  }
+
+  async function writeBinaryFile(parent, filename, value) {
+    const fileHandle = await parent.getFileHandle(safeName(filename), { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(value);
+    await writable.close();
+  }
+
+  async function existingDirectory(parent, name) {
+    return parent.getDirectoryHandle(safeName(name), { create: false });
+  }
+
+  function imageExtension(filename) {
+    const match = String(filename || '').toLocaleLowerCase().match(/\.([a-z0-9]+)$/);
+    return match?.[1] || '';
+  }
+
+  function imageFileSupported(file) {
+    return IMAGE_MIME_TYPES.has(String(file?.type || '').toLocaleLowerCase())
+      || IMAGE_EXTENSIONS.has(imageExtension(file?.name));
+  }
+
+  function imageFilename(filename, fallback = 'image') {
+    const source = String(filename || '').trim();
+    const extension = imageExtension(source);
+    const suffix = extension ? `.${extension}` : '';
+    const base = extension ? source.slice(0, -(extension.length + 1)) : source;
+    return `${safeName(base, fallback)}${suffix}`;
+  }
+
+  async function uniqueFilename(directory, filename) {
+    const normalized = imageFilename(filename);
+    const extension = imageExtension(normalized);
+    const suffix = extension ? `.${extension}` : '';
+    const base = extension ? normalized.slice(0, -(extension.length + 1)) : normalized;
+    for (let index = 0; index < 10000; index += 1) {
+      const candidate = index ? `${base}-${index + 1}${suffix}` : normalized;
+      try {
+        await directory.getFileHandle(candidate, { create: false });
+      } catch (error) {
+        if (error?.name === 'NotFoundError') return candidate;
+        throw error;
+      }
+    }
+    throw new Error('圖片檔名重複過多，請先重新命名。');
+  }
+
+  async function partAssetsDirectory({ projectTitle, chapterTitle, partId }, create = false) {
+    const works = create
+      ? await getDirectory(outputDirectoryHandle, 'Works')
+      : await existingDirectory(outputDirectoryHandle, 'Works');
+    const work = create
+      ? await getDirectory(works, projectTitle)
+      : await existingDirectory(works, projectTitle);
+    const chapter = create
+      ? await getDirectory(work, chapterTitle)
+      : await existingDirectory(work, chapterTitle);
+    const assets = create
+      ? await getDirectory(chapter, 'assets')
+      : await existingDirectory(chapter, 'assets');
+    return create
+      ? getDirectory(assets, partId)
+      : existingDirectory(assets, partId);
+  }
+
+  async function importPartImages({ projectTitle, chapterTitle, partId, files }) {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    if (!partId) throw new Error('這篇文章缺少固定 ID，無法建立圖片資料夾。');
+    const candidates = Array.from(files || []);
+    if (!candidates.length) return [];
+    const directory = await partAssetsDirectory({ projectTitle, chapterTitle, partId }, true);
+    const imported = [];
+    for (const file of candidates) {
+      if (!imageFileSupported(file)) throw new Error(`「${file?.name || '未命名檔案'}」不是支援的圖片格式。`);
+      const fileName = await uniqueFilename(directory, file.name || 'image');
+      await writeBinaryFile(directory, fileName, file);
+      imported.push({
+        fileName,
+        originalName: file.name || fileName,
+        relativePath: `./assets/${safeName(partId)}/${fileName}`,
+        mimeType: file.type || '',
+        size: Number(file.size || 0),
+        large: Number(file.size || 0) > LARGE_IMAGE_BYTES
+      });
+    }
+    return imported;
+  }
+
+  async function getPartImageFile({ projectTitle, chapterTitle, partId, fileName }) {
+    await hydrateOutputDirectoryHandle();
+    if (!outputDirectoryHandle) throw new Error('StoryFlow 尚未連接資料夾。');
+    const directory = await partAssetsDirectory({ projectTitle, chapterTitle, partId }, false);
+    const fileHandle = await directory.getFileHandle(safeName(fileName), { create: false });
+    return fileHandle.getFile();
+  }
+
+  async function removePartImage({ projectTitle, chapterTitle, partId, fileName }) {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    const directory = await partAssetsDirectory({ projectTitle, chapterTitle, partId }, false);
+    const fileHandle = await directory.getFileHandle(safeName(fileName), { create: false });
+    const file = await fileHandle.getFile();
+    const recovery = await getDirectory(await getDirectory(outputDirectoryHandle, RECOVERY_DIRECTORY), 'Assets');
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const recoveryName = `${stamp}-${safeName(partId)}-${imageFilename(fileName)}`;
+    await writeBinaryFile(recovery, recoveryName, file);
+    await directory.removeEntry(safeName(fileName));
+    return `${outputDirectoryHandle.name}/${RECOVERY_DIRECTORY}/Assets/${recoveryName}`;
   }
 
   async function readTextFile(parent, filename) {
@@ -869,7 +980,7 @@ const StoryFlowIntegrations = (() => {
 
   purgeLegacyBrowserStorage();
 
-  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken) };
+  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, importPartImages, getPartImageFile, removePartImage, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken), LARGE_IMAGE_BYTES };
   window.StoryFlowIntegrations = api;
   return api;
 })();

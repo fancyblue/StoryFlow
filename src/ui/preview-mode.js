@@ -252,6 +252,9 @@
   function syncControl(group) {
     const control = document.querySelector(`[data-sf-preview-control="${group}"]`);
     if (!control) return;
+    if (group === 'publish') {
+      control.hidden = document.getElementById('platformPreviewContent')?.dataset.sfPreviewManaged === 'article-images';
+    }
     const mode = groupModes.get(group) || 'preview';
     control.querySelectorAll('[data-sf-mode]').forEach(button => {
       const active = button.dataset.sfMode === mode;
@@ -289,6 +292,10 @@
       document.querySelectorAll(TARGET_SELECTOR).forEach(element => {
         const group = groupFor(element);
         if (!group) return;
+        if (element.dataset.sfPreviewManaged === 'article-images') {
+          states.delete(element);
+          return;
+        }
         let stateRecord = states.get(element);
         if (!stateRecord) {
           stateRecord = { group, rawText: '', authoredHtml: '' };

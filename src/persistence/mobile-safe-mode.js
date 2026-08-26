@@ -34,6 +34,8 @@
     'saveWorkspace',
     'saveStoryFlowSettings',
     'savePart',
+    'importPartImages',
+    'removePartImage',
     'backupWorkspace',
     'createWorkspaceRecoverySnapshot',
     'restoreLatestWorkspaceBackup',

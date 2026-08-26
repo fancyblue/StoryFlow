@@ -10,6 +10,8 @@ StoryFlow 是一個以瀏覽器執行的長篇內容切篇與多平台發布工�
 
 側欄的「搜尋」或 `⌘K`（Windows / Linux 為 `Ctrl+K`）可跨目前工作區內的作品、章節、內部名稱與發布標題快速跳轉。正文搜尋預設關閉，需要時才勾選「同時搜尋正文」；搜尋索引只在當下記憶體建立，不會把私人內容另存進 GitHub Pages 或瀏覽器儲存空間。
 
+發布文章也可「匯入圖片」。檔案來源可以是桌面、Google Drive、iCloud 或作業系統檔案選擇器提供的位置；瀏覽器會把 JPG、PNG、WebP 或 GIF 複製到私人 StoryFlow 資料夾，不會上傳到 GitHub Pages。每張圖片可保存替代文字、圖說與正文前／正文後／後記後位置，並在發布預覽中顯示、放大或複製 Markdown。平台的「複製內容」不會傳送圖片檔，實際發布時仍需依預覽順序逐張上傳。
+
 ## Clone / Fork 後使用
 
 Repo **不包含任何人的 Google OAuth Client ID 或 Picker API Key**。每個使用者可以使用自己的 Google Cloud 專案，不需要修改程式碼。
@@ -41,9 +43,12 @@ StoryFlow/
 ├─ settings.json      # Google Client ID、Picker API Key、平台與排版設定
 ├─ workspace.json     # 作品、章節、切篇、發布標題、後記、發布進度與平台發布紀錄
 ├─ workspace.backup.json # 最近一次正常寫入前的工作區備份
-├─ Recovery/         # 循環備份、衝突副本與高風險操作前快照
+├─ Recovery/         # 循環備份、衝突副本、高風險操作快照與刪除圖片備份
 └─ Works/
-   └─ <作品>/<章節>/*.md
+   └─ <作品>/<章節>/
+      ├─ *.md
+      ├─ metadata.json
+      └─ assets/<文章固定 ID>/*.{jpg,jpeg,png,webp,gif}
 ```
 
 StoryFlow 只會在 `workspace.json` 實際寫入完成後顯示「已保存」；尚未連接資料夾、準備保存、保存中或寫入失敗都會分別顯示。所有工作區寫入都依序執行，並在改寫前把最近正常版本保存為 `workspace.backup.json`。
@@ -51,6 +56,8 @@ StoryFlow 只會在 `workspace.json` 實際寫入完成後顯示「已保存」�
 為了提供個人使用剛好足夠的保護，內容有變更時，StoryFlow 每小時最多在 `Recovery/` 建立一份 `workspace.auto-*.json` 循環備份；相同內容不重複建立，並只保留最近 3 份。刪除作品、章節或發布稿，以及套用來源覆寫、匯入工作區或從備份恢復前，也會先建立獨立 Recovery 快照；若快照建立失敗，刪除或覆寫會停止。這些安全副本不會修改 Google Docs 原稿。
 
 若其他分頁或裝置先寫入了較新版本，StoryFlow 會停止覆蓋，並將本頁修改另存到 `Recovery/`。
+
+圖片本體不會塞入 `workspace.json`；工作區只保存私人相對路徑、尺寸、替代文字、圖說、位置與順序。同名圖片會自動產生唯一檔名，超過 8 MB 會提示但不阻止匯入。從文章移除圖片時可選擇保留檔案；若選擇刪除檔案，StoryFlow 會先複製到 `Recovery/Assets/`。刪除整篇文章時也會保留 assets 圖檔，避免文章操作意外刪除原圖。
 
 當 `workspace.json` 無法解析時，頁面會自動開啟恢復介面：可一鍵從備份恢復，或匯入既有 `workspace.json` / `workspace.backup.json`。恢復前會先把損壞原檔留在 `Recovery/`。從 Google Docs 更新章節後，同一次開啟頁面期間也可用「復原來源更新」立即回到更新前的章節。
 

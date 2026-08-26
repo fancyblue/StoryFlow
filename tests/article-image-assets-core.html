@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><title>StoryFlow article image assets core test</title></head>
+<body>
+  <h1>Article image assets core test</h1>
+  <pre id="result">RUNNING</pre>
+  <script>
+    function notFound(name) {
+      return new DOMException(`${name} not found`, 'NotFoundError');
+    }
+
+    class MemoryDirectory {
+      constructor(name) {
+        this.kind = 'directory';
+        this.name = name;
+        this.files = new Map();
+        this.directories = new Map();
+      }
+      async queryPermission() { return 'granted'; }
+      async requestPermission() { return 'granted'; }
+      async getDirectoryHandle(name, options = {}) {
+        if (!this.directories.has(name)) {
+          if (!options.create) throw notFound(name);
+          this.directories.set(name, new MemoryDirectory(name));
+        }
+        return this.directories.get(name);
+      }
+      async getFileHandle(name, options = {}) {
+        if (!this.files.has(name) && !options.create) throw notFound(name);
+        const directory = this;
+        return {
+          kind: 'file',
+          name,
+          async getFile() {
+            if (!directory.files.has(name)) throw notFound(name);
+            const stored = directory.files.get(name);
+            return stored instanceof Blob
+              ? new File([stored], name, { type: stored.type })
+              : new File([String(stored)], name, { type: 'text/plain' });
+          },
+          async createWritable() {
+            let pending = null;
+            return {
+              async write(value) { pending = value; },
+              async close() { directory.files.set(name, pending); }
+            };
+          }
+        };
+      }
+      async removeEntry(name) {
+        if (this.files.delete(name) || this.directories.delete(name)) return;
+        throw notFound(name);
+      }
+    }
+
+    const mockRoot = new MemoryDirectory('StoryFlow-images-test');
+    try { delete window.indexedDB; } catch (_) {}
+    window.showDirectoryPicker = async () => mockRoot;
+  </script>
+  <script src="../src/persistence/integrations.js"></script>
+  <script>
+    (async () => {
+      const result = document.getElementById('result');
+      const checks = [];
+      const assert = (condition, message) => {
+        if (!condition) throw new Error(message);
+        checks.push(`PASS ${message}`);
+      };
+      const context = { projectTitle: '圖片作品', chapterTitle: '第一章', partId: 'part-fixed-id' };
+
+      try {
+        await StoryFlowIntegrations.chooseOutputDirectory();
+        const firstFile = new File([new Uint8Array([1, 2, 3])], '封面 圖片.png', { type: 'image/png' });
+        const secondFile = new File([new Uint8Array([4, 5])], '封面 圖片.png', { type: 'image/png' });
+        const first = (await StoryFlowIntegrations.importPartImages({ ...context, files: [firstFile] }))[0];
+        const second = (await StoryFlowIntegrations.importPartImages({ ...context, files: [secondFile] }))[0];
+
+        assert(first.fileName === '封面 圖片.png', '圖片保留可讀檔名');
+        assert(second.fileName === '封面 圖片-2.png', '同名圖片不覆蓋並產生唯一檔名');
+        assert(first.relativePath === './assets/part-fixed-id/封面 圖片.png', '圖片使用文章固定 ID 的相對路徑');
+        const loaded = await StoryFlowIntegrations.getPartImageFile({ ...context, fileName: first.fileName });
+        assert(loaded.size === 3 && loaded.type === 'image/png', '可從私人 assets 資料夾讀回圖片');
+
+        let unsupported = null;
+        try {
+          await StoryFlowIntegrations.importPartImages({
+            ...context,
+            files: [new File(['svg'], 'unsafe.svg', { type: 'image/svg+xml' })]
+          });
+        } catch (error) { unsupported = error; }
+        assert(Boolean(unsupported), '不接受未支援或可能含主動內容的格式');
+
+        const recoveryPath = await StoryFlowIntegrations.removePartImage({ ...context, fileName: first.fileName });
+        assert(recoveryPath.includes('/Recovery/Assets/'), '刪除前把圖片保存到 Recovery/Assets');
+        let removed = null;
+        try { await StoryFlowIntegrations.getPartImageFile({ ...context, fileName: first.fileName }); }
+        catch (error) { removed = error; }
+        assert(removed?.name === 'NotFoundError', 'Recovery 完成後才移除原圖片');
+        const recovery = mockRoot.directories.get('Recovery')?.directories.get('Assets');
+        assert(recovery?.files.size === 1, 'Recovery 內保留一份可恢復圖片');
+
+        result.textContent = `${checks.join('\n')}\n\nALL PASS`;
+        document.body.dataset.testStatus = 'pass';
+      } catch (error) {
+        result.textContent = `${checks.join('\n')}\n\nFAIL ${error.stack || error.message}`;
+        document.body.dataset.testStatus = 'fail';
+      }
+    })();
+  </script>
+</body>
+</html>
