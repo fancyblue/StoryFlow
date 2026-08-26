@@ -6,6 +6,8 @@
     ['reviewShrinkBtn', -1],
     ['reviewExpandBtn', 1]
   ]);
+  let manualPointerDrag = null;
+  let suppressManualClickUntil = 0;
 
   function sourceBlocks() {
     return parseBlocks(activeChapter()?.draft || '');
@@ -127,21 +129,38 @@
     };
   }
 
+  function manualBoundaryActive() {
+    return document.getElementById('reviewManualBoundaryBtn')?.getAttribute('aria-pressed') === 'true';
+  }
+
+  function boundaryTarget(end, currentEnd) {
+    const current = end === currentEnd;
+    const classes = ['manual-boundary-target'];
+    if (current) classes.push('range-boundary', 'range-end', 'is-current');
+    const label = current
+      ? '這一篇結束 · 拖曳調整'
+      : '設為本篇結尾';
+    return `<button type="button" class="${classes.join(' ')}" data-boundary-end="${end}"${current ? ' draggable="true"' : ''} aria-label="${label}"><span aria-hidden="true">${current ? '⠿' : ''}</span><span>${label}</span></button>`;
+  }
+
   function formattedFullChapterHTML() {
     const blocks = sourceBlocks();
     if (!blocks.length) return '目前章節沒有內容。';
     const options = formatOptions(currentReviewPlatform());
     const start = suggestion?.start ?? -1;
     const end = suggestion?.end ?? -1;
+    const manual = manualBoundaryActive();
     const out = [];
 
     blocks.forEach((block, index) => {
       if (index === start) out.push('<span class="range-boundary range-start">──── 這一篇開始 ────</span>\n');
       const line = escapeHtml(applyIndent(block.raw, options.indent));
-      out.push(index >= start && index < end
-        ? `<span class="current-range-highlight">${line}</span>`
-        : line);
-      if (index === end - 1) out.push('\n<span class="range-boundary range-end">──── 這一篇結束 ────</span>');
+      const highlighted = index >= start && index < end;
+      out.push(manual
+        ? `<span class="review-source-block${highlighted ? ' current-range-highlight' : ''}" data-block-index="${index}">${line}</span>`
+        : highlighted ? `<span class="current-range-highlight">${line}</span>` : line);
+      if (manual && index >= start) out.push(`\n${boundaryTarget(index + 1, end)}`);
+      else if (index === end - 1) out.push('\n<span class="range-boundary range-end">──── 這一篇結束 ────</span>');
       if (index >= blocks.length - 1) return;
 
       if (block.strongBoundaryAfter && options.sceneSeparator) {
@@ -169,7 +188,13 @@
     if (previousBox) previousBox.textContent = previous
       ? (platform ? platformFormat(previous.raw, platform) : webFormat(previous.raw))
       : '這是本章第一篇。';
-    if (chars) chars.textContent = `${suggestion.chars.toLocaleString()} 字`;
+    if (chars) {
+      const blocks = sourceBlocks();
+      const remaining = charsBetween(blocks, Number(suggestion.end), blocks.length);
+      chars.textContent = manualBoundaryActive()
+        ? `本篇 ${suggestion.chars.toLocaleString()} 字 · 後續 ${remaining.toLocaleString()} 字`
+        : `${suggestion.chars.toLocaleString()} 字`;
+    }
 
     if (scrollToStart && full) {
       const marker = full.querySelector('.range-start');
@@ -208,12 +233,25 @@
     const blocks = sourceBlocks();
     if (!blocks.length) return;
 
-    const start = Number(suggestion.start);
-    const oldEnd = Number(suggestion.end);
     const nextEnd = targetEnd(direction, blocks);
-    if (nextEnd == null || nextEnd === oldEnd) {
+    if (nextEnd == null || nextEnd === Number(suggestion.end)) {
       syncControlState();
       return;
+    }
+
+    setSuggestionEnd(nextEnd);
+  }
+
+  function setSuggestionEnd(nextEnd) {
+    if (!suggestion) return false;
+    const blocks = sourceBlocks();
+    const start = Number(suggestion.start);
+    const oldEnd = Number(suggestion.end);
+    const boundedEnd = Math.max(start + 1, Math.min(blocks.length, Number(nextEnd)));
+    if (!Number.isInteger(boundedEnd) || boundedEnd === oldEnd) {
+      refreshReview(false);
+      syncControlState();
+      return false;
     }
 
     const titleInput = document.getElementById('suggestionTitleInput');
@@ -221,7 +259,7 @@
     const oldDefaultTitle = defaultSuggestionName(start, oldEnd, blocks);
     const hasCustomTitle = Boolean(currentTitle && currentTitle !== oldDefaultTitle);
 
-    suggestion = applyAutomaticSuggestionName(buildSuggestion(start, nextEnd, blocks), start, nextEnd, blocks);
+    suggestion = applyAutomaticSuggestionName(buildSuggestion(start, boundedEnd, blocks), start, boundedEnd, blocks);
     if (hasCustomTitle) suggestion.name = currentTitle;
     renderSuggestion();
 
@@ -229,6 +267,95 @@
     if (restoredTitle) restoredTitle.value = suggestion.name;
     refreshReview(false);
     syncControlState();
+    return true;
+  }
+
+  function ensureManualBoundaryControls() {
+    const controls = document.getElementById('reviewBoundaryControls');
+    const dialog = document.getElementById('reviewDialog');
+    if (!controls || !dialog) return;
+
+    let button = document.getElementById('reviewManualBoundaryBtn');
+    if (!button) {
+      button = document.createElement('button');
+      button.id = 'reviewManualBoundaryBtn';
+      button.className = 'button tiny ghost';
+      button.type = 'button';
+      button.textContent = '手動微調';
+      button.setAttribute('aria-pressed', 'false');
+      button.setAttribute('data-mobile-safe-write-control', 'true');
+      button.title = '把這一篇的結尾精確移到任一段落後方';
+      controls.appendChild(button);
+    }
+
+    let hint = document.getElementById('manualBoundaryHint');
+    if (!hint) {
+      hint = document.createElement('p');
+      hint.id = 'manualBoundaryHint';
+      hint.className = 'manual-boundary-hint';
+      hint.hidden = true;
+      hint.textContent = '拖曳「這一篇結束」，或點選任一段落間的「設為本篇結尾」。切點只會落在段落之間，不會修改原稿。';
+      document.querySelector('#reviewDialog .review-format-bar')?.insertAdjacentElement('afterend', hint);
+    }
+  }
+
+  function setManualBoundaryMode(active) {
+    ensureManualBoundaryControls();
+    const button = document.getElementById('reviewManualBoundaryBtn');
+    const dialog = document.getElementById('reviewDialog');
+    const hint = document.getElementById('manualBoundaryHint');
+    if (!button || !dialog) return;
+    button.setAttribute('aria-pressed', String(active));
+    button.textContent = active ? '結束微調' : '手動微調';
+    dialog.classList.toggle('manual-boundary-active', active);
+    if (hint) hint.hidden = !active;
+    if (!active) {
+      manualPointerDrag = null;
+      clearManualDropState();
+    }
+    if (active) window.StoryFlowPreviewMode?.setMode?.('review', 'preview');
+    refreshReview(false);
+    if (active) {
+      const full = document.getElementById('dialogReviewFull');
+      const align = () => {
+        const marker = full?.querySelector('.manual-boundary-target.is-current');
+        if (!full || !marker) return;
+        const fullRect = full.getBoundingClientRect();
+        const markerRect = marker.getBoundingClientRect();
+        full.scrollTop = Math.max(0, full.scrollTop + markerRect.top - fullRect.top - full.clientHeight / 2);
+        marker.focus({ preventScroll: true });
+      };
+      requestAnimationFrame(() => requestAnimationFrame(align));
+      window.setTimeout(align, 90);
+    }
+  }
+
+  function clearManualDropState() {
+    document.querySelectorAll('.manual-boundary-target.is-drop-target').forEach(target => target.classList.remove('is-drop-target'));
+    document.getElementById('reviewDialog')?.classList.remove('manual-boundary-dragging');
+  }
+
+  function manualTargetForDrag(event) {
+    const full = document.getElementById('dialogReviewFull');
+    if (!full || !full.contains(event.target)) return null;
+    const direct = event.target?.closest?.('.manual-boundary-target');
+    if (direct) return direct;
+    const targets = [...full.querySelectorAll('.manual-boundary-target')];
+    return targets.reduce((closest, target) => {
+      const rect = target.getBoundingClientRect();
+      const distance = Math.abs(event.clientY - (rect.top + rect.height / 2));
+      return !closest || distance < closest.distance ? { target, distance } : closest;
+    }, null)?.target || null;
+  }
+
+  function manualTargetNearY(clientY) {
+    const full = document.getElementById('dialogReviewFull');
+    const targets = [...(full?.querySelectorAll('.manual-boundary-target') || [])];
+    return targets.reduce((closest, target) => {
+      const rect = target.getBoundingClientRect();
+      const distance = Math.abs(clientY - (rect.top + rect.height / 2));
+      return !closest || distance < closest.distance ? { target, distance } : closest;
+    }, null)?.target || null;
   }
 
   // Capture before every older target-level handler. One click means one source scene move.
@@ -242,6 +369,106 @@
     adjust(direction);
   }, true);
 
+  document.addEventListener('click', event => {
+    if (event.target?.closest?.('#reviewManualBoundaryBtn')) {
+      const active = document.getElementById('reviewManualBoundaryBtn')?.getAttribute('aria-pressed') !== 'true';
+      setManualBoundaryMode(active);
+      return;
+    }
+    const target = event.target?.closest?.('#dialogReviewFull .manual-boundary-target');
+    if (!target || !manualBoundaryActive()) return;
+    if (Date.now() < suppressManualClickUntil) {
+      event.preventDefault();
+      return;
+    }
+    setSuggestionEnd(Number(target.dataset.boundaryEnd));
+  });
+
+  document.addEventListener('pointerdown', event => {
+    const target = event.target?.closest?.('#dialogReviewFull .manual-boundary-target.is-current');
+    if (!target || !manualBoundaryActive() || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    manualPointerDrag = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      end: Number(target.dataset.boundaryEnd),
+      moved: false
+    };
+    target.setPointerCapture?.(event.pointerId);
+    document.getElementById('reviewDialog')?.classList.add('manual-boundary-dragging');
+    event.preventDefault();
+  });
+
+  document.addEventListener('pointermove', event => {
+    if (!manualPointerDrag || event.pointerId !== manualPointerDrag.pointerId) return;
+    const distance = Math.hypot(event.clientX - manualPointerDrag.startX, event.clientY - manualPointerDrag.startY);
+    if (distance < 4 && !manualPointerDrag.moved) return;
+    manualPointerDrag.moved = true;
+    const target = manualTargetNearY(event.clientY);
+    if (target) {
+      document.querySelectorAll('.manual-boundary-target.is-drop-target').forEach(item => item.classList.remove('is-drop-target'));
+      target.classList.add('is-drop-target');
+      manualPointerDrag.end = Number(target.dataset.boundaryEnd);
+    }
+
+    const full = document.getElementById('dialogReviewFull');
+    const rect = full?.getBoundingClientRect();
+    if (full && rect) {
+      if (event.clientY < rect.top + 44) full.scrollTop -= 22;
+      else if (event.clientY > rect.bottom - 44) full.scrollTop += 22;
+    }
+    event.preventDefault();
+  });
+
+  function finishManualPointerDrag(event) {
+    if (!manualPointerDrag || event.pointerId !== manualPointerDrag.pointerId) return;
+    const { moved, end } = manualPointerDrag;
+    manualPointerDrag = null;
+    clearManualDropState();
+    if (!moved) return;
+    suppressManualClickUntil = Date.now() + 350;
+    event.preventDefault();
+    setSuggestionEnd(end);
+  }
+
+  document.addEventListener('pointerup', finishManualPointerDrag);
+  document.addEventListener('pointercancel', finishManualPointerDrag);
+
+  document.addEventListener('dragstart', event => {
+    const target = event.target?.closest?.('#dialogReviewFull .manual-boundary-target.is-current');
+    if (!target || !manualBoundaryActive()) return;
+    event.dataTransfer?.setData('text/plain', target.dataset.boundaryEnd || '');
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+    document.getElementById('reviewDialog')?.classList.add('manual-boundary-dragging');
+  });
+
+  document.addEventListener('dragover', event => {
+    const target = manualTargetForDrag(event);
+    if (!target || !manualBoundaryActive()) return;
+    event.preventDefault();
+    clearManualDropState();
+    document.getElementById('reviewDialog')?.classList.add('manual-boundary-dragging');
+    target.classList.add('is-drop-target');
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+
+    const full = document.getElementById('dialogReviewFull');
+    const rect = full?.getBoundingClientRect();
+    if (!full || !rect) return;
+    if (event.clientY < rect.top + 44) full.scrollTop -= 22;
+    else if (event.clientY > rect.bottom - 44) full.scrollTop += 22;
+  });
+
+  document.addEventListener('drop', event => {
+    const target = manualTargetForDrag(event);
+    if (!target || !manualBoundaryActive()) return;
+    event.preventDefault();
+    const end = Number(target.dataset.boundaryEnd);
+    clearManualDropState();
+    setSuggestionEnd(end);
+  });
+
+  document.addEventListener('dragend', clearManualDropState);
+
   document.addEventListener('change', event => {
     if (event.target?.id === 'reviewPlatformSelect') refreshReview(false);
   });
@@ -249,11 +476,15 @@
   document.addEventListener('click', event => {
     if (event.target?.closest?.('#openSplitReviewBtn')) {
       setTimeout(() => {
+        ensureManualBoundaryControls();
+        setManualBoundaryMode(false);
         refreshReview(true);
         syncControlState();
       }, 0);
     }
   });
+
+  document.getElementById('reviewDialog')?.addEventListener('close', () => setManualBoundaryMode(false));
 
   const previousRenderSuggestion = window.renderSuggestion;
   window.renderSuggestion = function renderSuggestionWithSceneControls() {
@@ -269,6 +500,8 @@
   window.StoryFlowSourceParagraphs = sourceBlocks;
   window.StoryFlowSceneEnds = () => sceneEnds(sourceBlocks());
   window.StoryFlowRefreshReviewFromSource = refreshReview;
+  window.StoryFlowSetSuggestionEnd = setSuggestionEnd;
 
+  ensureManualBoundaryControls();
   syncControlState();
 })();

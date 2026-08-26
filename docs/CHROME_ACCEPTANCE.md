@@ -31,7 +31,18 @@ Use this checklist before treating a release as ready for daily writing. It exer
 - [ ] Apply the update and confirm the work contains the new text.
 - [ ] Use “復原上次來源更新” once and confirm the old text returns; confirm the action is no longer offered afterward.
 
-## 3. Publishing and destructive-action safety
+## 3. Split precision
+
+Before publishing, verify split precision with a disposable chapter containing one long scene and at least six paragraphs but no blank scene break:
+
+- [ ] Generate the default suggestion and confirm it remains on a real scene ending.
+- [ ] Open “切篇確認” and confirm “少一個場景／多一個場景” still perform coarse scene-level movement.
+- [ ] Choose “手動微調”. Confirm the full chapter shows one selectable boundary after each eligible paragraph and the current “這一篇結束” line is visibly draggable.
+- [ ] Drag the ending to another paragraph, then use a different paragraph's click target. Confirm “本篇／後續” counts, highlight and current preview update immediately.
+- [ ] Give the suggestion a custom title before moving it and confirm the title is preserved.
+- [ ] Close and reopen confirmation; confirm manual mode resets. Confirm the source draft is byte-for-byte unchanged and no confirmed publishing article was rewritten.
+
+## 4. Publishing and destructive-action safety
 
 - [ ] Create and save one test publishing part, then confirm its Markdown exists under `Works/<work>/<chapter>/`.
 - [ ] Give the part a different publishing title. Confirm the list shows it as primary with the internal name beneath, the Markdown filename does not change, metadata contains `publishTitle`, and preview can copy title separately from content.
@@ -52,7 +63,7 @@ Use this checklist before treating a release as ready for daily writing. It exer
 - [ ] Delete a disposable work and confirm a `workspace.before-project-delete-*.json` file appears.
 - [ ] Confirm the Google Doc itself was not changed or deleted.
 
-## 4. Backup and recovery
+## 5. Backup and recovery
 
 - [ ] Make at least two separate workspace saves and confirm `workspace.backup.json` contains the prior valid workspace.
 - [ ] Open Settings → Backup and Recovery and confirm the current workspace, latest backup and Recovery counts are readable.
@@ -62,13 +73,13 @@ Use this checklist before treating a release as ready for daily writing. It exer
 
 The one-hour interval and three-file limit for `workspace.auto-*` rolling backups are covered by automated policy tests and code review; the acceptance run does not need to wait several hours.
 
-## 5. Leave this device
+## 6. Leave this device
 
 - [ ] Choose “離開此裝置” and confirm the browser forgets Google and the folder connection.
 - [ ] Confirm files inside `StoryFlow-Acceptance` still exist.
 - [ ] Reconnect the folder or import `settings.json` and confirm setup can be restored without committing personal data to GitHub.
 
-## 6. Phone Drive safety
+## 7. Phone Drive safety
 
 - [ ] Use Chrome device emulation or a phone with a disposable cloud-backed StoryFlow folder; never use real manuscript data.
 - [ ] Open a new phone tab and confirm the main surface shows only the compact “唯讀” label before any edit.
