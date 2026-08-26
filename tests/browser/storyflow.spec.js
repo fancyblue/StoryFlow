@@ -190,14 +190,19 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
       };
     };
     return {
+      open: values(document.querySelector('.project-open-btn')),
       chapters: values(document.querySelector('.project-manage-chapters-btn')),
       publishing: values(document.querySelector('.project-publish-btn'))
     };
   });
   expect(managementStyles.chapters).toEqual(managementStyles.publishing);
   expect(managementStyles.chapters.height).toBe('40px');
-  expect(managementStyles.chapters.fontSize).toBe('13.5px');
-  expect(managementStyles.chapters.backgroundColor).not.toBe('rgb(255, 255, 255)');
+  expect(managementStyles.chapters.fontSize).toBe('14px');
+  expect(managementStyles.chapters.backgroundColor).toBe('rgb(79, 143, 190)');
+  expect(managementStyles.chapters.color).toBe('rgb(255, 255, 255)');
+  expect(managementStyles.open.height).toBe(managementStyles.chapters.height);
+  expect(managementStyles.open.fontSize).toBe(managementStyles.chapters.fontSize);
+  expect(managementStyles.open.fontWeight).toBe(managementStyles.chapters.fontWeight);
 
   const newWorkStyle = await page.locator('#projectsNewWorkBtn').evaluate(button => {
     const rect = button.getBoundingClientRect();
@@ -272,13 +277,15 @@ test('split confirmation can move an unconfirmed ending between paragraphs witho
       visibleColumns: columns.filter(column => getComputedStyle(column).display !== 'none').length,
       maxCandidateHeight: Math.max(...candidates.map(target => target.getBoundingClientRect().height)),
       currentHeight: current?.getBoundingClientRect().height || 0,
-      quietLabelOpacity: quietLabel ? getComputedStyle(quietLabel).opacity : ''
+      quietLabelOpacity: quietLabel ? getComputedStyle(quietLabel).opacity : '',
+      charsFontSize: parseFloat(getComputedStyle(node.querySelector('#reviewCurrentChars')).fontSize)
     };
   });
   expect(manualLayout.visibleColumns).toBe(2);
   expect(manualLayout.maxCandidateHeight).toBeLessThanOrEqual(18);
   expect(manualLayout.currentHeight).toBeLessThanOrEqual(24);
   expect(manualLayout.quietLabelOpacity).toBe('0');
+  expect(manualLayout.charsFontSize).toBeLessThanOrEqual(13);
   await expect.poll(() => dialog.locator('.manual-boundary-target.is-current').evaluate(marker => {
     const full = marker.closest('#dialogReviewFull');
     const markerRect = marker.getBoundingClientRect();

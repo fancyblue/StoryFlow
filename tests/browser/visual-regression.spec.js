@@ -27,6 +27,7 @@ async function openManualWork(page) {
 }
 
 async function addVisualChapters(page, total = 18) {
+  await expect(page.locator('#chapterList .chapter-row')).toHaveCount(1);
   await page.evaluate(count => {
     const list = document.getElementById('chapterList');
     const row = list?.querySelector('.chapter-row');
@@ -43,6 +44,7 @@ async function addVisualChapters(page, total = 18) {
     if (source) source.scrollTop = source.scrollHeight;
     window.scrollTo(0, document.body.scrollHeight);
   }, total);
+  await expect(page.locator('#chapterList .chapter-row')).toHaveCount(total);
 }
 
 test('workspace keeps a long chapter rail contained at desktop widths', async ({ page }) => {

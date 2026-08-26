@@ -13,7 +13,7 @@
   height:40px!important;
   padding:0 14px!important;
   border-radius:10px!important;
-  font-size:14.5px!important;
+  font-size:14px!important;
   font-weight:850!important;
 }
 .projects-library{gap:9px!important}
@@ -82,32 +82,41 @@
 }
 .project-library-actions > .button,
 .project-publishing-cluster > .button{
-  min-height:36px!important;
-  height:36px!important;
+  min-height:40px!important;
+  height:40px!important;
   padding:0 12px!important;
   border-radius:9px!important;
-  font-size:12px!important;
-  font-weight:800!important;
+  font-size:14px!important;
+  font-weight:850!important;
   white-space:nowrap!important;
 }
-.project-library-actions .project-open-btn:not(.primary){
-  border-color:#cfe0ec!important;
-  background:#f4f9fd!important;
-  color:#2f6f9f!important;
+.project-library-card .project-library-actions > .project-open-btn{
+  min-height:40px!important;
+  height:40px!important;
+  padding:0 12px!important;
+  border-radius:9px!important;
+  font-size:14px!important;
+  font-weight:850!important;
 }
-/* Chapter and publishing management are frequent sibling actions. A light blue fill
-   makes them discoverable without competing with the solid primary Workbench action. */
+.project-library-actions .project-open-btn:not(.primary){
+  border-color:#bfd7e7!important;
+  background:#fff!important;
+  color:#285f88!important;
+}
+/* Chapter and publishing management are frequent destination actions. Give them a
+   clear medium-blue fill; the darker Workbench button still indicates current context. */
 .project-library-card .project-library-actions > .project-manage-chapters-btn,
 .project-library-card .project-library-actions > .project-publish-btn,
 .project-library-card .project-publishing-cluster > .project-publish-btn{
   min-height:40px!important;
   height:40px!important;
   padding:0 14px!important;
-  border-color:#a9cde2!important;
-  background:#eaf4fa!important;
-  color:#285f88!important;
-  font-size:13.5px!important;
+  border-color:#4f8fbe!important;
+  background:#4f8fbe!important;
+  color:#fff!important;
+  font-size:14px!important;
   font-weight:850!important;
+  box-shadow:0 2px 6px rgba(45,93,133,.12)!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible,
@@ -115,14 +124,15 @@
 .project-library-card .project-library-actions > .project-publish-btn:focus-visible,
 .project-library-card .project-publishing-cluster > .project-publish-btn:hover,
 .project-library-card .project-publishing-cluster > .project-publish-btn:focus-visible{
-  border-color:#78acd0!important;
-  background:#dceefa!important;
-  color:#234f72!important;
+  border-color:#3975a7!important;
+  background:#3975a7!important;
+  color:#fff!important;
+  box-shadow:0 3px 9px rgba(45,93,133,.18)!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:#78acd0!important;
-  background:#d7ebf7!important;
-  color:#234f72!important;
+  border-color:#2d5d85!important;
+  background:#2d5d85!important;
+  color:#fff!important;
 }
 
 /* Publishing progress + its management action live together inside the metadata row.
