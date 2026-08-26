@@ -41,6 +41,8 @@ Destructive or overwrite flows must call `StoryFlowProjectPersistence.prepareRec
 
 Save-state UI describes local file persistence as preparing, saving or saved. Avoid the word “sync” for ordinary folder writes; reserve source-sync language for comparing or applying Google Docs changes.
 
+`formattedBlockBreak()` in `src/core/app.js` is the canonical output boundary rule shared by web/platform text and split-review surfaces. Ordinary paragraph spacing and `strongBoundaryAfter` are separate signals: compact output may use one newline between paragraphs, but a source scene boundary always produces either the configured marker or a two-newline blank boundary. Feature previews must call this helper instead of reimplementing scene-break decisions.
+
 Chrome stores only the selected directory handle in IndexedDB. `src/connection/folder-session.js` requires an explicit reconnect on a cold tab, while `src/connection/quick-start.js` presents the remembered folder name and routes the reconnect through the normal workspace/settings loader. “Leave this device” removes both the session values and directory handle.
 
 Phone sessions default to read-only because a browser can verify neither whether a cloud-backed file provider has downloaded the newest file nor whether pending uploads have completed. Read-only mode keeps folder reconnect, settings import and reading available, but guards `saveWorkspace`, `saveStoryFlowSettings`, Markdown writes, backup/recovery replacement and the final `saveState` wrapper. The main surface exposes only a compact state indicator; the session-scoped editing switch belongs to Settings. Enabling requires an online connected folder, rehydrates `workspace.json`, and refuses to unlock when reload fails or Recovery is pending. Disabling flushes the workspace before returning to read-only. Desktop behavior must remain unchanged.
@@ -50,6 +52,8 @@ Phone sessions default to read-only because a browser can verify neither whether
 The repository root contains entry assets only. Runtime JavaScript lives under domain folders in `src/`; dormant historical scripts are isolated in `src/legacy/` and are not part of the asset manifest. Script order remains explicit in `app-loader.js` until each domain can be migrated as one unit.
 
 CSS owned by a page domain lives under `styles/domains/`. A domain may keep a foundation file and one explicitly late layout/refinement file when the existing cascade boundary is part of the UI contract. Page composition, grid placement, responsive order and overflow boundaries belong there instead of being spread across feature styles or injected by JavaScript.
+
+The source panel remains a bounded scrolling container. `src/projects/chapter-management.js` preserves its scroll offset around chapter rerenders and chooses whether the contextual menu opens above or below the row; CSS must not switch the panel to unbounded overflow when a menu opens.
 
 Shared interaction vocabulary is documented in [UI_SYSTEM.md](UI_SYSTEM.md), and cross-page user flows are documented in [UX_FLOW.md](UX_FLOW.md). New-work creation is a pending transaction owned by `src/ui/navigation.js`: source modules may collect and preview data, but must call `StoryFlowNewWorkFlow.commit()` only after confirmation or `.cancel()` on dismissal. Opening a creation dialog must never create an empty project.
 

@@ -41,12 +41,23 @@
   display:none!important;
 }
 
-/* Edit mode explicitly opts into the shared sticky dialog footer. The dedicated
-   class is added by manual-chapter-edit.js so creation mode keeps its compact
-   inline action row while editing always gets one predictable footer layout. */
+/* Edit is a compact form, not a viewport-height workspace. Explicit fit-content
+   prevents the native dialog box and its footer from stretching to max-height. */
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id]{
+  height:fit-content!important;
+}
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] > .source-editor-card{
+  height:fit-content!important;
+  min-height:0!important;
+}
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] #manualSourceText{
+  height:clamp(240px,36dvh,360px)!important;
+}
+
+/* Edit mode reuses the shared footer vocabulary, but keeps the footer in normal
+   flow so creation and editing both end immediately after their form content. */
 #manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-source-actions.manual-chapter-edit-actions.sticky-dialog-actions{
-  position:sticky!important;
-  bottom:0!important;
+  position:static!important;
   z-index:8!important;
   display:flex!important;
   align-items:center!important;

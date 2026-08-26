@@ -179,12 +179,7 @@
       pieces.push(index >= start && index < end ? `<span class="current-range-highlight">${line}</span>` : line);
       if (index === end - 1) pieces.push('\n<span class="range-boundary">──── 這一篇結束 ────</span>');
       if (index < blocks.length - 1) {
-        if (block.strongBoundaryAfter && options.sceneSeparator) {
-          const marker = escapeHtml(options.marker || state.sceneMarker);
-          pieces.push(options.paragraphSpacing ? `\n\n${marker}\n\n` : `\n${marker}\n`);
-        } else {
-          pieces.push(options.paragraphSpacing ? '\n\n' : '\n');
-        }
+        pieces.push(escapeHtml(formattedBlockBreak(block, options)));
       }
     });
     return pieces.join('');

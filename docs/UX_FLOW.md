@@ -44,6 +44,13 @@ SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認�
 - The review toolbar shows both current-part and remaining-unconfirmed character counts while manual mode is active. The current title, start boundary and source text remain unchanged when the end moves.
 - Scene-level controls remain available outside manual mode. Closing the confirmation dialog exits manual mode, and confirmed or published parts are never retroactively re-split by this interaction.
 - A single source paragraph cannot be cut internally. The author must first add a real paragraph break to the source if sentence-level splitting is required.
+- Platform paragraph spacing and scene separation are independent. Compact paragraph output uses one newline between ordinary paragraphs, but every original scene boundary keeps either the configured marker or, when the marker is hidden, one blank line.
+
+## Navigating a long chapter list
+
+- The chapter list is an independently scrollable source rail on desktop. Selecting a lower chapter rerenders the active state without returning the rail or page to the top.
+- A row's `⋯` menu opens toward the available space. Near the bottom it opens upward; opening or closing it never expands the source card or moves SMART SPLIT.
+- “編輯章節” opens the selected manual article in a compact dialog. Cancel or close returns to the same work without changing the chapter.
 
 ## Destructive actions
 

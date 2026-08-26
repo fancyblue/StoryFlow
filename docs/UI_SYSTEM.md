@@ -33,6 +33,8 @@ Current shared disclosures include workspace work switching, Smart Split prefere
 
 Do not place a destructive action beside the primary action when an overflow menu can keep the decision hierarchy clearer.
 
+“管理章節” and “管理發布” are sibling disclosure/navigation actions in a work card. They use the same secondary button size, border, background and typography; only the open state may add a blue selected treatment. Do not assign a separate warm palette to one of them.
+
 Split confirmation has two precision levels. “少一個場景／多一個場景” are coarse directional actions and keep their arrows; “手動微調” is a pressed-state mode button, not a disclosure. In manual mode, the full-chapter column is the editing surface: the current ending is a solid draggable blue line, alternative paragraph endings are quiet dashed full-width targets, and every drag target must also work by click and keyboard. The toolbar reports “本篇／後續” character counts. Manual targets appear only for the current unconfirmed range and never imply that source prose is editable.
 
 Publishing rows keep article-level editing inside the expanded “管理發布” region. The publishing-title editor appears first, followed by private article images, the afterword editor and platform status because these article-level values affect every platform. The list uses the reader-facing publishing title as the primary label and adds the internal name only when different. Compact “附圖 N 張” and “有後記 N 字” badges expose state without expanding the row, while the preview dialog owns the final include/exclude choice. Preview keeps “複製標題” and “複製內容” separate.
@@ -48,6 +50,13 @@ Each platform row uses two information lines: platform/status first, publication
 - Source chooser → editor → preview are handoffs, so only one dialog is open at a time.
 - Closing a creation dialog preserves the existing work and creates nothing.
 - Validation happens in place before the dialog advances.
+- Manual chapter editing uses a compact fit-content dialog. Its textarea may grow within a viewport cap, but the action footer stays directly after the form instead of stretching to the bottom of the screen.
+
+## Long lists and contextual menus
+
+- The desktop chapter rail owns its vertical scrolling. Selecting a chapter preserves that rail position even when the list rerenders.
+- Opening a chapter overflow menu must not change the source panel from contained scrolling to page-height content. Near the panel bottom, the menu opens upward and remains inside the visible viewport.
+- Main workspace content must keep its grid position while the source rail scrolls or a row menu opens.
 
 ## Command search
 

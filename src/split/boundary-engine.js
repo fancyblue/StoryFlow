@@ -163,12 +163,7 @@
       else if (index === end - 1) out.push('\n<span class="range-boundary range-end">──── 這一篇結束 ────</span>');
       if (index >= blocks.length - 1) return;
 
-      if (block.strongBoundaryAfter && options.sceneSeparator) {
-        const marker = escapeHtml(options.marker || state.sceneMarker || '＊＊＊');
-        out.push(options.paragraphSpacing ? `\n\n${marker}\n\n` : `\n${marker}\n`);
-      } else {
-        out.push(options.paragraphSpacing ? '\n\n' : '\n');
-      }
+      out.push(escapeHtml(formattedBlockBreak(block, options)));
     });
     return out.join('');
   }

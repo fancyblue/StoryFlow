@@ -61,6 +61,135 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
   expect(pageErrors).toEqual([]);
 });
 
+test('long chapter rail keeps its scroll position, menus contained, and edit dialog compact', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '長章節清單測試' }, { quiet: true });
+    state.chapters = Array.from({ length: 24 }, (_, index) => ({
+      id: `long-chapter-${index + 1}`,
+      title: `${String(index + 1).padStart(2, '0')}、測試章節`,
+      draft: `第 ${index + 1} 章內容。`,
+      confirmedBlockCount: 0,
+      parts: []
+    }));
+    state.activeChapterId = state.chapters[0].id;
+    renderAll();
+  });
+
+  const panel = page.locator('.source-panel');
+  await panel.evaluate(element => { element.scrollTop = element.scrollHeight; });
+  const beforeSelect = await panel.evaluate(element => ({
+    scrollTop: element.scrollTop,
+    height: element.getBoundingClientRect().height,
+    windowY: window.scrollY
+  }));
+  expect(beforeSelect.scrollTop).toBeGreaterThan(0);
+
+  await page.locator('#chapterList .chapter-main-button').last().click();
+  await expect.poll(() => page.evaluate(() => state.activeChapterId)).toBe('long-chapter-24');
+  const afterSelect = await panel.evaluate(element => ({ scrollTop: element.scrollTop, windowY: window.scrollY }));
+  expect(Math.abs(afterSelect.scrollTop - beforeSelect.scrollTop)).toBeLessThanOrEqual(2);
+  expect(afterSelect.windowY).toBe(beforeSelect.windowY);
+
+  await page.locator('#chapterList .chapter-more-button').last().click();
+  const menu = page.locator('#chapterList .chapter-row-action-menu:not([hidden])');
+  await expect(menu).toBeVisible();
+  await expect(menu).toHaveClass(/opens-up/);
+  const openLayout = await page.evaluate(() => {
+    const source = document.querySelector('.source-panel');
+    const actionMenu = document.querySelector('#chapterList .chapter-row-action-menu:not([hidden])');
+    const splitter = document.querySelector('.splitter-panel');
+    const sourceRect = source.getBoundingClientRect();
+    const menuRect = actionMenu.getBoundingClientRect();
+    return {
+      sourceHeight: sourceRect.height,
+      sourceBottom: sourceRect.bottom,
+      menuTop: menuRect.top,
+      menuBottom: menuRect.bottom,
+      splitterTop: splitter.getBoundingClientRect().top,
+      viewportHeight: innerHeight,
+      overflowY: getComputedStyle(source).overflowY,
+      windowY: window.scrollY
+    };
+  });
+  expect(Math.abs(openLayout.sourceHeight - beforeSelect.height)).toBeLessThanOrEqual(2);
+  expect(openLayout.sourceHeight).toBeLessThanOrEqual(openLayout.viewportHeight - 40);
+  expect(openLayout.menuTop).toBeGreaterThanOrEqual(0);
+  expect(openLayout.menuBottom).toBeLessThanOrEqual(Math.min(openLayout.sourceBottom, openLayout.viewportHeight));
+  expect(openLayout.splitterTop).toBeLessThan(openLayout.viewportHeight);
+  expect(openLayout.overflowY).toBe('auto');
+  expect(openLayout.windowY).toBe(beforeSelect.windowY);
+
+  await menu.getByRole('menuitem', { name: /編輯章節/ }).click();
+  await expect(page.locator('#manualSourceDialog')).toBeVisible();
+  const editLayout = await page.locator('#manualSourceDialog').evaluate(dialog => {
+    const card = dialog.querySelector('.source-editor-card').getBoundingClientRect();
+    const actions = dialog.querySelector('.manual-source-actions').getBoundingClientRect();
+    const rect = dialog.getBoundingClientRect();
+    return {
+      dialogHeight: rect.height,
+      viewportHeight: innerHeight,
+      cardBottom: card.bottom,
+      actionsBottom: actions.bottom,
+      actionsHeight: actions.height,
+      footerPosition: getComputedStyle(dialog.querySelector('.manual-source-actions')).position
+    };
+  });
+  expect(editLayout.dialogHeight).toBeLessThan(editLayout.viewportHeight - 40);
+  expect(editLayout.cardBottom - editLayout.actionsBottom).toBeLessThanOrEqual(2);
+  expect(editLayout.actionsHeight).toBeLessThanOrEqual(82);
+  expect(editLayout.footerPosition).toBe('static');
+
+  await page.locator('#closeManualSourceDialog').click();
+  await page.locator('.nav-item[data-view="projects"]').click();
+  const manageChapters = page.getByRole('button', { name: '管理章節', exact: true });
+  const managePublishing = page.getByRole('button', { name: '管理發布', exact: true });
+  await expect(manageChapters).toBeVisible();
+  await expect(managePublishing).toBeVisible();
+  const managementStyles = await page.evaluate(() => {
+    const values = element => {
+      const style = getComputedStyle(element);
+      return {
+        height: style.height,
+        borderColor: style.borderColor,
+        backgroundColor: style.backgroundColor,
+        color: style.color,
+        borderRadius: style.borderRadius,
+        fontSize: style.fontSize,
+        fontWeight: style.fontWeight
+      };
+    };
+    return {
+      chapters: values(document.querySelector('.project-manage-chapters-btn')),
+      publishing: values(document.querySelector('.project-publish-btn'))
+    };
+  });
+  expect(managementStyles.chapters).toEqual(managementStyles.publishing);
+  expect(pageErrors).toEqual([]);
+});
+
+test('compact paragraph output preserves original scene boundaries', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+  const output = await page.evaluate(() => ({
+    visibleMarker: webFormat('第一場最後一段。\n\n第二場第一段。', {
+      indent: 'none', paragraphSpacing: false, sceneSeparator: true, marker: '＊＊＊'
+    }),
+    hiddenMarker: webFormat('第一場最後一段。\n\n第二場第一段。', {
+      indent: 'none', paragraphSpacing: false, sceneSeparator: false, marker: '＊＊＊'
+    }),
+    normalParagraphs: webFormat('一般第一段。\n一般第二段。', {
+      indent: 'none', paragraphSpacing: false, sceneSeparator: false, marker: '＊＊＊'
+    })
+  }));
+  expect(output.visibleMarker).toBe('第一場最後一段。\n＊＊＊\n第二場第一段。');
+  expect(output.hiddenMarker).toBe('第一場最後一段。\n\n第二場第一段。');
+  expect(output.normalParagraphs).toBe('一般第一段。\n一般第二段。');
+  expect(pageErrors).toEqual([]);
+});
+
 test('split confirmation can move an unconfirmed ending between paragraphs without changing the source', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 900 });

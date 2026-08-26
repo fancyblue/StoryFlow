@@ -41,8 +41,17 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Drag the ending to another paragraph, then use a different paragraph's click target. Confirm “本篇／後續” counts, highlight and current preview update immediately.
 - [ ] Give the suggestion a custom title before moving it and confirm the title is preserved.
 - [ ] Close and reopen confirmation; confirm manual mode resets. Confirm the source draft is byte-for-byte unchanged and no confirmed publishing article was rewritten.
+- [ ] Turn off “段落間空一行” for a disposable platform. Confirm ordinary paragraphs are compact but an original scene boundary still shows the configured marker.
+- [ ] Also turn off “顯示場景分隔符”. Confirm the marker disappears but one blank line still separates the two scenes.
 
-## 4. Publishing and destructive-action safety
+## 4. Long chapter and work-management layout
+
+- [ ] Create or load a disposable work with enough chapters to scroll the source rail. Select a chapter near the bottom and confirm neither the page nor chapter rail jumps to the top.
+- [ ] Open the bottom chapter's `⋯` menu. Confirm it opens upward inside the visible rail and SMART SPLIT does not move down or change width.
+- [ ] Open “編輯章節”. Confirm the footer follows the form without a large blank region below the buttons, then close without saving.
+- [ ] In Works, confirm “管理章節” and “管理發布” use the same secondary-button styling; opening chapter management may use the shared blue selected state.
+
+## 5. Publishing and destructive-action safety
 
 - [ ] Create and save one test publishing part, then confirm its Markdown exists under `Works/<work>/<chapter>/`.
 - [ ] Give the part a different publishing title. Confirm the list shows it as primary with the internal name beneath, the Markdown filename does not change, metadata contains `publishTitle`, and preview can copy title separately from content.
@@ -63,7 +72,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Delete a disposable work and confirm a `workspace.before-project-delete-*.json` file appears.
 - [ ] Confirm the Google Doc itself was not changed or deleted.
 
-## 5. Backup and recovery
+## 6. Backup and recovery
 
 - [ ] Make at least two separate workspace saves and confirm `workspace.backup.json` contains the prior valid workspace.
 - [ ] Open Settings → Backup and Recovery and confirm the current workspace, latest backup and Recovery counts are readable.
@@ -73,13 +82,13 @@ Before publishing, verify split precision with a disposable chapter containing o
 
 The one-hour interval and three-file limit for `workspace.auto-*` rolling backups are covered by automated policy tests and code review; the acceptance run does not need to wait several hours.
 
-## 6. Leave this device
+## 7. Leave this device
 
 - [ ] Choose “離開此裝置” and confirm the browser forgets Google and the folder connection.
 - [ ] Confirm files inside `StoryFlow-Acceptance` still exist.
 - [ ] Reconnect the folder or import `settings.json` and confirm setup can be restored without committing personal data to GitHub.
 
-## 7. Phone Drive safety
+## 8. Phone Drive safety
 
 - [ ] Use Chrome device emulation or a phone with a disposable cloud-backed StoryFlow folder; never use real manuscript data.
 - [ ] Open a new phone tab and confirm the main surface shows only the compact “唯讀” label before any edit.

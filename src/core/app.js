@@ -162,6 +162,17 @@ function applyIndent(text, indent) {
   return `　　${clean}`;
 }
 
+// Paragraph spacing and scene separation are independent authoring signals.
+// Even when normal paragraphs are compact and the visible marker is disabled,
+// preserve one blank line at an original scene boundary so scenes never merge.
+function formattedBlockBreak(block, options = {}) {
+  const paragraphSpacing = Boolean(options.paragraphSpacing);
+  if (!block?.strongBoundaryAfter) return paragraphSpacing ? '\n\n' : '\n';
+  if (!options.sceneSeparator) return '\n\n';
+  const marker = String(options.marker ?? state.sceneMarker ?? '＊＊＊');
+  return paragraphSpacing ? `\n\n${marker}\n\n` : `\n${marker}\n`;
+}
+
 function webFormat(text, options = {}) {
   const indent = options.indent ?? state.formatting.defaultIndent;
   const paragraphSpacing = options.paragraphSpacing ?? state.formatting.defaultParagraphSpacing;
@@ -173,11 +184,7 @@ function webFormat(text, options = {}) {
   blocks.forEach((block, index) => {
     output += applyIndent(block.raw, indent);
     if (index >= blocks.length - 1) return;
-    if (block.strongBoundaryAfter && sceneSeparator) {
-      output += paragraphSpacing ? `\n\n${marker}\n\n` : `\n${marker}\n`;
-    } else {
-      output += paragraphSpacing ? '\n\n' : '\n';
-    }
+    output += formattedBlockBreak(block, { paragraphSpacing, sceneSeparator, marker });
   });
   return output;
 }
