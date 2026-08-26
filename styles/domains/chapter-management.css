@@ -96,26 +96,26 @@
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn{
   white-space:nowrap!important;
-  border-color:#4f8fbe!important;
-  background:#4f8fbe!important;
+  border-color:var(--sf-primary,#3975a7)!important;
+  background:var(--sf-primary,#3975a7)!important;
   color:#fff!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible{
-  border-color:#3975a7!important;
-  background:#3975a7!important;
+  border-color:var(--sf-primary-hover,#2d5d85)!important;
+  background:var(--sf-primary-hover,#2d5d85)!important;
   color:#fff!important;
   outline:none!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:#2d5d85!important;
-  background:#2d5d85!important;
+  border-color:#234463!important;
+  background:#234463!important;
   color:#fff!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]:focus-visible{
-  border-color:#234f72!important;
-  background:#234f72!important;
+  border-color:#1d3b56!important;
+  background:#1d3b56!important;
   color:#fff!important;
   outline:none!important;
 }
