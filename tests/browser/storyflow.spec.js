@@ -234,14 +234,9 @@ test('split confirmation can move an unconfirmed ending between paragraphs witho
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
-  const originalDraft = [
-    '第一段，長場景仍在繼續。',
-    '第二段，沒有空白場景分隔。',
-    '第三段，適合作為第一篇結尾。',
-    '第四段，下一篇從這裡開始。',
-    '第五段，仍然屬於同一個場景。',
-    '第六段，整個長場景到此結束。'
-  ].join('\n');
+  const originalDraft = Array.from({ length: 18 }, (_, index) =>
+    `第 ${index + 1} 段，這是一個沒有空白場景分隔的長場景內容，用來確認大量段落仍能快速瀏覽。`
+  ).join('\n');
 
   await page.evaluate(draft => {
     StoryFlowProjects.createProject({ title: '手動切點測試' }, { quiet: true });
@@ -256,7 +251,7 @@ test('split confirmation can move an unconfirmed ending between paragraphs witho
 
   await expect(page.locator('#shrinkBtn')).toHaveText('← 少一個場景');
   await expect(page.locator('#expandBtn')).toHaveText('多一個場景 →');
-  await expect.poll(() => page.evaluate(() => suggestion?.end)).toBe(6);
+  await expect.poll(() => page.evaluate(() => suggestion?.end)).toBe(18);
   await page.locator('#suggestionTitleInput').fill('自訂長場景上篇');
   await page.locator('#openSplitReviewBtn').click();
 
@@ -265,9 +260,25 @@ test('split confirmation can move an unconfirmed ending between paragraphs witho
   const manualButton = dialog.getByRole('button', { name: '手動微調', exact: true });
   await manualButton.click();
   await expect(dialog).toHaveClass(/manual-boundary-active/);
-  await expect(dialog.locator('#manualBoundaryHint')).toContainText('不會修改原稿');
-  await expect(dialog.locator('.manual-boundary-target')).toHaveCount(6);
-  await expect(dialog.locator('.manual-boundary-target.is-current')).toHaveAttribute('data-boundary-end', '6');
+  await expect(dialog.locator('#manualBoundaryHint')).toContainText('不修改原稿');
+  await expect(dialog.locator('.manual-boundary-target')).toHaveCount(18);
+  await expect(dialog.locator('.manual-boundary-target.is-current')).toHaveAttribute('data-boundary-end', '18');
+  const manualLayout = await dialog.evaluate(node => {
+    const columns = [...node.querySelectorAll('.review-dialog-grid > .review-column')];
+    const candidates = [...node.querySelectorAll('.manual-boundary-target:not(.is-current)')];
+    const current = node.querySelector('.manual-boundary-target.is-current');
+    const quietLabel = candidates[0]?.querySelector('.manual-boundary-label');
+    return {
+      visibleColumns: columns.filter(column => getComputedStyle(column).display !== 'none').length,
+      maxCandidateHeight: Math.max(...candidates.map(target => target.getBoundingClientRect().height)),
+      currentHeight: current?.getBoundingClientRect().height || 0,
+      quietLabelOpacity: quietLabel ? getComputedStyle(quietLabel).opacity : ''
+    };
+  });
+  expect(manualLayout.visibleColumns).toBe(2);
+  expect(manualLayout.maxCandidateHeight).toBeLessThanOrEqual(18);
+  expect(manualLayout.currentHeight).toBeLessThanOrEqual(24);
+  expect(manualLayout.quietLabelOpacity).toBe('0');
   await expect.poll(() => dialog.locator('.manual-boundary-target.is-current').evaluate(marker => {
     const full = marker.closest('#dialogReviewFull');
     const markerRect = marker.getBoundingClientRect();
@@ -275,19 +286,19 @@ test('split confirmation can move an unconfirmed ending between paragraphs witho
     return Boolean(fullRect && markerRect.top >= fullRect.top && markerRect.bottom <= fullRect.bottom);
   })).toBe(true);
 
-  await dialog.locator('.manual-boundary-target[data-boundary-end="3"]').click();
-  await expect.poll(() => page.evaluate(() => suggestion?.end)).toBe(3);
+  await dialog.locator('.manual-boundary-target[data-boundary-end="10"]').click();
+  await expect.poll(() => page.evaluate(() => suggestion?.end)).toBe(10);
   await expect(dialog.locator('#reviewCurrentChars')).toContainText(/本篇 .* 字 · 後續 .* 字/);
-  await expect(dialog.locator('#dialogReviewCurrent')).toContainText('第三段');
-  await expect(dialog.locator('#dialogReviewCurrent')).not.toContainText('第四段');
-  await expect(dialog.locator('#dialogReviewFull .current-range-highlight')).toHaveCount(3);
+  await expect(dialog.locator('#dialogReviewCurrent')).toContainText('第 10 段');
+  await expect(dialog.locator('#dialogReviewCurrent')).not.toContainText('第 11 段');
+  await expect(dialog.locator('#dialogReviewFull .current-range-highlight')).toHaveCount(10);
   await expect(page.locator('#suggestionTitleInput')).toHaveValue('自訂長場景上篇');
 
   await dialog.locator('.manual-boundary-target.is-current')
-    .dragTo(dialog.locator('.manual-boundary-target[data-boundary-end="4"]'));
-  await expect.poll(() => page.evaluate(() => suggestion?.end)).toBe(4);
-  await expect(dialog.locator('.manual-boundary-target.is-current')).toHaveAttribute('data-boundary-end', '4');
-  await expect(dialog.locator('#dialogReviewCurrent')).toContainText('第四段');
+    .dragTo(dialog.locator('.manual-boundary-target[data-boundary-end="11"]'));
+  await expect.poll(() => page.evaluate(() => suggestion?.end)).toBe(11);
+  await expect(dialog.locator('.manual-boundary-target.is-current')).toHaveAttribute('data-boundary-end', '11');
+  await expect(dialog.locator('#dialogReviewCurrent')).toContainText('第 11 段');
 
   const result = await page.evaluate(() => ({
     draft: activeChapter().draft,
@@ -295,7 +306,19 @@ test('split confirmation can move an unconfirmed ending between paragraphs witho
     start: suggestion?.start,
     end: suggestion?.end
   }));
-  expect(result).toEqual({ draft: originalDraft, title: '自訂長場景上篇', start: 0, end: 4 });
+  expect(result).toEqual({ draft: originalDraft, title: '自訂長場景上篇', start: 0, end: 11 });
+
+  await dialog.getByRole('button', { name: '結束微調', exact: true }).click();
+  await expect(dialog).not.toHaveClass(/manual-boundary-active/);
+  await expect(dialog.locator('.manual-boundary-target')).toHaveCount(0);
+  await expect.poll(() => dialog.locator('#dialogReviewFull .range-end').evaluate(marker => {
+    const full = marker.closest('#dialogReviewFull');
+    const markerRect = marker.getBoundingClientRect();
+    const fullRect = full?.getBoundingClientRect();
+    return Boolean(fullRect && markerRect.top >= fullRect.top && markerRect.bottom <= fullRect.bottom);
+  })).toBe(true);
+
+  await dialog.getByRole('button', { name: '手動微調', exact: true }).click();
   await dialog.locator('#closeReviewDialog').click();
   await page.locator('#openSplitReviewBtn').click();
   await expect(dialog.locator('#reviewManualBoundaryBtn')).toHaveAttribute('aria-pressed', 'false');

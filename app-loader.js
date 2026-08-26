@@ -20,7 +20,7 @@
     { src: './src/source/source-sync-history.js?v=20260825-p1', owner: 'source' },
     { src: './src/source/source-flow.js?v=20260825-p3a', owner: 'source' },
     { src: './src/projects/projects.js?v=20260826-p6c', owner: 'projects' },
-    { src: './src/split/boundary-engine.js?v=20260826-p9a', owner: 'split' },
+    { src: './src/split/boundary-engine.js?v=20260826-p11a', owner: 'split' },
     { src: './src/publishing/publishing-flow.js?v=20260826-p7a', owner: 'publishing' },
     { id: 'storyflowPublishingDisclosureJs', src: './src/publishing/publishing-disclosure.js?v=20260825-p2b', owner: 'publishing' },
     { src: './src/publishing/publishing-project-switcher.js?v=20260825-p3a', owner: 'publishing' },

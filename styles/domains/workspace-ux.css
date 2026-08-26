@@ -63,18 +63,30 @@
 
 /* Split confirmation: scene buttons stay coarse; manual mode snaps the end marker to paragraph boundaries. */
 #reviewManualBoundaryBtn[aria-pressed="true"]{border-color:var(--denim-500,#4f8fbe)!important;background:#e5f0f7!important;color:var(--denim-800,#2d5d85)!important}
-.manual-boundary-hint{margin:9px 0 12px;padding:9px 12px;border:1px solid #c9ddea;border-radius:10px;background:#f3f8fc;color:#496a84;font-size:12.5px;font-weight:650;line-height:1.55}
+.manual-boundary-hint{margin:-5px 0 9px;padding:0 2px;border:0;background:transparent;color:#607b90;font-size:11.5px;font-weight:650;line-height:1.4}
 .manual-boundary-active [data-sf-preview-control="review"]{display:none!important}
+.manual-boundary-active .review-dialog-grid{grid-template-columns:minmax(280px,.78fr) minmax(0,1.22fr)!important;gap:12px!important}
+.manual-boundary-active .review-dialog-grid>.review-column:first-child{display:none!important}
+.manual-boundary-active #reviewShrinkBtn,.manual-boundary-active #reviewExpandBtn{display:none!important}
+.manual-boundary-active .review-column.current .review-column-head>span{display:none!important}
+.manual-boundary-active .review-column.current .review-column-head{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;min-height:48px;padding-block:8px!important}
+.manual-boundary-active .review-column.current .review-boundary-controls{justify-content:flex-end!important}
 .manual-boundary-active .full-chapter-column{border-color:#9fc5de!important;box-shadow:0 0 0 2px #edf6fb inset!important}
-.manual-boundary-active #dialogReviewFull{padding-inline:16px!important}
+.manual-boundary-active #dialogReviewFull{padding:14px 16px!important;line-height:1.7!important}
 .review-source-block{display:block;min-height:1lh;padding:1px 7px;border-radius:5px;white-space:pre-wrap}
-.manual-boundary-target{display:flex;width:100%;min-height:24px;margin:3px 0;padding:0 9px;align-items:center;justify-content:center;gap:7px;border:0;border-top:1px dashed #c9ddea;border-radius:0;background:transparent;color:#6f8ba1;font:inherit;font-size:11px;font-weight:750;line-height:1;cursor:pointer;opacity:.52;transition:opacity .15s ease,border-color .15s ease,background .15s ease,color .15s ease}
-.manual-boundary-target:hover,.manual-boundary-target:focus-visible{border-color:#70a4c9;background:#edf6fb;color:#2d648e;opacity:1;outline:none}
-.manual-boundary-target.is-current{min-height:36px;margin:7px 0;padding:6px 10px;border:1px solid #6ea4cd!important;border-radius:9px!important;background:#e5f0f7!important;color:#285b82!important;cursor:grab;opacity:1;touch-action:none;box-shadow:0 2px 7px rgba(45,93,133,.10)!important}
+.manual-boundary-target{position:relative;display:block;width:100%;height:12px;min-height:0;margin:1px 0;padding:0;border:0;border-top:1px dashed #c9ddea;border-radius:0;background:transparent;color:#6f8ba1;font:inherit;font-size:10.5px;font-weight:750;line-height:1;cursor:pointer;opacity:.45;overflow:visible;transition:opacity .15s ease,border-color .15s ease,color .15s ease}
+.manual-boundary-target .manual-boundary-label{position:absolute;top:0;right:6px;display:block;padding:2px 6px;border-radius:999px;background:#fff;color:inherit;line-height:1;opacity:0;transform:translateY(-50%);transition:opacity .15s ease,background .15s ease}
+.manual-boundary-target .manual-boundary-handle{display:none}
+.manual-boundary-target:hover,.manual-boundary-target:focus-visible{border-color:#70a4c9;color:#2d648e;opacity:1;outline:none}
+.manual-boundary-target:hover .manual-boundary-label,.manual-boundary-target:focus-visible .manual-boundary-label{background:#edf6fb;opacity:1}
+.manual-boundary-target.is-scene-boundary:not(.is-current){height:18px;margin:3px 0;border-top:3px double #bdd3e2;opacity:.65}
+.manual-boundary-target.is-current{height:20px;min-height:20px;margin:3px 0;padding:0;border:0!important;border-top:2px solid #4f8fbe!important;border-radius:0!important;background:transparent!important;color:#285b82!important;cursor:grab;opacity:1;touch-action:none;box-shadow:none!important}
+.manual-boundary-target.is-current .manual-boundary-label{right:8px;padding:3px 8px;background:#dfeef8;opacity:1}
 .manual-boundary-target.is-current:active{cursor:grabbing}
-.manual-boundary-target.is-current>span:first-child{font-size:16px;letter-spacing:-3px;transform:rotate(90deg)}
+.manual-boundary-target.is-current .manual-boundary-handle{position:absolute;top:0;left:8px;display:block;padding:0 5px;background:#fff;color:#4f8fbe;font-size:13px;line-height:1;letter-spacing:-3px;transform:translateY(-50%) rotate(90deg)}
 .manual-boundary-dragging .manual-boundary-target:not(.is-current){opacity:.82}
-.manual-boundary-target.is-drop-target{border-color:#3975a7!important;background:#dbeefa!important;color:#234f73!important;opacity:1;box-shadow:0 0 0 2px rgba(57,117,167,.13)}
+.manual-boundary-target.is-drop-target{border-color:#3975a7!important;color:#234f73!important;opacity:1;box-shadow:none}
+.manual-boundary-target.is-drop-target .manual-boundary-label{background:#dbeefa;opacity:1}
 
 /* Persistent connection controls use one size/color system everywhere. */
 .top-connection-status{gap:8px!important;margin-right:8px!important}
