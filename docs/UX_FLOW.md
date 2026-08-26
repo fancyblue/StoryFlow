@@ -30,6 +30,21 @@ Rules:
 - “新增作品” is the final menu action and opens the transactional flow above.
 - Canceling creation returns to the same active work and chapter without adding an empty “未命名作品”.
 
+## Split confirmation and manual boundaries
+
+```text
+SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認並存檔
+                                           ↘ 手動微調 → 拖曳結尾
+                                                        ↘ 點選段落間切點
+```
+
+- Automatic suggestions and the coarse arrow actions use real source-scene boundaries. Preferred character counts rank valid scene endings but do not manufacture a cut inside a scene.
+- “手動微調” is deliberately paragraph-level. It changes only the current unconfirmed suggestion end, snaps after a complete source paragraph and never edits the source draft.
+- Manual mode renders one lightweight target after every eligible paragraph. The current “這一篇結束” target is draggable; every target is also clickable for reliable positioning in long scrollable text.
+- The review toolbar shows both current-part and remaining-unconfirmed character counts while manual mode is active. The current title, start boundary and source text remain unchanged when the end moves.
+- Scene-level controls remain available outside manual mode. Closing the confirmation dialog exits manual mode, and confirmed or published parts are never retroactively re-split by this interaction.
+- A single source paragraph cannot be cut internally. The author must first add a real paragraph break to the source if sentence-level splitting is required.
+
 ## Destructive actions
 
 Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). “離開此裝置” clears browser-held connection and settings state but does not delete files in the selected folder.

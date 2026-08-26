@@ -61,7 +61,7 @@ Shared interaction vocabulary is documented in [UI_SYSTEM.md](UI_SYSTEM.md), and
 | `src/persistence/` | Workspace IO, save queue, backup and recovery |
 | `src/projects/` | Work library, chapter management and project switching |
 | `src/source/` | Google/manual source ingestion, relinking and source modes |
-| `src/split/` | Smart Split preferences, boundaries and continuation |
+| `src/split/` | Smart Split preferences, scene/paragraph boundaries and continuation |
 | `src/publishing/` | Publishing queue, filters, grouping and platform guards |
 | `src/ui/` | Navigation, responsive layout and accessibility refinements |
 | `src/legacy/` | Unloaded historical scripts retained only for reference |
@@ -76,3 +76,5 @@ npm test
 ```
 
 This runs the static architecture check and the desktop Chromium smoke suite. The browser suite starts its own local server and uses fixture data only; setup and individual test pages are documented in `tests/README.md`.
+
+`src/split/boundary-engine.js` is the canonical boundary owner. Automatic suggestions and coarse adjustments resolve to source-scene ends; manual confirmation may set the same `suggestion.end` to any complete source paragraph end. Both paths rebuild the suggestion through `buildSuggestion()`, so confirmation, Markdown generation and continuation share one range contract. Manual movement must never mutate `chapter.draft`, move `suggestion.start`, or rewrite confirmed parts.
