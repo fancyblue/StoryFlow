@@ -50,7 +50,7 @@ SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認�
 
 - The chapter list is an independently scrollable source rail on desktop. Selecting a lower chapter rerenders the active state without returning the rail or page to the top.
 - A row's `⋯` menu opens toward the available space. Near the bottom it opens upward; opening or closing it never expands the source card or moves SMART SPLIT.
-- “編輯章節” opens the selected manual article in a compact dialog. Cancel or close returns to the same work without changing the chapter.
+- “編輯章節” opens the selected manual article in the same large editor used by “手動新增文章”. The article field fills the remaining height and the actions stay attached to the bottom; cancel or close returns to the same work without changing the chapter.
 
 ## Destructive actions
 
@@ -105,14 +105,14 @@ Deletion, replacement and source refresh follow the safety rules in [ARCHITECTUR
 ## Global search and quick jump
 
 ```text
-搜尋／⌘K → 輸入名稱 → 選擇結果 → 切換作品並開啟章節／發布文章
+搜尋／⌘ K（Windows/Linux：Ctrl K）→ 輸入名稱 → 選擇結果 → 切換作品並開啟章節／發布文章
             ↘ 勾選「同時搜尋正文」→ 顯示片段 → 開啟內容位置或預覽
 ```
 
 - Name search covers loaded works, chapters, internal article names and publishing titles.
 - Body search is opt-in because it is broader and may return both the source chapter and its publishing article.
 - Results are generated in memory from the current workspace and are discarded when the dialog closes; no persistent or remote index is created.
-- `↑` / `↓`, Enter and Escape support a keyboard-first desktop flow. Opening a result closes search before navigating, and an already-open decision dialog prevents search from appearing on top of it.
+- `↑` / `↓`, Enter and Escape support a keyboard-first desktop flow. The sidebar detects the operating system before showing its shortcut and hides shortcut hints on touch layouts. The visible close button is `×`; opening a result closes search before navigating, and an already-open decision dialog prevents search from appearing on top of it.
 
 ## Platform publication records
 

@@ -27,7 +27,7 @@ Use this checklist before treating a release as ready for daily writing. It exer
 
 - [ ] Load the disposable Google Doc as a new work.
 - [ ] Change its text without changing the total character count.
-- [ ] Run “更新作品來源” and confirm the preview says the character count is unchanged while showing the actual before/after text.
+- [ ] Run “更新作品來源” and confirm the preview says the character count is unchanged. Expand “查看變更片段” and confirm only the changed characters are highlighted with short context in stacked before/after rows, rather than showing two full paragraphs.
 - [ ] Apply the update and confirm the work contains the new text.
 - [ ] Use “復原上次來源更新” once and confirm the old text returns; confirm the action is no longer offered afterward.
 
@@ -48,8 +48,8 @@ Before publishing, verify split precision with a disposable chapter containing o
 
 - [ ] Create or load a disposable work with enough chapters to scroll the source rail. Select a chapter near the bottom and confirm neither the page nor chapter rail jumps to the top.
 - [ ] Open the bottom chapter's `⋯` menu. Confirm it opens upward inside the visible rail and SMART SPLIT does not move down or change width.
-- [ ] Open “編輯章節”. Confirm the footer follows the form without a large blank region below the buttons, then close without saving.
-- [ ] In Works, confirm “管理章節” and “管理發布” use the same secondary-button styling; opening chapter management may use the shared blue selected state.
+- [ ] Open “編輯章節”, record its dialog size, then open “手動新增文章”. Confirm both use the same large editor, the textarea fills the available height, and the footer meets the card bottom without a blank region below the buttons.
+- [ ] In Works, confirm “管理章節” and “管理發布” share the same visible light-blue 40 px secondary style; opening chapter management may use the stronger shared blue selected state. Confirm “＋ 新作品” has a compact 40 px frame and readable 14 px-or-larger text.
 
 ## 5. Publishing and destructive-action safety
 

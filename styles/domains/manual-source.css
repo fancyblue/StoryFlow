@@ -1,11 +1,12 @@
 /* Manual source dialog layout.
-   This is intentionally ID-scoped because older source/dialog layers have accumulated
-   conflicting width rules. The dialog is a compact single-article editor, not a full-screen canvas. */
+   Add and edit use the same large writing surface. The article textarea absorbs the
+   available height and the action bar closes the card, so the dialog never leaves a
+   detached block of blank space below the buttons. */
 
 #manualSourceDialog#manualSourceDialog{
   width:min(760px,calc(100vw - 32px))!important;
   max-width:760px!important;
-  height:auto!important;
+  height:min(900px,calc(100dvh - 32px))!important;
   max-height:calc(100dvh - 32px)!important;
   margin:auto!important;
   padding:0!important;
@@ -14,20 +15,26 @@
 
 #manualSourceDialog#manualSourceDialog > .source-editor-card{
   width:100%!important;
+  height:100%!important;
   max-width:none!important;
-  max-height:calc(100dvh - 32px)!important;
+  min-height:0!important;
+  max-height:none!important;
   margin:0!important;
   padding:0!important;
-  overflow:auto!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
   box-sizing:border-box!important;
 }
 
 #manualSourceDialog#manualSourceDialog .sticky-dialog-head{
+  flex:0 0 auto!important;
   margin:0!important;
   padding:18px 22px 16px!important;
 }
 
 #manualSourceDialog#manualSourceDialog .source-editor-card > .field-label{
+  flex:0 0 auto!important;
   display:block!important;
   width:calc(100% - 44px)!important;
   margin:16px 22px 7px!important;
@@ -35,6 +42,7 @@
 }
 
 #manualSourceDialog#manualSourceDialog .manual-project-title-field{
+  flex:0 0 auto;
   display:block;
   width:calc(100% - 44px);
   margin:16px 22px 0;
@@ -55,6 +63,7 @@
 }
 
 #manualSourceDialog#manualSourceDialog #manualSourceTitle{
+  flex:0 0 44px!important;
   min-height:44px!important;
   height:44px!important;
   padding:0 14px!important;
@@ -63,12 +72,14 @@
 }
 
 #manualSourceDialog#manualSourceDialog #manualSourceText{
-  min-height:260px!important;
-  height:clamp(280px,38dvh,380px)!important;
-  max-height:48dvh!important;
+  flex:1 1 220px!important;
+  min-height:180px!important;
+  height:auto!important;
+  max-height:none!important;
   margin-bottom:0!important;
   padding:14px 16px!important;
-  resize:vertical!important;
+  resize:none!important;
+  overflow:auto!important;
   font-size:15px!important;
   line-height:1.75!important;
 }
@@ -79,9 +90,12 @@
   align-items:center!important;
   justify-content:flex-end!important;
   gap:10px!important;
-  width:calc(100% - 44px)!important;
-  margin:18px 22px 22px!important;
-  padding:0!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  margin:16px 0 0!important;
+  padding:14px 22px 18px!important;
+  border-top:1px solid #e2ebf2!important;
+  background:#fff!important;
   box-sizing:border-box!important;
 }
 
@@ -96,10 +110,12 @@
   #manualSourceDialog#manualSourceDialog{
     width:calc(100vw - 12px)!important;
     max-width:none!important;
+    height:calc(100dvh - 12px)!important;
     max-height:calc(100dvh - 12px)!important;
   }
   #manualSourceDialog#manualSourceDialog > .source-editor-card{
-    max-height:calc(100dvh - 12px)!important;
+    height:100%!important;
+    max-height:none!important;
   }
   #manualSourceDialog#manualSourceDialog .source-editor-card > .field-label{
     width:calc(100% - 32px)!important;
@@ -112,22 +128,23 @@
     margin-right:16px;
   }
   #manualSourceDialog#manualSourceDialog #manualSourceTitle,
-  #manualSourceDialog#manualSourceDialog #manualSourceText,
-  #manualSourceDialog#manualSourceDialog .source-flow-actions,
-  #manualSourceDialog#manualSourceDialog .manual-source-actions{
+  #manualSourceDialog#manualSourceDialog #manualSourceText{
     width:calc(100% - 32px)!important;
     margin-left:16px!important;
     margin-right:16px!important;
   }
   #manualSourceDialog#manualSourceDialog #manualSourceText{
-    min-height:220px!important;
-    height:36dvh!important;
+    flex-basis:160px!important;
+    min-height:140px!important;
+    height:auto!important;
   }
   #manualSourceDialog#manualSourceDialog .source-flow-actions,
   #manualSourceDialog#manualSourceDialog .manual-source-actions{
     display:grid!important;
     grid-template-columns:1fr 1fr!important;
-    margin-bottom:calc(18px + env(safe-area-inset-bottom,0px))!important;
+    width:100%!important;
+    margin:14px 0 0!important;
+    padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px))!important;
   }
   #manualSourceDialog#manualSourceDialog .source-flow-actions .button{width:100%!important}
 }

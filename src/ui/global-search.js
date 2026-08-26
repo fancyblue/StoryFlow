@@ -7,6 +7,17 @@
   let results = [];
   let activeIndex = -1;
 
+  function shortcutLabel() {
+    const platform = `${navigator.userAgentData?.platform || ''} ${navigator.platform || ''} ${navigator.userAgent || ''}`;
+    return /Mac|iPhone|iPad|iPod/i.test(platform) ? '⌘ K' : 'Ctrl K';
+  }
+
+  const shortcutHint = trigger.querySelector('kbd');
+  if (shortcutHint) {
+    shortcutHint.textContent = shortcutLabel();
+    shortcutHint.setAttribute('aria-hidden', 'true');
+  }
+
   function normalize(value) {
     return String(value || '').normalize('NFKC').toLocaleLowerCase('zh-Hant').trim();
   }
@@ -111,7 +122,7 @@
       <div class="global-search-head">
         <span class="global-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg></span>
         <input id="globalSearchInput" type="search" autocomplete="off" aria-label="搜尋作品、章節與文章" aria-controls="globalSearchResults" aria-autocomplete="list" placeholder="搜尋作品、章節與文章…" />
-        <button id="closeGlobalSearch" class="global-search-close" type="button" aria-label="關閉搜尋">Esc</button>
+        <button id="closeGlobalSearch" class="global-search-close" type="button" aria-label="關閉搜尋"><span aria-hidden="true">×</span></button>
       </div>
       <div class="global-search-options">
         <label><input id="globalSearchIncludeBody" type="checkbox" /><span>同時搜尋正文</span></label>
@@ -264,5 +275,5 @@
     else openSearch();
   });
 
-  window.StoryFlowSearch = { open: openSearch, refresh: renderResults };
+  window.StoryFlowSearch = { open: openSearch, refresh: renderResults, shortcutLabel };
 })();
