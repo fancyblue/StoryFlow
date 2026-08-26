@@ -25,19 +25,18 @@ test('primary action scale and navigation icon language stay consistent', async 
 
   await expect(page.locator('.nav-item .nav-icon svg')).toHaveCount(5);
   await expect(page.locator('#sidebarToggle svg')).toHaveCount(1);
-  expect(await controlStyle(page.locator('#openPublishingFromWorkspace'))).toMatchObject({
+  await expect(page.locator('#openPublishingFromWorkspace')).toBeHidden();
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await expect(page.locator('.projects-empty-state .button')).toBeVisible();
+  const emptyWork = await controlStyle(page.locator('.projects-empty-state .button'));
+  await expect(page.locator('#projectsNewWorkBtn')).toBeHidden();
+  expect(emptyWork).toMatchObject({
     height: 40,
     fontSize: 14,
     backgroundColor: 'rgb(57, 117, 167)',
     color: 'rgb(255, 255, 255)'
   });
-
-  await page.locator('.nav-item[data-view="projects"]').click();
-  await expect(page.locator('.projects-empty-state .button')).toBeVisible();
-  const newWork = await controlStyle(page.locator('#projectsNewWorkBtn'));
-  const emptyWork = await controlStyle(page.locator('.projects-empty-state .button'));
-  expect(emptyWork).toEqual(newWork);
-  expect(emptyWork).toMatchObject({ height: 40, fontSize: 14 });
 
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.locator('.publishing-empty .button')).toBeVisible();
@@ -67,6 +66,8 @@ test('primary action scale and navigation icon language stay consistent', async 
     }];
     renderAll();
   });
+  await expect(page.locator('#openPublishingFromWorkspace')).not.toHaveAttribute('hidden', '');
+  await expect(page.locator('#openPublishingFromWorkspace')).toHaveClass(/primary/);
   const publishingRow = page.locator('.publish-list-item', { hasText: '樣式測試文章' });
   const rowManage = publishingRow.getByRole('button', { name: /展開.*發布平台/ });
   const rowPreview = publishingRow.getByRole('button', { name: '預覽預設設定', exact: true });
@@ -85,8 +86,8 @@ test('primary action scale and navigation icon language stay consistent', async 
   await rowManage.click();
   await expect(publishingRow.getByRole('button', { name: /收合.*發布平台/ })).toBeVisible();
   expect(await controlStyle(publishingRow.locator('.publish-manage-btn'))).toMatchObject({
-    backgroundColor: 'rgb(57, 117, 167)',
-    color: 'rgb(255, 255, 255)'
+    backgroundColor: 'rgb(220, 235, 245)',
+    color: 'rgb(35, 68, 99)'
   });
 
   await page.locator('#sidebarSettingsBtn').click();
@@ -97,6 +98,17 @@ test('primary action scale and navigation icon language stay consistent', async 
     '#settingsFolderBtn'
   ].map(selector => controlStyle(page.locator(selector))));
   settingsActions.forEach(style => expect(style).toMatchObject({ height: 40, fontSize: 14 }));
+  await expect(page.locator('#savePickerKeyBtn')).toBeDisabled();
+  await expect(page.locator('#importSettingsJsonBtn')).toHaveClass(/primary/);
+  await expect(page.locator('#addPlatformBtn')).toBeHidden();
+  await page.locator('#googleClientIdInput').fill('123456789-storyflow.apps.googleusercontent.com');
+  await expect(page.locator('#savePickerKeyBtn')).toBeEnabled();
+  await expect(page.locator('#savePickerKeyBtn')).toHaveClass(/primary/);
+  await page.evaluate(() => {
+    window.STORYFLOW_CONFIG.googleClientId = '123456789-storyflow.apps.googleusercontent.com';
+    window.dispatchEvent(new CustomEvent('storyflow:integration-config-changed'));
+  });
+  await expect(page.locator('#addPlatformBtn')).toBeVisible();
 
   await page.locator('#sidebarToggle').click();
   await expect(page.locator('#sidebarToggle')).toHaveClass(/points-right/);
@@ -292,14 +304,16 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
       publishing: values(document.querySelector('.project-publish-btn'))
     };
   });
-  expect(managementStyles.chapters).toEqual(managementStyles.publishing);
   expect(managementStyles.chapters.height).toBe('40px');
   expect(managementStyles.chapters.fontSize).toBe('14px');
-  expect(managementStyles.chapters.backgroundColor).toBe('rgb(234, 243, 249)');
-  expect(managementStyles.chapters.color).toBe('rgb(45, 93, 133)');
+  expect(managementStyles.chapters.backgroundColor).toBe('rgb(57, 117, 167)');
+  expect(managementStyles.chapters.color).toBe('rgb(255, 255, 255)');
+  expect(managementStyles.publishing.backgroundColor).toBe('rgb(234, 243, 249)');
+  expect(managementStyles.publishing.color).toBe('rgb(45, 93, 133)');
   expect(managementStyles.open.height).toBe(managementStyles.chapters.height);
   expect(managementStyles.open.fontSize).toBe(managementStyles.chapters.fontSize);
   expect(managementStyles.open.fontWeight).toBe(managementStyles.chapters.fontWeight);
+  expect(managementStyles.open.backgroundColor).toBe('rgb(255, 255, 255)');
 
   const newWorkStyle = await page.locator('#projectsNewWorkBtn').evaluate(button => {
     const rect = button.getBoundingClientRect();
@@ -309,6 +323,7 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   expect(newWorkStyle.height).toBeLessThanOrEqual(42);
   expect(newWorkStyle.fontSize).toBeGreaterThanOrEqual(14);
   expect(newWorkStyle.width / newWorkStyle.height).toBeLessThan(3.2);
+  expect(await page.locator('#projectsNewWorkBtn').evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(255, 255, 255)');
   expect(pageErrors).toEqual([]);
 });
 

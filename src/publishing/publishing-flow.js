@@ -793,12 +793,19 @@
     });
 
     const summary = document.getElementById('workspacePublishingSummaryText');
+    const workspacePublishingAction = document.getElementById('openPublishingFromWorkspace');
+    const unfinished = counts.pending + counts.partial;
     if (summary) {
       if (!counts.total) summary.textContent = '還沒有已確認文章。完成 SMART SPLIT 後，文章會進入發布頁。';
       else {
-        const unfinished = counts.pending + counts.partial;
         summary.textContent = `${counts.total} 篇已確認 · ${unfinished} 篇尚未完成所有平台發布`;
       }
+    }
+    if (workspacePublishingAction) {
+      workspacePublishingAction.hidden = counts.total === 0;
+      workspacePublishingAction.classList.toggle('primary', unfinished > 0);
+      workspacePublishingAction.classList.toggle('ghost', counts.total > 0 && unfinished === 0);
+      workspacePublishingAction.textContent = unfinished > 0 ? '前往發布 →' : '查看發布紀錄 →';
     }
 
     document.querySelectorAll('.publishing-filter').forEach(button => {

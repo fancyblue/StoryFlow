@@ -55,7 +55,7 @@
           <h1>作品</h1>
           <p class="projects-page-subtitle">每個故事都有獨立的章節、切篇與發布進度。先選作品，再進入工作台或發布。</p>
         </div>
-        <button id="projectsNewWorkBtn" class="button primary" type="button">＋ 新作品</button>
+        <button id="projectsNewWorkBtn" class="button ghost" type="button">＋ 新作品</button>
       </header>
       <div id="projectsLibrary" class="projects-library"></div>`;
     main.appendChild(view);
@@ -79,6 +79,9 @@
       return String(a.title || '').localeCompare(String(b.title || ''), 'zh-Hant');
     });
 
+    const newWork = view.querySelector('#projectsNewWorkBtn');
+    if (newWork) newWork.hidden = projects.length === 0;
+
     list.innerHTML = '';
     projects.forEach(project => {
       const active = project.id === activeId;
@@ -94,7 +97,7 @@
           <span class="project-library-meta">${Number(project.chapterCount || 0).toLocaleString()} 個章節 · ${sourceLabel}</span>
         </div>
         <div class="project-library-actions">
-          <button class="button tiny ${active ? 'primary' : 'ghost'} project-open-btn" type="button">${active ? '回工作台' : '切換並開啟'}</button>
+          <button class="button tiny ghost project-open-btn" type="button">${active ? '回工作台' : '切換並開啟'}</button>
           <button class="button tiny ghost project-publish-btn" type="button">發布</button>
           <button class="button tiny ghost project-library-delete" type="button">刪除</button>
         </div>`;

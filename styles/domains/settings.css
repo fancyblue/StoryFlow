@@ -521,7 +521,6 @@
 /* Old duplicate manager UI stays hidden if an older script briefly created it. */
 .settings-view #managedPlatformList,
 .settings-view #newPlatformName,
-.settings-view #addPlatformBtn,
 .settings-view .portable-settings-note{
   display:none!important;
 }

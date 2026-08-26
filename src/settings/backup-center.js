@@ -42,7 +42,7 @@
           <article id="backupRecoveryCard" class="backup-status-card"></article>
         </div>
         <div class="backup-center-actions">
-          <button id="createWorkspaceBackupBtn" class="button primary" type="button">建立目前備份</button>
+          <button id="createWorkspaceBackupBtn" class="button ghost" type="button">建立目前備份</button>
           <button id="downloadWorkspaceBtn" class="button ghost" type="button">下載 workspace.json</button>
           <button id="importWorkspaceCenterBtn" class="button ghost" type="button">匯入工作區</button>
           <button id="restoreLatestBackupBtn" class="button ghost" type="button">從最近備份恢復</button>

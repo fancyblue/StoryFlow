@@ -101,8 +101,8 @@
   font-weight:850!important;
 }
 
-/* Publishing rows share the same management language as Works: tinted at rest,
-   solid only while expanded. All three row actions use the shared 40 px geometry. */
+/* Publishing rows stay scannable: management is tinted at rest and uses a stronger
+   soft selection while expanded. Solid emphasis belongs to copy/save inside the task. */
 #publishingView .publish-list-actions>.default-preview-btn,
 #publishingView .publish-list-actions>.publish-manage-btn,
 #publishingView .publish-list-actions>.publish-more-btn{
@@ -135,9 +135,10 @@
   outline:none!important;
 }
 #publishingView .publish-list-actions>.publish-manage-btn[aria-expanded="true"]{
-  border-color:var(--denim-700,#3975a7)!important;
-  background:var(--denim-700,#3975a7)!important;
-  color:#fff!important;
+  border-color:#6fa2cf!important;
+  background:#dcebf5!important;
+  color:var(--denim-900,#234463)!important;
+  box-shadow:inset 3px 0 0 var(--denim-700,#3975a7)!important;
 }
 
 /* Chapters are a second-level container: lighter and inset under the work header. */

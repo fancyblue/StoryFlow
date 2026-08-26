@@ -145,6 +145,24 @@
     return 'Google 整合設定已載入';
   }
 
+  function syncSaveButtonState() {
+    const save = document.getElementById('savePickerKeyBtn');
+    const client = document.getElementById('googleClientIdInput');
+    const picker = document.getElementById('pickerApiKeyInput');
+    if (!save || !client || !picker) return;
+
+    const nextClientId = normalizeClientId(client.value);
+    const currentClientId = normalizeClientId(window.STORYFLOW_CONFIG?.googleClientId);
+    const nextPickerKey = String(picker.value || '').trim();
+    const currentPickerKey = String(StoryFlowIntegrations?.pickerApiKey?.() || '').trim();
+    const changed = nextClientId !== currentClientId || nextPickerKey !== currentPickerKey;
+    const canSave = Boolean(projectNumberFromClientId(nextClientId) && changed);
+
+    save.disabled = !canSave;
+    save.classList.toggle('primary', canSave);
+    save.classList.toggle('ghost', !canSave);
+  }
+
   function syncView() {
     const panel = document.getElementById('settingsBootstrapPanel');
     const section = document.getElementById('googleClientIdInput')?.closest('.settings-section');
@@ -160,13 +178,14 @@
     panel.classList.toggle('authenticated', authenticated);
     panel.classList.toggle('editing', editing);
     setFieldsVisible(section, !configured || editing);
+    syncSaveButtonState();
 
     if (!configured) {
       copy.innerHTML = `
         <strong>Google 整合尚未設定</strong>
         <span>可匯入既有 <code>settings.json</code>，或在下方手動輸入 Client ID 與 API Key。</span>
         <small id="settingsBootstrapStatus">先完成設定後才能登入 Google。</small>`;
-      actions.innerHTML = '<button id="importSettingsJsonBtn" type="button" class="button ghost">匯入 settings.json</button>';
+      actions.innerHTML = '<button id="importSettingsJsonBtn" type="button" class="button primary">匯入 settings.json</button>';
       wireActions();
       return;
     }
@@ -340,6 +359,12 @@
       clear.dataset.bootstrapManaged = '1';
       clear.onclick = event => { event.preventDefault(); clearManualSettings(); };
     }
+
+    [clientInput, document.getElementById('pickerApiKeyInput')].forEach(input => {
+      if (!input || input.dataset.bootstrapDirtyBound === '1') return;
+      input.dataset.bootstrapDirtyBound = '1';
+      input.addEventListener('input', syncSaveButtonState);
+    });
 
     syncView();
   }
