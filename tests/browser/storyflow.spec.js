@@ -33,12 +33,14 @@ test('primary action scale and navigation icon language stay consistent', async 
   });
 
   await page.locator('.nav-item[data-view="projects"]').click();
+  await expect(page.locator('.projects-empty-state .button')).toBeVisible();
   const newWork = await controlStyle(page.locator('#projectsNewWorkBtn'));
   const emptyWork = await controlStyle(page.locator('.projects-empty-state .button'));
   expect(emptyWork).toEqual(newWork);
   expect(emptyWork).toMatchObject({ height: 40, fontSize: 14 });
 
   await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('.publishing-empty .button')).toBeVisible();
   expect(await controlStyle(page.locator('.publishing-empty .button'))).toMatchObject({
     height: 40,
     fontSize: 14,
@@ -47,6 +49,7 @@ test('primary action scale and navigation icon language stay consistent', async 
   });
 
   await page.locator('#sidebarSettingsBtn').click();
+  await expect(page.locator('#settingsView')).toBeVisible();
   const settingsActions = await Promise.all([
     '#savePickerKeyBtn',
     '#clearPickerKeyBtn',
