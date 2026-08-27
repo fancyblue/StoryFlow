@@ -10,7 +10,8 @@
   }
 
   function normalizeProjectState(candidate) {
-    const next = candidate?.chapters?.length ? candidate : clone(defaultState);
+    const source = candidate?.chapters?.length ? candidate : clone(defaultState);
+    const next = StoryFlowContentModel.normalizeProject(source);
     next.projectTitle ||= '未命名作品';
     next.chapters ||= [];
     next.chapters.forEach(chapter => {

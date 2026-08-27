@@ -228,7 +228,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(51);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(52);
 
   await page.locator('#createProjectManually').click();
   await expect(page.locator('#manualSourceDialog')).toBeVisible();
@@ -244,6 +244,12 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
   await expect(page.locator('#chapterTitle')).toHaveValue('自動測試章節');
   await expect(page.locator('#chapterChars')).not.toHaveText('0');
   await expect(page.locator('#suggestionCard')).toBeVisible();
+  const contentModelState = await page.evaluate(() => ({
+    contentMode: state.contentMode,
+    visualEntryCount: state.visualEntries?.length,
+    savedContentMode: StoryFlowProjects.searchSnapshot()[0]?.state?.contentMode
+  }));
+  expect(contentModelState).toEqual({ contentMode: 'longform', visualEntryCount: 0, savedContentMode: 'longform' });
 
   const longChapterRail = await page.evaluate(() => {
     const list = document.getElementById('chapterList');
@@ -1395,6 +1401,14 @@ test('source diff explains same-count text replacements', async ({ page }) => {
   await expect(page.getByText(/答案在新信裡/)).toBeVisible();
   await expect(page.locator('.source-diff-before .source-diff-change')).toHaveText('舊');
   await expect(page.locator('.source-diff-after .source-diff-change')).toHaveText('新');
+  expect(pageErrors).toEqual([]);
+});
+
+test('visual content phase zero contracts pass', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/tests/visual-content-model-core.html');
+  await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
+  await expect(page.getByText('ALL PASS')).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 

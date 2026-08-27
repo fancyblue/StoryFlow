@@ -51,6 +51,8 @@ Phone sessions default to read-only because a browser can verify neither whether
 
 The repository root contains entry assets only. Runtime JavaScript lives under domain folders in `src/`; dormant historical scripts are isolated in `src/legacy/` and are not part of the asset manifest. Script order remains explicit in `app-loader.js` until each domain can be migrated as one unit.
 
+`src/projects/content-model.js` owns the Phase 0 content-type boundary. Missing or invalid `contentMode` values normalize to `longform`; future visual works keep `visualEntries` separate from longform `chapters`. The same module defines the fixed-ID `Works/<work>/Visual/<entry-id>/` storage descriptor and converts either a longform `part` or visual entry to a shared publishable view model without mutating either source structure. It intentionally exposes no visual-work UI; project routing and real visual file writes remain Phase 1 work. The outer multi-project workspace remains schema version 2 because these are optional state fields with backward-compatible normalization.
+
 CSS owned by a page domain lives under `styles/domains/`. A domain may keep a foundation file and one explicitly late layout/refinement file when the existing cascade boundary is part of the UI contract. Page composition, grid placement, responsive order and overflow boundaries belong there instead of being spread across feature styles or injected by JavaScript.
 
 The source panel remains a bounded scrolling container. `src/projects/chapter-management.js` preserves its scroll offset around chapter rerenders and chooses whether the contextual menu opens above or below the row; CSS must not switch the panel to unbounded overflow when a menu opens.

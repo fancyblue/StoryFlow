@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><title>StoryFlow visual content model core test</title></head>
+<body>
+  <h1>Visual content model core test</h1>
+  <pre id="result">RUNNING</pre>
+  <script src="../src/projects/content-model.js"></script>
+  <script>
+    (() => {
+      const result = document.getElementById('result');
+      const checks = [];
+      const assert = (condition, message) => {
+        if (!condition) throw new Error(message);
+        checks.push(`PASS ${message}`);
+      };
+
+      try {
+        const legacyWorkspace = {
+          schemaVersion: 1,
+          state: {
+            projectTitle: '既有長文',
+            chapters: [{ id: 'chapter-1', title: '第一章', parts: [] }]
+          }
+        };
+        const legacyBefore = JSON.stringify(legacyWorkspace);
+        const normalizedLegacy = StoryFlowContentModel.normalizeWorkspace(legacyWorkspace);
+        assert(normalizedLegacy.state.contentMode === 'longform', '舊 workspace 缺少類型時預設為長文');
+        assert(Array.isArray(normalizedLegacy.state.visualEntries) && normalizedLegacy.state.visualEntries.length === 0,
+          '舊作品補上空的圖文項目集合');
+        assert(JSON.stringify(legacyWorkspace) === legacyBefore, '正規化不修改來源 workspace');
+        assert(StoryFlowContentModel.normalizeContentMode('unknown') === 'longform', '未知類型安全降級為長文');
+
+        const visualWorkspace = {
+          schemaVersion: 2,
+          activeProjectId: 'project-visual',
+          projects: [{
+            id: 'project-visual',
+            state: {
+              projectTitle: '圖文系列',
+              contentMode: 'visual',
+              chapters: [],
+              visualEntries: [{
+                id: 'entry-1',
+                title: ' 夜色預告 ',
+                body: '第一段。',
+                status: 'ready',
+                coverImageId: 'image-cover',
+                images: [
+                  { id: 'image-body', storedName: '內頁.png', order: 8, alt: '內頁' },
+                  { id: 'image-cover', fileName: '封面.png', size: 128, order: 1, alt: '封面' }
+                ],
+                platformTitles: { 巴哈姆特: ' 平台標題 ' },
+                platformStatus: { 巴哈姆特: true },
+                publicationRecords: { 巴哈姆特: { publishedAt: '2026-08-28T00:00:00.000Z', url: 'https://example.com/post' } },
+                createdAt: '2026-08-28T00:00:00.000Z',
+                updatedAt: '2026-08-28T01:00:00.000Z'
+              }]
+            }
+          }]
+        };
+        const normalizedVisual = StoryFlowContentModel.normalizeWorkspace(visualWorkspace);
+        const visualProject = normalizedVisual.projects[0].state;
+        const visualEntry = visualProject.visualEntries[0];
+        assert(StoryFlowContentModel.isProjectState(visualProject), '沒有章節的圖文作品仍是有效作品狀態');
+        assert(visualProject.contentMode === 'visual' && visualProject.chapters.length === 0, '圖文作品不需要假裝成章節');
+        assert(visualEntry.title === '夜色預告' && visualEntry.status === 'ready', '圖文標題與準備狀態正規化');
+        assert(visualEntry.images.map(image => image.id).join(',') === 'image-cover,image-body', '圖片依固定順序正規化');
+        assert(visualEntry.images[0].storedName === '封面.png' && visualEntry.images[0].bytes === 128,
+          '既有圖片欄位可轉接為圖文圖片欄位');
+        assert(visualEntry.coverImageId === 'image-cover', '有效封面關聯會被保留');
+        assert(JSON.stringify(StoryFlowContentModel.normalizeWorkspace(normalizedVisual)) === JSON.stringify(normalizedVisual),
+          '新版 workspace 正規化後可穩定來回載入');
+
+        const storage = StoryFlowContentModel.visualEntryStorage({ projectTitle: '圖文/系列', entryId: 'entry:01' });
+        const imageStorage = StoryFlowContentModel.visualImageStorage({
+          projectTitle: '圖文/系列', entryId: 'entry:01', fileName: '封面?.png'
+        });
+        assert(storage.directoryPath === 'Works/圖文-系列/Visual/entry-01', '圖文使用作品下的 Visual 固定 ID 路徑');
+        assert(storage.contentPath.endsWith('/content.md') && storage.metadataPath.endsWith('/metadata.json'),
+          '圖文文字與 metadata 路徑固定');
+        assert(imageStorage.relativePath === './assets/封面-.png'
+          && imageStorage.filePath.endsWith('/assets/封面-.png'), '圖片 adapter 使用項目內 assets 相對路徑');
+
+        const longformPart = {
+          id: 'part-1', title: '第一篇', publishTitle: '公開標題', raw: '長文正文', afterword: '後記',
+          images: [{ id: 'long-image', fileName: '長文.png' }],
+          platformTitles: { 方格子: '方格子標題' }, platformStatus: { 方格子: true },
+          publicationRecords: { 方格子: { publishedAt: '2026-08-28T02:00:00.000Z', url: '' } }
+        };
+        const longformBefore = JSON.stringify(longformPart);
+        const longformPublishable = StoryFlowContentModel.publishableFromLongform({
+          projectId: 'project-long', projectTitle: '長文作品', chapter: { id: 'chapter-1', title: '第一章' }, part: longformPart
+        });
+        const visualPublishable = StoryFlowContentModel.publishableFromVisual({
+          projectId: 'project-visual', projectTitle: '圖文系列', entry: visualEntry
+        });
+        const sharedKeys = ['key', 'contentMode', 'projectId', 'projectTitle', 'id', 'title', 'body', 'images',
+          'platformTitles', 'platformStatus', 'publicationRecords', 'status', 'source'];
+        assert(sharedKeys.every(key => key in longformPublishable && key in visualPublishable),
+          '長文與圖文可轉成相同發布 view model');
+        assert(longformPublishable.title === '公開標題' && longformPublishable.body === '長文正文',
+          '長文 adapter 沿用既有 part 語意');
+        assert(JSON.stringify(longformPart) === longformBefore, '發布 adapter 不改寫既有長文 part');
+        assert(visualPublishable.coverImageId === 'image-cover' && visualPublishable.platformStatus['巴哈姆特'],
+          '圖文 adapter 保留封面與平台發布狀態');
+
+        result.textContent = `${checks.join('\n')}\n\nALL PASS`;
+        document.body.dataset.testStatus = 'pass';
+      } catch (error) {
+        result.textContent = `${checks.join('\n')}\n\nFAIL ${error.stack || error.message}`;
+        document.body.dataset.testStatus = 'fail';
+      }
+    })();
+  </script>
+</body>
+</html>
