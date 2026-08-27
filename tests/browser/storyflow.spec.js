@@ -354,7 +354,7 @@ test('compact paragraph output preserves original scene boundaries', async ({ pa
 
 test('split confirmation can move an unconfirmed ending between paragraphs without changing the source', async ({ page }) => {
   const pageErrors = await prepare(page);
-  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.setViewportSize({ width: 1440, height: 760 });
   await page.goto('/');
   const originalDraft = Array.from({ length: 18 }, (_, index) =>
     `第 ${index + 1} 段，這是一個沒有空白場景分隔的長場景內容，用來確認大量段落仍能快速瀏覽。`
@@ -379,6 +379,29 @@ test('split confirmation can move an unconfirmed ending between paragraphs witho
 
   const dialog = page.locator('#reviewDialog');
   await expect(dialog).toBeVisible();
+  const initialDialogLayout = await dialog.evaluate(node => {
+    const card = node.querySelector('.review-dialog-card');
+    const grid = node.querySelector('.review-dialog-grid');
+    const footer = node.querySelector('.platform-preview-actions');
+    const button = node.querySelector('#closeReviewDialogBottom');
+    const dialogRect = node.getBoundingClientRect();
+    const footerRect = footer.getBoundingClientRect();
+    const buttonRect = button.getBoundingClientRect();
+    return {
+      dialogBottom: dialogRect.bottom,
+      gridHeight: grid.getBoundingClientRect().height,
+      footerBottom: footerRect.bottom,
+      buttonBottom: buttonRect.bottom,
+      cardClientHeight: card.clientHeight,
+      cardScrollHeight: card.scrollHeight,
+      cardOverflowY: getComputedStyle(card).overflowY
+    };
+  });
+  expect(initialDialogLayout.gridHeight).toBeGreaterThan(200);
+  expect(initialDialogLayout.footerBottom).toBeLessThanOrEqual(initialDialogLayout.dialogBottom + 2);
+  expect(initialDialogLayout.buttonBottom).toBeLessThanOrEqual(initialDialogLayout.dialogBottom - 8);
+  expect(initialDialogLayout.cardScrollHeight).toBeLessThanOrEqual(initialDialogLayout.cardClientHeight + 1);
+  expect(initialDialogLayout.cardOverflowY).toBe('hidden');
   const manualButton = dialog.getByRole('button', { name: '手動微調', exact: true });
   await manualButton.click();
   await expect(dialog).toHaveClass(/manual-boundary-active/);

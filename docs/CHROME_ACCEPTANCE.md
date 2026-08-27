@@ -39,6 +39,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 
 - [ ] Generate the default suggestion and confirm it remains on a real scene ending.
 - [ ] Open “切篇確認” and confirm “少一個場景／多一個場景” still perform coarse scene-level movement.
+- [ ] At a desktop viewport around 760 CSS px high, open “切篇確認”. Confirm “確認完畢，回到切篇” is fully visible immediately, the dialog card itself does not need to scroll, and each comparison column still scrolls independently.
 - [ ] Choose “手動微調”. Confirm the full chapter shows one selectable boundary after each eligible paragraph and the current “這一篇結束” line is visibly draggable.
 - [ ] Drag the ending to another paragraph, then use a different paragraph's click target. Confirm “本篇／後續” counts, highlight and current preview update immediately.
 - [ ] Confirm manual mode shows only the current-part and chapter columns; candidate endings are thin lines whose labels appear on hover/focus, while the blue current ending stays visible without creating large gaps between paragraphs.

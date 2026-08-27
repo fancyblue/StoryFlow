@@ -59,6 +59,7 @@ Each platform row uses two information lines: platform/status first, publication
 - Closing a creation dialog preserves the existing work and creates nothing.
 - Validation happens in place before the dialog advances.
 - Manual article creation and chapter editing use the same large dialog dimensions. The textarea flexes to consume the available writing area and owns its scrolling; the action footer closes the card at the bottom. Reducing blank space must never be implemented by shrinking edit mode or leaving an empty region below its footer.
+- Split confirmation keeps its bottom “確認完畢，回到切篇” action fully visible when the dialog opens. The three comparison columns own vertical scrolling; the dialog card itself must not require a small final scroll merely to reveal the action.
 
 ## Long lists and contextual menus
 
