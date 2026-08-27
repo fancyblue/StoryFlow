@@ -106,9 +106,10 @@
     }
   }
 
-  async function persistImages(chapter, part, successMessage) {
+  async function persistImages(chapter, part, successMessage, onChange) {
     saveState('文章圖片已更新');
     renderParts();
+    onChange?.();
     try {
       const written = await window.StoryFlowPublishing?.persistPart?.(chapter, part);
       if (written) notify(successMessage);
@@ -120,7 +121,7 @@
     }
   }
 
-  async function importFiles(chapter, part, files, button) {
+  async function importFiles(chapter, part, files, button, onChange) {
     const candidates = Array.from(files || []);
     const unsupported = candidates.filter(file => !supported(file));
     const accepted = candidates.filter(supported);
@@ -169,7 +170,7 @@
           unsupported.length ? `${unsupported.length} 個格式不支援` : '',
           failures.length ? `${failures.length} 個匯入失敗` : ''
         ].filter(Boolean).join('；');
-        await persistImages(chapter, part, notes);
+        await persistImages(chapter, part, notes, onChange);
       } else {
         notify(`圖片匯入失敗：${failures[0] || '請確認資料夾連線。'}`, true);
       }
@@ -179,18 +180,18 @@
     }
   }
 
-  function moveImage(chapter, part, index, delta) {
+  function moveImage(chapter, part, index, delta, onChange) {
     const target = index + delta;
     if (target < 0 || target >= part.images.length) return;
     [part.images[index], part.images[target]] = [part.images[target], part.images[index]];
-    persistImages(chapter, part, '圖片順序已更新');
+    persistImages(chapter, part, '圖片順序已更新', onChange);
   }
 
-  function removeFromState(chapter, part, image, message) {
+  function removeFromState(chapter, part, image, message, onChange) {
     const index = part.images.findIndex(item => item.id === image.id);
     if (index < 0) return;
     part.images.splice(index, 1);
-    persistImages(chapter, part, message);
+    persistImages(chapter, part, message, onChange);
   }
 
   function ensureRemoveDialog() {
@@ -219,19 +220,19 @@
     });
     dialog.querySelector('#detachArticleImage').addEventListener('click', () => {
       if (!removeTarget) return;
-      const { chapter, part, image } = removeTarget;
+      const { chapter, part, image, onChange } = removeTarget;
       dialog.close();
-      removeFromState(chapter, part, image, '圖片已從文章移除；原始檔仍保留在私人 assets 資料夾');
+      removeFromState(chapter, part, image, '圖片已從文章移除；原始檔仍保留在私人 assets 資料夾', onChange);
     });
     dialog.querySelector('#deleteArticleImageFile').addEventListener('click', async event => {
       if (!removeTarget) return;
       const button = event.currentTarget;
-      const { chapter, part, image } = removeTarget;
+      const { chapter, part, image, onChange } = removeTarget;
       button.disabled = true;
       try {
         const recoveryPath = await StoryFlowIntegrations.removePartImage(imageContext(chapter, part, image));
         dialog.close();
-        removeFromState(chapter, part, image, `圖片檔案已移至安全備份：${recoveryPath}`);
+        removeFromState(chapter, part, image, `圖片檔案已移至安全備份：${recoveryPath}`, onChange);
       } catch (error) {
         notify(`尚未刪除圖片：${error.message}`, true);
       } finally {
@@ -283,14 +284,14 @@
     }
   }
 
-  function openRemoveDialog(chapter, part, image) {
+  function openRemoveDialog(chapter, part, image, onChange) {
     const dialog = ensureRemoveDialog();
-    removeTarget = { chapter, part, image };
+    removeTarget = { chapter, part, image, onChange };
     dialog.querySelector('#articleImageRemoveMessage').textContent = `要如何處理「${image.originalName || image.fileName}」？`;
     dialog.showModal();
   }
 
-  function createImageRow(chapter, part, image, index) {
+  function createImageRow(chapter, part, image, index, onChange) {
     const row = document.createElement('article');
     row.className = 'article-image-row';
 
@@ -346,12 +347,12 @@
     up.type = 'button'; up.className = 'button tiny ghost'; up.textContent = '上移';
     up.disabled = index === 0;
     up.dataset.mobileSafeWriteControl = 'true';
-    up.addEventListener('click', () => moveImage(chapter, part, index, -1));
+    up.addEventListener('click', () => moveImage(chapter, part, index, -1, onChange));
     const down = document.createElement('button');
     down.type = 'button'; down.className = 'button tiny ghost'; down.textContent = '下移';
     down.disabled = index === part.images.length - 1;
     down.dataset.mobileSafeWriteControl = 'true';
-    down.addEventListener('click', () => moveImage(chapter, part, index, 1));
+    down.addEventListener('click', () => moveImage(chapter, part, index, 1, onChange));
     const copy = document.createElement('button');
     copy.type = 'button'; copy.className = 'button tiny ghost'; copy.textContent = '複製 Markdown';
     copy.addEventListener('click', async () => {
@@ -369,19 +370,19 @@
       image.alt = alt.value.trim();
       image.caption = caption.value.trim();
       image.placement = placement.value;
-      persistImages(chapter, part, '圖片資訊與文章 Markdown 已更新');
+      persistImages(chapter, part, '圖片資訊與文章 Markdown 已更新', onChange);
     });
     const remove = document.createElement('button');
     remove.type = 'button'; remove.className = 'button tiny ghost article-image-remove'; remove.textContent = '移除';
     remove.dataset.mobileSafeWriteControl = 'true';
-    remove.addEventListener('click', () => openRemoveDialog(chapter, part, image));
+    remove.addEventListener('click', () => openRemoveDialog(chapter, part, image, onChange));
     actions.append(up, down, copy, save, remove);
     details.append(title, fields, actions);
     row.append(preview, details);
     return row;
   }
 
-  function createManager(chapter, part) {
+  function createManager(chapter, part, { onChange } = {}) {
     normalizePublishingPart(part);
     const section = document.createElement('section');
     section.className = 'article-image-manager';
@@ -424,7 +425,7 @@
     input.setAttribute('aria-label', '選擇文章圖片');
     add.addEventListener('click', () => input.click());
     input.addEventListener('change', async () => {
-      await importFiles(chapter, part, input.files, add);
+      await importFiles(chapter, part, input.files, add, onChange);
       input.value = '';
     });
     headActions.append(add, input);
@@ -441,7 +442,7 @@
 
     const list = document.createElement('div');
     list.className = 'article-image-list';
-    part.images.forEach((image, index) => list.appendChild(createImageRow(chapter, part, image, index)));
+    part.images.forEach((image, index) => list.appendChild(createImageRow(chapter, part, image, index, onChange)));
     section.appendChild(list);
     return section;
   }

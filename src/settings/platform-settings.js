@@ -74,6 +74,10 @@
           if (!(nextName in part.publicationRecords)) part.publicationRecords[nextName] = part.publicationRecords[oldName];
           delete part.publicationRecords[oldName];
         }
+        if (part.platformTitles && oldName in part.platformTitles) {
+          if (!(nextName in part.platformTitles)) part.platformTitles[nextName] = part.platformTitles[oldName];
+          delete part.platformTitles[oldName];
+        }
       }
     }
 
@@ -83,7 +87,7 @@
   }
 
   function removePlatform(name) {
-    if (!confirm(`移除「${name}」平台？\n\n會移除這個平台的排版、發布狀態、時間與文章網址，但不會刪除已產出的 Markdown。`)) return;
+    if (!confirm(`移除「${name}」平台？\n\n會移除這個平台的排版、自訂標題、發布狀態、時間與文章網址，但不會刪除已產出的 Markdown。`)) return;
     const index = platforms.indexOf(name);
     if (index >= 0) platforms.splice(index, 1);
     delete state.formatting.platforms?.[name];
@@ -91,6 +95,7 @@
       for (const part of chapter.parts || []) {
         if (part.platformStatus) delete part.platformStatus[name];
         if (part.publicationRecords) delete part.publicationRecords[name];
+        if (part.platformTitles) delete part.platformTitles[name];
       }
     }
     saveState('平台已移除');

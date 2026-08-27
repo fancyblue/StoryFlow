@@ -70,13 +70,14 @@ Before publishing, verify split precision with a disposable chapter containing o
 ## 5. Publishing and destructive-action safety
 
 - [ ] Create and save one test publishing part, then confirm its Markdown exists under `Works/<work>/<chapter>/`.
-- [ ] Give the part a different publishing title. Confirm the list shows it as primary with the internal name beneath, the Markdown filename does not change, metadata contains `publishTitle`, and preview can copy title separately from content.
-- [ ] Expand the article and import two disposable images from different file-provider locations. Confirm both are copied under `assets/<article ID>/`, duplicate names do not overwrite, thumbnails show dimensions/size and files over 8 MB display a warning.
+- [ ] Open one platform's “預覽／複製”, give it a different title, and save. Confirm only that platform shows the custom title, the Markdown filename does not change, metadata contains `platformTitles`, and another platform still falls back to the article name.
+- [ ] In the same preview, confirm “複製標題” remains independent. Enable “複製內容時把標題放在最前面”, verify both 大標題 and 粗體 previews, then confirm rich destinations receive formatting while plain-text destinations receive equivalent Markdown.
+- [ ] Expand the article and confirm platform rows remain visible below one compact article-supplement row. Open “文章圖片” and import two disposable images from different file-provider locations. Confirm both are copied under `assets/<article ID>/`, duplicate names do not overwrite, thumbnails show dimensions/size and files over 8 MB display a warning.
 - [ ] Add alternative text and a caption, move one image, change its position, then save. Confirm preview follows the chosen groups, clicking opens the lightbox and generated Markdown contains relative image paths.
 - [ ] Temporarily rename one disposable image outside StoryFlow and confirm the manager and preview show a missing-file warning; restore it afterward.
 - [ ] Confirm “複製內容” copies prose only and the preview reminds you to upload images separately; confirm individual and all-image Markdown copy actions work.
 - [ ] Remove one image from the article without deleting it and confirm the file remains. For another disposable image choose “備份後刪除檔案” and confirm a copy exists in `Recovery/Assets/` before the source disappears.
-- [ ] Expand the publishing part, add an afterword and confirm body/afterword counts are separate; verify the Markdown contains body, separator and afterword.
+- [ ] Open “後記” from the compact article-supplement row, add an afterword and confirm body/afterword counts are separate; verify the Markdown contains body, separator and afterword.
 - [ ] In preview, turn off “附上後記”; confirm preview/copy output contains only the body and the article Markdown is rewritten consistently.
 - [ ] For one platform, choose “記錄發布”, correct the time if needed, enter a URL without `https://`, then save. Confirm the row shows the date, the URL can be opened safely and the platform becomes “已發布”.
 - [ ] Cancel that platform's published state, accept the warning and confirm both its time and URL are cleared. Existing legacy published rows without a record should instead remain readable as “未記錄發布時間”.

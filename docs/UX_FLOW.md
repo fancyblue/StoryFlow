@@ -48,14 +48,15 @@ The Publishing page separates queue navigation from the actual publishing commit
 | --- | --- | --- | --- | --- |
 | P-01 | Resume the latest unfinished publication | 繼續發布 | Filters and project selector | One solid page action, visible only when pending or partial work exists |
 | P-02 | Choose a specific article to process | 管理發布 | 預覽預設設定、`⋯` | Tinted row action; preview is outlined and overflow is tertiary |
-| P-03 | Verify platform formatting | 預覽預設設定 | Copy title, include/exclude afterword | Outlined until the preview dialog opens |
-| P-04 | Copy content to a platform | 複製內容 | 複製標題、關閉 | The single solid action in the preview dialog |
+| P-03 | Verify platform formatting | 預覽／複製 | Copy title, include/exclude afterword | Outlined until the preview dialog opens |
+| P-04 | Copy content to a platform | 複製內容 | Optionally prepend title as heading or bold, 複製標題、關閉 | The single solid action in the preview dialog |
 | P-05 | Store publication time and URL | 保存發布紀錄 | 取消、開啟文章 | The single solid action in the record dialog |
-| P-06 | Edit publishing title, afterword or image metadata | Save the active editor | Preview and ordering controls | One local solid save action only while that editor is active |
-| P-07 | Mark or undo platform publication | 標註已發布／取消已發布 | Publication record | State control, not a global primary action; reversal requires a clear warning |
-| P-08 | Find articles by work or status | 作品／發布狀態 filters | — | Soft selected state, never solid CTA styling |
-| P-09 | Perform infrequent article management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation |
-| P-10 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
+| P-06 | Edit afterword or image metadata | 文章圖片／後記, then save the active editor | Preview and ordering controls | Compact entry row; one local solid save action only inside the active dialog |
+| P-07 | Give one platform a different publishing title | 修改此平台標題, then 保存標題 | 改回沿用 | Kept inside that platform's preview/copy dialog; never a large article-level form |
+| P-08 | Mark or undo platform publication | 標註已發布／取消已發布 | Publication record | State control, not a global primary action; reversal requires a clear warning |
+| P-09 | Find articles by work or status | 作品／發布狀態 filters | — | Soft selected state, never solid CTA styling |
+| P-10 | Perform infrequent article management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation |
+| P-11 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
 
 An expanded “收合發布” control is still a disclosure. Use a stronger soft selection, border or adjacent panel treatment instead of the full primary fill; the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task.
 
@@ -164,12 +165,12 @@ Deletion, replacement and source refresh follow the safety rules in [ARCHITECTUR
 ## Article afterwords
 
 ```text
-發布 → 管理發布 → 編輯後記 → 保存 → 預覽／複製
-                                  ↘ 可排除後記，只輸出正文
+發布 → 管理發布 → 後記 → 編輯／保存 → 關閉燈箱 → 預覽／複製
+                                                   ↘ 可排除後記，只輸出正文
 ```
 
 - One publishing article owns one shared afterword; platform-specific variants are intentionally out of scope.
-- The expanded article is the editing context. Body and afterword counts remain separate.
+- The expanded article shows only a compact body/image/afterword summary. “後記” opens a focused dialog, so platform rows remain visible without scrolling past a large textarea.
 - Saving updates `workspace.json` and, when the StoryFlow folder is connected, rewrites that article Markdown with `正文 → 分隔線 → 後記`.
 - Source refresh may update a chapter draft but must not change an existing publishing part or its afterword.
 - Preview and copy use the article-level `includeAfterword` choice consistently across platforms.
@@ -178,20 +179,22 @@ Deletion, replacement and source refresh follow the safety rules in [ARCHITECTUR
 ## Publishing titles
 
 ```text
-發布 → 展開文章 → 輸入發布標題 → 保存 → 預覽
-                         ↘ 留白 → 沿用內部文章名稱
+發布 → 管理發布 → 平台「預覽／複製」→ 修改此平台標題 → 保存
+                                         ↘ 改回沿用文章名稱
+                         複製內容 → 可選「標題放最前面」→ 大標題／粗體
 ```
 
 - The internal article name remains the stable source and Markdown filename; editing the publishing title never renames either one.
-- The article list leads with the publishing title and shows the internal name as a quiet secondary line only when they differ.
-- Preview and copy present the publishing title separately from body/afterword content so each can be pasted into the matching platform field.
-- Source refresh keeps an existing publishing title unchanged.
+- A platform-specific title is edited only inside that platform's preview/copy dialog. Empty values fall back to the internal article name; legacy shared titles remain a compatibility fallback.
+- The article and platform rows expose a compact summary instead of a permanent title form. A custom platform title is shown quietly beneath its platform name.
+- “複製標題” remains separate. “複製內容” can optionally prepend the current platform title as a heading or bold text; rich clipboards receive HTML and plain-text destinations receive equivalent Markdown.
+- Source refresh keeps existing platform titles unchanged. Renaming or removing a platform migrates or removes its title together with status and publication records.
 
 ## Article images
 
 ```text
-發布 → 展開文章 → 匯入圖片 → 系統檔案選擇器 → 複製到私人 assets 資料夾
-                         ↓
+發布 → 管理發布 → 文章圖片 → 匯入圖片 → 系統檔案選擇器 → 複製到私人 assets 資料夾
+                                    ↓
         替代文字／圖說／位置／排序 → 保存 → 發布預覽
                                               ↘ 平台逐張上傳
 移除 → 只從文章移除 → 檔案保留

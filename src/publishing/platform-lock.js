@@ -30,11 +30,15 @@
     for (const chapter of state.chapters || []) for (const part of chapter.parts || []) {
       const prior = part.platformStatus || {};
       const priorRecords = part.publicationRecords || {};
+      const priorTitles = part.platformTitles || {};
       part.platformStatus = Object.fromEntries(names.map(name => [name, Boolean(prior[name])]));
       part.publicationRecords = Object.fromEntries(names.map(name => [name, {
         publishedAt: typeof priorRecords[name]?.publishedAt === 'string' ? priorRecords[name].publishedAt : '',
         url: typeof priorRecords[name]?.url === 'string' ? priorRecords[name].url : ''
       }]));
+      part.platformTitles = Object.fromEntries(names
+        .map(name => [name, typeof priorTitles[name] === 'string' ? priorTitles[name].trim() : ''])
+        .filter(([, title]) => title));
     }
     if (firstMigration) state.platformPresetVersion = PRESET_VERSION;
   }

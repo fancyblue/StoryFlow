@@ -3,6 +3,7 @@
   let deleteFolderHandle = null;
   let currentFilter = 'all';
   let selectedPartKey = null;
+  let articleToolContext = null;
 
   function safeName(value, fallback = 'untitled') {
     const cleaned = String(value || '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
@@ -36,9 +37,45 @@
     return platform || '預設設定';
   }
 
-  function publishTitleFor(part) {
+  function publishTitleFor(part, platform = '') {
     normalizePublishingPart(part);
+    const platformTitle = platform ? String(part.platformTitles?.[platform] || '').trim() : '';
+    if (platformTitle) return platformTitle;
     return part.publishTitle.trim() || part.title || '未命名文章';
+  }
+
+  function outputWithTitle(part, platform, includeAfterword, titleStyle = '') {
+    const content = outputFor(part, platform, includeAfterword);
+    if (!titleStyle) return content;
+    const title = publishTitleFor(part, platform).replace(/\s+/g, ' ').trim();
+    const prefix = titleStyle === 'bold'
+      ? `**${title.replace(/\*/g, '\\*')}**`
+      : `# ${title}`;
+    return content ? `${prefix}\n\n${content}` : prefix;
+  }
+
+  function richOutputHtml(part, platform, includeAfterword, titleStyle) {
+    if (!titleStyle) return '';
+    const title = escapeHtml(publishTitleFor(part, platform).replace(/\s+/g, ' ').trim());
+    const content = escapeHtml(outputFor(part, platform, includeAfterword));
+    const titleHtml = titleStyle === 'bold' ? `<p><strong>${title}</strong></p>` : `<h1>${title}</h1>`;
+    const bodyHtml = content
+      .split(/\n{2,}/)
+      .filter(Boolean)
+      .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+      .join('');
+    return `${titleHtml}${bodyHtml}`;
+  }
+
+  async function writeClipboard(text, html = '') {
+    if (html && navigator.clipboard?.write && window.ClipboardItem && window.Blob) {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/plain': new Blob([text], { type: 'text/plain' }),
+        'text/html': new Blob([html], { type: 'text/html' })
+      })]);
+      return;
+    }
+    await navigator.clipboard.writeText(text);
   }
 
   function publicationRecord(part, platform) {
@@ -218,8 +255,34 @@
         <div class="platform-preview-body">
           <p id="platformPreviewMeta" class="muted"></p>
           <div class="platform-preview-title-copy">
-            <div><span>發布標題</span><strong id="platformPreviewPublishTitle"></strong></div>
-            <button id="copyPlatformTitle" class="button tiny ghost" type="button">複製標題</button>
+            <div>
+              <span id="platformPreviewTitleSource">發布標題</span>
+              <strong id="platformPreviewPublishTitle"></strong>
+            </div>
+            <div class="platform-preview-title-actions">
+              <button id="copyPlatformTitle" class="button tiny ghost" type="button">複製標題</button>
+              <button id="editPlatformTitle" class="button tiny ghost" type="button">修改此平台標題</button>
+            </div>
+          </div>
+          <div id="platformPreviewTitleEditor" class="platform-preview-title-editor" hidden>
+            <label class="field-label" for="platformPreviewTitleInput">此平台標題</label>
+            <div class="platform-preview-title-editor-controls">
+              <input id="platformPreviewTitleInput" class="text-input" type="text" maxlength="200" />
+              <button id="savePlatformPreviewTitle" class="button primary" type="button">保存標題</button>
+              <button id="resetPlatformPreviewTitle" class="button ghost" type="button">改回沿用</button>
+            </div>
+            <small>只影響目前平台，不修改來源文章名稱或 Markdown 檔名。</small>
+          </div>
+          <div class="platform-preview-copy-title-option">
+            <label>
+              <input id="platformPreviewIncludeTitle" type="checkbox" />
+              <span>複製內容時把標題放在最前面</span>
+            </label>
+            <select id="platformPreviewTitleStyle" class="text-input" disabled>
+              <option value="heading">大標題</option>
+              <option value="bold">粗體</option>
+            </select>
+            <small>貼到支援格式的平台會直接套用；純文字環境會保留 Markdown 標記。</small>
           </div>
           <label id="platformPreviewAfterwordOption" class="platform-preview-afterword-option" hidden>
             <input id="platformPreviewIncludeAfterword" type="checkbox" />
@@ -241,6 +304,33 @@
   }
 
   const publishDialog = rebuildPublishPreviewDialog();
+
+  function rebuildArticleToolDialog() {
+    document.getElementById('publishingArticleToolDialog')?.remove();
+    const dialog = document.createElement('dialog');
+    dialog.id = 'publishingArticleToolDialog';
+    dialog.className = 'publishing-article-tool-dialog';
+    dialog.innerHTML = `
+      <div class="dialog-card publishing-article-tool-card">
+        <div class="panel-head">
+          <div><p class="eyebrow">ARTICLE TOOL</p><h3 id="publishingArticleToolTitle"></h3></div>
+          <button class="icon-button" type="button" data-article-tool-close aria-label="關閉">×</button>
+        </div>
+        <p id="publishingArticleToolMeta" class="muted publishing-article-tool-meta"></p>
+        <div id="publishingArticleToolBody" class="publishing-article-tool-body"></div>
+        <div class="publishing-article-tool-actions">
+          <button class="button ghost" type="button" data-article-tool-close>完成</button>
+        </div>
+      </div>`;
+    document.body.appendChild(dialog);
+    dialog.querySelectorAll('[data-article-tool-close]').forEach(button => {
+      button.addEventListener('click', () => dialog.close());
+    });
+    dialog.addEventListener('close', () => { articleToolContext = null; });
+    return dialog;
+  }
+
+  const articleToolDialog = rebuildArticleToolDialog();
 
   function rebuildPublicationRecordDialog() {
     document.getElementById('publicationRecordDialog')?.remove();
@@ -320,10 +410,15 @@
 
   function previewPublish(part, platform) {
     normalizePartStatus(part);
-    const publishTitle = publishTitleFor(part);
+    const entry = allEntries().find(item => item.part === part);
     const toggle = publishDialog.querySelector('#togglePlatformPublished');
     const afterwordOption = publishDialog.querySelector('#platformPreviewAfterwordOption');
     const includeAfterword = publishDialog.querySelector('#platformPreviewIncludeAfterword');
+    const includeTitle = publishDialog.querySelector('#platformPreviewIncludeTitle');
+    const titleStyle = publishDialog.querySelector('#platformPreviewTitleStyle');
+    const titleEditor = publishDialog.querySelector('#platformPreviewTitleEditor');
+    const titleInput = publishDialog.querySelector('#platformPreviewTitleInput');
+    const editTitle = publishDialog.querySelector('#editPlatformTitle');
     const afterwordCount = afterwordChars(part);
     const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
 
@@ -338,24 +433,72 @@
       } else {
         container.textContent = outputFor(part, platform, includeAfterword.checked);
       }
+      if (includeTitle.checked) {
+        if (container.dataset.sfPreviewManaged === 'article-images') {
+          const titleNode = document.createElement(titleStyle.value === 'bold' ? 'strong' : 'h1');
+          titleNode.className = `platform-preview-included-title ${titleStyle.value}`;
+          titleNode.textContent = publishTitleFor(part, platform);
+          container.prepend(titleNode);
+        } else {
+          container.textContent = outputWithTitle(part, platform, includeAfterword.checked, titleStyle.value);
+        }
+      }
     };
 
-    publishDialog.querySelector('#platformPreviewTitle').textContent = `${publishTitle} · ${platformLabel(platform)}`;
+    const refreshTitle = () => {
+      const currentTitle = publishTitleFor(part, platform);
+      const platformOverride = platform && String(part.platformTitles?.[platform] || '').trim();
+      const legacyOverride = String(part.publishTitle || '').trim();
+      publishDialog.querySelector('#platformPreviewTitle').textContent = `${currentTitle} · ${platformLabel(platform)}`;
+      publishDialog.querySelector('#platformPreviewPublishTitle').textContent = currentTitle;
+      publishDialog.querySelector('#platformPreviewTitleSource').textContent = platformOverride
+        ? '發布標題 · 此平台自訂'
+        : legacyOverride ? '發布標題 · 沿用既有共用標題' : '發布標題 · 沿用文章名稱';
+      titleInput.value = platformOverride || '';
+      refreshContent();
+    };
+
     publishDialog.querySelector('#platformPreviewMeta').textContent = platform
       ? `這是「${platform}」實際要貼出的內容。發布狀態只會修改這個平台。`
       : '這是預設設定的輸出預覽；預設設定不是發布平台，因此不會產生發布狀態。';
-    if (publishTitle !== part.title) {
+    if (publishTitleFor(part, platform) !== part.title) {
       publishDialog.querySelector('#platformPreviewMeta').textContent += ` 內部文章名稱：${part.title}。`;
     }
-    publishDialog.querySelector('#platformPreviewPublishTitle').textContent = publishTitle;
+    editTitle.hidden = !platform;
+    titleEditor.hidden = true;
+    includeTitle.checked = false;
+    titleStyle.value = 'heading';
+    titleStyle.disabled = true;
+    editTitle.onclick = () => {
+      titleEditor.hidden = !titleEditor.hidden;
+      if (!titleEditor.hidden) titleInput.focus();
+    };
+    publishDialog.querySelector('#savePlatformPreviewTitle').onclick = async () => {
+      if (!entry || !platform) return;
+      await savePlatformTitle(entry.chapter, part, platform, titleInput);
+      titleEditor.hidden = true;
+      refreshTitle();
+    };
+    publishDialog.querySelector('#resetPlatformPreviewTitle').onclick = async () => {
+      if (!entry || !platform) return;
+      titleInput.value = '';
+      await savePlatformTitle(entry.chapter, part, platform, titleInput);
+      titleEditor.hidden = true;
+      refreshTitle();
+    };
     publishDialog.querySelector('#copyPlatformTitle').onclick = async () => {
       try {
-        await navigator.clipboard.writeText(publishTitle);
+        await writeClipboard(publishTitleFor(part, platform));
         notify('已複製發布標題');
       } catch (error) {
         notify(`複製標題失敗：${error.message}`, true);
       }
     };
+    includeTitle.onchange = () => {
+      titleStyle.disabled = !includeTitle.checked;
+      refreshContent();
+    };
+    titleStyle.onchange = refreshContent;
     afterwordOption.hidden = afterwordCount === 0;
     includeAfterword.checked = part.includeAfterword !== false;
     publishDialog.querySelector('#platformPreviewAfterwordCount').textContent = `${afterwordCount.toLocaleString()} 字`;
@@ -374,13 +517,17 @@
         notify(`輸出設定已更新，但文章 Markdown 尚未寫入：${error.message}`, true);
       }
     };
-    refreshContent();
+    refreshTitle();
     toggle.hidden = !platform;
     toggle.textContent = isPublished ? '取消已發布標記' : '標註已發布';
 
     publishDialog.querySelector('#confirmPlatformCopy').onclick = async () => {
       try {
-        await navigator.clipboard.writeText(outputFor(part, platform, includeAfterword.checked));
+        const selectedTitleStyle = includeTitle.checked ? titleStyle.value : '';
+        await writeClipboard(
+          outputWithTitle(part, platform, includeAfterword.checked, selectedTitleStyle),
+          richOutputHtml(part, platform, includeAfterword.checked, selectedTitleStyle)
+        );
         notify(`已複製 ${platformLabel(platform)} 內容`);
       } catch (error) {
         notify(`複製失敗：${error.message}`, true);
@@ -492,61 +639,39 @@
       const updated = await writeArticleMarkdown(chapter, part);
       if (!updated) {
         notify('後記目前只保留在畫面；請重新連接資料夾後再按一次「保存後記」。', true);
-        return;
+        return false;
       }
       notify(nextAfterword ? '後記與文章 Markdown 已更新' : '後記已移除，文章 Markdown 已更新');
+      return true;
     } catch (error) {
       notify(`後記已更新，但文章 Markdown 尚未寫入：${error.message}`, true);
+      return false;
     }
   }
 
-  async function savePublishTitle(chapter, part, input) {
+  async function savePlatformTitle(chapter, part, platform, input) {
     const nextTitle = input.value.trim();
-    part.publishTitle = nextTitle;
-    saveState('發布標題已更新');
+    normalizePublishingPart(part);
+    if (nextTitle) part.platformTitles[platform] = nextTitle;
+    else delete part.platformTitles[platform];
+    saveState('平台標題已更新');
     renderParts();
 
     try {
       const updated = await writeArticleMarkdown(chapter, part);
       if (!updated) {
-        notify('發布標題目前只保留在畫面；請重新連接資料夾後再按一次「保存標題」。', true);
-        return;
+        notify('平台標題目前只保留在畫面；請重新連接資料夾後再保存一次。', true);
+        return false;
       }
-      notify(nextTitle ? '發布標題與文章 metadata 已更新' : '已改回沿用內部文章名稱');
+      notify(nextTitle ? `${platform} 的標題已保存` : `${platform} 已改回沿用文章名稱`);
+      return true;
     } catch (error) {
-      notify(`發布標題已更新，但 metadata.json 尚未寫入：${error.message}`, true);
+      notify(`平台標題已更新，但 metadata.json 尚未寫入：${error.message}`, true);
+      return false;
     }
   }
 
-  function createPublishTitleEditor(chapter, part) {
-    normalizePublishingPart(part);
-    const section = document.createElement('section');
-    section.className = 'publish-title-editor';
-    section.innerHTML = `
-      <div class="publish-title-editor-copy">
-        <strong>發布標題</strong>
-        <span class="muted">留白時沿用「${escapeHtml(part.title)}」；不更改來源名稱或 Markdown 檔名。</span>
-      </div>
-      <div class="publish-title-editor-controls">
-        <input class="text-input publish-title-input" type="text" maxlength="200" aria-label="發布標題" placeholder="${escapeHtml(part.title)}" />
-        <button class="button tiny primary publish-title-save" type="button">保存標題</button>
-      </div>`;
-    const input = section.querySelector('.publish-title-input');
-    input.value = part.publishTitle;
-    section.querySelector('.publish-title-save').addEventListener('click', event => {
-      event.stopPropagation();
-      savePublishTitle(chapter, part, input);
-    });
-    input.addEventListener('keydown', event => {
-      if (event.key !== 'Enter') return;
-      event.preventDefault();
-      savePublishTitle(chapter, part, input);
-    });
-    section.addEventListener('click', event => event.stopPropagation());
-    return section;
-  }
-
-  function createAfterwordEditor(chapter, part) {
+  function createAfterwordEditor(chapter, part, { onSaved } = {}) {
     normalizePublishingPart(part);
     const section = document.createElement('section');
     section.className = 'publish-afterword-editor';
@@ -577,12 +702,46 @@
       includeControl.disabled = chars === 0;
       if (chars > 0 && !part.afterword.trim()) includeControl.checked = true;
     });
-    section.querySelector('.publish-afterword-save').addEventListener('click', event => {
+    section.querySelector('.publish-afterword-save').addEventListener('click', async event => {
       event.stopPropagation();
-      saveAfterword(chapter, part, textarea, includeControl);
+      const saved = await saveAfterword(chapter, part, textarea, includeControl);
+      onSaved?.(saved);
     });
     section.addEventListener('click', event => event.stopPropagation());
     return section;
+  }
+
+  function renderArticleToolBody() {
+    if (!articleToolContext) return;
+    const { chapter, part, tool } = articleToolContext;
+    const body = articleToolDialog.querySelector('#publishingArticleToolBody');
+    body.replaceChildren();
+    if (tool === 'images') {
+      const manager = window.StoryFlowArticleImages?.createManager?.(chapter, part, {
+        onChange: () => {
+          if (articleToolDialog.open && articleToolContext?.part === part && articleToolContext?.tool === 'images') {
+            renderArticleToolBody();
+          }
+        }
+      });
+      if (manager) body.appendChild(manager);
+      else body.textContent = '圖片工具尚未載入，請重新整理後再試。';
+      return;
+    }
+    body.appendChild(createAfterwordEditor(chapter, part, {
+      onSaved: saved => { if (saved) articleToolDialog.close(); }
+    }));
+  }
+
+  function openArticleTool(chapter, part, tool) {
+    articleToolContext = { chapter, part, tool };
+    const isImages = tool === 'images';
+    articleToolDialog.querySelector('#publishingArticleToolTitle').textContent = isImages ? '文章圖片' : '後記';
+    articleToolDialog.querySelector('#publishingArticleToolMeta').textContent = `${publishTitleFor(part)} · ${isImages
+      ? `${part.images.length.toLocaleString()} 張圖片，檔案保存在私人 StoryFlow 資料夾。`
+      : `${afterwordChars(part).toLocaleString()} 字，與來源正文分開保存。`}`;
+    renderArticleToolBody();
+    articleToolDialog.showModal();
   }
 
   async function getDeleteFolder() {
@@ -652,6 +811,8 @@
   function createPlatformRow(entry, platform) {
     const { chapter, part } = entry;
     const published = Boolean(part.platformStatus?.[platform]);
+    const platformTitle = publishTitleFor(part, platform);
+    const hasPlatformTitle = Boolean(String(part.platformTitles?.[platform] || '').trim());
     const record = publicationRecord(part, platform);
     const publishedAt = publicationDateLabel(record.publishedAt);
     const recordSummary = published
@@ -665,6 +826,7 @@
           <strong>${escapeHtml(platform)}</strong>
           <span class="publish-platform-status ${published ? 'done' : ''}">${published ? '已發布' : '尚未發布'}</span>
         </div>
+        ${hasPlatformTitle ? `<small class="publish-platform-title-summary">自訂標題：${escapeHtml(platformTitle)}</small>` : ''}
         ${recordSummary ? `<small class="publish-platform-record-summary">${escapeHtml(recordSummary)}</small>` : ''}
       </div>
       <div class="publish-platform-actions">
@@ -722,9 +884,16 @@
         </div>
       </div>
       <div class="publish-platform-details" ${expanded ? '' : 'hidden'}>
-        <div class="publish-title-editor-slot"></div>
-        <div class="publish-image-manager-slot"></div>
-        <div class="publish-afterword-slot"></div>
+        <div class="publish-article-tools">
+          <div class="publish-article-tools-copy">
+            <strong>文章補充內容</strong>
+            <span>正文 ${part.chars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張 · 後記 ${afterwordCount.toLocaleString()} 字</span>
+          </div>
+          <div class="publish-article-tool-actions">
+            <button class="button tiny ghost publish-images-tool-btn" type="button">文章圖片${imageCount ? ` ${imageCount.toLocaleString()}` : ''}</button>
+            <button class="button tiny ghost publish-afterword-tool-btn" type="button">後記${afterwordCount ? ` ${afterwordCount.toLocaleString()} 字` : ''}</button>
+          </div>
+        </div>
         <div class="publish-platform-details-head">
           <strong>發布平台</strong>
           <span class="muted">各平台狀態彼此獨立</span>
@@ -758,10 +927,14 @@
     });
 
     if (expanded) {
-      card.querySelector('.publish-title-editor-slot').appendChild(createPublishTitleEditor(chapter, part));
-      const imageManager = window.StoryFlowArticleImages?.createManager?.(chapter, part);
-      if (imageManager) card.querySelector('.publish-image-manager-slot').appendChild(imageManager);
-      card.querySelector('.publish-afterword-slot').appendChild(createAfterwordEditor(chapter, part));
+      card.querySelector('.publish-images-tool-btn').addEventListener('click', event => {
+        event.stopPropagation();
+        openArticleTool(chapter, part, 'images');
+      });
+      card.querySelector('.publish-afterword-tool-btn').addEventListener('click', event => {
+        event.stopPropagation();
+        openArticleTool(chapter, part, 'afterword');
+      });
       const platformList = card.querySelector('.publish-platform-list');
       if (!platforms.length) {
         platformList.innerHTML = '<div class="publish-no-platform"><strong>目前沒有發布平台</strong><span>請到設定新增發布平台後再管理發布狀態。</span><button class="button tiny ghost" type="button">前往設定</button></div>';
@@ -895,6 +1068,8 @@
 
   window.StoryFlowPublishingOutput = {
     forPart: outputFor,
+    withTitle: outputWithTitle,
+    richWithTitle: richOutputHtml,
     sectionsFor: outputSections,
     afterwordChars,
     titleFor: publishTitleFor
