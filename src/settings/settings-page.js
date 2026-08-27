@@ -35,7 +35,7 @@
         <header class="settings-page-head">
           <div>
             <p class="eyebrow">STORYFLOW / SETTINGS</p>
-            <h1>設定</h1>
+            <h1 id="settingsViewHeading">設定</h1>
             <p class="settings-page-subtitle">管理 Google Docs、StoryFlow 資料夾、發布平台與排版。</p>
           </div>
         </header>`;
@@ -45,6 +45,8 @@
     if (dialog.parentElement !== view) view.appendChild(dialog);
     dialog.classList.add('settings-page-dialog');
     dialog.setAttribute('open', '');
+    dialog.setAttribute('role', 'region');
+    dialog.setAttribute('aria-labelledby', 'settingsViewHeading');
 
     const form = dialog.querySelector('.settings-dialog');
     form?.classList.add('settings-page-form');

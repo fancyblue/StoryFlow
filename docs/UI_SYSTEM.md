@@ -54,6 +54,9 @@ Each platform row uses two information lines: platform/status first, publication
 ## Dialog behavior
 
 - One dialog represents one decision step.
+- Every dialog exposes its visible heading as the dialog's accessible name. Dynamic dialogs use the shared UI semantics helper instead of relying on the heading's visual proximity alone; compact surfaces without headings use explicit names (`搜尋 StoryFlow` and `圖片預覽`).
+- A visible `×` close control always has the accessible name `關閉`; task-specific cancel or defer actions keep their own explicit labels.
+- Settings is a full application view and is exposed as the named `設定` region, never as a modal dialog after its legacy form is moved into the page.
 - Focus starts at the first missing required field.
 - Source chooser → editor → preview are handoffs, so only one dialog is open at a time.
 - Closing a creation dialog preserves the existing work and creates nothing.

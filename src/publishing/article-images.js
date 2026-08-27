@@ -248,6 +248,7 @@
     dialog = document.createElement('dialog');
     dialog.id = 'articleImageLightbox';
     dialog.className = 'article-image-lightbox';
+    dialog.setAttribute('aria-label', '圖片預覽');
     dialog.innerHTML = `
       <div class="article-image-lightbox-card">
         <button class="icon-button" type="button" aria-label="關閉圖片">×</button>

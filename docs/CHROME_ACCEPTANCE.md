@@ -15,6 +15,7 @@ StoryFlow is a private, single-user site, so this is not a mandatory checklist f
 
 - [ ] Open StoryFlow and connect `StoryFlow-Acceptance`.
 - [ ] From an existing work, choose “切換作品” → “新增作品” → “手動新增”, then close the dialog. Confirm the original work is still active and no empty work was added.
+- [ ] Open the manual source, search, split confirmation and publishing preview dialogs. Confirm each dialog is announced by its visible heading and every `×` button is announced as “關閉”.
 - [ ] Create a manual work and add one test chapter.
 - [ ] Confirm the new work appears only after “確定新增” or preview confirmation.
 - [ ] Check that “切換作品”, “切篇偏好” and publishing work filters use the same down/up chevron behavior.

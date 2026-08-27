@@ -116,10 +116,10 @@
     </main>
   </div>
 
-  <dialog id="tabDialog"><form method="dialog" class="dialog-card tab-dialog"><div class="panel-head"><div><p class="eyebrow">GOOGLE DOCS</p><h3 id="tabDialogTitle">選擇要匯入的分頁</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div><p class="muted">選擇分頁後會先顯示 StoryFlow 轉換後的內容；確認後才加入工作區。</p><div id="tabList" class="tab-list"></div></form></dialog>
+  <dialog id="tabDialog" aria-labelledby="tabDialogTitle"><form method="dialog" class="dialog-card tab-dialog"><div class="panel-head"><div><p class="eyebrow">GOOGLE DOCS</p><h3 id="tabDialogTitle">選擇要匯入的分頁</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div><p class="muted">選擇分頁後會先顯示 StoryFlow 轉換後的內容；確認後才加入工作區。</p><div id="tabList" class="tab-list"></div></form></dialog>
 
-  <dialog id="settingsDialog"><form method="dialog" class="dialog-card settings-dialog">
-    <div class="panel-head"><div><p class="eyebrow">SETTINGS</p><h3>StoryFlow 設定</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div>
+  <dialog id="settingsDialog" aria-labelledby="settingsDialogTitle"><form method="dialog" class="dialog-card settings-dialog">
+    <div class="panel-head"><div><p class="eyebrow">SETTINGS</p><h3 id="settingsDialogTitle">StoryFlow 設定</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div>
     <div class="settings-section"><strong>Google Picker API Key</strong><p>API Key 會保存在你選擇的 StoryFlow 資料夾 <code>settings.json</code>，不寫入 GitHub 或瀏覽器儲存空間。</p><input id="pickerApiKeyInput" class="text-input" type="password" autocomplete="off" placeholder="AIza..." /><div class="settings-actions"><button id="savePickerKeyBtn" type="button" class="button ghost" disabled>保存到 StoryFlow 資料夾</button><button id="clearPickerKeyBtn" type="button" class="button ghost">清除</button></div></div>
     <div class="settings-section"><strong>StoryFlow 資料夾</strong><p>同一個瀏覽器工作階段內，重新整理頁面會自動接回目前資料夾，不需要重新選擇。關閉瀏覽器／頁籤後再次開啟時，可以要求你重新選擇或重新授權資料夾。</p><button id="settingsFolderBtn" type="button" class="button ghost">選擇資料夾</button></div>
     <div class="settings-section"><strong>發布排版</strong><p>初始提供「巴哈小屋、方格子」，兩者都可以移除，也可以自行新增其他平台；每個平台可個別設定排版。</p><label class="field-label" for="defaultIndent">預設段首縮排</label><select id="defaultIndent" class="text-input"><option value="none">不縮排</option><option value="two">全形兩格</option></select><div class="default-format-checks"><label class="format-check"><input id="defaultParagraphSpacing" type="checkbox" checked /><span>預設段落間空一行</span></label><label class="format-check"><input id="defaultSceneSeparator" type="checkbox" checked /><span>預設顯示場景分隔符</span></label></div><div id="platformFormatSettings" class="platform-settings"></div></div>
@@ -130,6 +130,6 @@
 
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://apis.google.com/js/api.js" async defer></script>
-  <script src="./app-loader.js?v=20260827-p18a"></script>
+  <script src="./app-loader.js?v=20260828-p19b"></script>
 </body>
 </html>
