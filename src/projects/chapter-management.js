@@ -11,7 +11,7 @@
       link = document.createElement('link');
       link.id = 'storyflowChapterManagementCss';
       link.rel = 'stylesheet';
-      link.href = './styles/domains/chapter-management.css?v=20260827-p14b';
+      link.href = './styles/domains/chapter-management.css?v=20260827-p16a';
       document.head.appendChild(link);
     }
     return link;

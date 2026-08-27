@@ -175,6 +175,7 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '其他樣式測試作品' }, { quiet: true });
     StoryFlowProjects.createProject({ title: '長章節清單測試' }, { quiet: true });
     state.chapters = Array.from({ length: 24 }, (_, index) => ({
       id: `long-chapter-${index + 1}`,
@@ -283,8 +284,8 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   await page.locator('.nav-item[data-view="projects"]').click();
   const manageChapters = page.getByRole('button', { name: '管理章節', exact: true });
   const managePublishing = page.getByRole('button', { name: '管理發布', exact: true });
-  await expect(manageChapters).toBeVisible();
-  await expect(managePublishing).toBeVisible();
+  await expect(manageChapters.first()).toBeVisible();
+  await expect(managePublishing.first()).toBeVisible();
   const managementStyles = await page.evaluate(() => {
     const values = element => {
       const style = getComputedStyle(element);
@@ -300,15 +301,19 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
     };
     return {
       open: values(document.querySelector('.project-open-btn')),
-      chapters: values(document.querySelector('.project-manage-chapters-btn')),
+      chapters: values(document.querySelector('.project-library-card.active .project-manage-chapters-btn')),
+      inactiveChapters: values(document.querySelector('.project-library-card:not(.active) .project-manage-chapters-btn')),
       publishing: values(document.querySelector('.project-publish-btn'))
     };
   });
   expect(managementStyles.chapters.height).toBe('40px');
   expect(managementStyles.chapters.fontSize).toBe('14px');
-  expect(managementStyles.chapters.backgroundColor).toBe('rgb(57, 117, 167)');
-  expect(managementStyles.chapters.color).toBe('rgb(255, 255, 255)');
-  expect(managementStyles.publishing.backgroundColor).toBe('rgb(234, 243, 249)');
+  expect(managementStyles.chapters.backgroundColor).toBe('rgb(220, 235, 245)');
+  expect(managementStyles.chapters.color).toBe('rgb(35, 68, 99)');
+  expect(managementStyles.inactiveChapters.backgroundColor).toBe(managementStyles.chapters.backgroundColor);
+  expect(managementStyles.inactiveChapters.borderColor).toBe(managementStyles.chapters.borderColor);
+  expect(managementStyles.inactiveChapters.color).toBe(managementStyles.chapters.color);
+  expect(managementStyles.publishing.backgroundColor).toBe('rgb(245, 249, 252)');
   expect(managementStyles.publishing.color).toBe('rgb(45, 93, 133)');
   expect(managementStyles.open.height).toBe(managementStyles.chapters.height);
   expect(managementStyles.open.fontSize).toBe(managementStyles.chapters.fontSize);

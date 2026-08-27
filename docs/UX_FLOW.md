@@ -8,11 +8,11 @@ Button weight follows the user's current task, not how often a control happens t
 
 ### Works library
 
-The Works page is the structural management hub. For the active work, managing chapters is the most likely next step; the “目前作品” badge and active-card treatment already communicate selection, so “工作台” must not also be styled as if it were the current page.
+The Works page is the structural management hub. Managing chapters is the most likely next step for any work. The “目前作品” badge and active-card treatment already communicate selection, so identical management actions must not change color merely because one card is current.
 
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
-| W-01 | Review, add, edit or remove chapters in the active work | 管理章節 | `⋯` for infrequent or destructive chapter actions | Solid primary for the active work; expanded state keeps the selected treatment |
+| W-01 | Review, add, edit or remove chapters in a work | 管理章節 | `⋯` for infrequent or destructive chapter actions | Consistent emphasized light-blue action on every card; expanded state uses a stronger soft selection |
 | W-02 | Return to splitting and writing work | 工作台 | — | Tinted or outlined navigation action |
 | W-03 | Jump directly to this work's publishing queue | 管理發布 | — | Tinted secondary shortcut |
 | W-04 | Make another work current | 開啟／切換並開啟 | Then manage its chapters or enter its workspace | Outlined until selected; selection is shown by the card and badge |
@@ -20,7 +20,7 @@ The Works page is the structural management hub. For the active work, managing c
 | W-06 | Create the first work | 建立第一個作品 | — | The only solid action in the empty state; do not show a competing solid header action |
 | W-07 | Rename or delete a work | `⋯` | Confirmation and Recovery for deletion | Tertiary overflow; deletion uses the danger treatment only inside the decision |
 
-Only the active work's “管理章節” receives the strongest emphasis. Other cards stay quiet until selected, preventing a long works list from becoming a grid of identical solid buttons.
+Every “管理章節” control uses the same noticeable light-blue treatment so the same label always communicates the same function. Current-work identity belongs to the card border and badge; no repeated row action uses a solid primary fill.
 
 ### Workspace
 

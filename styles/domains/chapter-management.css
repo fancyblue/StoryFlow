@@ -90,33 +90,35 @@
   line-height:1;
 }
 
-/* Works library: chapter and publishing management are sibling disclosure actions. */
+/* Works library: keep chapter management consistent across active and inactive works.
+   Expansion is a soft selected state, not a new primary action. */
 .project-library-card.chapters-expanded{
   align-items:start!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn{
   white-space:nowrap!important;
-  border-color:#91b8d9!important;
-  background:var(--sf-primary-soft,#eaf3f9)!important;
-  color:var(--denim-800,#2d5d85)!important;
+  border-color:#6fa2cf!important;
+  background:#dcebf5!important;
+  color:var(--denim-900,#234463)!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible{
-  border-color:#6fa2cf!important;
-  background:#dcebf5!important;
+  border-color:#5c99c2!important;
+  background:#cfe3f1!important;
   color:var(--denim-900,#234463)!important;
   outline:none!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:var(--denim-700,#3975a7)!important;
-  background:var(--denim-700,#3975a7)!important;
-  color:#fff!important;
+  border-color:#5c99c2!important;
+  background:#cfe3f1!important;
+  color:var(--denim-900,#234463)!important;
+  box-shadow:inset 3px 0 0 var(--denim-700,#3975a7)!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]:focus-visible{
-  border-color:var(--denim-800,#2d5d85)!important;
-  background:var(--denim-800,#2d5d85)!important;
-  color:#fff!important;
+  border-color:#4d89b5!important;
+  background:#c5ddeb!important;
+  color:var(--denim-900,#234463)!important;
   outline:none!important;
 }
 .project-chapter-manager{

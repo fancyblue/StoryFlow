@@ -48,7 +48,7 @@
     { id: 'storyflowMobileSafeModeJs', src: './src/persistence/mobile-safe-mode.js?v=20260826-p7a', owner: 'persistence' },
     { id: 'storyflowProjectSourceSyncJs', src: './src/source/project-source-sync.js?v=20260825-p3a', owner: 'source', attributes: { 'data-storyflow-project-source-sync': '' } },
     { id: 'storyflowSourceArticleUxJs', src: './src/source/source-article-ux.js?v=20260825-p3a', owner: 'source' },
-    { id: 'storyflowChapterManagementJs', src: './src/projects/chapter-management.js?v=20260827-p14b', owner: 'projects' },
+    { id: 'storyflowChapterManagementJs', src: './src/projects/chapter-management.js?v=20260827-p16a', owner: 'projects' },
     { id: 'storyflowManualChapterEditJs', src: './src/projects/manual-chapter-edit.js?v=20260825-p2b', owner: 'projects' },
     { id: 'storyflowSmartSplitPreferencesJs', src: './src/split/smart-split-preferences.js?v=20260825-p2b', owner: 'split' },
     { id: 'storyflowSmartSplitTitleJs', src: './src/split/smart-split-title.js?v=20260825-p2b', owner: 'split' },

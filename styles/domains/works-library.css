@@ -112,49 +112,53 @@
   background:#fff!important;
   color:#285f88!important;
 }
-/* Chapter management is the active work's primary next step. Publishing stays a
-   frequent secondary shortcut, and inactive work cards remain visually quiet. */
-.project-library-card .project-library-actions > .project-manage-chapters-btn,
+/* Keep identical actions identical across cards. The active work is already shown
+   by its card and badge; chapter management gets the stronger soft treatment, while
+   publishing remains a quieter shortcut. */
+.project-library-card .project-library-actions > .project-manage-chapters-btn{
+  min-height:40px!important;
+  height:40px!important;
+  padding:0 14px!important;
+  border-color:#6fa2cf!important;
+  background:#dcebf5!important;
+  color:var(--denim-900,#234463)!important;
+  font-size:14px!important;
+  font-weight:850!important;
+  box-shadow:none!important;
+}
 .project-library-card .project-library-actions > .project-publish-btn,
 .project-library-card .project-publishing-cluster > .project-publish-btn{
   min-height:40px!important;
   height:40px!important;
   padding:0 14px!important;
-  border-color:#91b8d9!important;
-  background:var(--sf-primary-soft,#eaf3f9)!important;
+  border-color:#bfd7e7!important;
+  background:#f5f9fc!important;
   color:var(--denim-800,#2d5d85)!important;
   font-size:14px!important;
   font-weight:850!important;
   box-shadow:none!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn:hover,
-.project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible,
+.project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible{
+  border-color:#5c99c2!important;
+  background:#cfe3f1!important;
+  color:var(--denim-900,#234463)!important;
+  box-shadow:0 2px 6px rgba(45,93,133,.08)!important;
+}
 .project-library-card .project-library-actions > .project-publish-btn:hover,
 .project-library-card .project-library-actions > .project-publish-btn:focus-visible,
 .project-library-card .project-publishing-cluster > .project-publish-btn:hover,
 .project-library-card .project-publishing-cluster > .project-publish-btn:focus-visible{
-  border-color:#6fa2cf!important;
-  background:#dcebf5!important;
+  border-color:#91b8d9!important;
+  background:var(--sf-primary-soft,#eaf3f9)!important;
   color:var(--denim-900,#234463)!important;
   box-shadow:0 2px 6px rgba(45,93,133,.08)!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:#6fa2cf!important;
-  background:#dcebf5!important;
+  border-color:#5c99c2!important;
+  background:#cfe3f1!important;
   color:var(--denim-900,#234463)!important;
-}
-.project-library-card.active .project-library-actions > .project-manage-chapters-btn{
-  border-color:var(--denim-700,#3975a7)!important;
-  background:var(--denim-700,#3975a7)!important;
-  color:#fff!important;
-  box-shadow:none!important;
-}
-.project-library-card.active .project-library-actions > .project-manage-chapters-btn:hover,
-.project-library-card.active .project-library-actions > .project-manage-chapters-btn:focus-visible,
-.project-library-card.active .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:var(--denim-800,#2d5d85)!important;
-  background:var(--denim-800,#2d5d85)!important;
-  color:#fff!important;
+  box-shadow:inset 3px 0 0 var(--denim-700,#3975a7)!important;
 }
 
 /* Publishing progress + its management action live together inside the metadata row.

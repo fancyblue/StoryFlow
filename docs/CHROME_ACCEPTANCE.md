@@ -44,7 +44,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Confirm manual mode shows only the current-part and chapter columns; candidate endings are thin lines whose labels appear on hover/focus, while the blue current ending stays visible without creating large gaps between paragraphs.
 - [ ] Choose an ending in the middle of a long chapter and press “結束微調”. Confirm the normal chapter view stays at “這一篇結束” instead of jumping to the chapter bottom.
 - [ ] Confirm “本篇／後續” counts are visually smaller than the article title and “結束微調” action, while remaining readable without wrapping.
-- [ ] In the works library, confirm “工作台／開啟／管理發布／管理章節” use the same text size and control height. Only the active work's “管理章節” is solid; Workbench and publishing shortcuts remain tinted or outlined.
+- [ ] In the works library, confirm “工作台／開啟／管理發布／管理章節” use the same text size and control height. Every “管理章節” uses the same emphasized light-blue style; Workbench is outlined and publishing is paler.
 - [ ] Give the suggestion a custom title before moving it and confirm the title is preserved.
 - [ ] Close and reopen confirmation; confirm manual mode resets. Confirm the source draft is byte-for-byte unchanged and no confirmed publishing article was rewritten.
 - [ ] Turn off “段落間空一行” for a disposable platform. Confirm ordinary paragraphs are compact but an original scene boundary still shows the configured marker.
@@ -55,7 +55,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Create or load a disposable work with enough chapters to scroll the source rail. Select a chapter near the bottom and confirm neither the page nor chapter rail jumps to the top.
 - [ ] Open the bottom chapter's `⋯` menu. Confirm it opens upward inside the visible rail and SMART SPLIT does not move down or change width.
 - [ ] Open “編輯章節”, record its dialog size, then open “手動新增文章”. Confirm both use the same large editor, the textarea fills the available height, and the footer meets the card bottom without a blank region below the buttons.
-- [ ] In Works, confirm the active work's “管理章節” is the solid 40 px / 14 px primary action. “工作台／開啟” stays outlined, “管理發布” stays light blue, and other work cards remain quiet until selected.
+- [ ] In Works, confirm every “管理章節” is the same emphasized light-blue 40 px / 14 px action. “工作台／開啟” stays outlined, “管理發布” stays paler, and only the card border and “目前作品” badge identify the current work.
 - [ ] With no works, confirm only “建立第一個作品” is shown as the solid action. After creating a work, confirm the header “＋ 新作品” returns as an outlined 40 px / 14 px action.
 - [ ] In Publishing, confirm each row's “預覽預設設定／管理發布／⋯” actions align to the same 40 px height and management text uses 14 px. Expanded “收合發布” uses a stronger soft selection rather than a solid primary fill.
 - [ ] With no confirmed article, confirm the workspace publishing summary does not show “前往發布”. With unfinished confirmed content it becomes a solid action; when all publishing is complete it becomes the outlined “查看發布紀錄”.
