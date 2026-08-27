@@ -116,6 +116,32 @@ test('primary action scale and navigation icon language stay consistent', async 
   expect(pageErrors).toEqual([]);
 });
 
+test('dialogs expose their visible heading and close control semantics', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+
+  await page.locator('#sidebarSettingsBtn').click();
+  await expect(page.getByRole('region', { name: '設定', exact: true })).toHaveAttribute('id', 'settingsDialog');
+  await page.getByRole('button', { name: '工作台', exact: true }).click();
+
+  await page.getByRole('button', { name: /手動建立/ }).click();
+  const manualDialog = page.getByRole('dialog', { name: '建立手動作品' });
+  await expect(manualDialog).toBeVisible();
+  await expect(manualDialog.getByRole('button', { name: '關閉', exact: true })).toHaveText('×');
+  await manualDialog.getByRole('button', { name: '關閉', exact: true }).click();
+
+  await page.getByRole('button', { name: '搜尋', exact: true }).click();
+  const searchDialog = page.getByRole('dialog', { name: '搜尋 StoryFlow' });
+  await expect(searchDialog).toBeVisible();
+  await expect(searchDialog.getByRole('button', { name: '關閉搜尋', exact: true })).toHaveText('×');
+
+  const unlabeledDialogs = await page.locator('dialog').evaluateAll(dialogs => dialogs
+    .filter(dialog => !dialog.getAttribute('aria-label') && !dialog.getAttribute('aria-labelledby'))
+    .map(dialog => dialog.id));
+  expect(unlabeledDialogs).toEqual([]);
+  expect(pageErrors).toEqual([]);
+});
+
 test('desktop pages stay bounded from laptop through extended-monitor widths', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.goto('/');

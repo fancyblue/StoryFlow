@@ -1,6 +1,33 @@
 // StoryFlow UI interaction contract: keep state, menus, and segmented controls
 // semantically consistent without changing the product's underlying data flow.
 (function () {
+  let generatedDialogTitleId = 0;
+
+  function syncDialogSemantics(root = document) {
+    const dialogs = [];
+    if (root instanceof Element && root.matches('dialog')) dialogs.push(root);
+    root.querySelectorAll?.('dialog').forEach(dialog => dialogs.push(dialog));
+
+    dialogs.forEach(dialog => {
+      if (!dialog.hasAttribute('aria-label') && !dialog.hasAttribute('aria-labelledby')) {
+        const heading = dialog.querySelector('h1, h2, h3, h4, h5, h6');
+        if (heading) {
+          if (!heading.id) {
+            generatedDialogTitleId += 1;
+            heading.id = `storyflowDialogTitle${generatedDialogTitleId}`;
+          }
+          dialog.setAttribute('aria-labelledby', heading.id);
+        }
+      }
+
+      dialog.querySelectorAll('.icon-button').forEach(button => {
+        if (!button.hasAttribute('aria-label') && button.textContent?.trim() === '×') {
+          button.setAttribute('aria-label', '關閉');
+        }
+      });
+    });
+  }
+
   function syncLiveRegions() {
     const saveState = document.getElementById('saveState');
     if (saveState) {
@@ -117,4 +144,13 @@
   syncPublishingFilters();
   syncConnectionLabels();
   enhanceQuickSwitch();
+  syncDialogSemantics();
+
+  new MutationObserver(records => {
+    records.forEach(record => {
+      record.addedNodes.forEach(node => {
+        if (node instanceof Element) syncDialogSemantics(node);
+      });
+    });
+  }).observe(document.body, { childList: true, subtree: true });
 })();

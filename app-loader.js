@@ -30,7 +30,7 @@
     { src: './src/source/source-relink.js?v=20260817-1117', owner: 'source' },
     { src: './src/connection/connection-ui.js?v=20260824-flow2', owner: 'connection' },
     { src: './src/connection/logout-unload-settings.js?v=20260825-p1f', owner: 'connection' },
-    { src: './src/settings/settings-page.js?v=20260827-p17a', owner: 'settings' },
+    { src: './src/settings/settings-page.js?v=20260828-p19b', owner: 'settings' },
     { id: 'storyflowPlatformSettingsJs', src: './src/settings/platform-settings.js?v=20260827-p18a', owner: 'settings' },
     { id: 'storyflowSettingsBootstrapJs', src: './src/settings/settings-bootstrap.js?v=20260827-p15a', owner: 'settings' },
     { id: 'storyflowSettingsFileImportJs', src: './src/settings/settings-file-import.js?v=20260825-p2b', owner: 'settings' },
@@ -42,7 +42,7 @@
     { src: './src/connection/google-auth.js?v=20260825-p2b', owner: 'connection' },
     { src: './src/connection/mobile-google-auth.js?v=20260817-1858', owner: 'connection' },
     { src: './src/ui/workspace-ux.js?v=20260825-p3a', owner: 'ui' },
-    { src: './src/ui/ui-system.js?v=20260825-p2b', owner: 'ui' },
+    { src: './src/ui/ui-system.js?v=20260828-p19b', owner: 'ui' },
     { id: 'storyflowPublishingDeleteJs', src: './src/publishing/publishing-delete.js?v=20260826-p7a', owner: 'publishing' },
     { id: 'storyflowProjectPersistenceGuardJs', src: './src/persistence/project-persistence-guard.js?v=20260826-p7a', owner: 'persistence' },
     { id: 'storyflowMobileSafeModeJs', src: './src/persistence/mobile-safe-mode.js?v=20260826-p7a', owner: 'persistence' },
@@ -54,8 +54,8 @@
     { id: 'storyflowSmartSplitTitleJs', src: './src/split/smart-split-title.js?v=20260825-p2b', owner: 'split' },
     { id: 'storyflowWorksLibraryUxJs', src: './src/projects/works-library-ux.js?v=20260825-p2b', owner: 'projects' },
     { src: './src/projects/workspace-project-ux.js?v=20260825-p3a', owner: 'projects' },
-    { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260827-p18a', owner: 'ui' },
-    { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260827-p18a', owner: 'publishing' }
+    { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260828-p19b', owner: 'ui' },
+    { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260828-p19b', owner: 'publishing' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));

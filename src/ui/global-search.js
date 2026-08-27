@@ -119,6 +119,7 @@
   const dialog = document.createElement('dialog');
   dialog.id = 'globalSearchDialog';
   dialog.className = 'global-search-dialog';
+  dialog.setAttribute('aria-label', '搜尋 StoryFlow');
   dialog.innerHTML = `
     <div class="dialog-card global-search-card">
       <div class="global-search-head">
