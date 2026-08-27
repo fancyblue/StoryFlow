@@ -849,15 +849,25 @@ test('published articles keep an independent afterword and can exclude it from o
   await page.locator('.nav-item[data-view="publishing"]').click();
   const card = page.locator('.publish-list-item', { hasText: '有後記的文章' });
   await card.getByRole('button', { name: /展開.*發布平台/ }).click();
-  await expect(card.getByRole('button', { name: '＋ 匯入圖片', exact: true }))
-    .toHaveAttribute('data-mobile-safe-write-control', 'true');
+  await expect(card.locator('.publish-article-tools')).toContainText('圖片 1 張 · 後記 0 字');
+  await expect(card.locator('.publish-platform-row').first()).toBeVisible();
 
-  const editor = card.locator('.publish-afterword-editor');
+  await card.getByRole('button', { name: '文章圖片 1', exact: true }).click();
+  let toolDialog = page.locator('#publishingArticleToolDialog');
+  await expect(toolDialog).toBeVisible();
+  await expect(toolDialog.getByRole('button', { name: '＋ 匯入圖片', exact: true }))
+    .toHaveAttribute('data-mobile-safe-write-control', 'true');
+  await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
+
+  await card.getByRole('button', { name: '後記', exact: true }).click();
+  toolDialog = page.locator('#publishingArticleToolDialog');
+  const editor = toolDialog.locator('.publish-afterword-editor');
   await expect(editor).toBeVisible();
   await editor.locator('textarea').fill('這是寫給讀者的後記。');
   await expect(editor.locator('.publish-afterword-count')).toContainText('10 字');
   await editor.getByRole('button', { name: '保存後記', exact: true }).click();
   await expect(card.locator('.publish-afterword-badge')).toContainText('有後記 10 字');
+  await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
 
   await card.getByRole('button', { name: '預覽預設設定', exact: true }).click();
   const preview = page.locator('#platformPreviewDialog');
@@ -974,7 +984,7 @@ test('each platform can store a lightweight publication date and article URL', a
   expect(pageErrors).toEqual([]);
 });
 
-test('publishing title stays separate from the internal name and article body', async ({ page }) => {
+test('platform titles stay separate and copy can prepend heading or bold title', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
@@ -983,6 +993,7 @@ test('publishing title stays separate from the internal name and article body', 
       configurable: true,
       value: { writeText: async value => { window.__copiedPublishingValue = value; } }
     });
+    window.confirm = () => false;
     StoryFlowProjects.createProject({ title: '發布標題測試作品' }, { quiet: true });
     const chapter = state.chapters[0];
     chapter.title = '內部章節名稱';
@@ -1004,43 +1015,54 @@ test('publishing title stays separate from the internal name and article body', 
   });
 
   await page.locator('.nav-item[data-view="publishing"]').click();
-  let card = page.locator('.publish-list-item', { hasText: '內部文章名稱' });
+  const card = page.locator('.publish-list-item', { hasText: '內部文章名稱' });
   await card.getByRole('button', { name: /展開.*發布平台/ }).click();
-  await card.getByRole('textbox', { name: '發布標題', exact: true }).fill('給讀者看的正式標題');
-  await card.getByRole('button', { name: '保存標題', exact: true }).click();
+  const platformRow = card.locator('.publish-platform-row', { hasText: '巴哈小屋' });
+  await platformRow.getByRole('button', { name: '預覽／複製', exact: true }).click();
+  const preview = page.locator('#platformPreviewDialog');
+  await preview.getByRole('button', { name: '修改此平台標題', exact: true }).click();
+  await preview.getByRole('textbox', { name: '此平台標題', exact: true }).fill('給讀者看的正式標題');
+  await preview.getByRole('button', { name: '保存標題', exact: true }).click();
 
-  card = page.locator('.publish-list-item', { hasText: '給讀者看的正式標題' });
-  await expect(card).toContainText('內部名稱：內部文章名稱');
+  await expect(preview.locator('#platformPreviewPublishTitle')).toHaveText('給讀者看的正式標題');
+  await expect(preview.locator('#platformPreviewTitleSource')).toContainText('此平台自訂');
+  await expect(card.locator('.publish-platform-title-summary')).toContainText('給讀者看的正式標題');
   const saved = await page.evaluate(() => {
     const chapter = state.chapters.find(item => item.title === '內部章節名稱');
     const part = chapter.parts[0];
     const metadata = chapterMetadata(chapter);
     return {
       internalTitle: part.title,
-      publishTitle: part.publishTitle,
+      platformTitle: part.platformTitles['巴哈小屋'],
+      otherPlatformTitle: StoryFlowPublishingOutput.titleFor(part, '方格子'),
       output: StoryFlowPublishingOutput.forPart(part, ''),
       metadataVersion: metadata.schemaVersion,
-      metadataTitle: metadata.parts[0].publishTitle
+      metadataTitle: metadata.parts[0].platformTitles['巴哈小屋']
     };
   });
   expect(saved).toEqual({
     internalTitle: '內部文章名稱',
-    publishTitle: '給讀者看的正式標題',
+    platformTitle: '給讀者看的正式標題',
+    otherPlatformTitle: '內部文章名稱',
     output: '只應出現在內容區的正文。',
-    metadataVersion: 7,
+    metadataVersion: 8,
     metadataTitle: '給讀者看的正式標題'
   });
 
-  await card.getByRole('button', { name: '預覽預設設定', exact: true }).click();
-  const preview = page.locator('#platformPreviewDialog');
-  await expect(preview).toBeVisible();
-  await expect(preview.locator('#platformPreviewPublishTitle')).toHaveText('給讀者看的正式標題');
-  await expect(preview.locator('#platformPreviewMeta')).toContainText('內部文章名稱：內部文章名稱');
   await expect(preview.locator('#platformPreviewContent')).toHaveText('只應出現在內容區的正文。');
   await preview.getByRole('button', { name: '複製標題', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('給讀者看的正式標題');
+  await preview.getByRole('checkbox', { name: '複製內容時把標題放在最前面' }).check();
+  await expect(preview.locator('.sf-md-heading-1')).toHaveText('給讀者看的正式標題');
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('只應出現在內容區的正文。');
+  await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('# 給讀者看的正式標題\n\n只應出現在內容區的正文。');
+
+  await platformRow.getByRole('button', { name: '預覽／複製', exact: true }).click();
+  await preview.getByRole('checkbox', { name: '複製內容時把標題放在最前面' }).check();
+  await preview.locator('#platformPreviewTitleStyle').selectOption('bold');
+  await expect(preview.locator('#platformPreviewContent strong')).toHaveText('給讀者看的正式標題');
+  await preview.getByRole('button', { name: '複製內容', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('**給讀者看的正式標題**\n\n只應出現在內容區的正文。');
   expect(pageErrors).toEqual([]);
 });
 
@@ -1118,25 +1140,26 @@ test('article images import private copies, preview, reorder, describe, and remo
   });
 
   await page.locator('.nav-item[data-view="publishing"]').click();
-  let card = page.locator('.publish-list-item', { hasText: '附圖文章' });
+  const card = page.locator('.publish-list-item', { hasText: '附圖文章' });
   await card.getByRole('button', { name: /展開.*發布平台/ }).click();
+  await card.getByRole('button', { name: '文章圖片', exact: true }).click();
+  const toolDialog = page.locator('#publishingArticleToolDialog');
+  await expect(toolDialog).toBeVisible();
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z8xQAAAAASUVORK5CYII=', 'base64');
-  await card.locator('.article-image-manager input[type="file"]').setInputFiles([
+  await toolDialog.locator('.article-image-manager input[type="file"]').setInputFiles([
     { name: '插圖.png', mimeType: 'image/png', buffer: png },
     { name: '插圖.png', mimeType: 'image/png', buffer: png }
   ]);
 
-  card = page.locator('.publish-list-item', { hasText: '附圖文章' });
-  await expect(card.locator('.article-image-row')).toHaveCount(2);
+  await expect(toolDialog.locator('.article-image-row')).toHaveCount(2);
   await expect(card.locator('.publish-image-badge')).toHaveText('附圖 2 張');
-  let firstRow = card.locator('.article-image-row').first();
+  let firstRow = toolDialog.locator('.article-image-row').first();
   await firstRow.locator('input').nth(0).fill('夜空中的城堡');
   await firstRow.locator('input').nth(1).fill('抵達王都前的夜景');
   await firstRow.locator('select').selectOption('before-body');
   await firstRow.getByRole('button', { name: '保存圖片資訊', exact: true }).click();
 
-  card = page.locator('.publish-list-item', { hasText: '附圖文章' });
-  await card.locator('.article-image-row').nth(1).getByRole('button', { name: '上移', exact: true }).click();
+  await toolDialog.locator('.article-image-row').nth(1).getByRole('button', { name: '上移', exact: true }).click();
   const reordered = await page.evaluate(() => {
     const part = state.chapters.find(chapter => chapter.title === '圖片章節').parts[0];
     return {
@@ -1151,15 +1174,16 @@ test('article images import private copies, preview, reorder, describe, and remo
   expect(reordered.filenames).toEqual(['插圖-2.png', '插圖.png']);
   expect(reordered.firstAlt).toBe('夜空中的城堡');
   expect(reordered.firstPlacement).toBe('before-body');
-  expect(reordered.metadataVersion).toBe(7);
+  expect(reordered.metadataVersion).toBe(8);
   expect(reordered.metadataImages).toBe(2);
   expect(reordered.markdown).toContain('![夜空中的城堡](<./assets/image-test-part/插圖.png>)');
   expect(reordered.markdown).toContain('_抵達王都前的夜景_');
 
-  firstRow = card.locator('.article-image-row').nth(1);
+  firstRow = toolDialog.locator('.article-image-row').nth(1);
   await firstRow.getByRole('button', { name: '複製 Markdown', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedImageMarkdown)).toContain('夜空中的城堡');
 
+  await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
   await card.getByRole('button', { name: '預覽預設設定', exact: true }).click();
   const preview = page.locator('#platformPreviewDialog');
   await expect(preview).toBeVisible();
@@ -1172,11 +1196,13 @@ test('article images import private copies, preview, reorder, describe, and remo
   await page.getByRole('button', { name: '關閉圖片', exact: true }).click();
   await preview.getByRole('button', { name: '關閉', exact: true }).last().click();
 
+  await card.getByRole('button', { name: '文章圖片 2', exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
-  await card.locator('.article-image-row').first().scrollIntoViewIfNeeded();
+  await toolDialog.locator('.article-image-row').first().scrollIntoViewIfNeeded();
   const narrowLayout = await page.evaluate(() => {
-    const row = document.querySelector('.article-image-row')?.getBoundingClientRect();
-    const manager = document.querySelector('.article-image-manager')?.getBoundingClientRect();
+    const dialog = document.getElementById('publishingArticleToolDialog');
+    const row = dialog?.querySelector('.article-image-row')?.getBoundingClientRect();
+    const manager = dialog?.querySelector('.article-image-manager')?.getBoundingClientRect();
     return {
       rowLeft: row?.left,
       rowRight: row?.right,
@@ -1191,24 +1217,25 @@ test('article images import private copies, preview, reorder, describe, and remo
   expect(narrowLayout.documentWidth).toBeLessThanOrEqual(narrowLayout.viewportWidth);
   await page.setViewportSize({ width: 1440, height: 1000 });
 
+  await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
   await page.evaluate(() => {
     window.__imageFiles.delete('插圖.png');
     renderParts();
   });
-  await expect(page.locator('.article-image-thumb.missing')).toContainText('找不到檔案');
+  await card.getByRole('button', { name: '文章圖片 2', exact: true }).click();
+  await expect(toolDialog.locator('.article-image-thumb.missing')).toContainText('找不到檔案');
   await page.evaluate(() => window.__imageFiles.set('插圖.png', window.__allImageFiles.get('插圖.png')));
 
-  card = page.locator('.publish-list-item', { hasText: '附圖文章' });
-  await card.locator('.article-image-row').first().getByRole('button', { name: '移除', exact: true }).click();
+  await toolDialog.locator('.article-image-row').first().getByRole('button', { name: '移除', exact: true }).click();
   const removeDialog = page.locator('#articleImageRemoveDialog');
   await expect(removeDialog).toBeVisible();
   await removeDialog.getByRole('button', { name: '只從文章移除', exact: true }).click();
-  await expect(card.locator('.article-image-row')).toHaveCount(1);
+  await expect(toolDialog.locator('.article-image-row')).toHaveCount(1);
   expect(await page.evaluate(() => window.__imageFiles.has('插圖-2.png'))).toBe(true);
 
-  await card.locator('.article-image-row').first().getByRole('button', { name: '移除', exact: true }).click();
+  await toolDialog.locator('.article-image-row').first().getByRole('button', { name: '移除', exact: true }).click();
   await removeDialog.getByRole('button', { name: '備份後刪除檔案', exact: true }).click();
-  await expect(card.locator('.article-image-row')).toHaveCount(0);
+  await expect(toolDialog.locator('.article-image-row')).toHaveCount(0);
   const removed = await page.evaluate(() => ({
     deleted: window.__deletedImageFiles,
     remainingState: state.chapters.find(chapter => chapter.title === '圖片章節').parts[0].images.length,

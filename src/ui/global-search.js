@@ -74,14 +74,16 @@
 
         (chapter.parts || []).forEach((part, partIndex) => {
           const publishTitle = String(part.publishTitle || '').trim();
+          const platformTitles = Object.values(part.platformTitles || {}).map(value => String(value || '').trim()).filter(Boolean);
           const internalTitle = part.title || `第 ${partIndex + 1} 篇`;
+          const displayTitle = publishTitle || platformTitles[0] || internalTitle;
           records.push({
             kind: 'part', label: '發布文章', projectId: project.id, projectTitle,
             chapterId: chapter.id, chapterTitle, partKey: partKey(part),
-            title: publishTitle || internalTitle,
+            title: displayTitle,
             internalTitle,
-            subtitle: `${projectTitle} · ${chapterTitle}${publishTitle && publishTitle !== internalTitle ? ` · 內部名稱：${internalTitle}` : ''}`,
-            titleFields: [publishTitle, internalTitle],
+            subtitle: `${projectTitle} · ${chapterTitle}${displayTitle !== internalTitle ? ` · 內部名稱：${internalTitle}` : ''}`,
+            titleFields: [publishTitle, ...platformTitles, internalTitle],
             bodyFields: [part.raw || part.formatted || ''],
             order: orderBase + chapterIndex / 1000 + partIndex / 100000
           });

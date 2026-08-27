@@ -106,6 +106,12 @@ function charCount(text) {
 function normalizePublishingPart(part) {
   if (!part || typeof part !== 'object') return part;
   if (typeof part.publishTitle !== 'string') part.publishTitle = '';
+  if (!part.platformTitles || typeof part.platformTitles !== 'object' || Array.isArray(part.platformTitles)) {
+    part.platformTitles = {};
+  }
+  part.platformTitles = Object.fromEntries(Object.entries(part.platformTitles)
+    .map(([platform, title]) => [String(platform), typeof title === 'string' ? title.trim() : ''])
+    .filter(([platform, title]) => platform && title));
   if (typeof part.afterword !== 'string') part.afterword = '';
   if (typeof part.includeAfterword !== 'boolean') part.includeAfterword = true;
   if (!Array.isArray(part.images)) part.images = [];
@@ -292,7 +298,7 @@ function adjustSuggestion(delta) {
 
 function chapterMetadata(chapter) {
   return {
-    schemaVersion: 7,
+    schemaVersion: 8,
     projectTitle: state.projectTitle,
     chapter: chapter.title,
     source: chapter.source,
@@ -302,7 +308,7 @@ function chapterMetadata(chapter) {
     updatedAt: new Date().toISOString(),
     parts: chapter.parts.map(part => ({
       id: part.id, title: part.title, startBlock: part.startBlock, endBlock: part.endBlock,
-      publishTitle: part.publishTitle || '', chars: part.chars,
+      publishTitle: part.publishTitle || '', platformTitles: structuredClone(part.platformTitles || {}), chars: part.chars,
       afterwordChars: charCount(part.afterword), includeAfterword: part.includeAfterword !== false,
       images: structuredClone(part.images || []),
       publicationRecords: structuredClone(part.publicationRecords || {}),
@@ -317,7 +323,7 @@ async function confirmSuggestion() {
   const part = {
     id: crypto.randomUUID(), title: suggestion.name, startBlock: suggestion.start, endBlock: suggestion.end,
     chars: suggestion.chars, raw: suggestion.raw, formatted: suggestion.formatted, published: false,
-    publishTitle: '', afterword: '', includeAfterword: true, images: [],
+    publishTitle: '', platformTitles: {}, afterword: '', includeAfterword: true, images: [],
     publicationRecords: {},
     platformStatus: Object.fromEntries(platforms.map(platform => [platform, false]))
   };
