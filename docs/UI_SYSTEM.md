@@ -78,4 +78,12 @@ Each platform row uses two information lines: platform/status first, publication
 
 Desktop Chrome is the primary work environment. Controls still need to wrap safely at narrow widths, but mobile should preserve essential reading and recovery rather than duplicate every dense desktop composition.
 
+Responsive behavior follows Chrome's CSS viewport, including browser zoom and moving the window between a laptop and an extended monitor; it does not branch on a monitor's physical resolution. Validate the main desktop compositions at approximately 1366×768, 1440×900, 1920×1080 and 2560×1440 CSS px.
+
+- The desktop workspace canvas grows normally through common laptop and 1080p widths, then stays centered at a maximum useful width of 1800 px. Extra ultrawide space becomes symmetric breathing room instead of stretching article rows and controls.
+- From 1600 px upward, the chapter source rail may grow from 320 px to at most 380 px so long titles and row actions remain scannable. The split surface receives all remaining canvas width.
+- Works and Publishing remain single-column task lists. A large monitor must not turn them into unrelated side-by-side card grids or enlarge button/font geometry.
+- Settings is centered within a narrower 1440 px measure so paired cards and publishing-format controls stay visually related.
+- Dialogs retain task-specific maximum widths and own their overflow. They do not expand to the full ultrawide canvas.
+
 On phones, the main surface shows only a compact amber “唯讀” state label (or blue “可編輯” while the current session is unlocked). The bottom navigation keeps workspace, works, publishing, settings and search in one five-column row; shortcut text is hidden, but search remains available for reading. Explanation and the two-way editing switch live in the full Settings page under “手機使用模式”; the control becomes full-width at narrow widths. Mutating controls look unavailable while read-only; folder reconnect, settings import, navigation, filters and preview remain usable. Hide the normal workspace save copy while read-only so it cannot imply a completed save or cloud sync.

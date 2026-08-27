@@ -116,6 +116,86 @@ test('primary action scale and navigation icon language stay consistent', async 
   expect(pageErrors).toEqual([]);
 });
 
+test('desktop pages stay bounded from laptop through extended-monitor widths', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '響應式版面測試' }, { quiet: true });
+    const chapter = state.chapters[0];
+    chapter.title = '延伸螢幕測試章節';
+    chapter.draft = '第一個場景。\n\n第二個場景。';
+    chapter.confirmedBlockCount = 1;
+    chapter.parts = [{
+      id: 'responsive-layout-part',
+      title: '延伸螢幕測試文章',
+      chars: 7,
+      startBlock: 0,
+      endBlock: 1,
+      raw: '第一個場景。',
+      formatted: '第一個場景。',
+      published: false,
+      platformStatus: {}
+    }];
+    renderAll();
+  });
+
+  const sizes = [
+    { width: 1366, height: 768 },
+    { width: 1440, height: 900 },
+    { width: 1920, height: 1080 },
+    { width: 2560, height: 1440 }
+  ];
+
+  for (const size of sizes) {
+    await page.setViewportSize(size);
+    await page.locator('.nav-item[data-view="workspace"]').click();
+    await expect(page.locator('#workspaceView')).toBeVisible();
+
+    const workspaceLayout = await page.evaluate(() => {
+      const main = document.querySelector('.main');
+      const mainStyle = getComputedStyle(main);
+      const source = document.querySelector('.workspace-grid.workspace-hierarchy > .source-panel');
+      return {
+        viewportWidth: innerWidth,
+        documentWidth: document.documentElement.scrollWidth,
+        contentWidth: main.clientWidth - parseFloat(mainStyle.paddingLeft) - parseFloat(mainStyle.paddingRight),
+        sourceWidth: source?.getBoundingClientRect().width || 0
+      };
+    });
+    expect(workspaceLayout.documentWidth).toBeLessThanOrEqual(workspaceLayout.viewportWidth);
+    expect(workspaceLayout.contentWidth).toBeLessThanOrEqual(1801);
+    if (size.width >= 1600) {
+      expect(workspaceLayout.sourceWidth).toBeGreaterThanOrEqual(319);
+      expect(workspaceLayout.sourceWidth).toBeLessThanOrEqual(381);
+    }
+
+    for (const view of ['projects', 'publishing']) {
+      await page.locator(`.nav-item[data-view="${view}"]`).click();
+      await expect(page.locator(`#${view}View`)).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(size.width);
+    }
+
+    await page.locator('#sidebarSettingsBtn').click();
+    await expect(page.locator('#settingsView')).toBeVisible();
+    const settingsLayout = await page.locator('#settingsDialog').evaluate(element => ({
+      width: element.getBoundingClientRect().width,
+      viewportWidth: innerWidth,
+      documentWidth: document.documentElement.scrollWidth
+    }));
+    expect(settingsLayout.documentWidth).toBeLessThanOrEqual(settingsLayout.viewportWidth);
+    expect(settingsLayout.width).toBeLessThanOrEqual(1441);
+  }
+
+  await page.setViewportSize({ width: 2560, height: 1440 });
+  await page.locator('#sidebarToggle').click();
+  const collapsedContent = await page.locator('.main').evaluate(element => {
+    const style = getComputedStyle(element);
+    return element.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  });
+  expect(collapsedContent).toBeLessThanOrEqual(1801);
+  expect(pageErrors).toEqual([]);
+});
+
 test('manual project can reach workspace, works, publishing, and settings', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.goto('/');

@@ -10,12 +10,14 @@
     const connectionStatus = document.getElementById('storyflowConnectionStatusCss');
     const uiSystem = document.getElementById('storyflowUiSystemCss');
     const layoutIntegrity = document.getElementById('storyflowUiLayoutIntegrityCss');
+    const desktopResponsive = document.getElementById('storyflowDesktopResponsiveCss');
     if (theme && theme.parentElement === document.head) document.head.appendChild(theme);
     if (mobile && mobile.parentElement === document.head) document.head.appendChild(mobile);
     if (workspaceUx && workspaceUx.parentElement === document.head) document.head.appendChild(workspaceUx);
     if (connectionStatus && connectionStatus.parentElement === document.head) document.head.appendChild(connectionStatus);
     if (uiSystem && uiSystem.parentElement === document.head) document.head.appendChild(uiSystem);
     if (layoutIntegrity && layoutIntegrity.parentElement === document.head) document.head.appendChild(layoutIntegrity);
+    if (desktopResponsive && desktopResponsive.parentElement === document.head) document.head.appendChild(desktopResponsive);
   }
 
   function ensureSettingsView() {

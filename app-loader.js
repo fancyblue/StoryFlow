@@ -30,7 +30,7 @@
     { src: './src/source/source-relink.js?v=20260817-1117', owner: 'source' },
     { src: './src/connection/connection-ui.js?v=20260824-flow2', owner: 'connection' },
     { src: './src/connection/logout-unload-settings.js?v=20260825-p1f', owner: 'connection' },
-    { src: './src/settings/settings-page.js?v=20260824-p1b', owner: 'settings' },
+    { src: './src/settings/settings-page.js?v=20260827-p17a', owner: 'settings' },
     { id: 'storyflowPlatformSettingsJs', src: './src/settings/platform-settings.js?v=20260826-p5a', owner: 'settings' },
     { id: 'storyflowSettingsBootstrapJs', src: './src/settings/settings-bootstrap.js?v=20260827-p15a', owner: 'settings' },
     { id: 'storyflowSettingsFileImportJs', src: './src/settings/settings-file-import.js?v=20260825-p2b', owner: 'settings' },

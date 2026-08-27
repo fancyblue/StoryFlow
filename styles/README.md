@@ -18,8 +18,11 @@ Feature-specific styles that still live at the repository root should be moved i
 4. theme and responsive navigation/visual rules
 5. `ui-system.css` and `layout-integrity.css`
 6. late feature refinements and domain overrides
+7. `desktop-responsive.css`, the final desktop viewport-width contract
 
 Feature-specific styles live under `styles/domains/` and use stable capability names.
 Version and migration labels belong in source comments or data-schema keys, not active asset filenames.
 
 File names describe responsibility rather than historical version numbers. Cache versions stay in `index.html`, not in filenames.
+
+`desktop-responsive.css` owns only desktop canvas width, ultrawide centering and wide-workspace column proportions. Keep mobile rules in the existing mobile layers, and keep component appearance in its page domain. Do not scale typography or controls merely because the physical display has more pixels.

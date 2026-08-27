@@ -53,6 +53,9 @@ Before publishing, verify split precision with a disposable chapter containing o
 
 ## 4. Long chapter and work-management layout
 
+- [ ] Resize desktop Chrome through approximately 1366×768, 1440×900, 1920×1080 and 2560×1440 CSS px. Confirm Workspace, Works, Publishing and Settings have no horizontal overflow; the ultrawide canvas is centered instead of stretching without limit.
+- [ ] At 1600 CSS px and wider, confirm the chapter rail becomes modestly wider but never dominates the split surface. Collapse and expand the sidebar and confirm the centered canvas remains balanced.
+- [ ] At 2560 CSS px, confirm Works and Publishing remain readable single-column task lists, Settings remains a narrower centered form, and buttons/text keep their normal desktop sizes.
 - [ ] Create or load a disposable work with enough chapters to scroll the source rail. Select a chapter near the bottom and confirm neither the page nor chapter rail jumps to the top.
 - [ ] Open the bottom chapter's `⋯` menu. Confirm it opens upward inside the visible rail and SMART SPLIT does not move down or change width.
 - [ ] Open “編輯章節”, record its dialog size, then open “手動新增文章”. Confirm both use the same large editor, the textarea fills the available height, and the footer meets the card bottom without a blank region below the buttons.

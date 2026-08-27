@@ -1,0 +1,53 @@
+/* Desktop viewport contract.
+   Keep dense work surfaces useful on large and extended displays without stretching
+   text, rows or form controls across the full physical screen. Mobile remains owned
+   by the existing <= 820px layers. */
+
+@media (min-width: 821px) {
+  .app-shell {
+    --sf-sidebar-width: 250px;
+    --sf-desktop-content-max: 1800px;
+  }
+
+  .app-shell.sidebar-collapsed {
+    --sf-sidebar-width: 76px;
+  }
+
+  /* The main element still fills the space beside the fixed sidebar. On an
+     ultrawide viewport, symmetric padding centers a bounded working canvas. */
+  .main {
+    padding-inline: max(
+      clamp(20px, 2.4vw, 36px),
+      calc((100vw - var(--sf-sidebar-width) - var(--sf-desktop-content-max)) / 2)
+    ) !important;
+  }
+
+  .projects-page-subtitle,
+  .publishing-page-subtitle,
+  .settings-page-subtitle,
+  .workspace-publishing-summary .muted {
+    max-width: 72ch !important;
+  }
+
+  /* Settings is a reading/form task rather than a canvas. A narrower centered
+     measure keeps related fields close even when the app canvas is much wider. */
+  .settings-view .settings-page-head,
+  .settings-view #settingsDialog.settings-page-dialog {
+    width: min(100%, 1440px) !important;
+    margin-inline: auto !important;
+  }
+}
+
+@media (min-width: 1600px) {
+  /* Give long chapter titles and row actions more room, but stop the source rail
+     before it competes with the split-review surface. */
+  .workspace-grid.workspace-hierarchy {
+    grid-template-columns: clamp(320px, 19vw, 380px) minmax(0, 1fr) !important;
+    gap: 20px !important;
+  }
+
+  .workspace-grid.workspace-empty-mode {
+    grid-template-columns: clamp(280px, 17vw, 340px) minmax(0, 1fr) !important;
+    gap: 20px !important;
+  }
+}
