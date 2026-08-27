@@ -1,7 +1,18 @@
 # StoryFlow 圖文內容維護模式設計
 
-> 狀態：提案（Proposed）  
-> 用途：定義未來「圖文系列」的使用流程、資料邊界與分階段實作方向。本文件不代表目前網站已具備這些功能。
+> 狀態：Phase 0 已完成；使用者功能尚未開放
+> 用途：定義未來「圖文系列」的使用流程、資料邊界與分階段實作方向。Phase 0 只有資料、路徑與發布 adapter，不代表目前網站已可建立或編輯圖文。
+
+## Phase 狀態
+
+| Phase | 狀態 | 範圍 | 完成紀錄 |
+| --- | --- | --- | --- |
+| Phase 0 | 已完成（2026-08-28） | 相容性與技術 spike；不開放 UI | `contentMode`／`visualEntries` 正規化、固定 ID 輸出路徑、圖片路徑 adapter、共用 publishable view model、新舊 workspace fixture |
+| Phase 1 | 尚未開始 | 可用的圖文 MVP | 等待下一階段開始 |
+| Phase 2 | 尚未開始 | 整合發布 | 等待 Phase 1 真實操作結果 |
+| Phase 3 | 候選 | 只依真實使用決定 | 不預先實作 |
+
+Phase 0 的程式基礎位於 `src/projects/content-model.js`，fixture 位於 `tests/visual-content-model-core.html`。目前導覽、作品建立與工作台仍只開放既有長文流程。
 
 ## 1. 設計結論
 
@@ -299,7 +310,7 @@ StoryFlow/
 - 每個結構性寫入必須等到實際成功後才顯示「已保存」。
 - 刪除圖文、替換資料與刪除圖檔前，沿用 `StoryFlowProjectPersistence.prepareRecovery()`。
 - 刪除圖文時預設只刪除 workspace 關聯與輸出文字，圖檔保留。真正刪除圖檔需另一個帶 Recovery 的明確決策。
-- schema 版本只在實作正式欄位時提升；不在只新增設計文件時改動。
+- Phase 0 保持外層 workspace schema version 2：新增欄位位於各作品 `state`，且缺少欄位可安全正規化，因此不需要為可選加法欄位強迫舊資料升版。若 Phase 1 改變外層 workspace 結構，再重新評估升版。
 - 載入新版 workspace 時必須先正規化作品類型與圖文欄位，再進入渲染。
 
 ## 9. UI/UX 原則
@@ -327,10 +338,19 @@ StoryFlow/
 
 ### Phase 0：技術 spike，不開放使用
 
-- 確認 `contentMode` 正規化與既有 workspace 相容。
-- 確認圖文項目輸出路徑與圖片 adapter。
-- 確認共用發布頁不需改寫長文 `part` 結構。
-- 用 fixture 驗證新舊 workspace 可來回載入。
+- [x] 確認 `contentMode` 正規化與既有 workspace 相容。
+- [x] 確認圖文項目輸出路徑與圖片 adapter。
+- [x] 確認共用發布頁不需改寫長文 `part` 結構。
+- [x] 用 fixture 驗證新舊 workspace 可來回載入。
+
+#### Phase 0 決策紀錄（2026-08-28）
+
+- 缺少或不認得的 `contentMode` 一律正規化為 `longform`；只有明確的 `visual` 才進入圖文資料模型。
+- 圖文作品可在沒有 `chapters` 的情況下成立，項目只存在 `visualEntries`；Phase 1 才把此狀態接上作品切換與圖文工作台。
+- 私人檔案路徑確定為 `Works/<作品>/Visual/<entry-id>/`，內含 `content.md`、`metadata.json` 與 `assets/`。標題改名不改動固定 ID 路徑。
+- 圖文圖片使用 `./assets/<stored-name>` 相對路徑；adapter 接受既有圖片的 `fileName`／`size`，正規化為 `storedName`／`bytes`，方便沿用目前匯入能力。
+- 共用發布層使用 publishable view model。長文仍保留原本 `chapter`／`part`，圖文仍保留 `visualEntry`；adapter 回傳共同的標題、正文、圖片、平台標題、平台狀態與發布紀錄，不修改來源物件。
+- 外層 workspace schema 維持 version 2。Phase 0 沒有開放圖文建立、切換、保存或刪除，因此也沒有新增半完成的介面入口。
 
 ### Phase 1：可用的圖文 MVP
 

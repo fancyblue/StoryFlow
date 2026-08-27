@@ -11,7 +11,9 @@ function defaultPlatformFormatting() {
 
 const defaultState = {
   projectTitle: '未命名作品',
+  contentMode: 'longform',
   chapters: [{ id: crypto.randomUUID(), title: '第一章', draft: '', confirmedBlockCount: 0, parts: [], source: null }],
+  visualEntries: [],
   activeChapterId: null,
   minChars: 1000,
   maxChars: 3000,
@@ -49,6 +51,9 @@ function loadState() {
     try {
       const parsed = JSON.parse(localStorage.getItem(key));
       if (parsed?.chapters?.length) {
+        parsed.contentMode = StoryFlowContentModel.normalizeContentMode(parsed.contentMode);
+        parsed.visualEntries = Array.isArray(parsed.visualEntries)
+          ? parsed.visualEntries.map(StoryFlowContentModel.normalizeVisualEntry) : [];
         parsed.chapters.forEach(chapter => {
           chapter.source ||= null;
           chapter.parts ||= [];

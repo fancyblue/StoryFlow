@@ -6,8 +6,9 @@
 (function () {
   const scripts = [
     { src: './src/core/config.js?v=20260817-1625', owner: 'core' },
+    { src: './src/projects/content-model.js?v=20260828-p20a', owner: 'projects' },
     { src: './src/persistence/integrations.js?v=20260826-p7a', owner: 'persistence' },
-    { src: './src/core/app.js?v=20260827-p18a', owner: 'core' },
+    { src: './src/core/app.js?v=20260828-p20a', owner: 'core' },
     { src: './src/connection/session-auth.js?v=20260817-1522', owner: 'connection' },
     { src: './src/connection/folder-session.js?v=20260825-p1e', owner: 'connection' },
     { src: './src/ui/ui-bootstrap.js?v=20260824-p1c', owner: 'ui' },
@@ -19,7 +20,7 @@
     { src: './src/source/source-diff.js?v=20260826-p10a', owner: 'source' },
     { src: './src/source/source-sync-history.js?v=20260825-p1', owner: 'source' },
     { src: './src/source/source-flow.js?v=20260825-p3a', owner: 'source' },
-    { src: './src/projects/projects.js?v=20260826-p6c', owner: 'projects' },
+    { src: './src/projects/projects.js?v=20260828-p20a', owner: 'projects' },
     { src: './src/split/boundary-engine.js?v=20260826-p11a', owner: 'split' },
     { src: './src/publishing/publishing-flow.js?v=20260827-p18a', owner: 'publishing' },
     { id: 'storyflowPublishingDisclosureJs', src: './src/publishing/publishing-disclosure.js?v=20260825-p2b', owner: 'publishing' },
