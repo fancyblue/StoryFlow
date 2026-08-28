@@ -102,7 +102,12 @@
           kind: 'visual', label: '發布圖文', projectId: project.id, projectTitle,
           partKey: visualKey(project, entry), title: displayTitle, internalTitle,
           subtitle: `${projectTitle} · 圖文${displayTitle !== internalTitle ? ` · 內部名稱：${internalTitle}` : ''}`,
-          titleFields: [...platformTitles, internalTitle], bodyFields: [entry.body || ''],
+          titleFields: [...platformTitles, internalTitle],
+          tagFields: [...new Set([
+            ...(Array.isArray(entry.tags) ? entry.tags : []),
+            ...(window.StoryFlowContentModel?.tagsFromHashtags?.(entry.hashtags) || [])
+          ])],
+          bodyFields: [entry.summary || '', entry.body || ''],
           order: Date.parse(entry.updatedAt || entry.createdAt || '') || orderBase + entryIndex / 1000
         });
       });
@@ -112,23 +117,33 @@
 
   function search(query, includeBody) {
     const term = normalize(query);
+    const rawQuery = String(query || '').trim();
+    const hashtagOnly = /^(?:#[^\s#]+\s*)+$/u.test(rawQuery);
+    const requestedTags = hashtagOnly
+      ? (window.StoryFlowContentModel?.tagsFromHashtags?.(rawQuery) || []).map(normalize)
+      : [];
     const records = searchableRecords();
     if (!term) return records.sort((a, b) => b.order - a.order).slice(0, 12);
 
     return records.map(record => {
       const normalizedTitles = record.titleFields.map(normalize).filter(Boolean);
+      const normalizedTags = (record.tagFields || []).map(normalize).filter(Boolean);
+      const matchedTags = requestedTags.filter(tag => normalizedTags.includes(tag));
+      const tagMatch = requestedTags.length > 0 && matchedTags.length === requestedTags.length;
       const exact = normalizedTitles.some(value => value === term);
       const prefix = normalizedTitles.some(value => value.startsWith(term));
       const titleMatch = normalizedTitles.some(value => value.includes(term));
       const bodySource = includeBody
         ? record.bodyFields.find(value => normalize(value).includes(term)) || ''
         : '';
-      if (!titleMatch && !bodySource) return null;
+      if (hashtagOnly && !tagMatch) return null;
+      if (!hashtagOnly && !titleMatch && !bodySource) return null;
       return {
         ...record,
-        matchScope: titleMatch ? 'title' : 'body',
-        snippet: bodySource ? excerpt(bodySource, term) : '',
-        score: exact ? 4 : prefix ? 3 : titleMatch ? 2 : 1
+        label: tagMatch ? 'Hashtag' : record.label,
+        matchScope: tagMatch ? 'tag' : titleMatch ? 'title' : 'body',
+        snippet: tagMatch ? `分類：${matchedTags.map(tag => `#${tag}`).join(' ')}` : bodySource ? excerpt(bodySource, term) : '',
+        score: tagMatch ? 5 : exact ? 4 : prefix ? 3 : titleMatch ? 2 : 1
       };
     }).filter(Boolean).sort((a, b) => b.score - a.score || b.order - a.order).slice(0, MAX_RESULTS);
   }
@@ -141,7 +156,7 @@
     <div class="dialog-card global-search-card">
       <div class="global-search-head">
         <span class="global-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg></span>
-        <input id="globalSearchInput" type="search" autocomplete="off" aria-label="搜尋作品、章節與文章" aria-controls="globalSearchResults" aria-autocomplete="list" placeholder="搜尋作品、章節與文章…" />
+        <input id="globalSearchInput" type="search" autocomplete="off" aria-label="搜尋作品、章節、文章或 Hashtag" aria-controls="globalSearchResults" aria-autocomplete="list" placeholder="搜尋內容，或輸入 #Hashtag 精確分類…" />
         <button id="closeGlobalSearch" class="global-search-close" type="button" aria-label="關閉搜尋"><span aria-hidden="true">×</span></button>
       </div>
       <div class="global-search-options">
