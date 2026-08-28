@@ -295,6 +295,17 @@
               <button id="editPlatformTitle" class="button tiny ghost" type="button">修改此平台標題</button>
             </div>
           </div>
+          <section id="platformPreviewVisualExtras" class="platform-preview-visual-extras" hidden>
+            <article id="platformPreviewSummaryCard" hidden>
+              <div><span>摘要</span><p id="platformPreviewSummary"></p></div>
+              <button id="copyPlatformSummary" class="button tiny ghost" type="button">複製摘要</button>
+            </article>
+            <article id="platformPreviewHashtagsCard" hidden>
+              <div><span>Hashtags</span><p id="platformPreviewHashtags"></p></div>
+              <button id="copyPlatformHashtags" class="button tiny ghost" type="button">複製 Hashtags</button>
+            </article>
+            <small>摘要與 Hashtags 都是選填的複製輔助，不會自動加入正文。</small>
+          </section>
           <div id="platformPreviewTitleEditor" class="platform-preview-title-editor" hidden>
             <label class="field-label" for="platformPreviewTitleInput">此平台標題</label>
             <div class="platform-preview-title-editor-controls">
@@ -457,6 +468,11 @@
     const titleEditor = publishDialog.querySelector('#platformPreviewTitleEditor');
     const titleInput = publishDialog.querySelector('#platformPreviewTitleInput');
     const editTitle = publishDialog.querySelector('#editPlatformTitle');
+    const visualExtras = publishDialog.querySelector('#platformPreviewVisualExtras');
+    const summaryCard = publishDialog.querySelector('#platformPreviewSummaryCard');
+    const hashtagsCard = publishDialog.querySelector('#platformPreviewHashtagsCard');
+    const summaryText = String(part.summary || '').trim();
+    const hashtagsText = String(part.hashtags || '').trim();
     const afterwordCount = afterwordChars(part);
     const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
 
@@ -506,6 +522,27 @@
     }
     editTitle.hidden = !platform;
     titleEditor.hidden = true;
+    visualExtras.hidden = !visual || (!summaryText && !hashtagsText);
+    summaryCard.hidden = !summaryText;
+    hashtagsCard.hidden = !hashtagsText;
+    publishDialog.querySelector('#platformPreviewSummary').textContent = summaryText;
+    publishDialog.querySelector('#platformPreviewHashtags').textContent = hashtagsText;
+    publishDialog.querySelector('#copyPlatformSummary').onclick = async () => {
+      try {
+        await writeClipboard(summaryText);
+        notify('已複製摘要');
+      } catch (error) {
+        notify(`複製摘要失敗：${error.message}`, true);
+      }
+    };
+    publishDialog.querySelector('#copyPlatformHashtags').onclick = async () => {
+      try {
+        await writeClipboard(hashtagsText);
+        notify('已複製 Hashtags');
+      } catch (error) {
+        notify(`複製 Hashtags 失敗：${error.message}`, true);
+      }
+    };
     includeTitle.checked = false;
     titleStyle.value = 'heading';
     titleStyle.disabled = true;
