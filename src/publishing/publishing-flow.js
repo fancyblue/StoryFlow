@@ -885,6 +885,39 @@
     }
   }
 
+  async function deleteVisualEntry(entry) {
+    if (window.StoryFlowMobileSafeMode?.isReadOnly?.()) {
+      notify('手機目前為唯讀，無法刪除圖文。', true);
+      return;
+    }
+    const index = (state.visualEntries || []).findIndex(item => item.id === entry?.id);
+    if (index < 0) return;
+    const imageCount = entry.images?.length || 0;
+    const imageNote = imageCount
+      ? `\n\n這則圖文有 ${imageCount} 張圖片；工作區關聯會移除，但私人 assets 圖檔會保留。`
+      : '\n\n私人 assets 圖檔不會被刪除。';
+    if (!confirm(`刪除圖文「${entry.title}」？\n\n會移除工作區關聯與文字輸出。${imageNote}\n\n確定繼續？`)) return;
+
+    try {
+      const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
+      if (typeof prepare !== 'function') throw new Error('Recovery 安全元件尚未準備完成。');
+      await prepare('before-visual-entry-delete');
+      await StoryFlowIntegrations.removeVisualEntryFiles({
+        projectTitle: state.projectTitle,
+        entryId: entry.id,
+        entry
+      });
+      state.visualEntries.splice(index, 1);
+      selectedPartKey = null;
+      saveState('圖文已刪除');
+      await window.StoryFlowProjectPersistence?.flush?.('visual-entry-delete');
+      renderParts();
+      notify(`已刪除圖文：${entry.title}；圖片檔仍保留`);
+    } catch (error) {
+      notify(`尚未刪除圖文：${error.message}`, true);
+    }
+  }
+
   function createPlatformRow(entry, platform) {
     const { chapter, part } = entry;
     const published = Boolean(part.platformStatus?.[platform]);
@@ -936,6 +969,7 @@
     const card = document.createElement('article');
     card.className = `publish-list-item ${expanded ? 'expanded' : ''}`;
     card.dataset.partKey = key;
+    card.dataset.contentMode = visual ? 'visual' : 'longform';
 
     const statusCount = status.total ? ` · ${status.published}/${status.total}` : '';
     const afterwordCount = visual ? 0 : afterwordChars(part);
@@ -958,7 +992,7 @@
         </div>
         <div class="publish-list-actions">
           <button class="button tiny ghost default-preview-btn" type="button">${visual ? '預覽／複製' : '預覽預設設定'}</button>
-          ${visual ? '' : '<button class="button tiny ghost publish-delete-btn" type="button">刪除</button>'}
+          <button class="button tiny ghost publish-delete-btn" type="button">刪除</button>
           <span class="sf-chevron publish-expand-indicator" aria-hidden="true"></span>
         </div>
       </div>
@@ -1004,7 +1038,8 @@
     });
     card.querySelector('.publish-delete-btn')?.addEventListener('click', event => {
       event.stopPropagation();
-      deleteConfirmedPart(chapter, partIndex);
+      if (visual) deleteVisualEntry(part);
+      else deleteConfirmedPart(chapter, partIndex);
     });
 
     if (expanded) {
