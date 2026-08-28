@@ -80,7 +80,7 @@
             </div>
             <div class="visual-editor-optional-fields">
               <label class="visual-field"><span>摘要 <small>選填</small></span><textarea id="visualEntrySummary" class="text-input" rows="3" maxlength="500" placeholder="簡短介紹這則圖文；留白不影響發布。"></textarea></label>
-              <label class="visual-field"><span>Hashtags <small>選填</small></span><input id="visualEntryHashtags" class="text-input" maxlength="500" placeholder="#創作 #小說；只保存為方便複製的文字。" /><small>不建立標籤或分類，只在發布預覽提供一鍵複製。</small></label>
+              <label class="visual-field"><span>Hashtags <small>選填</small></span><input id="visualEntryHashtags" class="text-input" maxlength="500" placeholder="#創作 #小說；可直接複製貼上。" /><small>輸入仍保存為一段文字；系統會在背後解析完整 Hashtag，供精確搜尋與分類。</small></label>
             </div>
             <label class="visual-field"><span>正文</span><textarea id="visualEntryBody" class="text-input visual-body-input" placeholder="輸入圖文正文；可使用 Markdown。"></textarea></label>
             <section class="visual-image-section">
@@ -177,7 +177,7 @@
       const now = new Date().toISOString();
       const entryTitle = dialog.querySelector('#visualFirstEntryTitle').value.trim();
       const visualEntry = firstToggle.checked ? {
-        id: crypto.randomUUID(), title: entryTitle || '第一則圖文', summary: '', hashtags: '', body: '', status: 'draft', images: [],
+        id: crypto.randomUUID(), title: entryTitle || '第一則圖文', summary: '', hashtags: '', tags: [], body: '', status: 'draft', images: [],
         coverImageId: '', platformTitles: {}, platformStatus: {}, publicationRecords: {}, createdAt: now, updatedAt: now
       } : null;
       const project = window.StoryFlowProjects?.createProject?.({ title, contentMode: 'visual', visualEntry }, { quiet: true });
@@ -219,7 +219,7 @@
     if (!title) return dialog.querySelector('#newVisualEntryTitle').reportValidity();
     const now = new Date().toISOString();
     const entry = StoryFlowContentModel.normalizeVisualEntry({
-      id: crypto.randomUUID(), title, summary: '', hashtags: '', body: '', status: 'draft', images: [], coverImageId: '',
+      id: crypto.randomUUID(), title, summary: '', hashtags: '', tags: [], body: '', status: 'draft', images: [], coverImageId: '',
       platformTitles: {}, platformStatus: {}, publicationRecords: {}, createdAt: now, updatedAt: now
     });
     entries().push(entry);
@@ -248,7 +248,15 @@
     const status = root.querySelector('#visualEntryStatus');
     title.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.title = title.value; markChanged(); renderPreview(); renderList(); } });
     summary.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.summary = summary.value; markChanged(); renderPreview(); } });
-    hashtags.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.hashtags = hashtags.value; markChanged(); renderPreview(); } });
+    hashtags.addEventListener('input', () => {
+      const entry = activeEntry();
+      if (entry) {
+        entry.hashtags = hashtags.value;
+        entry.tags = StoryFlowContentModel.tagsFromHashtags(hashtags.value);
+        markChanged();
+        renderPreview();
+      }
+    });
     body.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.body = body.value; markChanged(); renderPreview(); renderMeta(); } });
     status.addEventListener('change', () => { const entry = activeEntry(); if (entry) { entry.status = status.value; markChanged(); renderList(); renderMeta(); } });
     root.querySelector('#visualEditorForm').addEventListener('submit', saveEntry);
@@ -435,6 +443,7 @@
     if (!entry.title) return document.getElementById('visualEntryTitle').reportValidity();
     entry.summary = document.getElementById('visualEntrySummary').value.trim();
     entry.hashtags = document.getElementById('visualEntryHashtags').value.trim();
+    entry.tags = StoryFlowContentModel.tagsFromHashtags(entry.hashtags);
     entry.body = document.getElementById('visualEntryBody').value;
     entry.status = document.getElementById('visualEntryStatus').value;
     entry.updatedAt = new Date().toISOString();
