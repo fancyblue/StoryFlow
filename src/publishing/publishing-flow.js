@@ -977,9 +977,9 @@
         ${recordSummary ? `<small class="publish-platform-record-summary">${escapeHtml(recordSummary)}</small>` : ''}
       </div>
       <div class="publish-platform-actions">
-        <button class="button tiny ghost platform-preview-btn" type="button">預覽／複製</button>
-        <button class="button tiny ghost platform-record-btn" type="button">${published ? '發布紀錄' : '記錄發布'}</button>
-        <button class="button tiny ghost platform-status-btn ${published ? 'is-published' : ''}" type="button">${published ? '取消已發布' : '標註已發布'}</button>
+        <button class="button tiny ghost platform-preview-btn" type="button" aria-label="預覽／複製「${escapeHtml(platform)}」">預覽／複製</button>
+        <button class="button tiny ghost platform-record-btn" type="button" aria-label="${published ? '查看' : '記錄'}「${escapeHtml(platform)}」發布紀錄">${published ? '發布紀錄' : '記錄發布'}</button>
+        <button class="button tiny ghost platform-status-btn ${published ? 'is-published' : ''}" type="button" aria-label="${published ? '取消' : '標註'}「${escapeHtml(platform)}」已發布">${published ? '取消已發布' : '標註已發布'}</button>
       </div>`;
     row.querySelector('.platform-preview-btn').addEventListener('click', event => {
       event.stopPropagation();
@@ -1090,8 +1090,8 @@
           <span class="publish-overall-status ${status.key}">${status.label}${statusCount}</span>
         </div>
         <div class="publish-list-actions">
-          <button class="button tiny ghost default-preview-btn" type="button">${visual ? '預覽／複製' : '預覽預設設定'}</button>
-          <button class="button tiny ghost publish-delete-btn" type="button">刪除</button>
+          <button class="button tiny ghost default-preview-btn" type="button" aria-label="${visual ? '預覽／複製' : '預覽預設設定'}「${escapeHtml(part.title || '未命名內容')}」">${visual ? '預覽／複製' : '預覽預設設定'}</button>
+          <button class="button tiny ghost publish-delete-btn" type="button" aria-label="刪除「${escapeHtml(part.title || '未命名內容')}」">刪除</button>
           <span class="sf-chevron publish-expand-indicator" aria-hidden="true"></span>
         </div>
       </div>
