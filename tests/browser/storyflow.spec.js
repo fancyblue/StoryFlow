@@ -983,7 +983,7 @@ test('each platform can store a lightweight publication date and article URL', a
   const card = page.locator('.publish-list-item', { hasText: '等待發布的文章' });
   await card.getByRole('button', { name: /展開.*發布平台/ }).click();
   const platformRow = card.locator('.publish-platform-row', { hasText: '巴哈小屋' });
-  await platformRow.getByRole('button', { name: '記錄發布', exact: true }).click();
+  await platformRow.getByRole('button', { name: '記錄「巴哈小屋」發布紀錄', exact: true }).click();
 
   const dialog = page.locator('#publicationRecordDialog');
   await expect(dialog).toBeVisible();
@@ -993,7 +993,7 @@ test('each platform can store a lightweight publication date and article URL', a
 
   await expect(platformRow.getByText('已發布', { exact: true })).toBeVisible();
   await expect(platformRow.locator('.publish-platform-record-summary')).toContainText('已記錄網址');
-  await expect(platformRow.getByRole('button', { name: '發布紀錄', exact: true })).toBeVisible();
+  await expect(platformRow.getByRole('button', { name: '查看「巴哈小屋」發布紀錄', exact: true })).toBeVisible();
 
   const saved = await page.evaluate(() => {
     const part = state.chapters.find(chapter => chapter.title === '發布紀錄測試章節').parts[0];
@@ -1006,7 +1006,7 @@ test('each platform can store a lightweight publication date and article URL', a
   expect(saved.record.url).toBe('https://example.com/story/1');
   expect(Number.isNaN(Date.parse(saved.record.publishedAt))).toBe(false);
 
-  await platformRow.getByRole('button', { name: '發布紀錄', exact: true }).click();
+  await platformRow.getByRole('button', { name: '查看「巴哈小屋」發布紀錄', exact: true }).click();
   await expect(dialog.locator('#openPublicationRecordUrl')).toHaveAttribute('href', 'https://example.com/story/1');
   await dialog.getByRole('button', { name: '取消', exact: true }).click();
 
@@ -1014,7 +1014,7 @@ test('each platform can store a lightweight publication date and article URL', a
     expect(confirmation.message()).toContain('清除已記錄的發布時間與文章網址');
     await confirmation.accept();
   });
-  await platformRow.getByRole('button', { name: '取消已發布', exact: true }).click();
+  await platformRow.getByRole('button', { name: '取消「巴哈小屋」已發布', exact: true }).click();
   await expect(platformRow.getByText('尚未發布', { exact: true })).toBeVisible();
   const cleared = await page.evaluate(() => {
     const record = state.chapters.find(chapter => chapter.title === '發布紀錄測試章節').parts[0].publicationRecords['巴哈小屋'];
