@@ -1477,6 +1477,16 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     return form.getBoundingClientRect().top - panel.getBoundingClientRect().top;
   })).toBeLessThan(80);
   await expect(page.locator('#visualProjectTitle')).toHaveText('夜色圖文集');
+  await expect(page.locator('#visualNewEntryBtn')).toBeVisible();
+  expect(await page.locator('#visualNewEntryBtn').evaluate(button => Boolean(button.closest('.visual-entry-list-panel')))).toBe(true);
+
+  await page.locator('#visualProjectSwitchBtn').click();
+  await expect(page.locator('#visualProjectNewWork')).toBeVisible();
+  await page.locator('#visualProjectNewWork').click();
+  await expect(typeDialog).toBeVisible();
+  await typeDialog.getByRole('button', { name: '關閉', exact: true }).click();
+  await expect(typeDialog).toBeHidden();
+
   const originalVisualProjectId = await page.evaluate(() => StoryFlowProjects.activeId());
   await page.evaluate(() => StoryFlowProjects.createProject({ title: '第二圖文集', contentMode: 'visual' }, { quiet: true }));
   await expect(page.locator('#visualProjectTitle')).toHaveText('第二圖文集');
@@ -1486,43 +1496,22 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('#visualProjectTitle')).toHaveText('夜色圖文集');
   expect(await page.evaluate(() => StoryFlowProjects.activeId())).toBe(originalVisualProjectId);
   await expect(page.locator('#visualEntryList')).toContainText('月下預告');
-  await expect(page.locator('#visualOptionalSectionTitle')).toHaveText('發布輔助資訊');
-  const optionalLayout = await page.evaluate(() => {
-    const summaryElement = document.getElementById('visualEntrySummary');
-    const bodyElement = document.getElementById('visualEntryBody');
-    const summary = summaryElement.getBoundingClientRect();
-    const hashtags = document.getElementById('visualEntryHashtags').getBoundingClientRect();
-    const summaryStyle = getComputedStyle(summaryElement);
+  await expect(page.locator('#visualEntrySummary')).toHaveCount(0);
+  await expect(page.locator('#visualEntryHashtags')).toHaveCount(0);
+  const bodyLayout = await page.locator('#visualEntryBody').evaluate(bodyElement => {
     const bodyStyle = getComputedStyle(bodyElement);
     return {
-      sameLeft: Math.abs(summary.left - hashtags.left),
-      sameWidth: Math.abs(summary.width - hashtags.width),
-      verticalGap: hashtags.top - summary.bottom,
-      summaryHeight: summary.height,
-      summaryPaddingTop: parseFloat(summaryStyle.paddingTop),
-      summaryPaddingBottom: parseFloat(summaryStyle.paddingBottom),
-      summaryLineHeight: parseFloat(summaryStyle.lineHeight),
-      summaryFontSize: parseFloat(summaryStyle.fontSize),
-      bodyHeight: bodyElement.getBoundingClientRect().height,
-      bodyPaddingTop: parseFloat(bodyStyle.paddingTop),
-      bodyPaddingBottom: parseFloat(bodyStyle.paddingBottom),
-      bodyLineHeight: parseFloat(bodyStyle.lineHeight),
-      bodyFontSize: parseFloat(bodyStyle.fontSize)
+      height: bodyElement.getBoundingClientRect().height,
+      paddingTop: parseFloat(bodyStyle.paddingTop),
+      paddingBottom: parseFloat(bodyStyle.paddingBottom),
+      lineHeight: parseFloat(bodyStyle.lineHeight),
+      fontSize: parseFloat(bodyStyle.fontSize)
     };
   });
-  expect(optionalLayout.sameLeft).toBeLessThan(2);
-  expect(optionalLayout.sameWidth).toBeLessThan(2);
-  expect(optionalLayout.verticalGap).toBeGreaterThan(20);
-  expect(optionalLayout.summaryHeight).toBeGreaterThanOrEqual(72);
-  expect(optionalLayout.summaryPaddingTop).toBeGreaterThanOrEqual(10);
-  expect(optionalLayout.summaryPaddingBottom).toBeGreaterThanOrEqual(10);
-  expect(optionalLayout.summaryLineHeight).toBeGreaterThan(optionalLayout.summaryFontSize);
-  expect(optionalLayout.bodyHeight).toBeGreaterThanOrEqual(72);
-  expect(optionalLayout.bodyPaddingTop).toBeGreaterThanOrEqual(10);
-  expect(optionalLayout.bodyPaddingBottom).toBeGreaterThanOrEqual(10);
-  expect(optionalLayout.bodyLineHeight).toBeGreaterThan(optionalLayout.bodyFontSize);
-  await page.locator('#visualEntrySummary').fill('月光下的城堡預告');
-  await page.locator('#visualEntryHashtags').fill('#StoryFlow #夜色創作');
+  expect(bodyLayout.height).toBeGreaterThanOrEqual(72);
+  expect(bodyLayout.paddingTop).toBeGreaterThanOrEqual(10);
+  expect(bodyLayout.paddingBottom).toBeGreaterThanOrEqual(10);
+  expect(bodyLayout.lineHeight).toBeGreaterThan(bodyLayout.fontSize);
   await page.locator('#visualEntryBody').fill('月光落在城牆上。\n\n第二段圖文內容。');
   await page.locator('#visualEntryStatus').selectOption('ready');
 
@@ -1554,20 +1543,12 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     chapters: state.chapters.length,
     entryCount: state.visualEntries.length,
     status: state.visualEntries[0].status,
-    summary: state.visualEntries[0].summary,
-    hashtags: state.visualEntries[0].hashtags,
-    tags: state.visualEntries[0].tags,
-    savedSummary: window.__savedVisualEntry?.entry?.summary,
-    savedHashtags: window.__savedVisualEntry?.entry?.hashtags,
     order: state.visualEntries[0].images.map(image => image.storedName),
     cover: state.visualEntries[0].coverImageId,
     firstImageId: state.visualEntries[0].images[0].id
   }));
   expect(stored).toMatchObject({
     mode: 'visual', chapters: 0, entryCount: 1, status: 'ready',
-    summary: '月光下的城堡預告', hashtags: '#StoryFlow #夜色創作',
-    tags: ['StoryFlow', '夜色創作'],
-    savedSummary: '月光下的城堡預告', savedHashtags: '#StoryFlow #夜色創作',
     order: ['插圖-2.png', '插圖.png']
   });
   expect(stored.cover).not.toBe(stored.firstImageId);
@@ -1578,6 +1559,23 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(publishCard.locator('.publish-content-type')).toHaveText('圖文');
   await expect(publishCard.getByRole('button', { name: '預覽／複製', exact: true }).first()).toBeVisible();
   await expect(publishCard.getByRole('button', { name: '更多「月下預告」操作', exact: true })).toBeVisible();
+  const visualPublishingHelpers = publishCard.locator('.visual-publish-helpers');
+  await expect(visualPublishingHelpers).toBeVisible();
+  await visualPublishingHelpers.locator('.visual-publish-summary-input').fill('月光下的城堡預告');
+  await visualPublishingHelpers.locator('.visual-publish-hashtags-input').fill('#StoryFlow #夜色創作');
+  await visualPublishingHelpers.getByRole('button', { name: '保存摘要與 Hashtags', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => state.visualEntries[0].summary)).toBe('月光下的城堡預告');
+  expect(await page.evaluate(() => ({
+    hashtags: state.visualEntries[0].hashtags,
+    tags: state.visualEntries[0].tags,
+    savedSummary: window.__savedVisualEntry?.entry?.summary,
+    savedHashtags: window.__savedVisualEntry?.entry?.hashtags
+  }))).toEqual({
+    hashtags: '#StoryFlow #夜色創作',
+    tags: ['StoryFlow', '夜色創作'],
+    savedSummary: '月光下的城堡預告',
+    savedHashtags: '#StoryFlow #夜色創作'
+  });
   await expect(publishCard.locator('.publish-platform-row')).toHaveCount(2);
   await publishCard.locator('.publish-platform-row').first().getByRole('button', { name: '預覽／複製', exact: true }).click();
   const publishingPreview = page.locator('#platformPreviewDialog');
@@ -1606,6 +1604,16 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
 
   await page.locator('#visualNewEntryBtn').click();
   const entryDialog = page.getByRole('dialog', { name: '新增圖文' });
+  await entryDialog.getByRole('button', { name: '關閉', exact: true }).click();
+  await expect(entryDialog).toBeHidden();
+  await expect(page.locator('#visualEntryList [data-entry-id]')).toHaveCount(1);
+
+  await page.locator('#visualNewEntryBtn').click();
+  await entryDialog.getByRole('button', { name: '取消', exact: true }).click();
+  await expect(entryDialog).toBeHidden();
+  await expect(page.locator('#visualEntryList [data-entry-id]')).toHaveCount(1);
+
+  await page.locator('#visualNewEntryBtn').click();
   await entryDialog.locator('#newVisualEntryTitle').fill('準備刪除的草稿');
   await entryDialog.getByRole('button', { name: '新增圖文', exact: true }).click();
   await expect(page.locator('#visualEntryList [data-entry-id]')).toHaveCount(2);
