@@ -42,6 +42,8 @@
               visualEntries: [{
                 id: 'entry-1',
                 title: ' 夜色預告 ',
+                summary: ' 月光下的短篇預告 ',
+                hashtags: ' #StoryFlow #夜色 ',
                 body: '第一段。',
                 status: 'ready',
                 coverImageId: 'image-cover',
@@ -64,6 +66,12 @@
         assert(StoryFlowContentModel.isProjectState(visualProject), '沒有章節的圖文作品仍是有效作品狀態');
         assert(visualProject.contentMode === 'visual' && visualProject.chapters.length === 0, '圖文作品不需要假裝成章節');
         assert(visualEntry.title === '夜色預告' && visualEntry.status === 'ready', '圖文標題與準備狀態正規化');
+        assert(visualEntry.summary === '月光下的短篇預告' && visualEntry.hashtags === '#StoryFlow #夜色',
+          '選填摘要與 Hashtags 以純文字保存');
+        assert(visualEntry.tags.join(',') === 'StoryFlow,夜色',
+          'Hashtag 純文字會同步解析成結構化標籤');
+        assert(StoryFlowContentModel.tagsFromHashtags('#奇幻 #奇幻 #角色').join(',') === '奇幻,角色',
+          '結構化標籤採完整 Hashtag 並去除重複');
         assert(visualEntry.images.map(image => image.id).join(',') === 'image-cover,image-body', '圖片依固定順序正規化');
         assert(visualEntry.images[0].storedName === '封面.png' && visualEntry.images[0].bytes === 128,
           '既有圖片欄位可轉接為圖文圖片欄位');
@@ -103,6 +111,10 @@
         assert(JSON.stringify(longformPart) === longformBefore, '發布 adapter 不改寫既有長文 part');
         assert(visualPublishable.coverImageId === 'image-cover' && visualPublishable.platformStatus['巴哈姆特'],
           '圖文 adapter 保留封面與平台發布狀態');
+        assert(visualPublishable.summary === '月光下的短篇預告' && visualPublishable.hashtags === '#StoryFlow #夜色',
+          '圖文發布 view model 保留選填複製文字');
+        assert(visualPublishable.tags.join(',') === 'StoryFlow,夜色',
+          '圖文發布 view model 保留結構化標籤');
 
         result.textContent = `${checks.join('\n')}\n\nALL PASS`;
         document.body.dataset.testStatus = 'pass';

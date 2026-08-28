@@ -75,3 +75,34 @@
   .visual-image-section-head { align-items: flex-start; flex-direction: column; }
   .visual-image-section-head .button { width: 100%; }
 }
+
+.visual-editor-optional-fields{
+  display:grid;
+  grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);
+  gap:12px;
+}
+.visual-field > span small{
+  color:var(--muted);
+  font-size:11px;
+  font-weight:700;
+}
+.visual-field > small{
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.45;
+}
+.visual-preview-summary{
+  margin:6px 0 16px;
+  color:#60798d;
+  line-height:1.65;
+  white-space:pre-wrap;
+}
+.visual-preview-hashtags{
+  margin:16px 0 0;
+  color:#3975a7;
+  font-weight:750;
+  white-space:pre-wrap;
+}
+@media(max-width:760px){
+  .visual-editor-optional-fields{grid-template-columns:1fr}
+}

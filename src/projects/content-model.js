@@ -24,6 +24,19 @@
       .filter(([key, item]) => key && (keepEmpty || item)));
   }
 
+  function tagsFromHashtags(value) {
+    const source = typeof value === 'string' ? value : '';
+    const tags = source.match(/#[^\s#]+/gu) || [];
+    const unique = new Map();
+    tags.forEach(raw => {
+      const tag = raw.replace(/^#+/, '').trim();
+      if (!tag) return;
+      const key = tag.toLocaleLowerCase('zh-Hant');
+      if (!unique.has(key)) unique.set(key, tag);
+    });
+    return [...unique.values()];
+  }
+
   function normalizeBooleanRecord(value) {
     return Object.fromEntries(Object.entries(record(value))
       .map(([key, item]) => [String(key).trim(), item === true])
@@ -77,6 +90,9 @@
     return {
       id: typeof entry.id === 'string' && entry.id ? entry.id : crypto.randomUUID(),
       title: typeof entry.title === 'string' && entry.title.trim() ? entry.title.trim() : `未命名圖文 ${index + 1}`,
+      summary: typeof entry.summary === 'string' ? entry.summary.trim() : '',
+      hashtags: typeof entry.hashtags === 'string' ? entry.hashtags.trim() : '',
+      tags: tagsFromHashtags(entry.hashtags),
       body: typeof entry.body === 'string' ? entry.body : '',
       status: VISUAL_STATUSES.has(entry.status) ? entry.status : 'draft',
       coverImageId,
@@ -183,6 +199,9 @@
       containerTitle: '',
       id: sourceEntry.id,
       title: sourceEntry.title,
+      summary: sourceEntry.summary,
+      hashtags: sourceEntry.hashtags,
+      tags: clone(sourceEntry.tags),
       body: sourceEntry.body,
       afterword: '',
       includeAfterword: false,
@@ -199,6 +218,7 @@
     normalizeContentMode,
     normalizeVisualImage,
     normalizeVisualEntry,
+    tagsFromHashtags,
     normalizeProject,
     isProjectState,
     normalizeWorkspace,
