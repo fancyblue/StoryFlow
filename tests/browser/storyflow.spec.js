@@ -1513,6 +1513,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     status: state.visualEntries[0].status,
     summary: state.visualEntries[0].summary,
     hashtags: state.visualEntries[0].hashtags,
+    tags: state.visualEntries[0].tags,
     savedSummary: window.__savedVisualEntry?.entry?.summary,
     savedHashtags: window.__savedVisualEntry?.entry?.hashtags,
     order: state.visualEntries[0].images.map(image => image.storedName),
@@ -1522,6 +1523,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   expect(stored).toMatchObject({
     mode: 'visual', chapters: 0, entryCount: 1, status: 'ready',
     summary: '月光下的城堡預告', hashtags: '#StoryFlow #夜色創作',
+    tags: ['StoryFlow', '夜色創作'],
     savedSummary: '月光下的城堡預告', savedHashtags: '#StoryFlow #夜色創作',
     order: ['插圖-2.png', '插圖.png']
   });
@@ -1551,6 +1553,11 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await page.locator('#globalSearchBtn').click();
   await page.locator('#globalSearchInput').fill('方格子月下');
   await expect(page.locator('.global-search-result-type.visual')).toHaveText('發布圖文');
+  await page.locator('#globalSearchInput').fill('#夜色');
+  await expect(page.locator('.global-search-empty')).toContainText('找不到符合內容');
+  await page.locator('#globalSearchInput').fill('#夜色創作');
+  await expect(page.locator('.global-search-result-type.visual')).toHaveText('Hashtag');
+  await expect(page.locator('.global-search-result small')).toHaveText('分類：#夜色創作');
   await page.locator('#closeGlobalSearch').click();
   await page.locator('.nav-item[data-view="workspace"]').click();
 
