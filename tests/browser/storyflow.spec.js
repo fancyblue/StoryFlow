@@ -399,7 +399,7 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   await page.locator('#closeManualSourceDialog').click();
   await page.locator('.nav-item[data-view="projects"]').click();
   const manageChapters = page.getByRole('button', { name: '管理章節', exact: true });
-  const managePublishing = page.getByRole('button', { name: '管理發布', exact: true });
+  const managePublishing = page.getByRole('button', { name: /管理發布/ });
   await expect(manageChapters.first()).toBeVisible();
   await expect(managePublishing.first()).toBeVisible();
   const managementStyles = await page.evaluate(() => {
@@ -1058,7 +1058,7 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   const card = page.locator('.publish-list-item', { hasText: '內部文章名稱' });
   await card.getByRole('button', { name: /展開.*發布平台/ }).click();
   const platformRow = card.locator('.publish-platform-row', { hasText: '巴哈小屋' });
-  await platformRow.getByRole('button', { name: '預覽／複製', exact: true }).click();
+  await platformRow.getByRole('button', { name: '預覽／複製「巴哈小屋」', exact: true }).click();
   const preview = page.locator('#platformPreviewDialog');
   await preview.getByRole('button', { name: '修改此平台標題', exact: true }).click();
   await preview.getByRole('textbox', { name: '此平台標題', exact: true }).fill('給讀者看的正式標題');
@@ -1097,7 +1097,7 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('# 給讀者看的正式標題\n\n只應出現在內容區的正文。');
 
-  await platformRow.getByRole('button', { name: '預覽／複製', exact: true }).click();
+  await platformRow.getByRole('button', { name: '預覽／複製「巴哈小屋」', exact: true }).click();
   await preview.getByRole('checkbox', { name: '複製內容時把標題放在最前面' }).check();
   await preview.locator('#platformPreviewTitleStyle').selectOption('bold');
   await expect(preview.locator('#platformPreviewContent strong')).toHaveText('給讀者看的正式標題');
@@ -1462,9 +1462,15 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
 
   await page.locator('.nav-item[data-view="projects"]').click();
   await page.locator('.projects-empty-state .button').click();
-  const typeDialog = page.getByRole('dialog', { name: '選擇作品類型' });
+  const typeDialog = page.locator('#visualTypeDialog');
   await expect(typeDialog).toBeVisible();
+  await expect(typeDialog.locator('#visualTypeDialogTitle')).toHaveText('選擇作品類型');
+  await expect(typeDialog.locator('#visualTypeOptions')).toBeVisible();
+  await expect(typeDialog.locator('#visualSeriesCreatePanel')).toBeHidden();
   await typeDialog.locator('#chooseVisualType').click();
+  await expect(typeDialog.locator('#visualTypeOptions')).toBeHidden();
+  await expect(typeDialog.locator('#visualSeriesCreatePanel')).toBeVisible();
+  await expect(typeDialog.locator('#visualTypeDialogTitle')).toHaveText('建立圖文系列');
   await typeDialog.locator('#visualSeriesTitle').fill('夜色圖文集');
   await typeDialog.locator('#visualFirstEntryTitle').fill('月下預告');
   await typeDialog.getByRole('button', { name: '建立圖文系列', exact: true }).click();
@@ -1557,7 +1563,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   const publishCard = page.locator('.publish-list-item', { hasText: '月下預告' });
   await expect(publishCard).toBeVisible();
   await expect(publishCard.locator('.publish-content-type')).toHaveText('圖文');
-  await expect(publishCard.getByRole('button', { name: '預覽／複製', exact: true }).first()).toBeVisible();
+  await expect(publishCard.getByRole('button', { name: '預覽／複製「月下預告」', exact: true })).toBeVisible();
   await expect(publishCard.getByRole('button', { name: '更多「月下預告」操作', exact: true })).toBeVisible();
   const visualPublishingHelpers = publishCard.locator('.visual-publish-helpers');
   await expect(visualPublishingHelpers).toBeVisible();
@@ -1577,7 +1583,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     savedHashtags: '#StoryFlow #夜色創作'
   });
   await expect(publishCard.locator('.publish-platform-row')).toHaveCount(2);
-  await publishCard.locator('.publish-platform-row').first().getByRole('button', { name: '預覽／複製', exact: true }).click();
+  await publishCard.locator('.publish-platform-row').first().getByRole('button', { name: '預覽／複製「巴哈小屋」', exact: true }).click();
   const publishingPreview = page.locator('#platformPreviewDialog');
   await expect(publishingPreview).toBeVisible();
   await expect(publishingPreview.locator('.visual-upload-order')).toContainText('圖片不會被複製或自動上傳');
@@ -1631,8 +1637,9 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await page.locator('.nav-item[data-view="projects"]').click();
   const card = page.locator('.project-library-card', { hasText: '夜色圖文集' });
   await expect(card.locator('.project-type-badge')).toHaveText('圖文');
-  await expect(card.getByRole('button', { name: '管理圖文', exact: true })).toBeVisible();
-  await expect(card.getByRole('button', { name: '管理發布', exact: true })).toBeVisible();
+  await expect(card.getByRole('button', { name: '管理圖文「夜色圖文集」', exact: true })).toBeVisible();
+  await expect(card.getByRole('button', { name: '管理發布「夜色圖文集」', exact: true })).toBeVisible();
+  await expect(card.getByRole('button', { name: '更多「夜色圖文集」操作', exact: true })).toBeVisible();
   await card.getByRole('button', { name: '查看圖文', exact: true }).click();
   await expect(card.locator('.project-chapter-manager-head strong')).toHaveText('圖文');
   const visualDetail = card.locator('.project-visual-entry-row', { hasText: '月下預告' });
