@@ -214,20 +214,29 @@
     }
   }
 
+  function showTypeOptions(dialog, { focus = false } = {}) {
+    dialog.querySelector('#visualTypeOptions').hidden = false;
+    dialog.querySelector('#visualSeriesCreatePanel').hidden = true;
+    dialog.querySelector('#visualTypeDialogTitle').textContent = '選擇作品類型';
+    if (focus) dialog.querySelector('#chooseLongformType')?.focus();
+  }
+
   function bindTypeDialog(dialog) {
     const options = dialog.querySelector('#visualTypeOptions');
     const panel = dialog.querySelector('#visualSeriesCreatePanel');
+    const heading = dialog.querySelector('#visualTypeDialogTitle');
     const firstToggle = dialog.querySelector('#visualCreateFirstEntry');
-    const showOptions = () => { options.hidden = false; panel.hidden = true; };
     dialog.querySelector('#chooseLongformType').addEventListener('click', () => {
       dialog.close();
       window.StoryFlowStartNewWork?.({ contentMode: 'longform' });
     });
     dialog.querySelector('#chooseVisualType').addEventListener('click', () => {
-      options.hidden = true; panel.hidden = false;
+      options.hidden = true;
+      panel.hidden = false;
+      heading.textContent = '建立圖文系列';
       dialog.querySelector('#visualSeriesTitle').focus();
     });
-    dialog.querySelector('#visualTypeBack').addEventListener('click', showOptions);
+    dialog.querySelector('#visualTypeBack').addEventListener('click', () => showTypeOptions(dialog, { focus: true }));
     firstToggle.addEventListener('change', () => {
       dialog.querySelector('#visualFirstEntryField').hidden = !firstToggle.checked;
     });
@@ -249,9 +258,9 @@
       window.StoryFlowNavigate?.('workspace');
       render();
       notify(`已建立圖文系列：${title}`);
-      showOptions();
+      showTypeOptions(dialog);
     });
-    dialog.addEventListener('close', showOptions);
+    dialog.addEventListener('close', () => showTypeOptions(dialog));
   }
 
   function openTypeChooser() {
@@ -261,7 +270,9 @@
     dialog.querySelector('#visualFirstEntryTitle').value = '第一則圖文';
     dialog.querySelector('#visualCreateFirstEntry').checked = true;
     dialog.querySelector('#visualFirstEntryField').hidden = false;
+    showTypeOptions(dialog);
     dialog.showModal();
+    dialog.querySelector('#chooseLongformType').focus();
     return true;
   }
 

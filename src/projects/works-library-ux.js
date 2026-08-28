@@ -11,16 +11,21 @@
   }
 
   function refineLabels(card) {
+    const projectTitle = card.querySelector('.project-library-title-row strong')?.textContent?.trim() || '未命名作品';
     const open = card.querySelector('.project-open-btn');
     if (open) {
       const label = card.dataset.contentMode === 'visual'
         ? '管理圖文'
         : card.classList.contains('active') ? '工作台' : '開啟';
       if (open.textContent !== label) open.textContent = label;
+      open.setAttribute('aria-label', `${label}「${projectTitle}」`);
     }
 
     const publish = card.querySelector('.project-publish-btn');
-    if (publish && publish.textContent !== '管理發布') publish.textContent = '管理發布';
+    if (publish) {
+      if (publish.textContent !== '管理發布') publish.textContent = '管理發布';
+      publish.setAttribute('aria-label', `管理發布「${projectTitle}」`);
+    }
 
     const meta = card.querySelector('.project-library-meta');
     if (meta) {
@@ -30,6 +35,7 @@
   }
 
   function ensureOverflow(card) {
+    const projectTitle = card.querySelector('.project-library-title-row strong')?.textContent?.trim() || '未命名作品';
     const actions = card.querySelector('.project-library-actions');
     const legacyDelete = actions?.querySelector(':scope > .project-library-delete');
     if (!actions || !legacyDelete) return;
@@ -42,8 +48,8 @@
       more.type = 'button';
       more.className = 'button tiny ghost project-library-more-btn';
       more.textContent = '⋯';
-      more.title = '更多作品操作';
-      more.setAttribute('aria-label', '更多作品操作');
+      more.title = `更多「${projectTitle}」操作`;
+      more.setAttribute('aria-label', `更多「${projectTitle}」操作`);
       more.setAttribute('aria-haspopup', 'menu');
       more.setAttribute('aria-expanded', 'false');
       actions.appendChild(more);
@@ -69,6 +75,10 @@
       menu.appendChild(remove);
       actions.appendChild(menu);
     }
+
+    more.title = `更多「${projectTitle}」操作`;
+    more.setAttribute('aria-label', `更多「${projectTitle}」操作`);
+    menu.querySelector('[role="menuitem"]')?.setAttribute('aria-label', `刪除作品「${projectTitle}」`);
 
     if (more.dataset.worksUxBound !== '1') {
       more.dataset.worksUxBound = '1';

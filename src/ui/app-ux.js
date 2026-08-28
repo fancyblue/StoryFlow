@@ -55,7 +55,7 @@
           <h1>作品</h1>
           <p class="projects-page-subtitle">每個故事都有獨立的章節、切篇與發布進度。先選作品，再進入工作台或發布。</p>
         </div>
-        <button id="projectsNewWorkBtn" class="button ghost" type="button">＋ 新作品</button>
+        <button id="projectsNewWorkBtn" class="button ghost" type="button">＋ 新增作品</button>
       </header>
       <div id="projectsLibrary" class="projects-library"></div>`;
     main.appendChild(view);
