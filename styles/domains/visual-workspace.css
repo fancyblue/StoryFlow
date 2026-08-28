@@ -37,6 +37,13 @@
 .visual-field { display: grid; gap: 7px; }
 .visual-field > span { font-weight: 700; font-size: 13px; color: #304555; }
 .visual-body-input { min-height: 200px; resize: vertical; font: inherit; line-height: 1.75; }
+#visualEntryBody.text-input {
+  height: auto !important;
+  min-height: 200px !important;
+  padding: 12px 14px !important;
+  line-height: 1.75 !important;
+  resize: vertical;
+}
 .visual-image-section { display: grid; gap: 14px; padding-top: 2px; }
 .visual-image-section-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
 .visual-image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
