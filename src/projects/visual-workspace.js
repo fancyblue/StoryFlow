@@ -30,6 +30,19 @@
     title.textContent = active?.title || state.projectTitle || '未命名作品';
 
     menu.replaceChildren();
+    const newWork = document.createElement('button');
+    newWork.id = 'visualProjectNewWork';
+    newWork.type = 'button';
+    newWork.className = 'publishing-project-menu-item visual-project-new-work';
+    newWork.innerHTML = '<span>＋ 新增作品</span>';
+    newWork.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      closeProjectMenu();
+      window.StoryFlowStartNewWork?.();
+    });
+    menu.appendChild(newWork);
+
     projects.forEach(project => {
       const item = document.createElement('button');
       item.type = 'button';
@@ -45,11 +58,10 @@
       menu.appendChild(item);
     });
 
-    const canSwitch = projects.length > 1;
-    button.disabled = !canSwitch;
-    button.classList.toggle('single-project', !canSwitch);
-    button.title = canSwitch ? '切換作品' : '目前只有一個作品';
-    button.querySelector('.visual-project-chevron').hidden = !canSwitch;
+    button.disabled = false;
+    button.classList.remove('single-project');
+    button.title = '切換或新增作品';
+    button.querySelector('.visual-project-chevron').hidden = false;
   }
 
   function isVisual() {
@@ -114,12 +126,14 @@
           </div>
           <p class="muted">編排文字與私人圖片；StoryFlow 不會把圖片上傳到發布平台。</p>
         </div>
-        <button id="visualNewEntryBtn" class="button primary" type="button">＋ 新增圖文</button>
       </header>
       <div id="visualReadonlyNote" class="visual-readonly-note" hidden>手機目前為唯讀：可以閱讀與預覽，但不會新增、排序、匯入、刪除或保存。</div>
       <div class="visual-workspace-layout">
         <aside class="panel visual-entry-list-panel">
-          <div class="panel-head"><div><p class="eyebrow">ENTRIES</p><h2>圖文清單</h2></div><span id="visualEntryCount" class="muted"></span></div>
+          <div class="panel-head visual-entry-list-head">
+            <div><p class="eyebrow">ENTRIES</p><h2>圖文清單</h2></div>
+            <div class="visual-entry-list-actions"><span id="visualEntryCount" class="muted"></span><button id="visualNewEntryBtn" class="button tiny primary" type="button">＋ 新增圖文</button></div>
+          </div>
           <div id="visualEntryList" class="visual-entry-list"></div>
         </aside>
         <section class="panel visual-editor-panel">
@@ -129,16 +143,6 @@
               <label class="visual-field" style="flex:1"><span>圖文標題</span><input id="visualEntryTitle" class="text-input" required maxlength="160" /></label>
               <label class="visual-field visual-editor-status"><span>準備狀態</span><select id="visualEntryStatus" class="text-input"><option value="draft">草稿</option><option value="ready">可發布</option></select></label>
             </div>
-            <section class="visual-editor-optional-section" aria-labelledby="visualOptionalSectionTitle">
-              <header class="visual-editor-optional-head">
-                <div><strong id="visualOptionalSectionTitle">發布輔助資訊</strong><span>摘要與 Hashtags 都是選填</span></div>
-                <small>不會自動加入正文</small>
-              </header>
-              <div class="visual-editor-optional-fields">
-                <label class="visual-field"><span>摘要</span><textarea id="visualEntrySummary" class="text-input" rows="2" maxlength="500" placeholder="簡短介紹這則圖文"></textarea></label>
-                <label class="visual-field"><span>Hashtags</span><input id="visualEntryHashtags" class="text-input" maxlength="500" placeholder="#創作 #小說" /><small>可直接複製；系統會自動建立精確搜尋分類。</small></label>
-              </div>
-            </section>
             <label class="visual-field"><span>正文</span><textarea id="visualEntryBody" class="text-input visual-body-input" placeholder="輸入圖文正文；可使用 Markdown。"></textarea></label>
             <section class="visual-image-section">
               <div class="visual-image-section-head"><div><strong>圖片與封面</strong><p class="muted">拖曳或使用箭頭排序；點「編輯」維護替代文字、圖說與封面。</p></div><button id="visualImportImagesBtn" class="button ghost" type="button">匯入圖片</button></div>
@@ -146,7 +150,7 @@
               <div id="visualImageGrid" class="visual-image-grid"></div>
             </section>
             <section class="visual-preview" aria-label="圖文基本預覽">
-              <p class="eyebrow">PREVIEW</p><h2 id="visualPreviewTitle"></h2><p id="visualPreviewSummary" class="visual-preview-summary" hidden></p><div id="visualPreviewBody" class="visual-preview-body"></div><p id="visualPreviewHashtags" class="visual-preview-hashtags" hidden></p><div id="visualPreviewImages" class="visual-preview-images"></div>
+              <p class="eyebrow">PREVIEW</p><h2 id="visualPreviewTitle"></h2><div id="visualPreviewBody" class="visual-preview-body"></div><div id="visualPreviewImages" class="visual-preview-images"></div>
             </section>
             <footer class="visual-editor-footer"><span id="visualEditorMeta" class="muted"></span><div class="visual-editor-footer-actions"><button id="visualDeleteEntryBtn" class="button ghost" type="button">刪除圖文</button><button id="visualOpenPublishingBtn" class="button ghost" type="button" hidden>前往發布 →</button><button id="visualSaveEntryBtn" class="button primary" type="submit">保存草稿</button></div></footer>
           </form>
@@ -164,7 +168,7 @@
       dialog.className = 'visual-type-dialog';
       dialog.setAttribute('aria-labelledby', 'visualTypeDialogTitle');
       dialog.innerHTML = `<form method="dialog" class="dialog-card">
-        <div class="panel-head"><div><p class="eyebrow">NEW WORK</p><h3 id="visualTypeDialogTitle">選擇作品類型</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div>
+        <div class="panel-head"><div><p class="eyebrow">NEW WORK</p><h3 id="visualTypeDialogTitle">選擇作品類型</h3></div><button class="icon-button" value="cancel" formnovalidate aria-label="關閉">×</button></div>
         <div id="visualTypeOptions" class="visual-type-options">
           <button id="chooseLongformType" class="visual-type-option" type="button"><strong>長文作品</strong><span>Google Docs／手動來源、Smart Split、切篇確認與發布。</span></button>
           <button id="chooseVisualType" class="visual-type-option" type="button"><strong>圖文系列</strong><span>文字、多張圖片、封面、圖說、替代文字、排序與基本預覽。</span></button>
@@ -186,9 +190,9 @@
       dialog.className = 'visual-entry-dialog';
       dialog.setAttribute('aria-labelledby', 'visualEntryDialogTitle');
       dialog.innerHTML = `<form method="dialog" class="dialog-card">
-        <div class="panel-head"><div><p class="eyebrow">NEW ENTRY</p><h3 id="visualEntryDialogTitle">新增圖文</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div>
+        <div class="panel-head"><div><p class="eyebrow">NEW ENTRY</p><h3 id="visualEntryDialogTitle">新增圖文</h3></div><button class="icon-button" value="cancel" formnovalidate aria-label="關閉">×</button></div>
         <div class="visual-dialog-fields"><label class="visual-field"><span>圖文標題</span><input id="newVisualEntryTitle" class="text-input" required maxlength="160" /></label></div>
-        <div class="visual-dialog-actions"><button class="button ghost" value="cancel">取消</button><button id="confirmNewVisualEntry" class="button primary" type="button">新增圖文</button></div>
+        <div class="visual-dialog-actions"><button class="button ghost" value="cancel" formnovalidate>取消</button><button id="confirmNewVisualEntry" class="button primary" type="button">新增圖文</button></div>
       </form>`;
       document.body.appendChild(dialog);
       dialog.querySelector('#confirmNewVisualEntry').addEventListener('click', createEntryFromDialog);
@@ -299,21 +303,9 @@
       render();
     });
     const title = root.querySelector('#visualEntryTitle');
-    const summary = root.querySelector('#visualEntrySummary');
-    const hashtags = root.querySelector('#visualEntryHashtags');
     const body = root.querySelector('#visualEntryBody');
     const status = root.querySelector('#visualEntryStatus');
     title.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.title = title.value; markChanged(); renderPreview(); renderList(); } });
-    summary.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.summary = summary.value; markChanged(); renderPreview(); } });
-    hashtags.addEventListener('input', () => {
-      const entry = activeEntry();
-      if (entry) {
-        entry.hashtags = hashtags.value;
-        entry.tags = StoryFlowContentModel.tagsFromHashtags(hashtags.value);
-        markChanged();
-        renderPreview();
-      }
-    });
     body.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.body = body.value; markChanged(); renderPreview(); renderMeta(); } });
     status.addEventListener('change', () => { const entry = activeEntry(); if (entry) { entry.status = status.value; markChanged(); renderList(); renderMeta(); } });
     root.querySelector('#visualEditorForm').addEventListener('submit', saveEntry);
@@ -498,9 +490,6 @@
     if (!entry) return;
     entry.title = document.getElementById('visualEntryTitle').value.trim();
     if (!entry.title) return document.getElementById('visualEntryTitle').reportValidity();
-    entry.summary = document.getElementById('visualEntrySummary').value.trim();
-    entry.hashtags = document.getElementById('visualEntryHashtags').value.trim();
-    entry.tags = StoryFlowContentModel.tagsFromHashtags(entry.hashtags);
     entry.body = document.getElementById('visualEntryBody').value;
     entry.status = document.getElementById('visualEntryStatus').value;
     entry.updatedAt = new Date().toISOString();
@@ -567,13 +556,7 @@
     const entry = activeEntry();
     if (!entry) return;
     document.getElementById('visualPreviewTitle').textContent = entry.title || '未命名圖文';
-    const summary = document.getElementById('visualPreviewSummary');
-    summary.textContent = entry.summary || '';
-    summary.hidden = !entry.summary;
     document.getElementById('visualPreviewBody').textContent = entry.body || '尚未輸入正文。';
-    const hashtags = document.getElementById('visualPreviewHashtags');
-    hashtags.textContent = entry.hashtags || '';
-    hashtags.hidden = !entry.hashtags;
     const preview = document.getElementById('visualPreviewImages');
     preview.innerHTML = entry.images.map(image => `<figure data-preview-image-id="${esc(image.id)}"><div class="visual-image-thumb"><span>正在載入 ${esc(image.storedName)}</span></div>${image.caption ? `<figcaption>${esc(image.caption)}</figcaption>` : ''}</figure>`).join('');
     entry.images.forEach(async image => {
@@ -621,8 +604,6 @@
     empty.hidden = true;
     form.hidden = false;
     root.querySelector('#visualEntryTitle').value = entry.title;
-    root.querySelector('#visualEntrySummary').value = entry.summary || '';
-    root.querySelector('#visualEntryHashtags').value = entry.hashtags || '';
     root.querySelector('#visualEntryBody').value = entry.body;
     root.querySelector('#visualEntryStatus').value = entry.status;
     root.querySelectorAll('#visualEditorForm input, #visualEditorForm textarea, #visualEditorForm select, #visualEditorForm button').forEach(control => {

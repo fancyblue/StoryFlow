@@ -1028,3 +1028,35 @@ button.publish-delete-btn{
 .platform-preview-visual-extras span{color:#5f7789;font-size:11px;font-weight:850}
 .platform-preview-visual-extras p{margin:0;color:#294d69;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .platform-preview-visual-extras > small{color:var(--muted);font-size:10.5px}
+
+
+/* Visual publishing helpers: optional metadata belongs with publishing controls. */
+.visual-publish-helpers{
+  display:grid;
+  gap:14px;
+  margin:12px 0 18px;
+  padding:16px;
+  border:1px solid #dce7ef;
+  border-radius:13px;
+  background:#f8fbfd;
+}
+.visual-publish-helpers-head > div{display:grid;gap:3px}
+.visual-publish-helpers-head strong{color:#294a63;font-size:14px;font-weight:850}
+.visual-publish-helpers-head span,
+.visual-publish-helper-field small{color:var(--muted);font-size:11.5px;line-height:1.5}
+.visual-publish-helper-field{display:grid;gap:7px}
+.visual-publish-helper-field > span{color:#294a63;font-size:13px;font-weight:800}
+.visual-publish-summary-input.text-input{
+  height:auto!important;
+  min-height:82px!important;
+  padding:12px 14px!important;
+  line-height:1.55!important;
+  resize:vertical;
+}
+.visual-publish-hashtags-input{width:100%}
+.visual-publish-helper-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+@media(max-width:560px){
+  .visual-publish-helpers{padding:14px}
+  .visual-publish-helper-actions{display:grid}
+  .visual-publish-helper-actions .button{width:100%}
+}
