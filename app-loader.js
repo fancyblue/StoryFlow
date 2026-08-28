@@ -55,7 +55,7 @@
     { id: 'storyflowSmartSplitTitleJs', src: './src/split/smart-split-title.js?v=20260825-p2b', owner: 'split' },
     { id: 'storyflowWorksLibraryUxJs', src: './src/projects/works-library-ux.js?v=20260825-p2b', owner: 'projects' },
     { src: './src/projects/workspace-project-ux.js?v=20260825-p3a', owner: 'projects' },
-    { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260828-p25a', owner: 'ui' },
+    { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260828-p25b', owner: 'ui' },
     { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260828-p19b', owner: 'publishing' },
     { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260828-p25a', owner: 'projects' }
   ];
