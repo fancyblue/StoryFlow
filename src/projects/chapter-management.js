@@ -11,7 +11,7 @@
       link = document.createElement('link');
       link.id = 'storyflowChapterManagementCss';
       link.rel = 'stylesheet';
-      link.href = './styles/domains/chapter-management.css?v=20260827-p16a';
+      link.href = './styles/domains/chapter-management.css?v=20260828-p23a';
       document.head.appendChild(link);
     }
     return link;
@@ -131,6 +131,29 @@
     }
   }
 
+  function activeVisualMetadata() {
+    try {
+      return (state?.visualEntries || []).map(entry => ({
+        id: entry.id,
+        title: String(entry.title || '未命名圖文'),
+        status: entry.status === 'ready' ? '可發布' : '草稿',
+        chars: typeof charCount === 'function' ? charCount(entry.body || '') : String(entry.body || '').length,
+        images: Array.isArray(entry.images) ? entry.images.length : 0
+      }));
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function editVisualEntry(entryId) {
+    window.StoryFlowNavigate?.('workspace');
+    window.setTimeout(() => {
+      if (!window.StoryFlowVisualWorkspace?.openEntry?.(entryId)) {
+        window.notify?.('找不到這則圖文，請重新整理後再試。', true);
+      }
+    }, 0);
+  }
+
   function persistRename() {
     try { saveState('章節名稱已更新'); } catch (_) {}
     try { window.StoryFlowProjectPersistence?.flush?.('chapter-rename'); } catch (_) {}
@@ -213,10 +236,61 @@
     startInlineRename(row, chapter);
   }
 
-  function buildChapterManager(projectId) {
+  function buildChapterManager(projectId, visual = false) {
     const manager = document.createElement('section');
     manager.className = 'project-chapter-manager';
     manager.dataset.projectId = projectId;
+
+    if (visual) {
+      const head = document.createElement('div');
+      head.className = 'project-chapter-manager-head';
+      head.innerHTML = '<div><strong>圖文</strong><span>查看系列中的圖文標題、狀態、字數與圖片數；需要修改時可直接進入圖文工作台。</span></div>';
+      manager.appendChild(head);
+
+      const entries = activeVisualMetadata();
+      if (!entries.length) {
+        const empty = document.createElement('div');
+        empty.className = 'project-chapter-manager-empty';
+        empty.textContent = '目前還沒有圖文。';
+        manager.appendChild(empty);
+        return manager;
+      }
+
+      const list = document.createElement('div');
+      list.className = 'project-chapter-manager-list';
+      entries.forEach(entry => {
+        const row = document.createElement('div');
+        row.className = 'project-chapter-manager-row project-visual-entry-row';
+        row.dataset.entryId = entry.id;
+
+        const title = document.createElement('div');
+        title.className = 'project-chapter-title';
+        const name = document.createElement('strong');
+        name.textContent = entry.title;
+        const meta = document.createElement('small');
+        meta.textContent = `${Number(entry.chars || 0).toLocaleString()} 字 · ${Number(entry.images || 0).toLocaleString()} 張圖片`;
+        title.append(name, meta);
+
+        const status = document.createElement('span');
+        status.className = `project-chapter-source visual ${entry.status === '可發布' ? 'ready' : 'draft'}`;
+        status.textContent = entry.status;
+
+        const actions = document.createElement('div');
+        actions.className = 'project-chapter-actions';
+        const edit = document.createElement('button');
+        edit.type = 'button';
+        edit.className = 'button tiny ghost project-visual-entry-edit';
+        edit.textContent = '編輯圖文';
+        edit.setAttribute('aria-label', `編輯圖文「${entry.title}」`);
+        edit.addEventListener('click', () => editVisualEntry(entry.id));
+        actions.appendChild(edit);
+
+        row.append(title, status, actions);
+        list.appendChild(row);
+      });
+      manager.appendChild(list);
+      return manager;
+    }
 
     const head = document.createElement('div');
     head.className = 'project-chapter-manager-head';
@@ -299,8 +373,9 @@
         actions.insertBefore(manage, deleteButton || null);
       }
 
+      const visual = project.contentMode === 'visual';
       const expanded = expandedProjects.has(project.id) && project.id === activeId;
-      manage.textContent = expanded ? '收合章節' : '管理章節';
+      manage.textContent = expanded ? (visual ? '收合圖文' : '收合章節') : (visual ? '查看圖文' : '管理章節');
       manage.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       manage.onclick = () => {
         if (project.id !== window.StoryFlowProjects?.activeId?.()) {
@@ -318,7 +393,7 @@
       };
 
       card.querySelector(':scope > .project-chapter-manager')?.remove();
-      if (expanded) card.appendChild(buildChapterManager(project.id));
+      if (expanded) card.appendChild(buildChapterManager(project.id, visual));
       card.classList.toggle('chapters-expanded', expanded);
     });
   }

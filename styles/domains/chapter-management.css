@@ -275,3 +275,12 @@
   .project-chapter-title small{font-size:10.5px}
   .project-chapter-manager-head span{font-size:11px}
 }
+
+.project-chapter-source.visual{
+  background:#edf6fc;
+  color:#3975a7;
+}
+.project-chapter-source.visual.ready{
+  background:#eef9f4;
+  color:#23785b;
+}
