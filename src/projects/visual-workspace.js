@@ -565,6 +565,14 @@
     renderList(); renderEditor();
   }
 
+  function openEntry(entryId) {
+    if (!isVisual() || !entries().some(entry => entry.id === entryId)) return false;
+    activeEntryId = entryId;
+    window.StoryFlowNavigate?.('workspace');
+    queueMicrotask(render);
+    return true;
+  }
+
   function hide() {
     revokeObjectUrls();
     const root = document.getElementById('visualWorkspace');
@@ -596,6 +604,6 @@
     openTypeChooser();
   }, true);
 
-  window.StoryFlowVisualWorkspace = { openTypeChooser, render, hide, activeEntry: () => activeEntry() };
+  window.StoryFlowVisualWorkspace = { openTypeChooser, openEntry, render, hide, activeEntry: () => activeEntry() };
   if (isVisual()) render();
 })();
