@@ -39,7 +39,7 @@
     { id: 'storyflowQuickStartJs', src: './src/connection/quick-start.js?v=20260825-p1e', owner: 'connection' },
     { src: './src/ui/navigation.js?v=20260826-p13a', owner: 'ui' },
     { src: './src/split/confirm-continuation.js', owner: 'split' },
-    { src: './src/ui/preview-mode.js?v=20260826-p7a', owner: 'ui' },
+    { src: './src/ui/preview-mode.js?v=20260828-p22a', owner: 'ui' },
     { src: './src/connection/google-auth.js?v=20260825-p2b', owner: 'connection' },
     { src: './src/connection/mobile-google-auth.js?v=20260817-1858', owner: 'connection' },
     { src: './src/ui/workspace-ux.js?v=20260825-p3a', owner: 'ui' },
