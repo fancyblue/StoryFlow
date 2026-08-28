@@ -10,6 +10,48 @@
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;'
   }[char]));
 
+  function closeProjectMenu() {
+    const menu = document.getElementById('visualProjectMenu');
+    const button = document.getElementById('visualProjectSwitchBtn');
+    if (menu) menu.hidden = true;
+    if (button) button.setAttribute('aria-expanded', 'false');
+  }
+
+  function renderProjectSwitcher() {
+    const api = window.StoryFlowProjects;
+    const menu = document.getElementById('visualProjectMenu');
+    const button = document.getElementById('visualProjectSwitchBtn');
+    const title = document.getElementById('visualProjectTitle');
+    if (!api || !menu || !button || !title) return;
+
+    const projects = api.list?.() || [];
+    const activeId = api.activeId?.();
+    const active = projects.find(project => project.id === activeId) || projects[0];
+    title.textContent = active?.title || state.projectTitle || '未命名作品';
+
+    menu.replaceChildren();
+    projects.forEach(project => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = `publishing-project-menu-item ${project.id === activeId ? 'active' : ''}`;
+      item.disabled = project.id === activeId;
+      item.innerHTML = `<span>${esc(project.title || '未命名作品')}</span>${project.id === activeId ? '<small>目前</small>' : ''}`;
+      item.addEventListener('click', () => {
+        if (project.id === api.activeId?.()) return;
+        api.switchProject?.(project.id, { quiet: true });
+        closeProjectMenu();
+        window.StoryFlowNavigate?.('workspace');
+      });
+      menu.appendChild(item);
+    });
+
+    const canSwitch = projects.length > 1;
+    button.disabled = !canSwitch;
+    button.classList.toggle('single-project', !canSwitch);
+    button.title = canSwitch ? '切換作品' : '目前只有一個作品';
+    button.querySelector('.visual-project-chevron').hidden = !canSwitch;
+  }
+
   function isVisual() {
     return state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL;
   }
@@ -60,7 +102,16 @@
       <header class="visual-workspace-head">
         <div>
           <p class="eyebrow">STORYFLOW / VISUAL WORKSPACE</p>
-          <div class="visual-workspace-head-copy"><h1 id="visualProjectTitle"></h1><span class="visual-mode-badge">圖文系列</span></div>
+          <div class="visual-workspace-head-copy">
+            <div class="visual-project-switcher">
+              <button id="visualProjectSwitchBtn" class="visual-project-switch-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="切換作品">
+                <h1 id="visualProjectTitle"></h1>
+                <span class="sf-chevron visual-project-chevron" aria-hidden="true"></span>
+              </button>
+              <div id="visualProjectMenu" class="publishing-project-menu visual-project-menu" role="menu" hidden></div>
+            </div>
+            <span class="visual-mode-badge">圖文系列</span>
+          </div>
           <p class="muted">編排文字與私人圖片；StoryFlow 不會把圖片上傳到發布平台。</p>
         </div>
         <button id="visualNewEntryBtn" class="button primary" type="button">＋ 新增圖文</button>
@@ -592,7 +643,7 @@
         node.hidden = true;
         node.classList.add('visual-workspace-suppressed');
       });
-    root.querySelector('#visualProjectTitle').textContent = state.projectTitle || '未命名圖文系列';
+    renderProjectSwitcher();
     root.querySelector('#visualReadonlyNote').hidden = !isReadOnly();
     root.querySelector('#visualNewEntryBtn').disabled = isReadOnly();
     renderList(); renderEditor();
@@ -620,6 +671,7 @@
   window.addEventListener('storyflow:projects-changed', () => {
     activeEntryId = null;
     if (isVisual()) queueMicrotask(render);
+    else hide();
   });
   window.addEventListener('storyflow:view-changed', event => {
     if (event.detail?.view === 'workspace' && isVisual()) queueMicrotask(render);
@@ -629,6 +681,24 @@
   // The legacy empty-workspace chooser offered Google/manual before content type.
   // Intercept only the internal starter so every real work now chooses longform or
   // visual first; source selection remains the second step for longform.
+  document.addEventListener('click', event => {
+    if (!event.target.closest?.('.visual-project-switcher')) closeProjectMenu();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeProjectMenu();
+  });
+  document.addEventListener('click', event => {
+    const switchButton = event.target.closest?.('#visualProjectSwitchBtn');
+    if (!switchButton || switchButton.disabled) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const menu = document.getElementById('visualProjectMenu');
+    if (!menu) return;
+    const opening = menu.hidden;
+    menu.hidden = !opening;
+    switchButton.setAttribute('aria-expanded', opening ? 'true' : 'false');
+    if (opening) menu.querySelector('button:not(:disabled)')?.focus({ preventScroll: true });
+  });
   document.addEventListener('click', event => {
     const button = event.target.closest?.('#createProjectFromGoogle, #createProjectManually');
     if (!button || !window.StoryFlowProjects?.isActivePlaceholder?.()) return;
