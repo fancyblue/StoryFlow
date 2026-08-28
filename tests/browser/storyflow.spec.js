@@ -1516,7 +1516,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(publishCard).toBeVisible();
   await expect(publishCard.locator('.publish-content-type')).toHaveText('圖文');
   await expect(publishCard.getByRole('button', { name: '預覽／複製', exact: true }).first()).toBeVisible();
-  await expect(publishCard.getByRole('button', { name: '刪除', exact: true })).toHaveCount(0);
+  await expect(publishCard.getByRole('button', { name: '更多「月下預告」操作', exact: true })).toBeVisible();
   await expect(publishCard.locator('.publish-platform-row')).toHaveCount(2);
   await publishCard.locator('.publish-platform-row').first().getByRole('button', { name: '預覽／複製', exact: true }).click();
   const publishingPreview = page.locator('#platformPreviewDialog');
@@ -1539,9 +1539,13 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await entryDialog.locator('#newVisualEntryTitle').fill('準備刪除的草稿');
   await entryDialog.getByRole('button', { name: '新增圖文', exact: true }).click();
   await expect(page.locator('#visualEntryList [data-entry-id]')).toHaveCount(2);
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  const deletionCard = page.locator('.publish-list-item', { hasText: '準備刪除的草稿' });
+  await expect(deletionCard).toBeVisible();
+  await deletionCard.getByRole('button', { name: '更多「準備刪除的草稿」操作', exact: true }).click();
   page.once('dialog', dialog => dialog.accept());
-  await page.locator('#visualDeleteEntryBtn').click();
-  await expect(page.locator('#visualEntryList [data-entry-id]')).toHaveCount(1);
+  await deletionCard.getByRole('menuitem', { name: '刪除圖文', exact: true }).click();
+  await expect(deletionCard).toHaveCount(0);
   const deletion = await page.evaluate(() => ({ removed: window.__removedVisualEntries.length, reasons: window.__visualRecoveryReasons }));
   expect(deletion.removed).toBe(1);
   expect(deletion.reasons).toContain('before-visual-entry-delete');
@@ -1551,6 +1555,12 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(card.locator('.project-type-badge')).toHaveText('圖文');
   await expect(card.getByRole('button', { name: '管理圖文', exact: true })).toBeVisible();
   await expect(card.getByRole('button', { name: '管理發布', exact: true })).toBeVisible();
+  await card.getByRole('button', { name: '查看圖文', exact: true }).click();
+  await expect(card.locator('.project-chapter-manager-head strong')).toHaveText('圖文');
+  const visualDetail = card.locator('.project-visual-entry-row', { hasText: '月下預告' });
+  await expect(visualDetail).toContainText('可發布');
+  await expect(visualDetail).toContainText('2 張圖片');
+  await expect(visualDetail.getByRole('button', { name: '編輯圖文「月下預告」', exact: true })).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 
