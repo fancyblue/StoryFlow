@@ -308,6 +308,8 @@ const StoryFlowIntegrations = (() => {
       schemaVersion: 1,
       id: normalized.id,
       title: normalized.title,
+      summary: normalized.summary,
+      hashtags: normalized.hashtags,
       status: normalized.status,
       coverImageId: normalized.coverImageId,
       images: normalized.images,
