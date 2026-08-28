@@ -104,7 +104,7 @@
         </div>
         <div class="project-library-actions">
           <button class="button tiny ghost project-open-btn" type="button">${visual ? '管理圖文' : active ? '回工作台' : '切換並開啟'}</button>
-          <button class="button tiny ghost project-publish-btn" type="button"${visual ? ' hidden' : ''}>發布</button>
+          <button class="button tiny ghost project-publish-btn" type="button">${visual ? '管理發布' : '發布'}</button>
           <button class="button tiny ghost project-library-delete" type="button">刪除</button>
         </div>`;
 

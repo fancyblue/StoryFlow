@@ -18,7 +18,8 @@
     catch (_) { return JSON.parse(JSON.stringify(value)); }
   }
 
-  function partKey(part) {
+  function partKey(part, project, visual = false) {
+    if (visual) return `visual:${project?.id || project?.title}:${part.id}`;
     return part?.id || `${part?.title || 'part'}:${part?.startBlock ?? ''}:${part?.endBlock ?? ''}`;
   }
 
@@ -116,6 +117,19 @@
 
   function entriesForProject(project) {
     const entries = [];
+    if (project?.state?.contentMode === 'visual') {
+      return [...(project.state.visualEntries || [])]
+        .sort((left, right) => Date.parse(right.updatedAt || right.createdAt || 0) - Date.parse(left.updatedAt || left.createdAt || 0))
+        .map((part, partIndex) => ({
+          project,
+          chapter: null,
+          part,
+          partIndex,
+          contentMode: 'visual',
+          key: partKey(part, project, true),
+          status: statusFor(part)
+        }));
+    }
     const chapters = project?.state?.chapters || [];
     for (let chapterIndex = chapters.length - 1; chapterIndex >= 0; chapterIndex -= 1) {
       const chapter = chapters[chapterIndex];
@@ -127,7 +141,8 @@
           chapter,
           part,
           partIndex,
-          key: partKey(part),
+          contentMode: 'longform',
+          key: partKey(part, project),
           status: statusFor(part)
         });
       }
@@ -284,6 +299,7 @@
 
   function createCombinedRow(entry) {
     const { project, part, status, key } = entry;
+    const visual = entry.contentMode === 'visual';
     const card = document.createElement('article');
     card.className = 'publish-list-item publishing-combined-row';
     card.dataset.projectId = project.id;
@@ -292,17 +308,18 @@
     card.innerHTML = `
       <div class="publish-list-summary">
         <div class="publish-list-title-block">
+          <span class="publish-chapter-name"><span class="publish-content-type ${visual ? 'visual' : 'longform'}">${visual ? '圖文' : '長文'}</span>${visual ? '圖文系列' : (entry.chapter?.title || '未命名章節')}</span>
           <div class="publish-list-title-row"><strong></strong><span></span></div>
         </div>
         <div class="publish-list-meta"><span class="publish-overall-status ${status.key}">${status.label}${statusCount}</span></div>
         <div class="publish-list-actions">
-          <button class="button tiny ghost default-preview-btn" type="button">預覽預設設定</button>
+          <button class="button tiny ghost default-preview-btn" type="button">${visual ? '預覽／複製' : '預覽預設設定'}</button>
           <button class="button tiny ghost publish-manage-btn" type="button">管理發布</button>
           <button class="button tiny ghost publish-more-btn" type="button" aria-label="更多文章操作">⋯</button>
         </div>
       </div>`;
     card.querySelector('.publish-list-title-row strong').textContent = part.title || '未命名文章';
-    card.querySelector('.publish-list-title-row span').textContent = `${Number(part.chars || 0).toLocaleString()} 字`;
+    card.querySelector('.publish-list-title-row span').textContent = `${Number(visual ? String(part.body || '').replace(/\s/g, '').length : part.chars || 0).toLocaleString()} 字`;
     card.querySelector('.default-preview-btn').addEventListener('click', () => activateAndInvoke(project.id, key, '.default-preview-btn'));
     card.querySelector('.publish-manage-btn').addEventListener('click', () => activateAndInvoke(project.id, key, '.publish-manage-btn'));
     card.querySelector('.publish-more-btn').addEventListener('click', () => activateAndInvoke(project.id, key, '.publish-more-btn'));
@@ -328,13 +345,13 @@
       titleWrap.appendChild(current);
     }
     const count = document.createElement('span');
-    count.textContent = `${entries.length.toLocaleString()} 篇`;
+    count.textContent = `${entries.length.toLocaleString()} 項`;
     head.append(titleWrap, count);
     group.appendChild(head);
 
     const chapters = new Map();
     entries.forEach(entry => {
-      const chapterId = entry.chapter?.id || entry.chapter?.title || 'chapter';
+      const chapterId = entry.contentMode === 'visual' ? 'visual' : (entry.chapter?.id || entry.chapter?.title || 'chapter');
       let chapter = chapters.get(chapterId);
       if (!chapter) {
         const section = document.createElement('section');
@@ -342,7 +359,7 @@
         const chapterHead = document.createElement('header');
         chapterHead.className = 'publishing-chapter-group-head';
         const chapterTitle = document.createElement('strong');
-        chapterTitle.textContent = entry.chapter?.title || '未命名章節';
+        chapterTitle.textContent = entry.contentMode === 'visual' ? '圖文清單' : (entry.chapter?.title || '未命名章節');
         const chapterCount = document.createElement('span');
         chapterCount.className = 'publishing-chapter-group-count';
         chapterHead.append(chapterTitle, chapterCount);
@@ -362,7 +379,7 @@
       chapter.rows.appendChild(row);
       chapter.size += 1;
     });
-    chapters.forEach(chapter => { chapter.count.textContent = `${chapter.size.toLocaleString()} 篇`; });
+    chapters.forEach(chapter => { chapter.count.textContent = `${chapter.size.toLocaleString()} 項`; });
     return group;
   }
 
@@ -419,7 +436,7 @@
     list.replaceChildren(fragment);
 
     const subtitle = document.querySelector('.publishing-page-subtitle');
-    if (subtitle) subtitle.textContent = '依作品與發布狀態篩選，再按章節管理文章。';
+    if (subtitle) subtitle.textContent = '依作品與發布狀態篩選，管理長文與圖文的各平台發布。';
   }
 
   async function refreshWorkspaceSnapshot() {

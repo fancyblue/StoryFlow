@@ -4,6 +4,7 @@
   let currentFilter = 'all';
   let selectedPartKey = null;
   let articleToolContext = null;
+  let visualPreviewUrls = [];
 
   function safeName(value, fallback = 'untitled') {
     const cleaned = String(value || '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
@@ -11,12 +12,34 @@
   }
 
   function partKey(part) {
+    if (isVisualPart(part)) return `visual:${window.StoryFlowProjects?.activeId?.() || state.projectTitle}:${part.id}`;
     return part?.id || `${part?.title || 'part'}:${part?.startBlock ?? ''}:${part?.endBlock ?? ''}`;
   }
 
+  function isVisualPart(part) {
+    const belongsToActiveVisualProject = state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL
+      && Array.isArray(state.visualEntries)
+      && state.visualEntries.some(entry => entry === part || (entry.id && entry.id === part?.id));
+    const isVisualSnapshot = part && typeof part.body === 'string'
+      && !Object.prototype.hasOwnProperty.call(part, 'raw')
+      && ['draft', 'ready'].includes(part.status);
+    return belongsToActiveVisualProject || isVisualSnapshot;
+  }
+
+  function normalizePublishItem(part) {
+    if (isVisualPart(part)) {
+      part.platformTitles ||= {};
+      part.platformStatus ||= {};
+      part.publicationRecords ||= {};
+      part.images ||= [];
+      return part;
+    }
+    return normalizePublishingPart(part);
+  }
+
   function outputSections(part, platform, includeAfterword = part?.includeAfterword !== false) {
-    normalizePublishingPart(part);
-    const raw = part.raw ?? part.formatted ?? '';
+    normalizePublishItem(part);
+    const raw = isVisualPart(part) ? part.body : (part.raw ?? part.formatted ?? '');
     const format = value => platform ? platformFormat(value, platform) : webFormat(value);
     const body = format(raw);
     const afterword = String(part.afterword || '').trim();
@@ -38,10 +61,10 @@
   }
 
   function publishTitleFor(part, platform = '') {
-    normalizePublishingPart(part);
+    normalizePublishItem(part);
     const platformTitle = platform ? String(part.platformTitles?.[platform] || '').trim() : '';
     if (platformTitle) return platformTitle;
-    return part.publishTitle.trim() || part.title || '未命名文章';
+    return (isVisualPart(part) ? '' : String(part.publishTitle || '').trim()) || part.title || '未命名內容';
   }
 
   function outputWithTitle(part, platform, includeAfterword, titleStyle = '') {
@@ -79,7 +102,7 @@
   }
 
   function publicationRecord(part, platform) {
-    normalizePublishingPart(part);
+    normalizePublishItem(part);
     part.publicationRecords[platform] ||= { publishedAt: '', url: '' };
     return part.publicationRecords[platform];
   }
@@ -111,7 +134,7 @@
   }
 
   function normalizePartStatus(part) {
-    normalizePublishingPart(part);
+    normalizePublishItem(part);
     part.platformStatus ||= {};
     const next = {};
     platforms.forEach(name => { next[name] = Boolean(part.platformStatus[name]); });
@@ -132,6 +155,14 @@
   // rendered in reverse so the most recently confirmed content is easiest to reach.
   function allEntries() {
     const entries = [];
+    if (state.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL) {
+      return [...(state.visualEntries || [])]
+        .sort((left, right) => Date.parse(right.updatedAt || right.createdAt || 0) - Date.parse(left.updatedAt || left.createdAt || 0))
+        .map((part, partIndex) => {
+          normalizePartStatus(part);
+          return { contentMode: 'visual', chapter: null, chapterIndex: -1, part, partIndex, status: statusFor(part) };
+        });
+    }
     for (let chapterIndex = state.chapters.length - 1; chapterIndex >= 0; chapterIndex -= 1) {
       const chapter = state.chapters[chapterIndex];
       const parts = chapter.parts || [];
@@ -300,6 +331,10 @@
     document.body.appendChild(dialog);
     dialog.querySelector('#closePlatformPreview').onclick = () => dialog.close();
     dialog.querySelector('#cancelPlatformCopy').onclick = () => dialog.close();
+    dialog.addEventListener('close', () => {
+      visualPreviewUrls.forEach(url => URL.revokeObjectURL(url));
+      visualPreviewUrls = [];
+    });
     return dialog;
   }
 
@@ -383,7 +418,9 @@
     const entry = allEntries().find(item => item.part === part);
     if (!entry) return false;
     try {
-      const updated = await writeArticleMarkdown(entry.chapter, part);
+      const updated = entry.contentMode === 'visual'
+        ? await writeVisualEntry(part)
+        : await writeArticleMarkdown(entry.chapter, part);
       if (updated && message) notify(message);
       else if (!updated) notify('發布紀錄目前只保留在畫面；請重新連接資料夾後再操作一次。', true);
       return updated;
@@ -408,7 +445,8 @@
     return true;
   }
 
-  function previewPublish(part, platform) {
+  function previewPublish(part, platform, contentMode = '') {
+    const visual = contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL || isVisualPart(part);
     normalizePartStatus(part);
     const entry = allEntries().find(item => item.part === part);
     const toggle = publishDialog.querySelector('#togglePlatformPublished');
@@ -425,7 +463,9 @@
     const refreshContent = () => {
       const container = publishDialog.querySelector('#platformPreviewContent');
       const sections = outputSections(part, platform, includeAfterword.checked);
-      if (window.StoryFlowArticleImages?.renderPreview) {
+      if (visual) {
+        renderVisualPublishPreview(container, part, sections.body, includeTitle.checked ? titleStyle.value : '', platform);
+      } else if (window.StoryFlowArticleImages?.renderPreview) {
         window.StoryFlowArticleImages.renderPreview(container, part, sections, {
           projectTitle: state.projectTitle,
           chapterTitle: allEntries().find(entry => entry.part === part)?.chapter?.title || ''
@@ -433,7 +473,7 @@
       } else {
         container.textContent = outputFor(part, platform, includeAfterword.checked);
       }
-      if (includeTitle.checked) {
+      if (includeTitle.checked && !visual) {
         if (container.dataset.sfPreviewManaged === 'article-images') {
           const titleNode = document.createElement(titleStyle.value === 'bold' ? 'strong' : 'h1');
           titleNode.className = `platform-preview-included-title ${titleStyle.value}`;
@@ -453,13 +493,13 @@
       publishDialog.querySelector('#platformPreviewPublishTitle').textContent = currentTitle;
       publishDialog.querySelector('#platformPreviewTitleSource').textContent = platformOverride
         ? '發布標題 · 此平台自訂'
-        : legacyOverride ? '發布標題 · 沿用既有共用標題' : '發布標題 · 沿用文章名稱';
+        : legacyOverride ? '發布標題 · 沿用既有共用標題' : `發布標題 · 沿用${visual ? '圖文' : '文章'}名稱`;
       titleInput.value = platformOverride || '';
       refreshContent();
     };
 
     publishDialog.querySelector('#platformPreviewMeta').textContent = platform
-      ? `這是「${platform}」實際要貼出的內容。發布狀態只會修改這個平台。`
+      ? `這是「${platform}」實際要貼出的${visual ? '文字與圖片順序' : '內容'}。發布狀態只會修改這個平台。`
       : '這是預設設定的輸出預覽；預設設定不是發布平台，因此不會產生發布狀態。';
     if (publishTitleFor(part, platform) !== part.title) {
       publishDialog.querySelector('#platformPreviewMeta').textContent += ` 內部文章名稱：${part.title}。`;
@@ -500,9 +540,10 @@
     };
     titleStyle.onchange = refreshContent;
     afterwordOption.hidden = afterwordCount === 0;
-    includeAfterword.checked = part.includeAfterword !== false;
+    includeAfterword.checked = !visual && part.includeAfterword !== false;
     publishDialog.querySelector('#platformPreviewAfterwordCount').textContent = `${afterwordCount.toLocaleString()} 字`;
     includeAfterword.onchange = async () => {
+      if (visual) return;
       part.includeAfterword = includeAfterword.checked;
       saveState('後記輸出設定已更新');
       refreshContent();
@@ -528,7 +569,9 @@
           outputWithTitle(part, platform, includeAfterword.checked, selectedTitleStyle),
           richOutputHtml(part, platform, includeAfterword.checked, selectedTitleStyle)
         );
-        notify(`已複製 ${platformLabel(platform)} 內容`);
+        notify(visual
+          ? `已複製 ${platformLabel(platform)} 文字；圖片請依下方順序手動上傳`
+          : `已複製 ${platformLabel(platform)} 內容`);
       } catch (error) {
         notify(`複製失敗：${error.message}`, true);
         return;
@@ -567,6 +610,40 @@
       metadata: chapterMetadata(chapter)
     });
     return true;
+  }
+
+  async function writeVisualEntry(entry) {
+    const folder = await StoryFlowIntegrations.restoreOutputDirectory();
+    if (!folder?.connected) return false;
+    entry.updatedAt = new Date().toISOString();
+    await StoryFlowIntegrations.saveVisualEntry({ projectTitle: state.projectTitle, entry });
+    saveState('圖文發布資料已更新');
+    return true;
+  }
+
+  function renderVisualPublishPreview(container, entry, body, titleStyle, platform) {
+    visualPreviewUrls.forEach(url => URL.revokeObjectURL(url));
+    visualPreviewUrls = [];
+    const title = titleStyle ? publishTitleFor(entry, platform) : '';
+    container.dataset.sfPreviewManaged = 'visual';
+    container.innerHTML = `
+      ${title ? `<${titleStyle === 'bold' ? 'strong' : 'h1'} class="platform-preview-included-title ${titleStyle}">${escapeHtml(title)}</${titleStyle === 'bold' ? 'strong' : 'h1'}>` : ''}
+      <div class="visual-publish-copy">${escapeHtml(body || '').replace(/\n/g, '<br>')}</div>
+      <section class="visual-upload-order">
+        <div><strong>圖片上傳順序</strong><span>圖片不會被複製或自動上傳，請依序手動選取。</span></div>
+        <ol>${entry.images.length ? entry.images.map(image => `<li data-visual-publish-image="${escapeHtml(image.id)}"><div class="visual-upload-thumb"><span>載入中</span></div><div><strong>${escapeHtml(image.storedName)}</strong>${entry.coverImageId === image.id ? '<em>封面</em>' : ''}<small>${escapeHtml(image.alt || '尚未填寫替代文字')}${image.caption ? ` · ${escapeHtml(image.caption)}` : ''}</small></div></li>`).join('') : '<li class="visual-upload-empty">這則圖文沒有圖片。</li>'}</ol>
+      </section>`;
+    entry.images.forEach(async image => {
+      const item = container.querySelector(`[data-visual-publish-image="${CSS.escape(image.id)}"]`);
+      try {
+        const file = await StoryFlowIntegrations.getVisualImageFile({ projectTitle: state.projectTitle, entryId: entry.id, storedName: image.storedName });
+        const url = URL.createObjectURL(file);
+        visualPreviewUrls.push(url);
+        if (item?.isConnected) item.querySelector('.visual-upload-thumb').innerHTML = `<img src="${url}" alt="${escapeHtml(image.alt || '')}" />`;
+      } catch (_) {
+        if (item?.isConnected) item.querySelector('.visual-upload-thumb').innerHTML = '<span class="missing">找不到圖片檔</span>';
+      }
+    });
   }
 
   function openPublicationRecord(chapter, part, platform) {
@@ -651,14 +728,14 @@
 
   async function savePlatformTitle(chapter, part, platform, input) {
     const nextTitle = input.value.trim();
-    normalizePublishingPart(part);
+    normalizePublishItem(part);
     if (nextTitle) part.platformTitles[platform] = nextTitle;
     else delete part.platformTitles[platform];
     saveState('平台標題已更新');
     renderParts();
 
     try {
-      const updated = await writeArticleMarkdown(chapter, part);
+      const updated = isVisualPart(part) ? await writeVisualEntry(part) : await writeArticleMarkdown(chapter, part);
       if (!updated) {
         notify('平台標題目前只保留在畫面；請重新連接資料夾後再保存一次。', true);
         return false;
@@ -836,7 +913,7 @@
       </div>`;
     row.querySelector('.platform-preview-btn').addEventListener('click', event => {
       event.stopPropagation();
-      previewPublish(part, platform);
+      previewPublish(part, platform, entry.contentMode);
     });
     row.querySelector('.platform-record-btn').addEventListener('click', event => {
       event.stopPropagation();
@@ -851,6 +928,7 @@
 
   function createArticleRow(entry) {
     const { chapter, part, partIndex, status } = entry;
+    const visual = entry.contentMode === 'visual';
     const publishTitle = publishTitleFor(part);
     const hasCustomPublishTitle = publishTitle !== part.title;
     const key = partKey(part);
@@ -860,15 +938,16 @@
     card.dataset.partKey = key;
 
     const statusCount = status.total ? ` · ${status.published}/${status.total}` : '';
-    const afterwordCount = afterwordChars(part);
-    const imageCount = part.images.length;
+    const afterwordCount = visual ? 0 : afterwordChars(part);
+    const imageCount = part.images?.length || 0;
+    const bodyChars = visual ? charCount(part.body) : part.chars;
     card.innerHTML = `
       <div class="publish-list-summary" role="button" tabindex="0" aria-expanded="${expanded}">
         <div class="publish-list-title-block">
-          <span class="publish-chapter-name">${escapeHtml(chapter.title)}</span>
+          <span class="publish-chapter-name"><span class="publish-content-type ${visual ? 'visual' : 'longform'}">${visual ? '圖文' : '長文'}</span>${visual ? escapeHtml(state.projectTitle || '圖文系列') : escapeHtml(chapter.title)}</span>
           <div class="publish-list-title-row">
             <strong>${escapeHtml(publishTitle)}</strong>
-            <span>${part.chars.toLocaleString()} 字</span>
+            <span>${bodyChars.toLocaleString()} 字</span>
             ${afterwordCount ? `<span class="publish-afterword-badge">有後記 ${afterwordCount.toLocaleString()} 字</span>` : ''}
             ${imageCount ? `<span class="publish-image-badge">附圖 ${imageCount.toLocaleString()} 張</span>` : ''}
           </div>
@@ -878,13 +957,15 @@
           <span class="publish-overall-status ${status.key}">${status.label}${statusCount}</span>
         </div>
         <div class="publish-list-actions">
-          <button class="button tiny ghost default-preview-btn" type="button">預覽預設設定</button>
-          <button class="button tiny ghost publish-delete-btn" type="button">刪除</button>
+          <button class="button tiny ghost default-preview-btn" type="button">${visual ? '預覽／複製' : '預覽預設設定'}</button>
+          ${visual ? '' : '<button class="button tiny ghost publish-delete-btn" type="button">刪除</button>'}
           <span class="sf-chevron publish-expand-indicator" aria-hidden="true"></span>
         </div>
       </div>
       <div class="publish-platform-details" ${expanded ? '' : 'hidden'}>
-        <div class="publish-article-tools">
+        ${visual ? `<div class="publish-article-tools visual-publish-summary">
+          <div class="publish-article-tools-copy"><strong>圖文發布清單</strong><span>文字 ${bodyChars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張；圖片需依序手動上傳。</span></div>
+        </div>` : `<div class="publish-article-tools">
           <div class="publish-article-tools-copy">
             <strong>文章補充內容</strong>
             <span>正文 ${part.chars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張 · 後記 ${afterwordCount.toLocaleString()} 字</span>
@@ -893,7 +974,7 @@
             <button class="button tiny ghost publish-images-tool-btn" type="button">文章圖片${imageCount ? ` ${imageCount.toLocaleString()}` : ''}</button>
             <button class="button tiny ghost publish-afterword-tool-btn" type="button">後記${afterwordCount ? ` ${afterwordCount.toLocaleString()} 字` : ''}</button>
           </div>
-        </div>
+        </div>`}
         <div class="publish-platform-details-head">
           <strong>發布平台</strong>
           <span class="muted">各平台狀態彼此獨立</span>
@@ -919,19 +1000,19 @@
 
     card.querySelector('.default-preview-btn').addEventListener('click', event => {
       event.stopPropagation();
-      previewPublish(part, '');
+      previewPublish(part, '', entry.contentMode);
     });
-    card.querySelector('.publish-delete-btn').addEventListener('click', event => {
+    card.querySelector('.publish-delete-btn')?.addEventListener('click', event => {
       event.stopPropagation();
       deleteConfirmedPart(chapter, partIndex);
     });
 
     if (expanded) {
-      card.querySelector('.publish-images-tool-btn').addEventListener('click', event => {
+      card.querySelector('.publish-images-tool-btn')?.addEventListener('click', event => {
         event.stopPropagation();
         openArticleTool(chapter, part, 'images');
       });
-      card.querySelector('.publish-afterword-tool-btn').addEventListener('click', event => {
+      card.querySelector('.publish-afterword-tool-btn')?.addEventListener('click', event => {
         event.stopPropagation();
         openArticleTool(chapter, part, 'afterword');
       });
@@ -952,6 +1033,17 @@
 
   function refreshHeaderAndSummary(entries) {
     const counts = dashboardCounts(entries);
+    const visualMode = state.contentMode === 'visual';
+    const listTitle = document.querySelector('.publishing-panel .panel-head h2');
+    const listNote = document.querySelector('.publishing-panel .panel-head .muted');
+    const totalLabel = document.querySelector('.publishing-stats article:first-child span');
+    const toolbarHint = document.querySelector('.publishing-toolbar-hint');
+    if (listTitle) listTitle.textContent = visualMode ? '圖文清單' : '文章清單';
+    if (listNote) listNote.textContent = visualMode
+      ? '外層顯示整體狀態；展開後管理各平台與圖片上傳順序。'
+      : '外層只顯示整體發布狀態；點選文章後再展開各平台細項。';
+    if (totalLabel) totalLabel.textContent = visualMode ? '圖文數' : '已確認文章';
+    if (toolbarHint) toolbarHint.textContent = visualMode ? '最近編輯的圖文顯示在最上面。' : '最新確認的文章顯示在最上面。';
     const projectTitle = document.getElementById('publishingProjectTitle');
     if (projectTitle) projectTitle.textContent = state.projectTitle || '未命名作品';
     const values = {
@@ -969,9 +1061,11 @@
     const workspacePublishingAction = document.getElementById('openPublishingFromWorkspace');
     const unfinished = counts.pending + counts.partial;
     if (summary) {
-      if (!counts.total) summary.textContent = '還沒有已確認文章。完成 SMART SPLIT 後，文章會進入發布頁。';
+      if (!counts.total) summary.textContent = state.contentMode === 'visual'
+        ? '還沒有可管理的圖文。先在圖文工作區建立內容。'
+        : '還沒有已確認文章。完成 SMART SPLIT 後，文章會進入發布頁。';
       else {
-        summary.textContent = `${counts.total} 篇已確認 · ${unfinished} 篇尚未完成所有平台發布`;
+        summary.textContent = `${counts.total} ${state.contentMode === 'visual' ? '則圖文' : '篇已確認'} · ${unfinished} ${state.contentMode === 'visual' ? '則' : '篇'}尚未完成所有平台發布`;
       }
     }
     if (workspacePublishingAction) {
@@ -1004,7 +1098,7 @@
         selectedPartKey = partKey(next.part);
         currentFilter = 'all';
         renderParts();
-        previewPublish(next.part, platform);
+        previewPublish(next.part, platform, next.contentMode);
       };
     }
   }
@@ -1024,7 +1118,9 @@
     if (selectedPartKey && !filtered.some(entry => partKey(entry.part) === selectedPartKey)) selectedPartKey = null;
 
     if (!entries.length) {
-      els.partsList.innerHTML = '<div class="empty-state publishing-empty"><div class="empty-icon">↗</div><strong>還沒有已確認文章</strong><span>先回到工作台載入內容並完成第一篇切篇。</span><button class="button primary publishing-empty-action" type="button">回到工作台開始切篇</button></div>';
+      els.partsList.innerHTML = state.contentMode === 'visual'
+        ? '<div class="empty-state publishing-empty"><div class="empty-icon">↗</div><strong>還沒有圖文</strong><span>先回到圖文工作區建立第一則內容。</span><button class="button primary publishing-empty-action" type="button">回到圖文工作區</button></div>'
+        : '<div class="empty-state publishing-empty"><div class="empty-icon">↗</div><strong>還沒有已確認文章</strong><span>先回到工作台載入內容並完成第一篇切篇。</span><button class="button primary publishing-empty-action" type="button">回到工作台開始切篇</button></div>';
       els.partsList.querySelector('.publishing-empty-action')?.addEventListener('click', () => window.StoryFlowNavigate?.('workspace'));
       return;
     }
@@ -1052,7 +1148,7 @@
       const card = els.partsList?.querySelector(`[data-part-key="${CSS.escape(key)}"]`);
       card?.scrollIntoView({ block: 'center', behavior: 'smooth' });
       card?.querySelector('.publish-list-summary')?.focus({ preventScroll: true });
-      if (preview) previewPublish(entry.part, '');
+      if (preview) previewPublish(entry.part, '', entry.contentMode);
       return true;
     },
     openPending(key, platform) {
@@ -1061,7 +1157,7 @@
       selectedPartKey = key;
       currentFilter = 'all';
       renderParts();
-      previewPublish(entry.part, platform || platforms.find(name => !entry.part.platformStatus?.[name]) || '');
+      previewPublish(entry.part, platform || platforms.find(name => !entry.part.platformStatus?.[name]) || '', entry.contentMode);
       return true;
     }
   };

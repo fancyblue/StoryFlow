@@ -18,7 +18,7 @@
     const projectTitle = document.createElement('strong');
     projectTitle.textContent = state?.projectTitle || '未命名作品';
     const projectCount = document.createElement('span');
-    projectCount.textContent = `${cards.length.toLocaleString()} 篇`;
+    projectCount.textContent = `${cards.length.toLocaleString()} 項`;
     projectHead.append(projectTitle, projectCount);
     projectGroup.appendChild(projectHead);
 
@@ -52,7 +52,7 @@
     chapterGroups.forEach(group => {
       const count = group.querySelectorAll(':scope > .publishing-chapter-group-rows > .publish-list-item').length;
       const label = group.querySelector('.publishing-chapter-group-count');
-      if (label) label.textContent = `${count.toLocaleString()} 篇`;
+      if (label) label.textContent = `${count.toLocaleString()} 項`;
     });
 
     list.replaceChildren(projectGroup);

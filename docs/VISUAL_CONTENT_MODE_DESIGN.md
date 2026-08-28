@@ -1,7 +1,7 @@
 # StoryFlow 圖文內容維護模式設計
 
-> 狀態：Phase 1 已完成；圖文 MVP 已開放，整合發布尚未開放
-> 用途：記錄「圖文系列」的使用流程、資料邊界與分階段實作方向。Phase 1 已提供建立、編輯、圖片維護、私人輸出、Recovery 與基本預覽；Phase 2 才整合共用發布頁。
+> 狀態：Phase 2 已完成；圖文維護與整合發布已開放
+> 用途：記錄「圖文系列」的使用流程、資料邊界與分階段實作方向。Phase 1 提供建立與維護；Phase 2 已整合共用發布頁、發布紀錄與搜尋。
 
 ## Phase 狀態
 
@@ -9,10 +9,10 @@
 | --- | --- | --- | --- |
 | Phase 0 | 已完成（2026-08-28） | 相容性與技術 spike；不開放 UI | `contentMode`／`visualEntries` 正規化、固定 ID 輸出路徑、圖片路徑 adapter、共用 publishable view model、新舊 workspace fixture |
 | Phase 1 | 已完成（2026-08-28） | 可用的圖文 MVP | 作品類型選擇、圖文工作台、CRUD、圖片維護、私人輸出、Recovery、基本預覽 |
-| Phase 2 | 尚未開始 | 整合發布 | 等待 Phase 1 真實操作結果 |
+| Phase 2 | 已完成（2026-08-28） | 整合發布 | 共用清單與篩選、平台資料、預覽／複製、圖片順序、繼續發布、搜尋 |
 | Phase 3 | 候選 | 只依真實使用決定 | 不預先實作 |
 
-Phase 0 的共用資料基礎位於 `src/projects/content-model.js`；Phase 1 工作台位於 `src/projects/visual-workspace.js`，樣式位於 `styles/domains/visual-workspace.css`。核心 fixture 位於 `tests/visual-content-model-core.html`，完整流程由瀏覽器測試覆蓋。發布頁目前仍只開放長文流程。
+Phase 0 的共用資料基礎位於 `src/projects/content-model.js`；Phase 1 工作台位於 `src/projects/visual-workspace.js`；Phase 2 整合 `src/publishing/publishing-flow.js`、`publishing-project-filter.js` 與 `src/ui/global-search.js`。核心 fixture 與完整瀏覽器流程共同驗證。
 
 ## 1. 設計結論
 
@@ -371,10 +371,18 @@ StoryFlow/
 
 ### Phase 2：整合發布
 
-- 圖文加入共用發布清單與篩選。
-- 平台標題、預覽／複製、發布紀錄。
-- 圖片上傳順序清單與完整性提示。
-- 「繼續發布」與全域搜尋整合。
+- [x] 圖文加入共用發布清單與篩選。
+- [x] 平台標題、預覽／複製、發布紀錄。
+- [x] 圖片上傳順序清單與檔案遺失提示。
+- [x] 「繼續發布」與全域搜尋整合。
+
+#### Phase 2 決策紀錄（2026-08-28）
+
+- 共用發布頁使用「項」作為長文與圖文的中性數量單位，圖文在分組中顯示為「圖文清單」。
+- 圖文不使用長文的「預覽預設設定」詞彙，主動作為「預覽／複製」與「管理發布」。
+- 複製只包含文字與選擇的標題格式；圖片以封面與順序清單呈現，並明示需手動上傳。
+- 圖片預覽使用私人檔案的暫時 object URL，對話框關閉後立即釋放。
+- 工作台只在圖文成功保存、狀態為「可發布」，且具有標題與文字或圖片時顯示「前往發布」。
 
 ### Phase 3：只依真實使用再決定
 

@@ -4,6 +4,7 @@
   let activeEntryId = null;
   let draggedImageId = null;
   let objectUrls = [];
+  const dirtyEntryIds = new Set();
 
   const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;'
@@ -35,8 +36,12 @@
 
   function markChanged(label = '圖文編輯中') {
     const entry = activeEntry();
-    if (entry) entry.updatedAt = new Date().toISOString();
+    if (entry) {
+      entry.updatedAt = new Date().toISOString();
+      dirtyEntryIds.add(entry.id);
+    }
     saveState(label);
+    renderPublishingAction();
     window.dispatchEvent(new CustomEvent('storyflow:visual-entry-changed', {
       detail: { projectId: window.StoryFlowProjects?.activeId?.(), entryId: entry?.id || null }
     }));
@@ -82,7 +87,7 @@
             <section class="visual-preview" aria-label="圖文基本預覽">
               <p class="eyebrow">PREVIEW</p><h2 id="visualPreviewTitle"></h2><div id="visualPreviewBody" class="visual-preview-body"></div><div id="visualPreviewImages" class="visual-preview-images"></div>
             </section>
-            <footer class="visual-editor-footer"><span id="visualEditorMeta" class="muted"></span><div class="visual-editor-footer-actions"><button id="visualDeleteEntryBtn" class="button ghost" type="button">刪除圖文</button><button id="visualSaveEntryBtn" class="button primary" type="submit">保存草稿</button></div></footer>
+            <footer class="visual-editor-footer"><span id="visualEditorMeta" class="muted"></span><div class="visual-editor-footer-actions"><button id="visualDeleteEntryBtn" class="button ghost" type="button">刪除圖文</button><button id="visualOpenPublishingBtn" class="button ghost" type="button" hidden>前往發布 →</button><button id="visualSaveEntryBtn" class="button primary" type="submit">保存草稿</button></div></footer>
           </form>
         </section>
       </div>`;
@@ -240,6 +245,12 @@
     status.addEventListener('change', () => { const entry = activeEntry(); if (entry) { entry.status = status.value; markChanged(); renderList(); renderMeta(); } });
     root.querySelector('#visualEditorForm').addEventListener('submit', saveEntry);
     root.querySelector('#visualDeleteEntryBtn').addEventListener('click', deleteEntry);
+    root.querySelector('#visualOpenPublishingBtn').addEventListener('click', () => {
+      const entry = activeEntry();
+      if (!entry || !canPublish(entry)) return;
+      window.StoryFlowNavigate?.('publishing');
+      window.setTimeout(() => window.StoryFlowPublishing?.openPart?.(`visual:${window.StoryFlowProjects?.activeId?.() || state.projectTitle}:${entry.id}`), 0);
+    });
     const fileInput = root.querySelector('#visualImageInput');
     root.querySelector('#visualImportImagesBtn').addEventListener('click', () => {
       if (isReadOnly()) return notify('手機目前為唯讀，無法匯入圖片。', true);
@@ -420,9 +431,10 @@
     try {
       window.StoryFlowSaveStatus?.set?.('保存圖文中…');
       const path = await StoryFlowIntegrations.saveVisualEntry({ projectTitle: state.projectTitle, entry });
+      dirtyEntryIds.delete(entry.id);
       saveState('圖文已保存');
       await window.StoryFlowProjectPersistence?.flush?.('visual-entry-save');
-      renderList(); renderMeta();
+      renderList(); renderMeta(); renderPublishingAction();
       notify(`圖文已保存：${path}`);
     } catch (error) { notify(`圖文尚未完整保存：${error.message}`, true); }
   }
@@ -498,6 +510,21 @@
     node.textContent = `${charCount(entry.body).toLocaleString()} 字 · ${entry.images.length} 張圖片 · ${entry.status === 'ready' ? '可發布' : '草稿'}`;
   }
 
+  function canPublish(entry) {
+    return entry?.status === 'ready'
+      && Boolean(String(entry.title || '').trim())
+      && (Boolean(String(entry.body || '').trim()) || Boolean(entry.images?.length))
+      && !dirtyEntryIds.has(entry.id);
+  }
+
+  function renderPublishingAction() {
+    const entry = activeEntry();
+    const button = document.getElementById('visualOpenPublishingBtn');
+    if (!button) return;
+    button.hidden = !canPublish(entry);
+    button.disabled = isReadOnly() || !canPublish(entry);
+  }
+
   function renderEditor() {
     const root = document.getElementById('visualWorkspace');
     const entry = activeEntry();
@@ -518,7 +545,7 @@
       if (control.id !== 'visualDeleteEntryBtn') control.disabled = isReadOnly();
     });
     root.querySelector('#visualDeleteEntryBtn').disabled = isReadOnly();
-    renderImages(); renderPreview(); renderMeta();
+    renderImages(); renderPreview(); renderMeta(); renderPublishingAction();
   }
 
   function render() {

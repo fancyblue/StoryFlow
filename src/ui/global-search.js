@@ -26,6 +26,10 @@
     return part?.id || `${part?.title || 'part'}:${part?.startBlock ?? ''}:${part?.endBlock ?? ''}`;
   }
 
+  function visualKey(project, entry) {
+    return `visual:${project.id || project.title}:${entry.id}`;
+  }
+
   function clipped(value, limit = 88) {
     const compact = String(value || '').replace(/\s+/g, ' ').trim();
     return compact.length > limit ? `${compact.slice(0, limit).trimEnd()}…` : compact;
@@ -87,6 +91,19 @@
             bodyFields: [part.raw || part.formatted || ''],
             order: orderBase + chapterIndex / 1000 + partIndex / 100000
           });
+        });
+      });
+
+      (project.state?.visualEntries || []).forEach((entry, entryIndex) => {
+        const platformTitles = Object.values(entry.platformTitles || {}).map(value => String(value || '').trim()).filter(Boolean);
+        const internalTitle = entry.title || `第 ${entryIndex + 1} 則圖文`;
+        const displayTitle = platformTitles[0] || internalTitle;
+        records.push({
+          kind: 'visual', label: '發布圖文', projectId: project.id, projectTitle,
+          partKey: visualKey(project, entry), title: displayTitle, internalTitle,
+          subtitle: `${projectTitle} · 圖文${displayTitle !== internalTitle ? ` · 內部名稱：${internalTitle}` : ''}`,
+          titleFields: [...platformTitles, internalTitle], bodyFields: [entry.body || ''],
+          order: Date.parse(entry.updatedAt || entry.createdAt || '') || orderBase + entryIndex / 1000
         });
       });
     });
@@ -229,7 +246,7 @@
 
     const query = input.value;
     dialog.close();
-    if (record.kind === 'part') {
+    if (record.kind === 'part' || record.kind === 'visual') {
       window.StoryFlowNavigate?.('publishing');
       window.setTimeout(() => {
         window.StoryFlowPublishing?.openPart?.(record.partKey, { preview: record.matchScope === 'body' });
