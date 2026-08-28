@@ -68,9 +68,11 @@
 .visual-editor-footer { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 4px; }
 .visual-editor-footer-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .visual-type-dialog .dialog-card, .visual-entry-dialog .dialog-card, .visual-image-dialog .dialog-card { width: min(680px, calc(100vw - 32px)); }
+.visual-type-dialog [hidden], .visual-entry-dialog [hidden], .visual-image-dialog [hidden] { display: none !important; }
 .visual-type-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .visual-type-option { display: grid; gap: 7px; padding: 18px; border: 1px solid var(--line, #d9e1e6); border-radius: 14px; background: #fff; text-align: left; cursor: pointer; }
 .visual-type-option:hover { border-color: #315b78; background: #f5f9fb; }
+.visual-type-option:focus-visible { border-color: #315b78; background: #f5f9fb; outline: 3px solid rgba(57,117,167,.2); outline-offset: 2px; }
 .visual-type-option strong { font-size: 17px; }
 .visual-type-option span { color: var(--muted, #63727c); line-height: 1.55; }
 .visual-dialog-fields { display: grid; gap: 14px; margin: 18px 0; }
