@@ -77,6 +77,8 @@
     return {
       id: typeof entry.id === 'string' && entry.id ? entry.id : crypto.randomUUID(),
       title: typeof entry.title === 'string' && entry.title.trim() ? entry.title.trim() : `未命名圖文 ${index + 1}`,
+      summary: typeof entry.summary === 'string' ? entry.summary.trim() : '',
+      hashtags: typeof entry.hashtags === 'string' ? entry.hashtags.trim() : '',
       body: typeof entry.body === 'string' ? entry.body : '',
       status: VISUAL_STATUSES.has(entry.status) ? entry.status : 'draft',
       coverImageId,
@@ -183,6 +185,8 @@
       containerTitle: '',
       id: sourceEntry.id,
       title: sourceEntry.title,
+      summary: sourceEntry.summary,
+      hashtags: sourceEntry.hashtags,
       body: sourceEntry.body,
       afterword: '',
       includeAfterword: false,
