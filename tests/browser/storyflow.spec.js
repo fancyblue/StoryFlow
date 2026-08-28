@@ -1429,6 +1429,11 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     window.__savedVisualEntry = null;
     window.__removedVisualEntries = [];
     window.__visualRecoveryReasons = [];
+    window.__copiedVisualHelper = '';
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async value => { window.__copiedVisualHelper = value; } }
+    });
     StoryFlowIntegrations.restoreOutputDirectory = async () => ({ connected: true, name: 'StoryFlow-test' });
     StoryFlowIntegrations.saveWorkspace = async () => 'StoryFlow-test/workspace.json';
     StoryFlowIntegrations.createWorkspaceRecoverySnapshot = async reason => {
@@ -1473,6 +1478,8 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   })).toBeLessThan(80);
   await expect(page.locator('#visualProjectTitle')).toHaveText('夜色圖文集');
   await expect(page.locator('#visualEntryList')).toContainText('月下預告');
+  await page.locator('#visualEntrySummary').fill('月光下的城堡預告');
+  await page.locator('#visualEntryHashtags').fill('#StoryFlow #夜色創作');
   await page.locator('#visualEntryBody').fill('月光落在城牆上。\n\n第二段圖文內容。');
   await page.locator('#visualEntryStatus').selectOption('ready');
 
@@ -1504,11 +1511,20 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     chapters: state.chapters.length,
     entryCount: state.visualEntries.length,
     status: state.visualEntries[0].status,
+    summary: state.visualEntries[0].summary,
+    hashtags: state.visualEntries[0].hashtags,
+    savedSummary: window.__savedVisualEntry?.entry?.summary,
+    savedHashtags: window.__savedVisualEntry?.entry?.hashtags,
     order: state.visualEntries[0].images.map(image => image.storedName),
     cover: state.visualEntries[0].coverImageId,
     firstImageId: state.visualEntries[0].images[0].id
   }));
-  expect(stored).toMatchObject({ mode: 'visual', chapters: 0, entryCount: 1, status: 'ready', order: ['插圖-2.png', '插圖.png'] });
+  expect(stored).toMatchObject({
+    mode: 'visual', chapters: 0, entryCount: 1, status: 'ready',
+    summary: '月光下的城堡預告', hashtags: '#StoryFlow #夜色創作',
+    savedSummary: '月光下的城堡預告', savedHashtags: '#StoryFlow #夜色創作',
+    order: ['插圖-2.png', '插圖.png']
+  });
   expect(stored.cover).not.toBe(stored.firstImageId);
 
   await page.locator('#visualOpenPublishingBtn').click();
@@ -1523,6 +1539,10 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(publishingPreview).toBeVisible();
   await expect(publishingPreview.locator('.visual-upload-order')).toContainText('圖片不會被複製或自動上傳');
   await expect(publishingPreview.locator('.visual-upload-order li')).toHaveCount(2);
+  await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('月光下的城堡預告');
+  await expect(publishingPreview.locator('#platformPreviewHashtags')).toHaveText('#StoryFlow #夜色創作');
+  await publishingPreview.getByRole('button', { name: '複製 Hashtags', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => window.__copiedVisualHelper)).toBe('#StoryFlow #夜色創作');
   await publishingPreview.locator('#editPlatformTitle').click();
   await publishingPreview.locator('#platformPreviewTitleInput').fill('方格子月下預告');
   await publishingPreview.locator('#savePlatformPreviewTitle').click();
