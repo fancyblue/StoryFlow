@@ -70,7 +70,7 @@ test('primary action scale and navigation icon language stay consistent', async 
   await expect(page.locator('#openPublishingFromWorkspace')).toHaveClass(/primary/);
   const publishingRow = page.locator('.publish-list-item', { hasText: '樣式測試文章' });
   const rowManage = publishingRow.getByRole('button', { name: /展開.*發布平台/ });
-  const rowPreview = publishingRow.getByRole('button', { name: '預覽預設設定', exact: true });
+  const rowPreview = publishingRow.getByRole('button', { name: '預覽預設設定「樣式測試文章」', exact: true });
   await expect(rowManage).toBeVisible();
   const manageStyle = await controlStyle(rowManage);
   const previewStyle = await controlStyle(rowPreview);
@@ -909,7 +909,7 @@ test('published articles keep an independent afterword and can exclude it from o
   await expect(card.locator('.publish-afterword-badge')).toContainText('有後記 10 字');
   await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
 
-  await card.getByRole('button', { name: '預覽預設設定', exact: true }).click();
+  await card.getByRole('button', { name: '預覽預設設定「有後記的文章」', exact: true }).click();
   const preview = page.locator('#platformPreviewDialog');
   await expect(preview).toBeVisible();
   await expect(preview.locator('#platformPreviewContent')).toContainText('正文原稿。');
@@ -1224,7 +1224,7 @@ test('article images import private copies, preview, reorder, describe, and remo
   await expect.poll(() => page.evaluate(() => window.__copiedImageMarkdown)).toContain('夜空中的城堡');
 
   await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
-  await card.getByRole('button', { name: '預覽預設設定', exact: true }).click();
+  await card.getByRole('button', { name: '預覽預設設定「附圖文章」', exact: true }).click();
   const preview = page.locator('#platformPreviewDialog');
   await expect(preview).toBeVisible();
   await expect(preview.locator('.platform-preview-image')).toHaveCount(2);
