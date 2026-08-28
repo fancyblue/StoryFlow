@@ -76,17 +76,48 @@
   .visual-image-section-head .button { width: 100%; }
 }
 
-.visual-editor-optional-fields{
+.visual-editor-optional-section{
   display:grid;
-  grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);
-  gap:12px;
+  gap:14px;
+  padding:16px;
+  border:1px solid #dce7ef;
+  border-radius:13px;
+  background:#f8fbfd;
 }
-.visual-field > span small{
+.visual-editor-optional-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  padding-bottom:11px;
+  border-bottom:1px solid #e2ebf2;
+}
+.visual-editor-optional-head > div{display:grid;gap:2px}
+.visual-editor-optional-head strong{
+  color:#294a63;
+  font-size:13.5px;
+  font-weight:850;
+}
+.visual-editor-optional-head span,
+.visual-editor-optional-head > small{
   color:var(--muted);
   font-size:11px;
-  font-weight:700;
+  line-height:1.45;
+}
+.visual-editor-optional-head > small{
+  flex:0 0 auto;
+  padding-top:2px;
+}
+.visual-editor-optional-fields{
+  display:grid;
+  gap:13px;
+}
+.visual-editor-optional-fields textarea{
+  min-height:72px;
+  resize:vertical;
 }
 .visual-field > small{
+  margin-top:-2px;
   color:var(--muted);
   font-size:11px;
   line-height:1.45;
@@ -103,6 +134,7 @@
   font-weight:750;
   white-space:pre-wrap;
 }
-@media(max-width:760px){
-  .visual-editor-optional-fields{grid-template-columns:1fr}
+@media(max-width:560px){
+  .visual-editor-optional-section{padding:14px}
+  .visual-editor-optional-head{display:grid;gap:4px}
 }
