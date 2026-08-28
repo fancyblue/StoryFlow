@@ -445,7 +445,8 @@
     return true;
   }
 
-  function previewPublish(part, platform) {
+  function previewPublish(part, platform, contentMode = '') {
+    const visual = contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL || isVisualPart(part);
     normalizePartStatus(part);
     const entry = allEntries().find(item => item.part === part);
     const toggle = publishDialog.querySelector('#togglePlatformPublished');
@@ -462,7 +463,7 @@
     const refreshContent = () => {
       const container = publishDialog.querySelector('#platformPreviewContent');
       const sections = outputSections(part, platform, includeAfterword.checked);
-      if (isVisualPart(part)) {
+      if (visual) {
         renderVisualPublishPreview(container, part, sections.body, includeTitle.checked ? titleStyle.value : '', platform);
       } else if (window.StoryFlowArticleImages?.renderPreview) {
         window.StoryFlowArticleImages.renderPreview(container, part, sections, {
@@ -472,7 +473,7 @@
       } else {
         container.textContent = outputFor(part, platform, includeAfterword.checked);
       }
-      if (includeTitle.checked && !isVisualPart(part)) {
+      if (includeTitle.checked && !visual) {
         if (container.dataset.sfPreviewManaged === 'article-images') {
           const titleNode = document.createElement(titleStyle.value === 'bold' ? 'strong' : 'h1');
           titleNode.className = `platform-preview-included-title ${titleStyle.value}`;
@@ -492,13 +493,13 @@
       publishDialog.querySelector('#platformPreviewPublishTitle').textContent = currentTitle;
       publishDialog.querySelector('#platformPreviewTitleSource').textContent = platformOverride
         ? '發布標題 · 此平台自訂'
-        : legacyOverride ? '發布標題 · 沿用既有共用標題' : `發布標題 · 沿用${isVisualPart(part) ? '圖文' : '文章'}名稱`;
+        : legacyOverride ? '發布標題 · 沿用既有共用標題' : `發布標題 · 沿用${visual ? '圖文' : '文章'}名稱`;
       titleInput.value = platformOverride || '';
       refreshContent();
     };
 
     publishDialog.querySelector('#platformPreviewMeta').textContent = platform
-      ? `這是「${platform}」實際要貼出的${isVisualPart(part) ? '文字與圖片順序' : '內容'}。發布狀態只會修改這個平台。`
+      ? `這是「${platform}」實際要貼出的${visual ? '文字與圖片順序' : '內容'}。發布狀態只會修改這個平台。`
       : '這是預設設定的輸出預覽；預設設定不是發布平台，因此不會產生發布狀態。';
     if (publishTitleFor(part, platform) !== part.title) {
       publishDialog.querySelector('#platformPreviewMeta').textContent += ` 內部文章名稱：${part.title}。`;
@@ -539,10 +540,10 @@
     };
     titleStyle.onchange = refreshContent;
     afterwordOption.hidden = afterwordCount === 0;
-    includeAfterword.checked = !isVisualPart(part) && part.includeAfterword !== false;
+    includeAfterword.checked = !visual && part.includeAfterword !== false;
     publishDialog.querySelector('#platformPreviewAfterwordCount').textContent = `${afterwordCount.toLocaleString()} 字`;
     includeAfterword.onchange = async () => {
-      if (isVisualPart(part)) return;
+      if (visual) return;
       part.includeAfterword = includeAfterword.checked;
       saveState('後記輸出設定已更新');
       refreshContent();
@@ -568,7 +569,7 @@
           outputWithTitle(part, platform, includeAfterword.checked, selectedTitleStyle),
           richOutputHtml(part, platform, includeAfterword.checked, selectedTitleStyle)
         );
-        notify(isVisualPart(part)
+        notify(visual
           ? `已複製 ${platformLabel(platform)} 文字；圖片請依下方順序手動上傳`
           : `已複製 ${platformLabel(platform)} 內容`);
       } catch (error) {
@@ -912,7 +913,7 @@
       </div>`;
     row.querySelector('.platform-preview-btn').addEventListener('click', event => {
       event.stopPropagation();
-      previewPublish(part, platform);
+      previewPublish(part, platform, entry.contentMode);
     });
     row.querySelector('.platform-record-btn').addEventListener('click', event => {
       event.stopPropagation();
@@ -999,7 +1000,7 @@
 
     card.querySelector('.default-preview-btn').addEventListener('click', event => {
       event.stopPropagation();
-      previewPublish(part, '');
+      previewPublish(part, '', entry.contentMode);
     });
     card.querySelector('.publish-delete-btn')?.addEventListener('click', event => {
       event.stopPropagation();
@@ -1097,7 +1098,7 @@
         selectedPartKey = partKey(next.part);
         currentFilter = 'all';
         renderParts();
-        previewPublish(next.part, platform);
+        previewPublish(next.part, platform, next.contentMode);
       };
     }
   }
@@ -1147,7 +1148,7 @@
       const card = els.partsList?.querySelector(`[data-part-key="${CSS.escape(key)}"]`);
       card?.scrollIntoView({ block: 'center', behavior: 'smooth' });
       card?.querySelector('.publish-list-summary')?.focus({ preventScroll: true });
-      if (preview) previewPublish(entry.part, '');
+      if (preview) previewPublish(entry.part, '', entry.contentMode);
       return true;
     },
     openPending(key, platform) {
@@ -1156,7 +1157,7 @@
       selectedPartKey = key;
       currentFilter = 'all';
       renderParts();
-      previewPublish(entry.part, platform || platforms.find(name => !entry.part.platformStatus?.[name]) || '');
+      previewPublish(entry.part, platform || platforms.find(name => !entry.part.platformStatus?.[name]) || '', entry.contentMode);
       return true;
     }
   };
