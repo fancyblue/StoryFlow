@@ -13,7 +13,7 @@
     });
   }
 
-  function addOverflowDelete(actions, legacyDelete, articleTitle) {
+  function addOverflowDelete(actions, legacyDelete, articleTitle, visual = false) {
     if (!actions || !legacyDelete) return;
 
     // The legacy delete control remains in the DOM only as the underlying action target.
@@ -39,7 +39,7 @@
       more.type = 'button';
       more.className = 'button tiny ghost publish-more-btn';
       more.textContent = '⋯';
-      more.title = '更多文章操作';
+      more.title = visual ? '更多圖文操作' : '更多文章操作';
       more.setAttribute('aria-label', `更多「${articleTitle}」操作`);
       more.setAttribute('aria-haspopup', 'menu');
       more.setAttribute('aria-expanded', 'false');
@@ -54,7 +54,7 @@
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.setAttribute('role', 'menuitem');
-      remove.innerHTML = '<span aria-hidden="true">×</span><span>刪除文章</span>';
+      remove.innerHTML = `<span aria-hidden="true">×</span><span>${visual ? '刪除圖文' : '刪除文章'}</span>`;
       remove.addEventListener('click', event => {
         event.preventDefault();
         event.stopPropagation();
@@ -126,7 +126,7 @@
           });
         }
       }
-      addOverflowDelete(actions, legacyDelete, articleTitle);
+      addOverflowDelete(actions, legacyDelete, articleTitle, card.dataset.contentMode === 'visual');
     });
   }
 
