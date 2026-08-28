@@ -1466,6 +1466,11 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
 
   await expect(page.locator('#visualWorkspace')).toBeVisible();
   await expect(page.locator('.workspace-grid')).toBeHidden();
+  await expect(page.locator('#visualEditorEmpty')).toBeHidden();
+  expect(await page.locator('#visualEditorForm').evaluate(form => {
+    const panel = form.closest('.visual-editor-panel');
+    return form.getBoundingClientRect().top - panel.getBoundingClientRect().top;
+  })).toBeLessThan(80);
   await expect(page.locator('#visualProjectTitle')).toHaveText('夜色圖文集');
   await expect(page.locator('#visualEntryList')).toContainText('月下預告');
   await page.locator('#visualEntryBody').fill('月光落在城牆上。\n\n第二段圖文內容。');
