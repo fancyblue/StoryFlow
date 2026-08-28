@@ -4,6 +4,14 @@
 .visual-workspace-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 4px 2px 2px; }
 .visual-workspace-head h1 { margin: 2px 0 4px; }
 .visual-workspace-head-copy { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.visual-project-switcher { position: relative; min-width: 0; }
+.visual-project-switch-btn { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; }
+.visual-project-switch-btn h1 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.visual-project-switch-btn:hover:not(:disabled) h1, .visual-project-switch-btn:focus-visible h1, .visual-project-switch-btn[aria-expanded="true"] h1 { color: #2f6f9f; }
+.visual-project-switch-btn:focus-visible { outline: 2px solid #9fc5de; outline-offset: 5px; border-radius: 6px; }
+.visual-project-switch-btn:disabled { cursor: default; }
+.visual-project-chevron { flex: 0 0 14px; color: #3975a7; }
+.visual-project-menu { left: 0; right: auto; width: min(320px, 78vw); }
 .visual-mode-badge, .project-type-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 9px; border-radius: 999px; background: #e8f0f5; color: #31546e; font-size: 12px; font-weight: 700; }
 .visual-workspace-layout { display: grid; grid-template-columns: minmax(250px, 290px) minmax(0, 1fr); gap: 20px; align-items: start; }
 .visual-entry-list-panel, .visual-editor-panel { min-width: 0; }
@@ -114,6 +122,14 @@
 }
 .visual-editor-optional-fields textarea{
   min-height:72px;
+  resize:vertical;
+}
+#visualEntrySummary.text-input,
+#visualEntryBody.text-input{
+  height:auto !important;
+  min-height:76px !important;
+  padding:12px 14px !important;
+  line-height:1.55 !important;
   resize:vertical;
 }
 .visual-field > small{
