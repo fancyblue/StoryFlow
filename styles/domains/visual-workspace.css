@@ -1,12 +1,14 @@
-.visual-workspace[hidden], .visual-workspace .hidden { display: none !important; }
+.visual-workspace[hidden], .visual-workspace [hidden], .visual-workspace .hidden { display: none !important; }
 .visual-workspace-suppressed { display: none !important; }
-.visual-workspace { display: grid; gap: 18px; }
-.visual-workspace-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.visual-workspace { display: grid; gap: 24px; }
+.visual-workspace-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 4px 2px 2px; }
 .visual-workspace-head h1 { margin: 2px 0 4px; }
 .visual-workspace-head-copy { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .visual-mode-badge, .project-type-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 9px; border-radius: 999px; background: #e8f0f5; color: #31546e; font-size: 12px; font-weight: 700; }
-.visual-workspace-layout { display: grid; grid-template-columns: minmax(240px, 0.34fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.visual-workspace-layout { display: grid; grid-template-columns: minmax(250px, 290px) minmax(0, 1fr); gap: 20px; align-items: start; }
 .visual-entry-list-panel, .visual-editor-panel { min-width: 0; }
+.visual-entry-list-panel { align-self: start; }
+.visual-editor-panel { padding: clamp(20px, 2vw, 30px); }
 .visual-entry-list { display: grid; gap: 8px; margin-top: 14px; }
 .visual-entry-list button { width: 100%; display: grid; gap: 3px; padding: 12px; text-align: left; border: 1px solid var(--line, #d9e1e6); border-radius: 12px; background: #fff; color: inherit; cursor: pointer; }
 .visual-entry-list button:hover { border-color: #8da9bd; background: #f7fafc; }
@@ -16,14 +18,14 @@
 .visual-editor-empty { min-height: 390px; display: grid; place-items: center; text-align: center; padding: 44px; }
 .visual-editor-empty > div { max-width: 420px; }
 .visual-editor-empty h2 { margin: 12px 0 8px; }
-.visual-editor-form { display: grid; gap: 18px; }
-.visual-editor-toolbar { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; }
-.visual-editor-status { display: flex; gap: 10px; align-items: center; }
-.visual-editor-status select { width: auto; min-width: 110px; }
+.visual-editor-form { display: grid; gap: 22px; }
+.visual-editor-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(130px, 160px); gap: 14px; align-items: end; }
+.visual-editor-status { display: grid; gap: 7px; align-items: stretch; }
+.visual-editor-status select { width: 100%; min-width: 0; }
 .visual-field { display: grid; gap: 7px; }
 .visual-field > span { font-weight: 700; font-size: 13px; color: #304555; }
-.visual-body-input { min-height: 220px; resize: vertical; font: inherit; line-height: 1.75; }
-.visual-image-section { display: grid; gap: 12px; }
+.visual-body-input { min-height: 200px; resize: vertical; font: inherit; line-height: 1.75; }
+.visual-image-section { display: grid; gap: 14px; padding-top: 2px; }
 .visual-image-section-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
 .visual-image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
 .visual-image-card { position: relative; display: grid; gap: 8px; padding: 9px; border: 1px solid var(--line, #d9e1e6); border-radius: 13px; background: #fff; cursor: grab; }
@@ -61,4 +63,15 @@
   .visual-entry-list { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
   .visual-type-options { grid-template-columns: 1fr; }
   .visual-workspace-head { align-items: flex-start; }
+  .visual-editor-toolbar { grid-template-columns: 1fr; }
+  .visual-editor-status { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .visual-workspace { gap: 18px; }
+  .visual-workspace-head { display: grid; gap: 14px; }
+  .visual-workspace-head .button { width: 100%; }
+  .visual-entry-list { grid-template-columns: 1fr; }
+  .visual-editor-panel { padding: 18px; }
+  .visual-image-section-head { align-items: flex-start; flex-direction: column; }
+  .visual-image-section-head .button { width: 100%; }
 }
