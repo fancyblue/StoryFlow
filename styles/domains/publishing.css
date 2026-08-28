@@ -1008,3 +1008,23 @@ button.publish-delete-btn{
 .visual-upload-thumb .missing{color:#a24d4d}
 .visual-upload-empty{display:block!important;color:var(--muted)}
 .visual-publish-copy{white-space:pre-wrap}
+
+.platform-preview-visual-extras{
+  display:grid;
+  gap:8px;
+  margin:12px 0;
+  padding:12px;
+  border:1px solid #dbe7ef;
+  border-radius:10px;
+  background:#f8fbfd;
+}
+.platform-preview-visual-extras > article{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.platform-preview-visual-extras > article > div{display:grid;gap:3px;min-width:0}
+.platform-preview-visual-extras span{color:#5f7789;font-size:11px;font-weight:850}
+.platform-preview-visual-extras p{margin:0;color:#294d69;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.platform-preview-visual-extras > small{color:var(--muted);font-size:10.5px}
