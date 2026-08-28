@@ -201,8 +201,11 @@
     return project;
   }
 
-  function startNewWorkFlow({ source = null } = {}) {
+  function startNewWorkFlow({ source = null, contentMode = null } = {}) {
     closeProjectQuickSwitch();
+    if (!source && !contentMode && window.StoryFlowVisualWorkspace?.openTypeChooser) {
+      return window.StoryFlowVisualWorkspace.openTypeChooser();
+    }
     pendingNewWork = { source, returnView: currentView };
     const onboarding = window.StoryFlowSourceOnboarding;
     let opened = false;

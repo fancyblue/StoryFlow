@@ -50,7 +50,7 @@ function loadState() {
   for (const key of [STORAGE_KEY, 'storyflow.state.v3', 'storyflow.state.v2', 'storyflow.state.v1']) {
     try {
       const parsed = JSON.parse(localStorage.getItem(key));
-      if (parsed?.chapters?.length) {
+      if (StoryFlowContentModel.isProjectState(parsed)) {
         parsed.contentMode = StoryFlowContentModel.normalizeContentMode(parsed.contentMode);
         parsed.visualEntries = Array.isArray(parsed.visualEntries)
           ? parsed.visualEntries.map(StoryFlowContentModel.normalizeVisualEntry) : [];
@@ -428,6 +428,12 @@ function renderSource() {
 }
 
 function renderAll() {
+  if (state.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL) {
+    els.projectTitle.value = state.projectTitle;
+    window.StoryFlowVisualWorkspace?.render?.();
+    return;
+  }
+  window.StoryFlowVisualWorkspace?.hide?.();
   const chapter = activeChapter();
   els.projectTitle.value = state.projectTitle;
   els.chapterTitle.value = chapter.title;

@@ -24,12 +24,18 @@
     '發布標題已更新',
     '文章圖片已更新',
     '後記已更新',
-    '後記輸出設定已更新'
+    '後記輸出設定已更新',
+    '圖文系列已建立',
+    '圖文已新增',
+    '圖文已保存',
+    '圖文已刪除',
+    '圖文圖片已更新'
   ]);
 
   function normalizeLoadedState(next) {
-    if (!next?.chapters?.length) return false;
-    state = next;
+    if (!StoryFlowContentModel.isProjectState(next)) return false;
+    state = StoryFlowContentModel.normalizeProject(next);
+    if (state.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL) return true;
     state.chapters.forEach(chapter => {
       chapter.parts ||= [];
       chapter.parts.forEach(normalizePublishingPart);
@@ -122,7 +128,7 @@
       if (loaded) {
         suggestion = null;
         renderAll();
-        if (activeChapter()?.draft) suggestNextPart();
+        if (state.contentMode === StoryFlowContentModel.CONTENT_MODES.LONGFORM && activeChapter()?.draft) suggestNextPart();
         window.StoryFlowRenderProjects?.();
         window.StoryFlowProjectSourceSync?.syncUi?.();
         window.dispatchEvent(new CustomEvent('storyflow:workspace-loaded', {

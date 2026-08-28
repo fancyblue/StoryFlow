@@ -138,6 +138,9 @@
   font-weight:850!important;
   box-shadow:none!important;
 }
+.project-library-card .project-publish-btn[hidden]{
+  display:none!important;
+}
 .project-library-card .project-library-actions > .project-manage-chapters-btn:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible{
   border-color:#5c99c2!important;

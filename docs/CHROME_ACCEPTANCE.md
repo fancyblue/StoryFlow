@@ -62,6 +62,10 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Open “編輯章節”, record its dialog size, then open “手動新增文章”. Confirm both use the same large editor, the textarea fills the available height, and the footer meets the card bottom without a blank region below the buttons.
 - [ ] In Works, confirm every “管理章節” is the same emphasized light-blue 40 px / 14 px action. “工作台／開啟” stays outlined, “管理發布” stays paler, and only the card border and “目前作品” badge identify the current work.
 - [ ] With no works, confirm only “建立第一個作品” is shown as the solid action. After creating a work, confirm the header “＋ 新作品” returns as an outlined 40 px / 14 px action.
+- [ ] Create a “圖文系列” with a first entry. Confirm Works shows a `圖文` label, Workspace replaces the longform/Smart Split layout, and Publishing does not expose the visual entry before Phase 2.
+- [ ] In the visual workspace, edit title/body/status, import duplicate-named JPG/PNG/WebP/GIF images, set cover/alt/caption, reorder with both drag and arrow controls, reload, and confirm text plus image order remain stable.
+- [ ] Delete a visual entry and confirm Recovery is created, `content.md`/`metadata.json` are removed, and private `assets/` remains. Explicitly delete one image file and confirm it first appears in `Recovery/Assets/`.
+- [ ] On a phone-sized touch session in default read-only mode, confirm visual content and preview remain readable while entry creation, fields, import, ordering, removal and save controls are blocked.
 - [ ] In Publishing, confirm each row's “預覽預設設定／管理發布／⋯” actions align to the same 40 px height and management text uses 14 px. Expanded “收合發布” uses a stronger soft selection rather than a solid primary fill.
 - [ ] With no confirmed article, confirm the workspace publishing summary does not show “前往發布”. With unfinished confirmed content it becomes a solid action; when all publishing is complete it becomes the outlined “查看發布紀錄”.
 - [ ] Confirm Publishing's empty-state return action remains the single solid 40 px / 14 px CTA, while publishing filters remain compact pills.

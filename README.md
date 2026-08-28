@@ -2,7 +2,9 @@
 
 StoryFlow 是一個以瀏覽器執行的長篇內容切篇與多平台發布工作台。程式可以部署在 GitHub Pages；文章、工作進度與個人 Google 整合設定保存在使用者自行選擇的 StoryFlow 資料夾。
 
-> 未來圖文內容維護模式的產品、Phase 狀態與技術決策見 [`docs/VISUAL_CONTENT_MODE_DESIGN.md`](docs/VISUAL_CONTENT_MODE_DESIGN.md)。目前已完成不開放 UI 的 Phase 0 基礎；網站尚未提供建立或編輯圖文的入口。
+> 圖文內容維護模式的產品、Phase 狀態與技術決策見 [`docs/VISUAL_CONTENT_MODE_DESIGN.md`](docs/VISUAL_CONTENT_MODE_DESIGN.md)。Phase 1 圖文 MVP 已開放：建立作品時可選擇「圖文系列」，並維護文字、私人圖片、封面、圖說、替代文字、順序與基本預覽；整合發布仍屬 Phase 2。
+
+建立圖文系列後，工作台會切換成獨立的圖文編輯介面，不顯示 Smart Split。每則圖文使用固定 ID 儲存在 `Works/<作品>/Visual/<entry-id>/`，改名不會移動圖片；刪除圖文前會建立 Recovery，預設保留私人 assets 圖檔。手機唯讀模式可以閱讀與預覽，但不允許新增、匯入、排序、刪除或保存。
 
 SMART SPLIT 預設只在原稿的場景分隔點提出切篇建議，並可用「少一個場景／多一個場景」快速調整。遇到單一場景過長時，可在「切篇確認」開啟「手動微調」，拖曳「這一篇結束」或直接點選任一段落間的位置；切點只吸附在段落之間，會即時更新本篇與後續字數，而且不會改寫原稿。手動微調只作用於目前尚未確認的文章，不會回溯重切已建立或已發布的文章。
 
