@@ -17,9 +17,13 @@
   }
 
   function isVisualPart(part) {
-    return state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL
+    const belongsToActiveVisualProject = state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL
       && Array.isArray(state.visualEntries)
       && state.visualEntries.some(entry => entry === part || (entry.id && entry.id === part?.id));
+    const isVisualSnapshot = part && typeof part.body === 'string'
+      && !Object.prototype.hasOwnProperty.call(part, 'raw')
+      && ['draft', 'ready'].includes(part.status);
+    return belongsToActiveVisualProject || isVisualSnapshot;
   }
 
   function normalizePublishItem(part) {
