@@ -616,6 +616,7 @@ test('canceling a new manual work does not create an empty project', async ({ pa
   expect(openTransform).not.toBe(closedTransform);
 
   await page.locator('#workspaceQuickNewProject').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
   await page.locator('#sourceManualBtn').click();
   await expect(page.locator('#manualProjectTitleField')).toBeVisible();
   await page.locator('#closeManualSourceDialog').click();
@@ -1457,7 +1458,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await page.locator('.projects-empty-state .button').click();
   const typeDialog = page.getByRole('dialog', { name: '選擇作品類型' });
   await expect(typeDialog).toBeVisible();
-  await typeDialog.getByRole('button', { name: /圖文系列/ }).click();
+  await typeDialog.locator('#chooseVisualType').click();
   await typeDialog.locator('#visualSeriesTitle').fill('夜色圖文集');
   await typeDialog.locator('#visualFirstEntryTitle').fill('月下預告');
   await typeDialog.getByRole('button', { name: '建立圖文系列', exact: true }).click();

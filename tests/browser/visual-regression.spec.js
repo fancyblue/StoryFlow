@@ -10,6 +10,8 @@ async function openManualWork(page) {
   await page.goto('/?visual-regression=1');
   await page.addStyleTag({ content: visualCss });
   await page.locator('#createProjectManually').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
+  await page.locator('#sourceManualBtn').click();
   await page.locator('#manualProjectTitle').fill('視覺測試');
   await page.locator('#manualSourceTitle').fill('08、印紋');
   await page.locator('#manualSourceText').fill([
