@@ -87,18 +87,24 @@
       const active = project.id === activeId;
       const card = document.createElement('article');
       card.className = `project-library-card ${active ? 'active' : ''}`;
+      card.dataset.projectId = project.id;
+      card.dataset.contentMode = project.contentMode || 'longform';
+      const visual = project.contentMode === 'visual';
       const sourceLabel = project.sourceDocId ? 'Google Docs' : '手動／尚未綁定來源';
       card.innerHTML = `
         <div class="project-library-main">
           <div class="project-library-title-row">
             <strong>${escapeHtml(project.title || '未命名作品')}</strong>
+            <span class="project-type-badge">${visual ? '圖文' : '長文'}</span>
             ${active ? '<span class="project-current-badge">目前作品</span>' : ''}
           </div>
-          <span class="project-library-meta">${Number(project.chapterCount || 0).toLocaleString()} 個章節 · ${sourceLabel}</span>
+          <span class="project-library-meta">${visual
+            ? `${Number(project.visualEntryCount || 0).toLocaleString()} 則圖文`
+            : `${Number(project.chapterCount || 0).toLocaleString()} 個章節 · ${sourceLabel}`}</span>
         </div>
         <div class="project-library-actions">
-          <button class="button tiny ghost project-open-btn" type="button">${active ? '回工作台' : '切換並開啟'}</button>
-          <button class="button tiny ghost project-publish-btn" type="button">發布</button>
+          <button class="button tiny ghost project-open-btn" type="button">${visual ? '管理圖文' : active ? '回工作台' : '切換並開啟'}</button>
+          <button class="button tiny ghost project-publish-btn" type="button"${visual ? ' hidden' : ''}>發布</button>
           <button class="button tiny ghost project-library-delete" type="button">刪除</button>
         </div>`;
 

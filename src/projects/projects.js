@@ -10,10 +10,23 @@
   }
 
   function normalizeProjectState(candidate) {
-    const source = candidate?.chapters?.length ? candidate : clone(defaultState);
+    const requestedMode = StoryFlowContentModel.normalizeContentMode(candidate?.contentMode);
+    const source = requestedMode === StoryFlowContentModel.CONTENT_MODES.VISUAL
+      ? candidate
+      : candidate?.chapters?.length ? candidate : clone(defaultState);
     const next = StoryFlowContentModel.normalizeProject(source);
     next.projectTitle ||= '未命名作品';
     next.chapters ||= [];
+    next.visualEntries ||= [];
+    if (next.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL) {
+      next.chapters = [];
+      next.activeChapterId = null;
+      next.formatting ||= clone(state.formatting || defaultState.formatting);
+      next.sceneMarker ||= state.sceneMarker || defaultState.sceneMarker;
+      next.minChars ||= state.minChars || defaultState.minChars;
+      next.maxChars ||= state.maxChars || defaultState.maxChars;
+      return next;
+    }
     next.chapters.forEach(chapter => {
       chapter.parts ||= [];
       chapter.parts.forEach(normalizePublishingPart);
@@ -35,6 +48,10 @@
   }
 
   function isBlank(candidate) {
+    if (candidate?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL) {
+      return !(candidate.visualEntries || []).length
+        && (!candidate.projectTitle || candidate.projectTitle === '未命名作品');
+    }
     if (!candidate?.chapters?.length || candidate.chapters.length !== 1) return false;
     const chapter = candidate.chapters[0];
     return !chapter?.draft && !(chapter?.parts || []).length && !chapter?.source && (!candidate.projectTitle || candidate.projectTitle === '未命名作品');
@@ -87,6 +104,8 @@
       title: record.title || record.state?.projectTitle || '未命名作品',
       sourceDocId: record.sourceDocId || deriveSourceDocId(record.state),
       chapterCount: record.state?.chapters?.length || 0,
+      visualEntryCount: record.state?.visualEntries?.length || 0,
+      contentMode: StoryFlowContentModel.normalizeContentMode(record.state?.contentMode),
       placeholder: record.placeholder === true,
       updatedAt: record.updatedAt || null,
       active: record.id === store.activeProjectId
@@ -107,7 +126,7 @@
     const saved = await baseLoadWorkspace();
     if (saved?.schemaVersion >= WORKSPACE_SCHEMA_VERSION && Array.isArray(saved.projects) && saved.projects.length) {
       const projects = saved.projects
-        .filter(project => project?.state?.chapters?.length)
+        .filter(project => StoryFlowContentModel.isProjectState(project?.state))
         .map(project => makeRecord(project.state, project));
       if (projects.length) {
         store = {
@@ -121,7 +140,7 @@
       }
     }
 
-    if (saved?.state?.chapters?.length) {
+    if (StoryFlowContentModel.isProjectState(saved?.state)) {
       // A legacy workspace that was actually saved is a real work, even if its first
       // article is still empty. This migrates old zero-content works correctly.
       const record = makeRecord(saved.state, { placeholder: false });
@@ -132,7 +151,7 @@
   };
 
   StoryFlowIntegrations.saveWorkspace = async function saveMultiProjectWorkspace(workspace) {
-    const currentState = workspace?.state?.chapters?.length ? workspace.state : state;
+    const currentState = StoryFlowContentModel.isProjectState(workspace?.state) ? workspace.state : state;
     syncActiveRecord(currentState);
     const payload = {
       schemaVersion: WORKSPACE_SCHEMA_VERSION,
@@ -183,18 +202,24 @@
     suggestion = null;
     syncActiveRecord();
     renderAll();
-    if (activeChapter()?.draft) suggestNextPart();
+    if (state.contentMode === StoryFlowContentModel.CONTENT_MODES.LONGFORM && activeChapter()?.draft) suggestNextPart();
     saveState('已切換作品');
     dispatchChanged();
     if (!quiet) notify(`已切換作品：${state.projectTitle}`);
     return true;
   }
 
-  function createProject({ title = '未命名作品', sourceDocId = null } = {}, { quiet = false } = {}) {
+  function createProject({ title = '未命名作品', sourceDocId = null, contentMode = 'longform', visualEntry = null } = {}, { quiet = false } = {}) {
     ensureStore();
     syncActiveRecord();
     const next = clone(defaultState);
     next.projectTitle = title || '未命名作品';
+    next.contentMode = StoryFlowContentModel.normalizeContentMode(contentMode);
+    if (next.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL) {
+      next.chapters = [];
+      next.activeChapterId = null;
+      next.visualEntries = visualEntry ? [StoryFlowContentModel.normalizeVisualEntry(visualEntry)] : [];
+    }
     next.formatting = clone(state.formatting);
     next.sceneMarker = state.sceneMarker;
     next.minChars = state.minChars;
@@ -231,8 +256,13 @@
     const target = store.projects[index];
     const title = target.title || target.state?.projectTitle || '未命名作品';
     const hasParts = (target.state?.chapters || []).some(chapter => (chapter.parts || []).length);
-    const extra = hasParts ? '\n\n這個作品仍有已確認文章；若連輸出的 Markdown 也不要，請先到「發布」逐篇刪除。' : '';
-    if (!confirm(`刪除作品「${title}」？\n\n會從 StoryFlow 工作區移除這個作品、章節、切篇與發布進度。Google Docs 原稿不會刪除。${extra}`)) return false;
+    const visualCount = target.state?.visualEntries?.length || 0;
+    const extra = hasParts
+      ? '\n\n這個作品仍有已確認文章；若連輸出的 Markdown 也不要，請先到「發布」逐篇刪除。'
+      : visualCount ? `\n\n這個圖文系列仍有 ${visualCount} 則圖文；私人 assets 圖檔會保留。` : '';
+    const scope = target.state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL
+      ? '圖文與編輯進度' : '章節、切篇與發布進度';
+    if (!confirm(`刪除作品「${title}」？\n\n會從 StoryFlow 工作區移除這個作品的${scope}。Google Docs 原稿與私人圖片檔不會刪除。${extra}`)) return false;
 
     try {
       const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
@@ -263,7 +293,7 @@
     suggestion = null;
     syncActiveRecord();
     renderAll();
-    if (activeChapter()?.draft) suggestNextPart();
+    if (state.contentMode === StoryFlowContentModel.CONTENT_MODES.LONGFORM && activeChapter()?.draft) suggestNextPart();
     saveState('作品已刪除');
     dispatchChanged();
     notify(`已刪除作品：${title}`);
@@ -356,6 +386,9 @@
   }
 
   function hasMeaningfulCurrentProject() {
+    if (state.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL) {
+      return Boolean((state.visualEntries || []).length || state.projectTitle !== '未命名作品');
+    }
     return Boolean((state.chapters || []).some(chapter => chapter?.draft || chapter?.source || (chapter?.parts || []).length));
   }
 

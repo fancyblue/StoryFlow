@@ -125,6 +125,8 @@ test('dialogs expose their visible heading and close control semantics', async (
   await page.getByRole('button', { name: '工作台', exact: true }).click();
 
   await page.getByRole('button', { name: /手動建立/ }).click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).getByRole('button', { name: /長文作品/ }).click();
+  await page.locator('#sourceManualBtn').click();
   const manualDialog = page.getByRole('dialog', { name: '建立手動作品' });
   await expect(manualDialog).toBeVisible();
   await expect(manualDialog.getByRole('button', { name: '關閉', exact: true })).toHaveText('×');
@@ -228,9 +230,11 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(52);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(53);
 
   await page.locator('#createProjectManually').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).getByRole('button', { name: /長文作品/ }).click();
+  await page.locator('#sourceManualBtn').click();
   await expect(page.locator('#manualSourceDialog')).toBeVisible();
   await page.locator('#manualProjectTitle').fill('自動測試作品');
   await page.locator('#manualSourceTitle').fill('自動測試章節');
@@ -590,6 +594,8 @@ test('canceling a new manual work does not create an empty project', async ({ pa
   await page.goto('/');
 
   await page.locator('#createProjectManually').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).getByRole('button', { name: /長文作品/ }).click();
+  await page.locator('#sourceManualBtn').click();
   await page.locator('#manualProjectTitle').fill('原作品');
   await page.locator('#manualSourceTitle').fill('第一章');
   await page.locator('#manualSourceText').fill('原作品的第一段內容。');
@@ -1409,6 +1415,111 @@ test('visual content phase zero contracts pass', async ({ page }) => {
   await page.goto('/tests/visual-content-model-core.html');
   await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
   await expect(page.getByText('ALL PASS')).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
+test('visual content phase one creates, edits, stores, previews, orders, and removes entries safely', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/');
+  await page.evaluate(() => {
+    window.__visualFiles = new Map();
+    window.__savedVisualEntry = null;
+    window.__removedVisualEntries = [];
+    window.__visualRecoveryReasons = [];
+    StoryFlowIntegrations.restoreOutputDirectory = async () => ({ connected: true, name: 'StoryFlow-test' });
+    StoryFlowIntegrations.saveWorkspace = async () => 'StoryFlow-test/workspace.json';
+    StoryFlowIntegrations.createWorkspaceRecoverySnapshot = async reason => {
+      window.__visualRecoveryReasons.push(reason);
+      return { artifactPath: `StoryFlow-test/Recovery/${reason}.json` };
+    };
+    StoryFlowIntegrations.importVisualImages = async ({ files }) => Array.from(files).map((file, index) => {
+      const storedName = index ? `插圖-${index + 1}.png` : '插圖.png';
+      window.__visualFiles.set(storedName, file);
+      return { id: crypto.randomUUID(), storedName, relativePath: `./assets/${storedName}`, mimeType: file.type, bytes: file.size, large: false };
+    });
+    StoryFlowIntegrations.getVisualImageFile = async ({ storedName }) => {
+      const file = window.__visualFiles.get(storedName);
+      if (!file) throw new DOMException(`${storedName} missing`, 'NotFoundError');
+      return file;
+    };
+    StoryFlowIntegrations.saveVisualEntry = async payload => {
+      window.__savedVisualEntry = structuredClone(payload);
+      return `StoryFlow-test/Works/${payload.projectTitle}/Visual/${payload.entry.id}`;
+    };
+    StoryFlowIntegrations.removeVisualEntryFiles = async payload => {
+      window.__removedVisualEntries.push(payload.entryId);
+      return `StoryFlow-test/Recovery/${payload.entryId}.json`;
+    };
+  });
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await page.locator('.projects-empty-state .button').click();
+  const typeDialog = page.getByRole('dialog', { name: '選擇作品類型' });
+  await expect(typeDialog).toBeVisible();
+  await typeDialog.getByRole('button', { name: /圖文系列/ }).click();
+  await typeDialog.locator('#visualSeriesTitle').fill('夜色圖文集');
+  await typeDialog.locator('#visualFirstEntryTitle').fill('月下預告');
+  await typeDialog.getByRole('button', { name: '建立圖文系列', exact: true }).click();
+
+  await expect(page.locator('#visualWorkspace')).toBeVisible();
+  await expect(page.locator('.workspace-grid')).toBeHidden();
+  await expect(page.locator('#visualProjectTitle')).toHaveText('夜色圖文集');
+  await expect(page.locator('#visualEntryList')).toContainText('月下預告');
+  await page.locator('#visualEntryBody').fill('月光落在城牆上。\n\n第二段圖文內容。');
+  await page.locator('#visualEntryStatus').selectOption('ready');
+
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z8xQAAAAASUVORK5CYII=', 'base64');
+  await page.locator('#visualImageInput').setInputFiles([
+    { name: '插圖.png', mimeType: 'image/png', buffer: png },
+    { name: '插圖.png', mimeType: 'image/png', buffer: png }
+  ]);
+  await expect(page.locator('.visual-image-card')).toHaveCount(2);
+  await expect(page.locator('.visual-image-card').first()).toHaveAttribute('draggable', 'true');
+
+  await page.locator('.visual-image-card').first().getByRole('button', { name: '編輯', exact: true }).click();
+  const imageDialog = page.getByRole('dialog', { name: '編輯圖片資訊' });
+  await imageDialog.locator('#visualImageAlt').fill('月光下的城堡');
+  await imageDialog.locator('#visualImageCaption').fill('夜色系列封面');
+  await imageDialog.locator('#visualImageCover').check();
+  await imageDialog.getByRole('button', { name: '保存圖片資訊', exact: true }).click();
+  await expect(page.locator('.visual-image-card').first()).toContainText('月光下的城堡');
+  await expect(page.locator('.visual-image-card').first()).toContainText('封面');
+
+  await page.locator('.visual-image-card').nth(1).getByRole('button', { name: '向前移動', exact: true }).click();
+  await page.locator('#visualSaveEntryBtn').click();
+  await expect.poll(() => page.evaluate(() => window.__savedVisualEntry?.entry?.title)).toBe('月下預告');
+  await expect(page.locator('#visualPreviewBody')).toContainText('第二段圖文內容');
+
+  const stored = await page.evaluate(() => ({
+    mode: state.contentMode,
+    chapters: state.chapters.length,
+    entryCount: state.visualEntries.length,
+    status: state.visualEntries[0].status,
+    order: state.visualEntries[0].images.map(image => image.storedName),
+    cover: state.visualEntries[0].coverImageId,
+    firstImageId: state.visualEntries[0].images[0].id
+  }));
+  expect(stored).toMatchObject({ mode: 'visual', chapters: 0, entryCount: 1, status: 'ready', order: ['插圖-2.png', '插圖.png'] });
+  expect(stored.cover).not.toBe(stored.firstImageId);
+
+  await page.locator('#visualNewEntryBtn').click();
+  const entryDialog = page.getByRole('dialog', { name: '新增圖文' });
+  await entryDialog.locator('#newVisualEntryTitle').fill('準備刪除的草稿');
+  await entryDialog.getByRole('button', { name: '新增圖文', exact: true }).click();
+  await expect(page.locator('#visualEntryList [data-entry-id]')).toHaveCount(2);
+  page.once('dialog', dialog => dialog.accept());
+  await page.locator('#visualDeleteEntryBtn').click();
+  await expect(page.locator('#visualEntryList [data-entry-id]')).toHaveCount(1);
+  const deletion = await page.evaluate(() => ({ removed: window.__removedVisualEntries.length, reasons: window.__visualRecoveryReasons }));
+  expect(deletion.removed).toBe(1);
+  expect(deletion.reasons).toContain('before-visual-entry-delete');
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  const card = page.locator('.project-library-card', { hasText: '夜色圖文集' });
+  await expect(card.locator('.project-type-badge')).toHaveText('圖文');
+  await expect(card.getByRole('button', { name: '管理圖文', exact: true })).toBeVisible();
+  await expect(card.locator('.project-publish-btn')).toBeHidden();
   expect(pageErrors).toEqual([]);
 });
 

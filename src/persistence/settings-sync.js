@@ -216,8 +216,12 @@
 
   function applySavedWorkspace(saved) {
     const next = saved?.state;
-    if (!next?.chapters?.length) return false;
-    state = next;
+    if (!StoryFlowContentModel.isProjectState(next)) return false;
+    state = StoryFlowContentModel.normalizeProject(next);
+    if (state.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL) {
+      ensurePlatformConfigs();
+      return true;
+    }
     state.chapters.forEach(chapter => {
       chapter.parts ||= [];
       chapter.parts.forEach(normalizePublishingPart);
@@ -242,7 +246,7 @@
       const hasWorkspace = applySavedWorkspace(savedWorkspace);
       refreshPlatformUI();
       renderAll();
-      if (activeChapter()?.draft) suggestNextPart();
+      if (state.contentMode === StoryFlowContentModel.CONTENT_MODES.LONGFORM && activeChapter()?.draft) suggestNextPart();
       els.pickerApiKeyInput.value = StoryFlowIntegrations.pickerApiKey();
       const clientInput = document.getElementById('googleClientIdInput');
       if (clientInput) clientInput.value = googleClientId();

@@ -57,6 +57,7 @@
     try { delete window.indexedDB; } catch (_) {}
     window.showDirectoryPicker = async () => mockRoot;
   </script>
+  <script src="../src/projects/content-model.js"></script>
   <script src="../src/persistence/integrations.js"></script>
   <script>
     (async () => {
@@ -98,6 +99,39 @@
         assert(removed?.name === 'NotFoundError', 'Recovery 完成後才移除原圖片');
         const recovery = mockRoot.directories.get('Recovery')?.directories.get('Assets');
         assert(recovery?.files.size === 1, 'Recovery 內保留一份可恢復圖片');
+
+        const visualContext = { projectTitle: '圖文系列', entryId: 'visual-fixed-id' };
+        const visualFile = new File([new Uint8Array([7, 8, 9, 10])], '圖文封面.webp', { type: 'image/webp' });
+        const visualImage = (await StoryFlowIntegrations.importVisualImages({ ...visualContext, files: [visualFile] }))[0];
+        assert(visualImage.relativePath === './assets/圖文封面.webp' && visualImage.bytes === 4,
+          '圖文圖片使用固定項目下的 assets 相對路徑');
+        const now = new Date().toISOString();
+        const visualEntry = {
+          id: visualContext.entryId, title: '月下預告', body: '圖文正文。', status: 'ready',
+          coverImageId: visualImage.id, images: [visualImage], createdAt: now, updatedAt: now
+        };
+        await StoryFlowIntegrations.saveVisualEntry({ projectTitle: visualContext.projectTitle, entry: visualEntry });
+        const visualDirectory = mockRoot.directories.get('Works')?.directories.get('圖文系列')
+          ?.directories.get('Visual')?.directories.get('visual-fixed-id');
+        assert(String(visualDirectory?.files.get('content.md')).includes('# 月下預告'),
+          '圖文正文輸出到固定 ID 路徑的 content.md');
+        assert(JSON.parse(String(visualDirectory?.files.get('metadata.json'))).coverImageId === visualImage.id,
+          '圖文 metadata 保存封面與圖片資訊');
+        const loadedVisual = await StoryFlowIntegrations.getVisualImageFile({ ...visualContext, storedName: visualImage.storedName });
+        assert(loadedVisual.size === 4, '可從圖文私人 assets 讀回圖片');
+
+        const visualRecovery = await StoryFlowIntegrations.removeVisualEntryFiles({ ...visualContext, entry: visualEntry });
+        assert(visualRecovery.includes('/Recovery/workspace.visual-entry-visual-fixed-id-'),
+          '刪除圖文文字輸出前建立獨立 Recovery artifact');
+        assert(!visualDirectory.files.has('content.md') && !visualDirectory.files.has('metadata.json'),
+          'Recovery 完成後移除圖文文字與 metadata');
+        assert(visualDirectory.directories.get('assets')?.files.has('圖文封面.webp'),
+          '刪除圖文時預設保留私人 assets');
+
+        const visualImageRecovery = await StoryFlowIntegrations.removeVisualImage({ ...visualContext, storedName: visualImage.storedName });
+        assert(visualImageRecovery.includes('/Recovery/Assets/'), '明確刪除圖文圖片時先備份到 Recovery/Assets');
+        assert(!visualDirectory.directories.get('assets')?.files.has('圖文封面.webp'),
+          '圖文圖片 Recovery 完成後才刪除原檔');
 
         result.textContent = `${checks.join('\n')}\n\nALL PASS`;
         document.body.dataset.testStatus = 'pass';

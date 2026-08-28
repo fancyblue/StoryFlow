@@ -229,6 +229,124 @@ const StoryFlowIntegrations = (() => {
       : existingDirectory(assets, partId);
   }
 
+  async function visualEntryDirectory({ projectTitle, entryId }, create = false) {
+    if (!entryId) throw new Error('這則圖文缺少固定 ID，無法建立私人檔案路徑。');
+    const works = create
+      ? await getDirectory(outputDirectoryHandle, 'Works')
+      : await existingDirectory(outputDirectoryHandle, 'Works');
+    const work = create
+      ? await getDirectory(works, projectTitle)
+      : await existingDirectory(works, projectTitle);
+    const visual = create
+      ? await getDirectory(work, 'Visual')
+      : await existingDirectory(work, 'Visual');
+    return create
+      ? getDirectory(visual, entryId)
+      : existingDirectory(visual, entryId);
+  }
+
+  async function visualAssetsDirectory({ projectTitle, entryId }, create = false) {
+    const entry = await visualEntryDirectory({ projectTitle, entryId }, create);
+    return create ? getDirectory(entry, 'assets') : existingDirectory(entry, 'assets');
+  }
+
+  async function importVisualImages({ projectTitle, entryId, files }) {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    const candidates = Array.from(files || []);
+    if (!candidates.length) return [];
+    const directory = await visualAssetsDirectory({ projectTitle, entryId }, true);
+    const imported = [];
+    for (const file of candidates) {
+      if (!imageFileSupported(file)) throw new Error(`「${file?.name || '未命名檔案'}」不是支援的圖片格式。`);
+      const storedName = await uniqueFilename(directory, file.name || 'image');
+      await writeBinaryFile(directory, storedName, file);
+      imported.push({
+        id: crypto.randomUUID(),
+        storedName,
+        relativePath: `./assets/${storedName}`,
+        mimeType: file.type || '',
+        bytes: Number(file.size || 0),
+        width: 0,
+        height: 0,
+        alt: '',
+        caption: '',
+        placement: 'body',
+        createdAt: new Date().toISOString(),
+        large: Number(file.size || 0) > LARGE_IMAGE_BYTES
+      });
+    }
+    return imported;
+  }
+
+  async function getVisualImageFile({ projectTitle, entryId, storedName }) {
+    await hydrateOutputDirectoryHandle();
+    if (!outputDirectoryHandle) throw new Error('StoryFlow 尚未連接資料夾。');
+    const directory = await visualAssetsDirectory({ projectTitle, entryId }, false);
+    const fileHandle = await directory.getFileHandle(safeName(storedName), { create: false });
+    return fileHandle.getFile();
+  }
+
+  async function removeVisualImage({ projectTitle, entryId, storedName }) {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    const directory = await visualAssetsDirectory({ projectTitle, entryId }, false);
+    const fileHandle = await directory.getFileHandle(safeName(storedName), { create: false });
+    const file = await fileHandle.getFile();
+    const recovery = await getDirectory(await getDirectory(outputDirectoryHandle, RECOVERY_DIRECTORY), 'Assets');
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const recoveryName = `${stamp}-${safeName(entryId)}-${imageFilename(storedName)}`;
+    await writeBinaryFile(recovery, recoveryName, file);
+    await directory.removeEntry(safeName(storedName));
+    return `${outputDirectoryHandle.name}/${RECOVERY_DIRECTORY}/Assets/${recoveryName}`;
+  }
+
+  async function saveVisualEntry({ projectTitle, entry }) {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    const normalized = window.StoryFlowContentModel.normalizeVisualEntry(entry);
+    const directory = await visualEntryDirectory({ projectTitle, entryId: normalized.id }, true);
+    const content = `# ${normalized.title}\n\n${normalized.body}`.trimEnd() + '\n';
+    const metadata = {
+      schemaVersion: 1,
+      id: normalized.id,
+      title: normalized.title,
+      status: normalized.status,
+      coverImageId: normalized.coverImageId,
+      images: normalized.images,
+      createdAt: normalized.createdAt,
+      updatedAt: normalized.updatedAt
+    };
+    await writeTextFile(directory, 'content.md', content);
+    await writeTextFile(directory, 'metadata.json', JSON.stringify(metadata, null, 2));
+    return `${outputDirectoryHandle.name}/Works/${safeName(projectTitle)}/Visual/${safeName(normalized.id)}`;
+  }
+
+  async function removeVisualEntryFiles({ projectTitle, entryId, entry }) {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    let directory;
+    try {
+      directory = await visualEntryDirectory({ projectTitle, entryId }, false);
+    } catch (error) {
+      if (error?.name === 'NotFoundError') return null;
+      throw error;
+    }
+    const content = await readTextFile(directory, 'content.md');
+    const metadata = await readTextFile(directory, 'metadata.json');
+    const filename = recoveryFilename(`visual-entry-${safeName(entryId)}`);
+    const artifactPath = await writeRecoveryArtifact(filename, JSON.stringify({
+      schemaVersion: 1,
+      createdAt: new Date().toISOString(),
+      reason: 'before-visual-entry-delete',
+      projectTitle,
+      entry: entry || null,
+      content,
+      metadata
+    }, null, 2));
+    for (const filename of ['content.md', 'metadata.json']) {
+      try { await directory.removeEntry(filename); }
+      catch (error) { if (error?.name !== 'NotFoundError') throw error; }
+    }
+    return artifactPath;
+  }
+
   async function importPartImages({ projectTitle, chapterTitle, partId, files }) {
     if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
     if (!partId) throw new Error('這篇文章缺少固定 ID，無法建立圖片資料夾。');
@@ -296,10 +414,14 @@ const StoryFlowIntegrations = (() => {
   }
 
   function validWorkspace(workspace) {
+    const validProjectState = candidate => Boolean(candidate && typeof candidate === 'object' && (
+      candidate.contentMode === 'visual' ? Array.isArray(candidate.visualEntries) : Array.isArray(candidate.chapters)
+    ));
     return Boolean(
       workspace && typeof workspace === 'object' && (
-        (workspace.schemaVersion >= 2 && Array.isArray(workspace.projects)) ||
-        Array.isArray(workspace.state?.chapters)
+        (workspace.schemaVersion >= 2 && Array.isArray(workspace.projects)
+          && workspace.projects.every(project => validProjectState(project?.state))) ||
+        validProjectState(workspace.state)
       )
     );
   }
@@ -315,6 +437,7 @@ const StoryFlowIntegrations = (() => {
       updatedAt: workspace.updatedAt || null,
       projectCount: projectStates.length,
       chapterCount: projectStates.reduce((total, project) => total + (project?.chapters?.length || 0), 0),
+      visualEntryCount: projectStates.reduce((total, project) => total + (project?.visualEntries?.length || 0), 0),
       partCount: projectStates.reduce((total, project) => total + (project?.chapters || [])
         .reduce((chapterTotal, chapter) => chapterTotal + (chapter?.parts?.length || 0), 0), 0)
     };
@@ -980,7 +1103,7 @@ const StoryFlowIntegrations = (() => {
 
   purgeLegacyBrowserStorage();
 
-  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, importPartImages, getPartImageFile, removePartImage, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken), LARGE_IMAGE_BYTES };
+  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, importPartImages, getPartImageFile, removePartImage, saveVisualEntry, importVisualImages, getVisualImageFile, removeVisualImage, removeVisualEntryFiles, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken), LARGE_IMAGE_BYTES };
   window.StoryFlowIntegrations = api;
   return api;
 })();

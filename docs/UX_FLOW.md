@@ -112,8 +112,10 @@ Recovery is the exception where a solid button may appear outside the normal pag
 Creating a work is a transaction, not a navigation side effect.
 
 ```text
-新增作品 → 選來源 → 填寫或選取內容 → 預覽（可選） → 確認 → 建立並切換作品
-                                         ↘ 取消 → 回到原作品，不寫入
+新增作品 → 選擇「長文作品／圖文系列」
+          ├─ 長文 → 選來源 → 填寫或選取內容 → 預覽（可選） → 確認 → 建立並切換作品
+          └─ 圖文 → 系列名稱 → 建立空系列／同時新增第一則 → 確認 → 圖文工作台
+任何階段取消 → 回到原作品，不寫入
 ```
 
 Rules:
