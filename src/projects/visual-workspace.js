@@ -78,10 +78,16 @@
               <label class="visual-field" style="flex:1"><span>圖文標題</span><input id="visualEntryTitle" class="text-input" required maxlength="160" /></label>
               <label class="visual-field visual-editor-status"><span>準備狀態</span><select id="visualEntryStatus" class="text-input"><option value="draft">草稿</option><option value="ready">可發布</option></select></label>
             </div>
-            <div class="visual-editor-optional-fields">
-              <label class="visual-field"><span>摘要 <small>選填</small></span><textarea id="visualEntrySummary" class="text-input" rows="3" maxlength="500" placeholder="簡短介紹這則圖文；留白不影響發布。"></textarea></label>
-              <label class="visual-field"><span>Hashtags <small>選填</small></span><input id="visualEntryHashtags" class="text-input" maxlength="500" placeholder="#創作 #小說；可直接複製貼上。" /><small>輸入仍保存為一段文字；系統會在背後解析完整 Hashtag，供精確搜尋與分類。</small></label>
-            </div>
+            <section class="visual-editor-optional-section" aria-labelledby="visualOptionalSectionTitle">
+              <header class="visual-editor-optional-head">
+                <div><strong id="visualOptionalSectionTitle">發布輔助資訊</strong><span>摘要與 Hashtags 都是選填</span></div>
+                <small>不會自動加入正文</small>
+              </header>
+              <div class="visual-editor-optional-fields">
+                <label class="visual-field"><span>摘要</span><textarea id="visualEntrySummary" class="text-input" rows="2" maxlength="500" placeholder="簡短介紹這則圖文"></textarea></label>
+                <label class="visual-field"><span>Hashtags</span><input id="visualEntryHashtags" class="text-input" maxlength="500" placeholder="#創作 #小說" /><small>可直接複製；系統會自動建立精確搜尋分類。</small></label>
+              </div>
+            </section>
             <label class="visual-field"><span>正文</span><textarea id="visualEntryBody" class="text-input visual-body-input" placeholder="輸入圖文正文；可使用 Markdown。"></textarea></label>
             <section class="visual-image-section">
               <div class="visual-image-section-head"><div><strong>圖片與封面</strong><p class="muted">拖曳或使用箭頭排序；點「編輯」維護替代文字、圖說與封面。</p></div><button id="visualImportImagesBtn" class="button ghost" type="button">匯入圖片</button></div>
