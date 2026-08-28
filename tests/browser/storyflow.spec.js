@@ -1478,6 +1478,19 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   })).toBeLessThan(80);
   await expect(page.locator('#visualProjectTitle')).toHaveText('夜色圖文集');
   await expect(page.locator('#visualEntryList')).toContainText('月下預告');
+  await expect(page.locator('#visualOptionalSectionTitle')).toHaveText('發布輔助資訊');
+  const optionalLayout = await page.evaluate(() => {
+    const summary = document.getElementById('visualEntrySummary').getBoundingClientRect();
+    const hashtags = document.getElementById('visualEntryHashtags').getBoundingClientRect();
+    return {
+      sameLeft: Math.abs(summary.left - hashtags.left),
+      sameWidth: Math.abs(summary.width - hashtags.width),
+      verticalGap: hashtags.top - summary.bottom
+    };
+  });
+  expect(optionalLayout.sameLeft).toBeLessThan(2);
+  expect(optionalLayout.sameWidth).toBeLessThan(2);
+  expect(optionalLayout.verticalGap).toBeGreaterThan(20);
   await page.locator('#visualEntrySummary').fill('月光下的城堡預告');
   await page.locator('#visualEntryHashtags').fill('#StoryFlow #夜色創作');
   await page.locator('#visualEntryBody').fill('月光落在城牆上。\n\n第二段圖文內容。');
