@@ -1477,20 +1477,50 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     return form.getBoundingClientRect().top - panel.getBoundingClientRect().top;
   })).toBeLessThan(80);
   await expect(page.locator('#visualProjectTitle')).toHaveText('夜色圖文集');
+  const originalVisualProjectId = await page.evaluate(() => StoryFlowProjects.activeId());
+  await page.evaluate(() => StoryFlowProjects.createProject({ title: '第二圖文集', contentMode: 'visual' }, { quiet: true }));
+  await expect(page.locator('#visualProjectTitle')).toHaveText('第二圖文集');
+  await page.locator('#visualProjectSwitchBtn').click();
+  await expect(page.locator('#visualProjectMenu')).toBeVisible();
+  await page.locator('#visualProjectMenu .publishing-project-menu-item', { hasText: '夜色圖文集' }).click();
+  await expect(page.locator('#visualProjectTitle')).toHaveText('夜色圖文集');
+  expect(await page.evaluate(() => StoryFlowProjects.activeId())).toBe(originalVisualProjectId);
   await expect(page.locator('#visualEntryList')).toContainText('月下預告');
   await expect(page.locator('#visualOptionalSectionTitle')).toHaveText('發布輔助資訊');
   const optionalLayout = await page.evaluate(() => {
-    const summary = document.getElementById('visualEntrySummary').getBoundingClientRect();
+    const summaryElement = document.getElementById('visualEntrySummary');
+    const bodyElement = document.getElementById('visualEntryBody');
+    const summary = summaryElement.getBoundingClientRect();
     const hashtags = document.getElementById('visualEntryHashtags').getBoundingClientRect();
+    const summaryStyle = getComputedStyle(summaryElement);
+    const bodyStyle = getComputedStyle(bodyElement);
     return {
       sameLeft: Math.abs(summary.left - hashtags.left),
       sameWidth: Math.abs(summary.width - hashtags.width),
-      verticalGap: hashtags.top - summary.bottom
+      verticalGap: hashtags.top - summary.bottom,
+      summaryHeight: summary.height,
+      summaryPaddingTop: parseFloat(summaryStyle.paddingTop),
+      summaryPaddingBottom: parseFloat(summaryStyle.paddingBottom),
+      summaryLineHeight: parseFloat(summaryStyle.lineHeight),
+      summaryFontSize: parseFloat(summaryStyle.fontSize),
+      bodyHeight: bodyElement.getBoundingClientRect().height,
+      bodyPaddingTop: parseFloat(bodyStyle.paddingTop),
+      bodyPaddingBottom: parseFloat(bodyStyle.paddingBottom),
+      bodyLineHeight: parseFloat(bodyStyle.lineHeight),
+      bodyFontSize: parseFloat(bodyStyle.fontSize)
     };
   });
   expect(optionalLayout.sameLeft).toBeLessThan(2);
   expect(optionalLayout.sameWidth).toBeLessThan(2);
   expect(optionalLayout.verticalGap).toBeGreaterThan(20);
+  expect(optionalLayout.summaryHeight).toBeGreaterThanOrEqual(72);
+  expect(optionalLayout.summaryPaddingTop).toBeGreaterThanOrEqual(10);
+  expect(optionalLayout.summaryPaddingBottom).toBeGreaterThanOrEqual(10);
+  expect(optionalLayout.summaryLineHeight).toBeGreaterThan(optionalLayout.summaryFontSize);
+  expect(optionalLayout.bodyHeight).toBeGreaterThanOrEqual(72);
+  expect(optionalLayout.bodyPaddingTop).toBeGreaterThanOrEqual(10);
+  expect(optionalLayout.bodyPaddingBottom).toBeGreaterThanOrEqual(10);
+  expect(optionalLayout.bodyLineHeight).toBeGreaterThan(optionalLayout.bodyFontSize);
   await page.locator('#visualEntrySummary').fill('月光下的城堡預告');
   await page.locator('#visualEntryHashtags').fill('#StoryFlow #夜色創作');
   await page.locator('#visualEntryBody').fill('月光落在城牆上。\n\n第二段圖文內容。');
