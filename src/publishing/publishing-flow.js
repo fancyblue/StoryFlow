@@ -18,7 +18,8 @@
 
   function isVisualPart(part) {
     return state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL
-      && Array.isArray(state.visualEntries) && state.visualEntries.includes(part);
+      && Array.isArray(state.visualEntries)
+      && state.visualEntries.some(entry => entry === part || (entry.id && entry.id === part?.id));
   }
 
   function normalizePublishItem(part) {
@@ -538,6 +539,7 @@
     publishDialog.querySelector('#platformPreviewAfterwordCount').textContent = `${afterwordCount.toLocaleString()} 字`;
     includeAfterword.onchange = async () => {
       if (isVisualPart(part)) return;
+      part.includeAfterword = includeAfterword.checked;
       saveState('後記輸出設定已更新');
       refreshContent();
       renderParts();
