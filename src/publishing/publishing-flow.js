@@ -996,6 +996,68 @@
     return row;
   }
 
+  async function saveVisualPublishingHelpers(entry, summaryInput, hashtagsInput) {
+    entry.summary = summaryInput.value.trim();
+    entry.hashtags = hashtagsInput.value.trim();
+    entry.tags = StoryFlowContentModel.tagsFromHashtags(entry.hashtags);
+    entry.updatedAt = new Date().toISOString();
+    saveState('圖文發布輔助資訊已更新');
+    try {
+      const updated = await writeVisualEntry(entry);
+      if (updated) notify('摘要與 Hashtags 已保存');
+      else notify('摘要與 Hashtags 已保留在工作區；連接資料夾後可再保存一次。', true);
+    } catch (error) {
+      notify(`摘要與 Hashtags 已更新，但 metadata.json 尚未寫入：${error.message}`, true);
+    }
+    renderParts();
+  }
+
+  function createVisualPublishingHelpers(entry) {
+    const section = document.createElement('section');
+    section.className = 'visual-publish-helpers';
+    section.innerHTML = `
+      <div class='visual-publish-helpers-head'>
+        <div><strong>發布輔助資訊</strong><span>摘要與 Hashtags 都是選填，不會自動加入正文。</span></div>
+      </div>
+      <label class='visual-publish-helper-field'>
+        <span>摘要</span>
+        <textarea class='text-input visual-publish-summary-input' rows='3' maxlength='500' placeholder='簡短介紹這則圖文'></textarea>
+      </label>
+      <label class='visual-publish-helper-field'>
+        <span>Hashtags</span>
+        <input class='text-input visual-publish-hashtags-input' maxlength='500' placeholder='#創作 #小說' />
+        <small>以純文字保存，可直接複製；系統會自動建立精確搜尋分類。</small>
+      </label>
+      <div class='visual-publish-helper-actions'>
+        <button class='button tiny ghost visual-publish-copy-hashtags' type='button'>複製 Hashtags</button>
+        <button class='button tiny primary visual-publish-save-helpers' type='button'>保存摘要與 Hashtags</button>
+      </div>`;
+
+    const summaryInput = section.querySelector('.visual-publish-summary-input');
+    const hashtagsInput = section.querySelector('.visual-publish-hashtags-input');
+    const copyButton = section.querySelector('.visual-publish-copy-hashtags');
+    summaryInput.value = entry.summary || '';
+    hashtagsInput.value = entry.hashtags || '';
+    const syncCopyState = () => { copyButton.disabled = !hashtagsInput.value.trim(); };
+    hashtagsInput.addEventListener('input', syncCopyState);
+    syncCopyState();
+    copyButton.addEventListener('click', async event => {
+      event.stopPropagation();
+      try {
+        await writeClipboard(hashtagsInput.value.trim());
+        notify('已複製 Hashtags');
+      } catch (error) {
+        notify(`複製 Hashtags 失敗：${error.message}`, true);
+      }
+    });
+    section.querySelector('.visual-publish-save-helpers').addEventListener('click', event => {
+      event.stopPropagation();
+      saveVisualPublishingHelpers(entry, summaryInput, hashtagsInput);
+    });
+    section.addEventListener('click', event => event.stopPropagation());
+    return section;
+  }
+
   function createArticleRow(entry) {
     const { chapter, part, partIndex, status } = entry;
     const visual = entry.contentMode === 'visual';
@@ -1036,7 +1098,7 @@
       <div class="publish-platform-details" ${expanded ? '' : 'hidden'}>
         ${visual ? `<div class="publish-article-tools visual-publish-summary">
           <div class="publish-article-tools-copy"><strong>圖文發布清單</strong><span>文字 ${bodyChars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張；圖片需依序手動上傳。</span></div>
-        </div>` : `<div class="publish-article-tools">
+        </div><div class="visual-publish-helper-slot"></div>` : `<div class="publish-article-tools">
           <div class="publish-article-tools-copy">
             <strong>文章補充內容</strong>
             <span>正文 ${part.chars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張 · 後記 ${afterwordCount.toLocaleString()} 字</span>
@@ -1080,6 +1142,7 @@
     });
 
     if (expanded) {
+      if (visual) card.querySelector('.visual-publish-helper-slot')?.appendChild(createVisualPublishingHelpers(part));
       card.querySelector('.publish-images-tool-btn')?.addEventListener('click', event => {
         event.stopPropagation();
         openArticleTool(chapter, part, 'images');
