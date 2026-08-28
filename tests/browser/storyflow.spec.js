@@ -1497,6 +1497,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await page.locator('#visualSaveEntryBtn').click();
   await expect.poll(() => page.evaluate(() => window.__savedVisualEntry?.entry?.title)).toBe('月下預告');
   await expect(page.locator('#visualPreviewBody')).toContainText('第二段圖文內容');
+  await expect(page.locator('#visualOpenPublishingBtn')).toBeVisible();
 
   const stored = await page.evaluate(() => ({
     mode: state.contentMode,
@@ -1509,6 +1510,29 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   }));
   expect(stored).toMatchObject({ mode: 'visual', chapters: 0, entryCount: 1, status: 'ready', order: ['插圖-2.png', '插圖.png'] });
   expect(stored.cover).not.toBe(stored.firstImageId);
+
+  await page.locator('#visualOpenPublishingBtn').click();
+  const publishCard = page.locator('.publish-list-item', { hasText: '月下預告' });
+  await expect(publishCard).toBeVisible();
+  await expect(publishCard.locator('.publish-content-type')).toHaveText('圖文');
+  await expect(publishCard.getByRole('button', { name: '預覽／複製', exact: true }).first()).toBeVisible();
+  await expect(publishCard.getByRole('button', { name: '刪除', exact: true })).toHaveCount(0);
+  await expect(publishCard.locator('.publish-platform-row')).toHaveCount(2);
+  await publishCard.locator('.publish-platform-row').first().getByRole('button', { name: '預覽／複製', exact: true }).click();
+  const publishingPreview = page.locator('#platformPreviewDialog');
+  await expect(publishingPreview).toBeVisible();
+  await expect(publishingPreview.locator('.visual-upload-order')).toContainText('圖片不會被複製或自動上傳');
+  await expect(publishingPreview.locator('.visual-upload-order li')).toHaveCount(2);
+  await publishingPreview.locator('#editPlatformTitle').click();
+  await publishingPreview.locator('#platformPreviewTitleInput').fill('方格子月下預告');
+  await publishingPreview.locator('#savePlatformPreviewTitle').click();
+  await expect(publishingPreview.locator('#platformPreviewPublishTitle')).toHaveText('方格子月下預告');
+  await publishingPreview.locator('#cancelPlatformCopy').click();
+  await page.locator('#globalSearchBtn').click();
+  await page.locator('#globalSearchInput').fill('方格子月下');
+  await expect(page.locator('.global-search-result-type.visual')).toHaveText('發布圖文');
+  await page.locator('#closeGlobalSearch').click();
+  await page.locator('.nav-item[data-view="workspace"]').click();
 
   await page.locator('#visualNewEntryBtn').click();
   const entryDialog = page.getByRole('dialog', { name: '新增圖文' });
@@ -1526,7 +1550,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   const card = page.locator('.project-library-card', { hasText: '夜色圖文集' });
   await expect(card.locator('.project-type-badge')).toHaveText('圖文');
   await expect(card.getByRole('button', { name: '管理圖文', exact: true })).toBeVisible();
-  await expect(card.locator('.project-publish-btn')).toBeHidden();
+  await expect(card.getByRole('button', { name: '管理發布', exact: true })).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 
