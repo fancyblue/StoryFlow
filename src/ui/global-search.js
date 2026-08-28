@@ -156,7 +156,7 @@
     <div class="dialog-card global-search-card">
       <div class="global-search-head">
         <span class="global-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg></span>
-        <input id="globalSearchInput" type="search" autocomplete="off" aria-label="搜尋作品、章節、文章或 Hashtag" aria-controls="globalSearchResults" aria-autocomplete="list" placeholder="搜尋內容，或輸入 #Hashtag 精確分類…" />
+        <input id="globalSearchInput" type="search" autocomplete="off" aria-label="搜尋作品、章節與文章" aria-controls="globalSearchResults" aria-autocomplete="list" placeholder="搜尋內容，或輸入 #Hashtag 精確分類…" />
         <button id="closeGlobalSearch" class="global-search-close" type="button" aria-label="關閉搜尋"><span aria-hidden="true">×</span></button>
       </div>
       <div class="global-search-options">
