@@ -304,7 +304,7 @@
               <div><span>Hashtags</span><p id="platformPreviewHashtags"></p></div>
               <button id="copyPlatformHashtags" class="button tiny ghost" type="button">複製 Hashtags</button>
             </article>
-            <small>摘要與 Hashtags 都是選填的複製輔助，不會自動加入正文。</small>
+            <small>兩者都不會自動加入正文；Hashtags 同時可供全域搜尋精確分類。</small>
           </section>
           <div id="platformPreviewTitleEditor" class="platform-preview-title-editor" hidden>
             <label class="field-label" for="platformPreviewTitleInput">此平台標題</label>
