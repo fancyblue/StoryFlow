@@ -528,7 +528,10 @@
     revokeObjectUrls();
     root.hidden = false;
     document.querySelectorAll('#workspaceView > .topbar, #workspaceView > .connection-bar, #workspaceView > .stats-grid, #workspaceView > .workspace-grid, #workspacePublishingSummary')
-      .forEach(node => { node.hidden = true; });
+      .forEach(node => {
+        node.hidden = true;
+        node.classList.add('visual-workspace-suppressed');
+      });
     root.querySelector('#visualProjectTitle').textContent = state.projectTitle || '未命名圖文系列';
     root.querySelector('#visualReadonlyNote').hidden = !isReadOnly();
     root.querySelector('#visualNewEntryBtn').disabled = isReadOnly();
@@ -540,7 +543,10 @@
     const root = document.getElementById('visualWorkspace');
     if (root) root.hidden = true;
     document.querySelectorAll('#workspaceView > .topbar, #workspaceView > .connection-bar, #workspaceView > .stats-grid, #workspaceView > .workspace-grid, #workspacePublishingSummary')
-      .forEach(node => { node.hidden = false; });
+      .forEach(node => {
+        node.hidden = false;
+        node.classList.remove('visual-workspace-suppressed');
+      });
   }
 
   window.addEventListener('storyflow:projects-changed', () => {

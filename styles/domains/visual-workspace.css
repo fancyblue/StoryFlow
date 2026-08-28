@@ -1,4 +1,5 @@
 .visual-workspace[hidden], .visual-workspace .hidden { display: none !important; }
+.visual-workspace-suppressed { display: none !important; }
 .visual-workspace { display: grid; gap: 18px; }
 .visual-workspace-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .visual-workspace-head h1 { margin: 2px 0 4px; }

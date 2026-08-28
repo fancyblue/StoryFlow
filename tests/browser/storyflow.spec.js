@@ -631,6 +631,7 @@ test('canceling a new manual work does not create an empty project', async ({ pa
 
   await switchButton.click();
   await page.locator('#workspaceQuickNewProject').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
   await page.locator('#sourceManualBtn').click();
   await page.locator('#manualProjectTitle').fill('第二作品');
   await page.locator('#manualSourceTitle').fill('新章節');
