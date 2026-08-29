@@ -4,6 +4,7 @@
   let activeEntryId = null;
   let draggedImageId = null;
   let objectUrls = [];
+  let previewObjectUrls = [];
   const dirtyEntryIds = new Set();
 
   function closeEntryMenus(except = null) {
@@ -114,6 +115,11 @@
     objectUrls = [];
   }
 
+  function revokePreviewObjectUrls() {
+    previewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+    previewObjectUrls = [];
+  }
+
   function markChanged(label = '圖文編輯中') {
     const entry = activeEntry();
     if (entry) {
@@ -121,7 +127,6 @@
       dirtyEntryIds.add(entry.id);
     }
     saveState(label);
-    renderPublishingAction();
     window.dispatchEvent(new CustomEvent('storyflow:visual-entry-changed', {
       detail: { projectId: window.StoryFlowProjects?.activeId?.(), entryId: entry?.id || null }
     }));
@@ -179,10 +184,7 @@
               <input id="visualImageInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden />
               <div id="visualImageGrid" class="visual-image-grid"></div>
             </section>
-            <section class="visual-preview" aria-label="圖文基本預覽">
-              <p class="eyebrow">PREVIEW</p><h2 id="visualPreviewTitle"></h2><div id="visualPreviewBody" class="visual-preview-body"></div><div id="visualPreviewImages" class="visual-preview-images"></div>
-            </section>
-            <footer class="visual-editor-footer"><span id="visualEditorMeta" class="muted"></span><div class="visual-editor-footer-actions"><button id="visualOpenPublishingBtn" class="button ghost" type="button" hidden>前往發布 →</button><button id="visualSaveEntryBtn" class="button primary" type="submit">保存草稿</button></div></footer>
+            <footer class="visual-editor-footer"><span id="visualEditorMeta" class="muted"></span><div class="visual-editor-footer-actions"><button id="visualPreviewEntryBtn" class="button ghost" type="button">預覽圖文</button><button id="visualSaveEntryBtn" class="button primary" type="submit">保存草稿</button></div></footer>
           </form>
         </section>
       </div>`;
@@ -226,6 +228,24 @@
       </form>`;
       document.body.appendChild(dialog);
       dialog.querySelector('#confirmNewVisualEntry').addEventListener('click', createEntryFromDialog);
+    }
+
+    if (!document.getElementById('visualEntryPreviewDialog')) {
+      const dialog = document.createElement('dialog');
+      dialog.id = 'visualEntryPreviewDialog';
+      dialog.className = 'visual-entry-preview-dialog';
+      dialog.setAttribute('aria-labelledby', 'visualEntryPreviewTitle');
+      dialog.innerHTML = `<div class="dialog-card visual-entry-preview-card">
+        <div class="panel-head"><div><p class="eyebrow">PREVIEW</p><h3 id="visualEntryPreviewTitle">圖文預覽</h3></div><button class="icon-button" type="button" data-visual-preview-close aria-label="關閉">×</button></div>
+        <p class="muted visual-entry-preview-note">這是目前編輯內容的閱讀預覽，不會改變發布狀態。</p>
+        <section class="visual-preview" aria-label="圖文基本預覽">
+          <h2 id="visualPreviewTitle"></h2><div id="visualPreviewBody" class="visual-preview-body"></div><div id="visualPreviewImages" class="visual-preview-images"></div>
+        </section>
+        <div class="visual-dialog-actions"><button class="button ghost" type="button" data-visual-preview-close>關閉</button></div>
+      </div>`;
+      document.body.appendChild(dialog);
+      dialog.querySelectorAll('[data-visual-preview-close]').forEach(button => button.addEventListener('click', () => dialog.close()));
+      dialog.addEventListener('close', revokePreviewObjectUrls);
     }
 
     if (!document.getElementById('visualImageDialog')) {
@@ -385,16 +405,11 @@
     const title = root.querySelector('#visualEntryTitle');
     const body = root.querySelector('#visualEntryBody');
     const status = root.querySelector('#visualEntryStatus');
-    title.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.title = title.value; markChanged(); renderPreview(); renderList(); } });
-    body.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.body = body.value; markChanged(); renderPreview(); renderMeta(); } });
+    title.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.title = title.value; markChanged(); renderList(); } });
+    body.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.body = body.value; markChanged(); renderMeta(); } });
     status.addEventListener('change', () => { const entry = activeEntry(); if (entry) { entry.status = status.value; markChanged(); renderList(); renderMeta(); renderSaveAction(); } });
     root.querySelector('#visualEditorForm').addEventListener('submit', saveEntry);
-    root.querySelector('#visualOpenPublishingBtn').addEventListener('click', () => {
-      const entry = activeEntry();
-      if (!entry || !canPublish(entry)) return;
-      window.StoryFlowNavigate?.('publishing');
-      window.setTimeout(() => window.StoryFlowPublishing?.openPart?.(`visual:${window.StoryFlowProjects?.activeId?.() || state.projectTitle}:${entry.id}`), 0);
-    });
+    root.querySelector('#visualPreviewEntryBtn').addEventListener('click', openEntryPreview);
     const fileInput = root.querySelector('#visualImageInput');
     root.querySelector('#visualImportImagesBtn').addEventListener('click', () => {
       if (isReadOnly()) return notify('手機目前為唯讀，無法匯入圖片。', true);
@@ -469,7 +484,7 @@
     entry.images.splice(target, 0, image);
     entry.images.forEach((item, order) => { item.order = order; });
     markChanged('圖文圖片已更新');
-    renderImages(); renderPreview();
+    renderImages();
   }
 
   function reorderImage(sourceId, targetId) {
@@ -482,7 +497,7 @@
     entry.images.splice(target, 0, image);
     entry.images.forEach((item, order) => { item.order = order; });
     markChanged('圖文圖片已更新');
-    renderImages(); renderPreview();
+    renderImages();
   }
 
   function handleImageGridClick(event) {
@@ -493,12 +508,12 @@
     else if (event.target.closest('[data-edit-image]')) openImageDialog(card.dataset.imageId);
   }
 
-  async function imageUrl(image) {
+  async function imageUrl(image, targetUrls = objectUrls) {
     try {
       const entry = activeEntry();
       const file = await StoryFlowIntegrations.getVisualImageFile({ projectTitle: state.projectTitle, entryId: entry.id, storedName: image.storedName });
       const url = URL.createObjectURL(file);
-      objectUrls.push(url);
+      targetUrls.push(url);
       return url;
     } catch (_) { return ''; }
   }
@@ -533,7 +548,7 @@
       else if (entry.coverImageId === image.id) entry.coverImageId = '';
       dialog.close();
       markChanged('圖文圖片已更新');
-      renderImages(); renderPreview();
+      renderImages();
     });
     dialog.querySelector('#visualRemoveImageAssociation').addEventListener('click', () => removeImage(dialog, false));
     dialog.querySelector('#visualDeleteImageFile').addEventListener('click', () => removeImage(dialog, true));
@@ -653,20 +668,25 @@
     }
   }
 
-  function renderPreview() {
+  async function openEntryPreview() {
     const entry = activeEntry();
     if (!entry) return;
-    document.getElementById('visualPreviewTitle').textContent = entry.title || '未命名圖文';
-    document.getElementById('visualPreviewBody').textContent = entry.body || '尚未輸入正文。';
-    const preview = document.getElementById('visualPreviewImages');
+    ensureDialogs();
+    revokePreviewObjectUrls();
+    const dialog = document.getElementById('visualEntryPreviewDialog');
+    dialog.querySelector('#visualEntryPreviewTitle').textContent = `圖文預覽 · ${entry.title || '未命名圖文'}`;
+    dialog.querySelector('#visualPreviewTitle').textContent = entry.title || '未命名圖文';
+    dialog.querySelector('#visualPreviewBody').textContent = entry.body || '尚未輸入正文。';
+    const preview = dialog.querySelector('#visualPreviewImages');
     preview.innerHTML = entry.images.map(image => `<figure data-preview-image-id="${esc(image.id)}"><div class="visual-image-thumb"><span>正在載入 ${esc(image.storedName)}</span></div>${image.caption ? `<figcaption>${esc(image.caption)}</figcaption>` : ''}</figure>`).join('');
-    entry.images.forEach(async image => {
+    dialog.showModal();
+    for (const image of entry.images) {
       const figure = preview.querySelector(`[data-preview-image-id="${CSS.escape(image.id)}"]`);
-      const url = await imageUrl(image);
-      if (!figure?.isConnected) return;
+      const url = await imageUrl(image, previewObjectUrls);
+      if (!figure?.isConnected || !dialog.open) continue;
       const holder = figure.querySelector('.visual-image-thumb');
       holder.innerHTML = url ? `<img src="${url}" alt="${esc(image.alt || '')}" />` : `<span>找不到圖片：${esc(image.storedName)}</span>`;
-    });
+    }
   }
 
   function renderMeta() {
@@ -674,21 +694,6 @@
     const node = document.getElementById('visualEditorMeta');
     if (!entry || !node) return;
     node.textContent = `${charCount(entry.body).toLocaleString()} 字 · ${entry.images.length} 張圖片 · ${entry.status === 'ready' ? '可發布' : '草稿'}`;
-  }
-
-  function canPublish(entry) {
-    return entry?.status === 'ready'
-      && Boolean(String(entry.title || '').trim())
-      && (Boolean(String(entry.body || '').trim()) || Boolean(entry.images?.length))
-      && !dirtyEntryIds.has(entry.id);
-  }
-
-  function renderPublishingAction() {
-    const entry = activeEntry();
-    const button = document.getElementById('visualOpenPublishingBtn');
-    if (!button) return;
-    button.hidden = !canPublish(entry);
-    button.disabled = isReadOnly() || !canPublish(entry);
   }
 
   function renderSaveAction() {
@@ -717,7 +722,7 @@
     root.querySelectorAll('#visualEditorForm input, #visualEditorForm textarea, #visualEditorForm select, #visualEditorForm button').forEach(control => {
       control.disabled = isReadOnly();
     });
-    renderImages(); renderPreview(); renderMeta(); renderPublishingAction(); renderSaveAction();
+    renderImages(); renderMeta(); renderSaveAction();
   }
 
   function render() {
@@ -726,7 +731,7 @@
     if (!root || !isVisual()) return hide();
     revokeObjectUrls();
     root.hidden = false;
-    document.querySelectorAll('#workspaceView > .topbar, #workspaceView > .connection-bar, #workspaceView > .stats-grid, #workspaceView > .workspace-grid, #workspacePublishingSummary')
+    document.querySelectorAll('#workspaceView > .topbar, #workspaceView > .connection-bar, #workspaceView > .stats-grid, #workspaceView > .workspace-grid')
       .forEach(node => {
         node.hidden = true;
         node.classList.add('visual-workspace-suppressed');
@@ -749,7 +754,7 @@
     revokeObjectUrls();
     const root = document.getElementById('visualWorkspace');
     if (root) root.hidden = true;
-    document.querySelectorAll('#workspaceView > .topbar, #workspaceView > .connection-bar, #workspaceView > .stats-grid, #workspaceView > .workspace-grid, #workspacePublishingSummary')
+    document.querySelectorAll('#workspaceView > .topbar, #workspaceView > .connection-bar, #workspaceView > .stats-grid, #workspaceView > .workspace-grid')
       .forEach(node => {
         node.hidden = false;
         node.classList.remove('visual-workspace-suppressed');

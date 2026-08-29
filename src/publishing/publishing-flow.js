@@ -185,6 +185,7 @@
     const main = document.querySelector('.main');
     const publishingPanel = document.querySelector('.publishing-panel');
     if (!main || !publishingPanel) return null;
+    document.getElementById('workspacePublishingSummary')?.remove();
 
     let workspaceView = document.getElementById('workspaceView');
     if (!workspaceView) {
@@ -198,20 +199,6 @@
         if (node) workspaceView.appendChild(node);
       });
 
-      const summary = document.createElement('section');
-      summary.id = 'workspacePublishingSummary';
-      summary.className = 'panel workspace-publishing-summary';
-      summary.innerHTML = `
-        <div>
-          <p class="eyebrow">PUBLISHING</p>
-          <h2>發布進度</h2>
-          <p id="workspacePublishingSummaryText" class="muted"></p>
-        </div>
-        <button id="openPublishingFromWorkspace" class="button primary" type="button">前往發布 →</button>`;
-      workspaceView.appendChild(summary);
-      summary.querySelector('#openPublishingFromWorkspace').addEventListener('click', () => {
-        window.StoryFlowNavigate?.('publishing');
-      });
     }
 
     let publishingView = document.getElementById('publishingView');
@@ -295,17 +282,6 @@
               <button id="editPlatformTitle" class="button tiny ghost" type="button">修改此平台標題</button>
             </div>
           </div>
-          <section id="platformPreviewVisualExtras" class="platform-preview-visual-extras" hidden>
-            <article id="platformPreviewSummaryCard" hidden>
-              <div><span>摘要</span><p id="platformPreviewSummary"></p></div>
-              <button id="copyPlatformSummary" class="button tiny ghost" type="button">複製摘要</button>
-            </article>
-            <article id="platformPreviewHashtagsCard" hidden>
-              <div><span>Hashtags</span><p id="platformPreviewHashtags"></p></div>
-              <button id="copyPlatformHashtags" class="button tiny ghost" type="button">複製 Hashtags</button>
-            </article>
-            <small>兩者都不會自動加入正文；Hashtags 同時可供全域搜尋精確分類。</small>
-          </section>
           <div id="platformPreviewTitleEditor" class="platform-preview-title-editor" hidden>
             <label class="field-label" for="platformPreviewTitleInput">此平台標題</label>
             <div class="platform-preview-title-editor-controls">
@@ -332,6 +308,16 @@
             <small id="platformPreviewAfterwordCount"></small>
           </label>
           <div id="platformPreviewContent" class="platform-preview-content"></div>
+          <section id="platformPreviewVisualExtras" class="platform-preview-visual-extras" hidden>
+            <article id="platformPreviewSummaryCard" hidden>
+              <div><span>摘要</span><p id="platformPreviewSummary"></p></div>
+              <button id="copyPlatformSummary" class="button tiny ghost" type="button">複製摘要</button>
+            </article>
+            <button id="copyPlatformHashtags" class="platform-preview-hashtags-copy" type="button" hidden>
+              <span>Hashtags</span><p id="platformPreviewHashtags"></p><small>點一下複製整串</small>
+            </button>
+            <small>摘要與 Hashtags 是選填的發布輔助資訊，不會自動加入正文。</small>
+          </section>
         </div>
         <div class="platform-preview-actions">
           <button id="confirmPlatformCopy" class="button primary" type="button">複製內容</button>
@@ -470,7 +456,7 @@
     const editTitle = publishDialog.querySelector('#editPlatformTitle');
     const visualExtras = publishDialog.querySelector('#platformPreviewVisualExtras');
     const summaryCard = publishDialog.querySelector('#platformPreviewSummaryCard');
-    const hashtagsCard = publishDialog.querySelector('#platformPreviewHashtagsCard');
+    const hashtagsCard = publishDialog.querySelector('#copyPlatformHashtags');
     const summaryText = String(part.summary || '').trim();
     const hashtagsText = String(part.hashtags || '').trim();
     const afterwordCount = afterwordChars(part);
@@ -830,6 +816,12 @@
     const { chapter, part, tool } = articleToolContext;
     const body = articleToolDialog.querySelector('#publishingArticleToolBody');
     body.replaceChildren();
+    if (tool === 'visual-helpers') {
+      body.appendChild(createVisualPublishingHelpers(part, {
+        onSaved: () => articleToolDialog.close()
+      }));
+      return;
+    }
     if (tool === 'images') {
       const manager = window.StoryFlowArticleImages?.createManager?.(chapter, part, {
         onChange: () => {
@@ -850,10 +842,13 @@
   function openArticleTool(chapter, part, tool) {
     articleToolContext = { chapter, part, tool };
     const isImages = tool === 'images';
-    articleToolDialog.querySelector('#publishingArticleToolTitle').textContent = isImages ? '文章圖片' : '後記';
-    articleToolDialog.querySelector('#publishingArticleToolMeta').textContent = `${publishTitleFor(part)} · ${isImages
-      ? `${part.images.length.toLocaleString()} 張圖片，檔案保存在私人 StoryFlow 資料夾。`
-      : `${afterwordChars(part).toLocaleString()} 字，與來源正文分開保存。`}`;
+    const isVisualHelpers = tool === 'visual-helpers';
+    articleToolDialog.querySelector('#publishingArticleToolTitle').textContent = isVisualHelpers ? '摘要與 Hashtags' : isImages ? '文章圖片' : '後記';
+    articleToolDialog.querySelector('#publishingArticleToolMeta').textContent = isVisualHelpers
+      ? `${publishTitleFor(part)} · 兩者皆為選填，不會自動加入正文。`
+      : `${publishTitleFor(part)} · ${isImages
+        ? `${part.images.length.toLocaleString()} 張圖片，檔案保存在私人 StoryFlow 資料夾。`
+        : `${afterwordChars(part).toLocaleString()} 字，與來源正文分開保存。`}`;
     renderArticleToolBody();
     articleToolDialog.showModal();
   }
@@ -937,6 +932,8 @@
 
   function createPlatformRow(entry, platform) {
     const { chapter, part } = entry;
+    const visual = entry.contentMode === 'visual';
+    const hashtagsText = String(part.hashtags || '').trim();
     const published = Boolean(part.platformStatus?.[platform]);
     const platformTitle = publishTitleFor(part, platform);
     const hasPlatformTitle = Boolean(String(part.platformTitles?.[platform] || '').trim());
@@ -951,6 +948,7 @@
       <div class="publish-platform-state">
         <div class="publish-platform-state-line">
           <strong>${escapeHtml(platform)}</strong>
+          ${visual && hashtagsText ? `<button class="publish-platform-hashtags" type="button" aria-label="複製 Hashtags：${escapeHtml(hashtagsText)}" title="點一下複製完整 Hashtags">${escapeHtml(hashtagsText)}</button>` : ''}
           <span class="publish-platform-status ${published ? 'done' : ''}">${published ? '已發布' : '尚未發布'}</span>
         </div>
         ${hasPlatformTitle ? `<small class="publish-platform-title-summary">自訂標題：${escapeHtml(platformTitle)}</small>` : ''}
@@ -961,6 +959,15 @@
         <button class="button tiny ghost platform-record-btn" type="button" aria-label="${published ? '查看' : '記錄'}「${escapeHtml(platform)}」發布紀錄">${published ? '發布紀錄' : '記錄發布'}</button>
         <button class="button tiny ghost platform-status-btn ${published ? 'is-published' : ''}" type="button" aria-label="${published ? '取消' : '標註'}「${escapeHtml(platform)}」已發布">${published ? '取消已發布' : '標註已發布'}</button>
       </div>`;
+    row.querySelector('.publish-platform-hashtags')?.addEventListener('click', async event => {
+      event.stopPropagation();
+      try {
+        await writeClipboard(hashtagsText);
+        notify('已複製 Hashtags');
+      } catch (error) {
+        notify(`複製 Hashtags 失敗：${error.message}`, true);
+      }
+    });
     row.querySelector('.platform-preview-btn').addEventListener('click', event => {
       event.stopPropagation();
       previewPublish(part, platform, entry.contentMode);
@@ -990,9 +997,10 @@
       notify(`摘要與 Hashtags 已更新，但 metadata.json 尚未寫入：${error.message}`, true);
     }
     renderParts();
+    return true;
   }
 
-  function createVisualPublishingHelpers(entry) {
+  function createVisualPublishingHelpers(entry, { onSaved } = {}) {
     const section = document.createElement('section');
     section.className = 'visual-publish-helpers';
     section.innerHTML = `
@@ -1009,30 +1017,17 @@
         <small>以純文字保存，可直接複製；系統會自動建立精確搜尋分類。</small>
       </label>
       <div class='visual-publish-helper-actions'>
-        <button class='button tiny ghost visual-publish-copy-hashtags' type='button'>複製 Hashtags</button>
         <button class='button tiny primary visual-publish-save-helpers' type='button'>保存摘要與 Hashtags</button>
       </div>`;
 
     const summaryInput = section.querySelector('.visual-publish-summary-input');
     const hashtagsInput = section.querySelector('.visual-publish-hashtags-input');
-    const copyButton = section.querySelector('.visual-publish-copy-hashtags');
     summaryInput.value = entry.summary || '';
     hashtagsInput.value = entry.hashtags || '';
-    const syncCopyState = () => { copyButton.disabled = !hashtagsInput.value.trim(); };
-    hashtagsInput.addEventListener('input', syncCopyState);
-    syncCopyState();
-    copyButton.addEventListener('click', async event => {
+    section.querySelector('.visual-publish-save-helpers').addEventListener('click', async event => {
       event.stopPropagation();
-      try {
-        await writeClipboard(hashtagsInput.value.trim());
-        notify('已複製 Hashtags');
-      } catch (error) {
-        notify(`複製 Hashtags 失敗：${error.message}`, true);
-      }
-    });
-    section.querySelector('.visual-publish-save-helpers').addEventListener('click', event => {
-      event.stopPropagation();
-      saveVisualPublishingHelpers(entry, summaryInput, hashtagsInput);
+      const saved = await saveVisualPublishingHelpers(entry, summaryInput, hashtagsInput);
+      if (saved) onSaved?.();
     });
     section.addEventListener('click', event => event.stopPropagation());
     return section;
@@ -1054,12 +1049,15 @@
     const afterwordCount = visual ? 0 : afterwordChars(part);
     const imageCount = part.images?.length || 0;
     const bodyChars = visual ? charCount(part.body) : part.chars;
+    const summaryText = visual ? String(part.summary || '').trim() : '';
+    const hashtagsText = visual ? String(part.hashtags || '').trim() : '';
     card.innerHTML = `
       <div class="publish-list-summary" role="button" tabindex="0" aria-expanded="${expanded}">
         <div class="publish-list-title-block">
           <span class="publish-chapter-name"><span class="publish-content-type ${visual ? 'visual' : 'longform'}">${visual ? '圖文' : '長文'}</span>${visual ? escapeHtml(state.projectTitle || '圖文系列') : escapeHtml(chapter.title)}</span>
           <div class="publish-list-title-row">
             <strong>${escapeHtml(publishTitle)}</strong>
+            ${summaryText ? `<span class="publish-summary-hint" tabindex="0" role="img" aria-label="摘要：${escapeHtml(summaryText)}" data-summary="${escapeHtml(summaryText)}">i</span>` : ''}
             <span>${bodyChars.toLocaleString()} 字</span>
             ${afterwordCount ? `<span class="publish-afterword-badge">有後記 ${afterwordCount.toLocaleString()} 字</span>` : ''}
             ${imageCount ? `<span class="publish-image-badge">附圖 ${imageCount.toLocaleString()} 張</span>` : ''}
@@ -1078,7 +1076,8 @@
       <div class="publish-platform-details" ${expanded ? '' : 'hidden'}>
         ${visual ? `<div class="publish-article-tools visual-publish-summary">
           <div class="publish-article-tools-copy"><strong>圖文發布清單</strong><span>文字 ${bodyChars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張；圖片需依序手動上傳。</span></div>
-        </div><div class="visual-publish-helper-slot"></div>` : `<div class="publish-article-tools">
+          <div class="publish-article-tool-actions"><button class="button tiny ghost visual-publish-helper-tool-btn" type="button">摘要與 Hashtags${summaryText || hashtagsText ? ' · 已設定' : ''}</button></div>
+        </div>` : `<div class="publish-article-tools">
           <div class="publish-article-tools-copy">
             <strong>文章補充內容</strong>
             <span>正文 ${part.chars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張 · 後記 ${afterwordCount.toLocaleString()} 字</span>
@@ -1122,7 +1121,10 @@
     });
 
     if (expanded) {
-      if (visual) card.querySelector('.visual-publish-helper-slot')?.appendChild(createVisualPublishingHelpers(part));
+      card.querySelector('.visual-publish-helper-tool-btn')?.addEventListener('click', event => {
+        event.stopPropagation();
+        openArticleTool(null, part, 'visual-helpers');
+      });
       card.querySelector('.publish-images-tool-btn')?.addEventListener('click', event => {
         event.stopPropagation();
         openArticleTool(chapter, part, 'images');
@@ -1171,24 +1173,6 @@
       const node = document.getElementById(id);
       if (node) node.textContent = value.toLocaleString();
     });
-
-    const summary = document.getElementById('workspacePublishingSummaryText');
-    const workspacePublishingAction = document.getElementById('openPublishingFromWorkspace');
-    const unfinished = counts.pending + counts.partial;
-    if (summary) {
-      if (!counts.total) summary.textContent = state.contentMode === 'visual'
-        ? '還沒有可管理的圖文。先在圖文工作區建立內容。'
-        : '還沒有已確認文章。完成 SMART SPLIT 後，文章會進入發布頁。';
-      else {
-        summary.textContent = `${counts.total} ${state.contentMode === 'visual' ? '則圖文' : '篇已確認'} · ${unfinished} ${state.contentMode === 'visual' ? '則' : '篇'}尚未完成所有平台發布`;
-      }
-    }
-    if (workspacePublishingAction) {
-      workspacePublishingAction.hidden = counts.total === 0;
-      workspacePublishingAction.classList.toggle('primary', unfinished > 0);
-      workspacePublishingAction.classList.toggle('ghost', counts.total > 0 && unfinished === 0);
-      workspacePublishingAction.textContent = unfinished > 0 ? '前往發布 →' : '查看發布紀錄 →';
-    }
 
     document.querySelectorAll('.publishing-filter').forEach(button => {
       button.classList.toggle('active', button.dataset.filter === currentFilter);

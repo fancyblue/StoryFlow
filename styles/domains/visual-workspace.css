@@ -70,7 +70,10 @@
 .visual-editor-footer { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 4px; }
 .visual-editor-footer-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .visual-type-dialog .dialog-card, .visual-entry-dialog .dialog-card, .visual-image-dialog .dialog-card { width: min(680px, calc(100vw - 32px)); }
-.visual-type-dialog [hidden], .visual-entry-dialog [hidden], .visual-image-dialog [hidden] { display: none !important; }
+.visual-entry-preview-dialog .dialog-card { width: min(760px, calc(100vw - 32px)); max-height: min(88vh, 920px); overflow: auto; }
+.visual-entry-preview-note { margin: 0 0 14px; }
+.visual-entry-preview-card .visual-preview { margin: 0; }
+.visual-type-dialog [hidden], .visual-entry-dialog [hidden], .visual-image-dialog [hidden], .visual-entry-preview-dialog [hidden] { display: none !important; }
 .visual-type-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .visual-type-option { display: grid; gap: 7px; padding: 18px; border: 1px solid var(--line, #d9e1e6); border-radius: 14px; background: #fff; text-align: left; cursor: pointer; }
 .visual-type-option:hover { border-color: #315b78; background: #f5f9fb; }

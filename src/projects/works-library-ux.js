@@ -14,9 +14,7 @@
     const projectTitle = card.querySelector('.project-library-title-row strong')?.textContent?.trim() || '未命名作品';
     const open = card.querySelector('.project-open-btn');
     if (open) {
-      const label = card.dataset.contentMode === 'visual'
-        ? '管理圖文'
-        : card.classList.contains('active') ? '工作台' : '開啟';
+      const label = card.classList.contains('active') ? '工作台' : '開啟';
       if (open.textContent !== label) open.textContent = label;
       open.setAttribute('aria-label', `${label}「${projectTitle}」`);
     }

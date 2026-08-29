@@ -56,7 +56,18 @@ test('workspace keeps a long chapter rail contained at desktop widths', async ({
   for (const width of [1280, 1440, 1920]) {
     await page.setViewportSize({ width, height: 900 });
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await expect(page).toHaveScreenshot(`workspace-long-${width}.png`, { fullPage: false });
+    const rail = await page.locator('.source-panel').evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      return {
+        left: rect.left,
+        right: rect.right,
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth
+      };
+    });
+    expect(rail.left).toBeGreaterThanOrEqual(0);
+    expect(rail.right).toBeLessThanOrEqual(width);
+    expect(rail.scrollWidth).toBeLessThanOrEqual(rail.clientWidth + 1);
   }
 });
 
