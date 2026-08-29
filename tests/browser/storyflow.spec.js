@@ -25,7 +25,7 @@ test('primary action scale and navigation icon language stay consistent', async 
 
   await expect(page.locator('.nav-item .nav-icon svg')).toHaveCount(5);
   await expect(page.locator('#sidebarToggle svg')).toHaveCount(1);
-  await expect(page.locator('#openPublishingFromWorkspace')).toBeHidden();
+  await expect(page.locator('#openPublishingFromWorkspace')).toHaveCount(0);
 
   await page.locator('.nav-item[data-view="projects"]').click();
   await expect(page.locator('.projects-empty-state .button')).toBeVisible();
@@ -66,8 +66,7 @@ test('primary action scale and navigation icon language stay consistent', async 
     }];
     renderAll();
   });
-  await expect(page.locator('#openPublishingFromWorkspace')).not.toHaveAttribute('hidden', '');
-  await expect(page.locator('#openPublishingFromWorkspace')).toHaveClass(/primary/);
+  await expect(page.locator('#openPublishingFromWorkspace')).toHaveCount(0);
   const publishingRow = page.locator('.publish-list-item', { hasText: '樣式測試文章' });
   const rowManage = publishingRow.getByRole('button', { name: /展開.*發布平台/ });
   const rowPreview = publishingRow.getByRole('button', { name: '預覽預設設定「樣式測試文章」', exact: true });
@@ -841,6 +840,13 @@ test('publishing treats an empty project selection as all and keeps the continue
 
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.getByText('測試發布文章')).toBeVisible();
+  await expect(page.locator('#publishingContentTypeFilters')).toBeVisible();
+  await expect(page.locator('#publishingContentTypeFilters [data-content-type="longform"]')).toContainText('長文 1');
+  await expect(page.locator('.publishing-project-group-title .publishing-project-type-badge')).toHaveText('長文');
+  await page.locator('#publishingContentTypeFilters [data-content-type="visual"]').click();
+  await expect(page.locator('.publishing-filter-empty')).toContainText('沒有符合目前篩選的內容');
+  await page.locator('#publishingContentTypeFilters [data-content-type="all"]').click();
+  await expect(page.getByText('測試發布文章')).toBeVisible();
   await page.locator('#publishingProjectFilterBtn').click();
   const checkbox = page.locator('.publishing-project-filter-option input').first();
   await expect(checkbox).toBeChecked();
@@ -1587,8 +1593,13 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await page.locator('.visual-image-card').nth(1).getByRole('button', { name: '向前移動', exact: true }).click();
   await page.locator('#visualSaveEntryBtn').click();
   await expect.poll(() => page.evaluate(() => window.__savedVisualEntry?.entry?.title)).toBe('月下預告');
-  await expect(page.locator('#visualPreviewBody')).toContainText('第二段圖文內容');
-  await expect(page.locator('#visualOpenPublishingBtn')).toBeVisible();
+  await expect(page.locator('#visualOpenPublishingBtn')).toHaveCount(0);
+  await page.locator('#visualPreviewEntryBtn').click();
+  const workspacePreview = page.getByRole('dialog', { name: '圖文預覽 · 月下預告' });
+  await expect(workspacePreview).toBeVisible();
+  await expect(workspacePreview.locator('#visualPreviewBody')).toContainText('第二段圖文內容');
+  await expect(workspacePreview.locator('#visualPreviewImages figure')).toHaveCount(2);
+  await workspacePreview.getByRole('button', { name: '關閉', exact: true }).last().click();
 
   const stored = await page.evaluate(() => ({
     mode: state.contentMode,
@@ -1605,17 +1616,25 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   });
   expect(stored.cover).not.toBe(stored.firstImageId);
 
-  await page.locator('#visualOpenPublishingBtn').click();
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('#publishingContentTypeFilters [data-content-type="visual"]')).toContainText('圖文 1');
+  await expect(page.locator('.publishing-project-group-title .publishing-project-type-badge')).toHaveText('圖文');
   const publishCard = page.locator('.publish-list-item', { hasText: '月下預告' });
   await expect(publishCard).toBeVisible();
   await expect(publishCard.locator('.publish-content-type')).toHaveText('圖文');
   await expect(publishCard.getByRole('button', { name: '預覽／複製「月下預告」', exact: true })).toBeVisible();
   await expect(publishCard.getByRole('button', { name: '更多「月下預告」操作', exact: true })).toBeVisible();
-  const visualPublishingHelpers = publishCard.locator('.visual-publish-helpers');
-  await expect(visualPublishingHelpers).toBeVisible();
-  await visualPublishingHelpers.locator('.visual-publish-summary-input').fill('月光下的城堡預告');
-  await visualPublishingHelpers.locator('.visual-publish-hashtags-input').fill('#StoryFlow #夜色創作');
-  await visualPublishingHelpers.getByRole('button', { name: '保存摘要與 Hashtags', exact: true }).click();
+  await publishCard.getByRole('button', { name: /展開「月下預告」的發布平台/ }).click();
+  await expect(publishCard.locator('.visual-publish-helpers')).toHaveCount(0);
+  const helperToolButton = publishCard.getByRole('button', { name: '摘要與 Hashtags', exact: true });
+  await expect(helperToolButton).toBeVisible();
+  await helperToolButton.click();
+  const visualHelperDialog = page.getByRole('dialog', { name: '摘要與 Hashtags' });
+  await expect(visualHelperDialog).toBeVisible();
+  await visualHelperDialog.locator('.visual-publish-summary-input').fill('月光下的城堡預告');
+  await visualHelperDialog.locator('.visual-publish-hashtags-input').fill('#StoryFlow #夜色創作');
+  await visualHelperDialog.getByRole('button', { name: '保存摘要與 Hashtags', exact: true }).click();
+  await expect(visualHelperDialog).toBeHidden();
   await expect.poll(() => page.evaluate(() => state.visualEntries[0].summary)).toBe('月光下的城堡預告');
   expect(await page.evaluate(() => ({
     hashtags: state.visualEntries[0].hashtags,
@@ -1628,7 +1647,12 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     savedSummary: '月光下的城堡預告',
     savedHashtags: '#StoryFlow #夜色創作'
   });
+  await expect(publishCard.locator('.publish-summary-hint')).toHaveAttribute('aria-label', '摘要：月光下的城堡預告');
   await expect(publishCard.locator('.publish-platform-row')).toHaveCount(2);
+  const platformHashtags = publishCard.locator('.publish-platform-row').first().locator('.publish-platform-hashtags');
+  await expect(platformHashtags).toHaveText('#StoryFlow #夜色創作');
+  await platformHashtags.click();
+  await expect.poll(() => page.evaluate(() => window.__copiedVisualHelper)).toBe('#StoryFlow #夜色創作');
   await publishCard.locator('.publish-platform-row').first().getByRole('button', { name: '預覽／複製「巴哈小屋」', exact: true }).click();
   const publishingPreview = page.locator('#platformPreviewDialog');
   await expect(publishingPreview).toBeVisible();
@@ -1636,7 +1660,12 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(publishingPreview.locator('.visual-upload-order li')).toHaveCount(2);
   await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('月光下的城堡預告');
   await expect(publishingPreview.locator('#platformPreviewHashtags')).toHaveText('#StoryFlow #夜色創作');
-  await publishingPreview.getByRole('button', { name: '複製 Hashtags', exact: true }).click();
+  expect(await publishingPreview.evaluate(dialog => {
+    const content = dialog.querySelector('#platformPreviewContent');
+    const extras = dialog.querySelector('#platformPreviewVisualExtras');
+    return Boolean(content && extras && (content.compareDocumentPosition(extras) & Node.DOCUMENT_POSITION_FOLLOWING));
+  })).toBe(true);
+  await publishingPreview.locator('#copyPlatformHashtags').click();
   await expect.poll(() => page.evaluate(() => window.__copiedVisualHelper)).toBe('#StoryFlow #夜色創作');
   await publishingPreview.locator('#editPlatformTitle').click();
   await publishingPreview.locator('#platformPreviewTitleInput').fill('方格子月下預告');
@@ -1683,7 +1712,9 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await page.locator('.nav-item[data-view="projects"]').click();
   const card = page.locator('.project-library-card', { hasText: '夜色圖文集' });
   await expect(card.locator('.project-type-badge')).toHaveText('圖文');
-  await expect(card.getByRole('button', { name: '管理圖文「夜色圖文集」', exact: true })).toBeVisible();
+  await expect(card.getByRole('button', { name: '工作台「夜色圖文集」', exact: true })).toBeVisible();
+  const inactiveVisualCard = page.locator('.project-library-card', { hasText: '第二圖文集' });
+  await expect(inactiveVisualCard.getByRole('button', { name: '開啟「第二圖文集」', exact: true })).toBeVisible();
   await expect(card.getByRole('button', { name: '管理發布「夜色圖文集」', exact: true })).toBeVisible();
   await expect(card.getByRole('button', { name: '更多「夜色圖文集」操作', exact: true })).toBeVisible();
   await card.getByRole('button', { name: '查看圖文', exact: true }).click();
