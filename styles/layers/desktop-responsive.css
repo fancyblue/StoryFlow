@@ -39,11 +39,15 @@
 }
 
 @media (min-width: 1600px) {
-  /* Give long chapter titles and row actions more room, but stop the source rail
-     before it competes with the split-review surface. */
+  /* Longform and visual workspaces share one source-rail width contract. */
+  :root {
+    --sf-workspace-source-columns: clamp(320px, 19vw, 380px) minmax(0, 1fr);
+    --sf-workspace-column-gap: 20px;
+  }
+
   .workspace-grid.workspace-hierarchy {
-    grid-template-columns: clamp(320px, 19vw, 380px) minmax(0, 1fr) !important;
-    gap: 20px !important;
+    grid-template-columns: var(--sf-workspace-source-columns) !important;
+    gap: var(--sf-workspace-column-gap) !important;
   }
 
   .workspace-grid.workspace-empty-mode {
