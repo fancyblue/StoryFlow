@@ -283,7 +283,26 @@
         edit.textContent = '編輯圖文';
         edit.setAttribute('aria-label', `編輯圖文「${entry.title}」`);
         edit.addEventListener('click', () => editVisualEntry(entry.id));
-        actions.appendChild(edit);
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'button tiny ghost project-visual-entry-delete';
+        remove.textContent = '刪除圖文';
+        remove.setAttribute('aria-label', `刪除圖文「${entry.title}」`);
+        remove.disabled = Boolean(window.StoryFlowMobileSafeMode?.isReadOnly?.());
+        remove.addEventListener('click', async () => {
+          const deleteVisualEntry = window.StoryFlowVisualWorkspace?.deleteEntry;
+          if (typeof deleteVisualEntry !== 'function') {
+            window.notify?.('圖文刪除功能尚未準備完成，請重新整理後再試。', true);
+            return;
+          }
+          const deleted = await deleteVisualEntry(entry.id);
+          if (!deleted) return;
+          expandedProjects.add(projectId);
+          window.StoryFlowRenderProjects?.();
+          window.setTimeout(decorateProjectsView, 0);
+        });
+        actions.append(edit, remove);
 
         row.append(title, status, actions);
         list.appendChild(row);
