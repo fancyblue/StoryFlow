@@ -1662,33 +1662,59 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await summaryHint.focus();
   await expect.poll(() => summaryHint.evaluate(element => getComputedStyle(element.closest('.publish-list-item')).overflow)).toBe('visible');
   await expect(publishCard.locator('.publish-platform-row')).toHaveCount(2);
-  const platformHashtags = publishCard.locator('.publish-platform-row').first().locator('.publish-platform-hashtags');
+  const firstPlatformRow = publishCard.locator('.publish-platform-row').first();
+  const platformHashtags = firstPlatformRow.locator('.publish-platform-hashtags');
   await expect(platformHashtags).toHaveText('#StoryFlow #夜色創作');
   await platformHashtags.click();
   await expect.poll(() => page.evaluate(() => window.__copiedVisualHelper)).toBe('#StoryFlow #夜色創作');
-  await publishCard.locator('.publish-platform-row').first().getByRole('button', { name: '預覽與複製「巴哈小屋」', exact: true }).click();
+
+  await firstPlatformRow.getByRole('button', { name: '編輯「巴哈小屋」Hashtags', exact: true }).click();
   const publishingPreview = page.locator('#platformPreviewDialog');
   await expect(publishingPreview).toBeVisible();
-  await expect(publishingPreview.locator('#platformPreviewOptions')).toHaveJSProperty('open', false);
+  await expect(publishingPreview.locator('#platformPreviewOptions')).toHaveJSProperty('open', true);
+  await expect(publishingPreview.locator('#platformPreviewHashtagsState')).toHaveText('沿用共用');
+  await expect(publishingPreview.locator('#platformPreviewHashtagsInput')).toHaveValue('#StoryFlow #夜色創作');
+  await publishingPreview.locator('#platformPreviewHashtagsInput').fill('#巴哈限定 #圖文');
+  await publishingPreview.locator('#savePlatformPreviewHashtags').click();
+  await expect(publishingPreview.locator('#platformPreviewHashtagsState')).toHaveText('此平台自訂');
+  await expect(publishingPreview.locator('#platformPreviewHashtags')).toHaveText('#巴哈限定 #圖文');
+  await expect(firstPlatformRow.locator('.publish-platform-hashtags')).toHaveText('#巴哈限定 #圖文');
+  expect(await page.evaluate(() => ({
+    stateHashtags: state.visualEntries[0].platformHashtags?.['巴哈小屋'],
+    savedHashtags: window.__savedVisualEntry?.entry?.platformHashtags?.['巴哈小屋']
+  }))).toEqual({
+    stateHashtags: '#巴哈限定 #圖文',
+    savedHashtags: '#巴哈限定 #圖文'
+  });
+  await expect(publishCard.locator('.publish-platform-row').nth(1).locator('.publish-platform-hashtags')).toHaveText('#StoryFlow #夜色創作');
+
   expect(await publishingPreview.locator('.platform-preview-actions .button').allTextContents()).toEqual(['標註已發布', '關閉', '複製內容']);
   await expect(publishingPreview.locator('.visual-upload-order')).toContainText('圖片不會被複製或自動上傳');
   await expect(publishingPreview.locator('.visual-upload-order li')).toHaveCount(2);
   await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('月光下的城堡預告');
-  await expect(publishingPreview.locator('#platformPreviewHashtags')).toHaveText('#StoryFlow #夜色創作');
+  await expect(publishingPreview.locator('#platformPreviewHashtags')).toHaveText('#巴哈限定 #圖文');
   expect(await publishingPreview.evaluate(dialog => {
     const content = dialog.querySelector('#platformPreviewContent');
+    const lastImage = dialog.querySelector('.visual-upload-order li:last-child');
     const extras = dialog.querySelector('#platformPreviewVisualExtras');
-    return Boolean(content && extras && (content.compareDocumentPosition(extras) & Node.DOCUMENT_POSITION_FOLLOWING));
-  })).toBe(true);
+    if (!content || !lastImage || !extras) return null;
+    const contentBox = content.getBoundingClientRect();
+    const imageBox = lastImage.getBoundingClientRect();
+    const extrasBox = extras.getBoundingClientRect();
+    return {
+      imageInsideContent: imageBox.bottom <= contentBox.bottom + 1,
+      extrasAfterContent: extrasBox.top >= contentBox.bottom - 1
+    };
+  })).toEqual({ imageInsideContent: true, extrasAfterContent: true });
   await publishingPreview.locator('#copyPlatformHashtags').click();
-  await expect.poll(() => page.evaluate(() => window.__copiedVisualHelper)).toBe('#StoryFlow #夜色創作');
+  await expect.poll(() => page.evaluate(() => window.__copiedVisualHelper)).toBe('#巴哈限定 #圖文');
   await publishingPreview.locator('#editPlatformTitle').click();
-  await publishingPreview.locator('#platformPreviewTitleInput').fill('方格子月下預告');
+  await publishingPreview.locator('#platformPreviewTitleInput').fill('巴哈月下預告');
   await publishingPreview.locator('#savePlatformPreviewTitle').click();
-  await expect(publishingPreview.locator('#platformPreviewPublishTitle')).toHaveText('方格子月下預告');
+  await expect(publishingPreview.locator('#platformPreviewPublishTitle')).toHaveText('巴哈月下預告');
   await publishingPreview.locator('#cancelPlatformCopy').click();
   await page.locator('#globalSearchBtn').click();
-  await page.locator('#globalSearchInput').fill('方格子月下');
+  await page.locator('#globalSearchInput').fill('巴哈月下');
   await expect(page.locator('.global-search-result-type.visual')).toHaveText('發布圖文');
   await page.locator('#globalSearchInput').fill('#夜色');
   await expect(page.locator('.global-search-empty')).toContainText('找不到符合內容');

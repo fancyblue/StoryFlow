@@ -9,7 +9,7 @@
 | --- | --- | --- | --- |
 | Phase 0 | 已完成（2026-08-28） | 相容性與技術 spike；不開放 UI | `contentMode`／`visualEntries` 正規化、固定 ID 輸出路徑、圖片路徑 adapter、共用 publishable view model、新舊 workspace fixture |
 | Phase 1 | 已完成（2026-08-28） | 可用的圖文 MVP | 作品類型選擇、圖文工作台、CRUD、圖片維護、私人輸出、Recovery、基本預覽 |
-| Phase 2 | 已完成（2026-08-28） | 整合發布 | 共用清單與篩選、平台資料、預覽／複製、圖片順序、繼續發布、搜尋 |
+| Phase 2 | 已完成（2026-08-29） | 整合發布 | 共用清單與篩選、平台標題與 Hashtags、預覽／複製、圖片順序、繼續發布、搜尋 |
 
 Phase 0 的共用資料基礎位於 `src/projects/content-model.js`；Phase 1 工作台位於 `src/projects/visual-workspace.js`；Phase 2 整合 `src/publishing/publishing-flow.js`、`publishing-project-filter.js` 與 `src/ui/global-search.js`。核心 fixture 與完整瀏覽器流程共同驗證。
 
@@ -153,6 +153,7 @@ StoryFlow
 - 「繼續發布」依最近確認／編輯且尚未完成的項目排序，不區分內容類型。
 - 圖文項目沒有「預覽預設設定」的長文切篇語意，直接顯示「預覽／複製」與「管理發布」。
 - 圖片仍需使用者依預覽順序逐張上傳至外部平台；StoryFlow 不自動發布圖檔。
+- Hashtags 預設沿用圖文共用值；可從各平台列旁的「編輯」建立平台覆寫、明確留空，或改回共用。文字本身仍可直接點擊複製。
 
 ## 5. User stories
 
@@ -180,7 +181,7 @@ StoryFlow
 | ID | User story | 驗收重點 |
 | --- | --- | --- |
 | VC-10 | 作為使用者，我想在發布前預覽文字、圖片、圖說與平台格式。 | 預覽使用私人 object URL；關閉後釋放。 |
-| VC-11 | 作為使用者，我想為不同平台保存不同標題。 | 沿用 `platformTitles`；不更改內部項目名與檔名。 |
+| VC-11 | 作為使用者，我想為不同平台保存不同標題與 Hashtags。 | 沿用 `platformTitles`；`platformHashtags` 缺少平台鍵時沿用共用值、空字串代表停用；不更改內部項目名與檔名。 |
 | VC-12 | 作為使用者，我想複製可貼到平台的文字，並知道圖片的上傳順序。 | 文字複製與圖檔上傳分開；提供清楚順序清單。 |
 | VC-13 | 作為使用者，我想記錄每個平台的發布時間與網址。 | 沿用 `publicationRecords` 與目前的取消已發布規則。 |
 | VC-14 | 作為使用者，我想從「繼續發布」回到最近未完成的圖文。 | 長文與圖文共用排序邏輯；開啟後展開正確項目。 |
@@ -271,6 +272,7 @@ Phase 0 技術 spike 與 Phase 1–2 實作已完成；下列為目前採用且�
     }
   ],
   platformTitles: {},
+  platformHashtags: {},      // 缺少平台鍵時沿用共用 hashtags；空字串代表該平台不用
   platformStatus: {},
   publicationRecords: {},
   createdAt: "ISO timestamp",
