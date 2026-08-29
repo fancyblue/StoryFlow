@@ -1646,6 +1646,17 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(visualDetail).toContainText('可發布');
   await expect(visualDetail).toContainText('2 張圖片');
   await expect(visualDetail.getByRole('button', { name: '編輯圖文「月下預告」', exact: true })).toBeVisible();
+  const worksDelete = visualDetail.getByRole('button', { name: '刪除圖文「月下預告」', exact: true });
+  await expect(worksDelete).toBeVisible();
+  page.once('dialog', dialog => dialog.accept());
+  await worksDelete.click();
+  await expect(card.locator('.project-visual-entry-row')).toHaveCount(0);
+  await expect(card.locator('.project-chapter-manager-empty')).toHaveText('目前還沒有圖文。');
+  const worksDeletion = await page.evaluate(() => ({
+    removed: window.__removedVisualEntries.length,
+    recoveryCount: window.__visualRecoveryReasons.filter(reason => reason === 'before-visual-entry-delete').length
+  }));
+  expect(worksDeletion).toEqual({ removed: 2, recoveryCount: 2 });
   expect(pageErrors).toEqual([]);
 });
 
