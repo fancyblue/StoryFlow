@@ -515,20 +515,34 @@
     } catch (error) { notify(`圖文尚未完整保存：${error.message}`, true); }
   }
 
-  async function deleteEntry() {
-    if (isReadOnly()) return notify('手機目前為唯讀，無法刪除圖文。', true);
-    const entry = activeEntry();
-    if (!entry || !confirm(`刪除圖文「${entry.title}」？\n\n工作區關聯與文字輸出會移除；私人 assets 圖檔預設保留。`)) return;
+  async function deleteEntry(entryId = activeEntry()?.id) {
+    if (isReadOnly()) {
+      notify('手機目前為唯讀，無法刪除圖文。', true);
+      return false;
+    }
+    const list = entries();
+    const entry = list.find(item => item.id === entryId);
+    if (!entry || !confirm(`刪除圖文「${entry.title}」？\n\n工作區關聯與文字輸出會移除；私人 assets 圖檔預設保留。`)) return false;
     try {
       await window.StoryFlowProjectPersistence?.prepareRecovery?.('before-visual-entry-delete');
       await StoryFlowIntegrations.removeVisualEntryFiles({ projectTitle: state.projectTitle, entryId: entry.id, entry });
-      const index = entries().findIndex(item => item.id === entry.id);
-      entries().splice(index, 1);
-      activeEntryId = entries()[Math.min(index, entries().length - 1)]?.id || null;
-      markChanged('圖文已刪除');
+      const index = list.findIndex(item => item.id === entry.id);
+      list.splice(index, 1);
+      dirtyEntryIds.delete(entry.id);
+      if (activeEntryId === entry.id || !list.some(item => item.id === activeEntryId)) {
+        activeEntryId = list[Math.min(index, list.length - 1)]?.id || null;
+      }
+      saveState('圖文已刪除');
+      window.dispatchEvent(new CustomEvent('storyflow:visual-entry-changed', {
+        detail: { projectId: window.StoryFlowProjects?.activeId?.(), entryId: entry.id, deleted: true }
+      }));
       render();
       notify(`已刪除圖文：${entry.title}；圖片檔仍保留`);
-    } catch (error) { notify(`尚未刪除圖文：${error.message}`, true); }
+      return true;
+    } catch (error) {
+      notify(`尚未刪除圖文：${error.message}`, true);
+      return false;
+    }
   }
 
   function renderList() {
@@ -699,6 +713,6 @@
     openTypeChooser();
   }, true);
 
-  window.StoryFlowVisualWorkspace = { openTypeChooser, openEntry, render, hide, activeEntry: () => activeEntry() };
+  window.StoryFlowVisualWorkspace = { openTypeChooser, openEntry, deleteEntry, render, hide, activeEntry: () => activeEntry() };
   if (isVisual()) render();
 })();
