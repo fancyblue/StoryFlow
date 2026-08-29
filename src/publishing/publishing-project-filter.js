@@ -9,6 +9,7 @@
 
   let workspaceSnapshot = null;
   let selectedProjectIds = new Set();
+  let currentContentType = 'all';
   let initializedSelection = false;
   let refreshTimer = null;
   let refreshEpoch = 0;
@@ -165,6 +166,20 @@
     return document.querySelector('#publishingFilters .publishing-filter.active')?.dataset.filter || 'all';
   }
 
+  function updateContentTypeCounts(entries) {
+    const counts = {
+      all: entries.length,
+      longform: entries.filter(entry => entry.contentMode === 'longform').length,
+      visual: entries.filter(entry => entry.contentMode === 'visual').length
+    };
+    document.querySelectorAll('#publishingContentTypeFilters [data-content-type]').forEach(button => {
+      const key = button.dataset.contentType || 'all';
+      const label = key === 'all' ? '全部類型' : key === 'longform' ? '長文' : '圖文';
+      button.textContent = `${label} ${Number(counts[key] || 0).toLocaleString()}`;
+      button.classList.toggle('active', key === currentContentType);
+    });
+  }
+
   function updateStatusCounts(entries) {
     const counts = { all: entries.length, pending: 0, partial: 0, complete: 0 };
     entries.forEach(entry => { counts[entry.status.key] += 1; });
@@ -238,6 +253,26 @@
         selectedProjectIds = new Set(projects.map(project => project.id));
         renderProjectFilterOptions();
         renderCombinedPublishingList();
+      });
+    }
+
+    let typeFilters = document.getElementById('publishingContentTypeFilters');
+    if (!typeFilters) {
+      typeFilters = document.createElement('div');
+      typeFilters.id = 'publishingContentTypeFilters';
+      typeFilters.className = 'publishing-content-type-filters';
+      typeFilters.setAttribute('role', 'group');
+      typeFilters.setAttribute('aria-label', '篩選內容類型');
+      typeFilters.innerHTML = `
+        <button class="publishing-type-filter active" type="button" data-content-type="all">全部類型</button>
+        <button class="publishing-type-filter" type="button" data-content-type="longform">長文</button>
+        <button class="publishing-type-filter" type="button" data-content-type="visual">圖文</button>`;
+      stack.insertBefore(typeFilters, statusFilters);
+      typeFilters.addEventListener('click', event => {
+        const button = event.target.closest('[data-content-type]');
+        if (!button) return;
+        currentContentType = button.dataset.contentType || 'all';
+        window.renderParts?.();
       });
     }
     return control;
@@ -337,7 +372,10 @@
     titleWrap.className = 'publishing-project-group-title';
     const title = document.createElement('strong');
     title.textContent = project.title || project.state?.projectTitle || '未命名作品';
-    titleWrap.appendChild(title);
+    const typeBadge = document.createElement('span');
+    typeBadge.className = 'project-type-badge publishing-project-type-badge';
+    typeBadge.textContent = project.state?.contentMode === 'visual' ? '圖文' : '長文';
+    titleWrap.append(title, typeBadge);
     if (project.id === window.StoryFlowProjects?.activeId?.()) {
       const current = document.createElement('span');
       current.className = 'publishing-project-current';
@@ -398,10 +436,14 @@
     });
 
     const selectedEntries = allSelectedEntries();
-    updateStatusCounts(selectedEntries);
-    syncContinuePublishing(selectedEntries);
+    updateContentTypeCounts(selectedEntries);
+    const contentEntries = currentContentType === 'all'
+      ? selectedEntries
+      : selectedEntries.filter(entry => entry.contentMode === currentContentType);
+    updateStatusCounts(contentEntries);
+    syncContinuePublishing(contentEntries);
     const filter = activeStatusFilter();
-    const filtered = filter === 'all' ? selectedEntries : selectedEntries.filter(entry => entry.status.key === filter);
+    const filtered = filter === 'all' ? contentEntries : contentEntries.filter(entry => entry.status.key === filter);
 
     const fragment = document.createDocumentFragment();
     const byProject = new Map();
@@ -426,8 +468,9 @@
         empty.innerHTML = '<strong>尚未有已確認文章</strong><span>先回到工作台載入內容並完成第一篇切篇。</span><button class="button primary" type="button">回到工作台開始切篇</button>';
         empty.querySelector('button').onclick = () => window.StoryFlowNavigate?.('workspace');
       } else {
-        empty.innerHTML = '<strong>沒有符合目前篩選的文章</strong><span>文章仍然存在，只是沒有符合目前選擇的發布狀態。</span><button class="button ghost" type="button">清除狀態篩選</button>';
+        empty.innerHTML = '<strong>沒有符合目前篩選的內容</strong><span>內容仍然存在，只是沒有符合目前選擇的類型或發布狀態。</span><button class="button ghost" type="button">清除篩選</button>';
         empty.querySelector('button').onclick = () => {
+          currentContentType = 'all';
           document.querySelector('#publishingFilters [data-filter="all"]')?.click();
         };
       }
