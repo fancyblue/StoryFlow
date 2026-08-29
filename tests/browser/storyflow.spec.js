@@ -1082,7 +1082,7 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   const card = page.locator('.publish-list-item', { hasText: '內部文章名稱' });
   await card.getByRole('button', { name: /展開.*發布平台/ }).click();
   const platformRow = card.locator('.publish-platform-row', { hasText: '巴哈小屋' });
-  await platformRow.getByRole('button', { name: '預覽／複製「巴哈小屋」', exact: true }).click();
+  await platformRow.getByRole('button', { name: '預覽與複製「巴哈小屋」', exact: true }).click();
   const preview = page.locator('#platformPreviewDialog');
   await preview.getByRole('button', { name: '修改此平台標題', exact: true }).click();
   await preview.getByRole('textbox', { name: '此平台標題', exact: true }).fill('給讀者看的正式標題');
@@ -1121,7 +1121,7 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('# 給讀者看的正式標題\n\n只應出現在內容區的正文。');
 
-  await platformRow.getByRole('button', { name: '預覽／複製「巴哈小屋」', exact: true }).click();
+  await platformRow.getByRole('button', { name: '預覽與複製「巴哈小屋」', exact: true }).click();
   await preview.getByRole('checkbox', { name: '複製內容時把標題放在最前面' }).check();
   await preview.locator('#platformPreviewTitleStyle').selectOption('bold');
   await expect(preview.locator('#platformPreviewContent strong')).toHaveText('給讀者看的正式標題');
@@ -1594,11 +1594,18 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await page.locator('#visualSaveEntryBtn').click();
   await expect.poll(() => page.evaluate(() => window.__savedVisualEntry?.entry?.title)).toBe('月下預告');
   await expect(page.locator('#visualOpenPublishingBtn')).toHaveCount(0);
+  const visualActionGap = await page.evaluate(() => {
+    const preview = document.getElementById('visualPreviewEntryBtn')?.getBoundingClientRect();
+    const save = document.getElementById('visualSaveEntryBtn')?.getBoundingClientRect();
+    return preview && save ? save.left - preview.right : 0;
+  });
+  expect(visualActionGap).toBeGreaterThanOrEqual(12);
   await page.locator('#visualPreviewEntryBtn').click();
   const workspacePreview = page.getByRole('dialog', { name: '圖文預覽 · 月下預告' });
   await expect(workspacePreview).toBeVisible();
   await expect(workspacePreview.locator('#visualPreviewBody')).toContainText('第二段圖文內容');
   await expect(workspacePreview.locator('#visualPreviewImages figure')).toHaveCount(2);
+  expect(await workspacePreview.locator('.visual-dialog-actions').evaluate(element => parseFloat(getComputedStyle(element).marginTop))).toBeGreaterThanOrEqual(16);
   await workspacePreview.getByRole('button', { name: '關閉', exact: true }).last().click();
 
   const stored = await page.evaluate(() => ({
@@ -1622,7 +1629,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   const publishCard = page.locator('.publish-list-item', { hasText: '月下預告' });
   await expect(publishCard).toBeVisible();
   await expect(publishCard.locator('.publish-content-type')).toHaveText('圖文');
-  await expect(publishCard.getByRole('button', { name: '預覽／複製「月下預告」', exact: true })).toBeVisible();
+  await expect(publishCard.getByRole('button', { name: '預覽與複製「月下預告」', exact: true })).toBeVisible();
   await expect(publishCard.getByRole('button', { name: '更多「月下預告」操作', exact: true })).toBeVisible();
   await publishCard.getByRole('button', { name: /展開「月下預告」的發布平台/ }).click();
   await expect(publishCard.locator('.visual-publish-helpers')).toHaveCount(0);
@@ -1647,15 +1654,20 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     savedSummary: '月光下的城堡預告',
     savedHashtags: '#StoryFlow #夜色創作'
   });
-  await expect(publishCard.locator('.publish-summary-hint')).toHaveAttribute('aria-label', '摘要：月光下的城堡預告');
+  const summaryHint = publishCard.locator('.publish-summary-hint');
+  await expect(summaryHint).toHaveAttribute('aria-label', '摘要：月光下的城堡預告');
+  await summaryHint.focus();
+  await expect.poll(() => summaryHint.evaluate(element => getComputedStyle(element.closest('.publish-list-item')).overflow)).toBe('visible');
   await expect(publishCard.locator('.publish-platform-row')).toHaveCount(2);
   const platformHashtags = publishCard.locator('.publish-platform-row').first().locator('.publish-platform-hashtags');
   await expect(platformHashtags).toHaveText('#StoryFlow #夜色創作');
   await platformHashtags.click();
   await expect.poll(() => page.evaluate(() => window.__copiedVisualHelper)).toBe('#StoryFlow #夜色創作');
-  await publishCard.locator('.publish-platform-row').first().getByRole('button', { name: '預覽／複製「巴哈小屋」', exact: true }).click();
+  await publishCard.locator('.publish-platform-row').first().getByRole('button', { name: '預覽與複製「巴哈小屋」', exact: true }).click();
   const publishingPreview = page.locator('#platformPreviewDialog');
   await expect(publishingPreview).toBeVisible();
+  await expect(publishingPreview.locator('#platformPreviewOptions')).toHaveJSProperty('open', false);
+  expect(await publishingPreview.locator('.platform-preview-actions .button').allTextContents()).toEqual(['標註已發布', '關閉', '複製內容']);
   await expect(publishingPreview.locator('.visual-upload-order')).toContainText('圖片不會被複製或自動上傳');
   await expect(publishingPreview.locator('.visual-upload-order li')).toHaveCount(2);
   await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('月光下的城堡預告');
