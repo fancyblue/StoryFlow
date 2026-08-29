@@ -267,21 +267,21 @@
     dialog.innerHTML = `
       <div class="dialog-card platform-preview-dialog-card">
         <div class="panel-head">
-          <div><p class="eyebrow">PUBLISH PREVIEW</p><h3 id="platformPreviewTitle">發布預覽</h3></div>
+          <div><p class="eyebrow">PREVIEW & COPY</p><h3 id="platformPreviewTitle">預覽與複製</h3></div>
           <button id="closePlatformPreview" class="icon-button" type="button" aria-label="關閉">×</button>
         </div>
         <div class="platform-preview-body">
-          <p id="platformPreviewMeta" class="muted"></p>
-          <div class="platform-preview-title-copy">
+          <p id="platformPreviewMeta" class="muted platform-preview-meta"></p>
+          <section class="platform-preview-title-copy" aria-label="發布標題">
             <div>
               <span id="platformPreviewTitleSource">發布標題</span>
               <strong id="platformPreviewPublishTitle"></strong>
             </div>
             <div class="platform-preview-title-actions">
-              <button id="copyPlatformTitle" class="button tiny ghost" type="button">複製標題</button>
-              <button id="editPlatformTitle" class="button tiny ghost" type="button">修改此平台標題</button>
+              <button id="copyPlatformTitle" class="button tiny ghost" type="button" aria-label="複製標題">複製</button>
+              <button id="editPlatformTitle" class="button tiny ghost" type="button" aria-label="修改此平台標題">編輯</button>
             </div>
-          </div>
+          </section>
           <div id="platformPreviewTitleEditor" class="platform-preview-title-editor" hidden>
             <label class="field-label" for="platformPreviewTitleInput">此平台標題</label>
             <div class="platform-preview-title-editor-controls">
@@ -291,38 +291,42 @@
             </div>
             <small>只影響目前平台，不修改來源文章名稱或 Markdown 檔名。</small>
           </div>
-          <div class="platform-preview-copy-title-option">
-            <label>
-              <input id="platformPreviewIncludeTitle" type="checkbox" />
-              <span>複製內容時把標題放在最前面</span>
-            </label>
-            <select id="platformPreviewTitleStyle" class="text-input" disabled>
-              <option value="heading">大標題</option>
-              <option value="bold">粗體</option>
-            </select>
-            <small>貼到支援格式的平台會直接套用；純文字環境會保留 Markdown 標記。</small>
-          </div>
-          <label id="platformPreviewAfterwordOption" class="platform-preview-afterword-option" hidden>
-            <input id="platformPreviewIncludeAfterword" type="checkbox" />
-            <span>附上後記</span>
-            <small id="platformPreviewAfterwordCount"></small>
-          </label>
+          <details id="platformPreviewOptions" class="platform-preview-options">
+            <summary>複製選項 <span id="platformPreviewOptionsSummary">使用預設</span></summary>
+            <div class="platform-preview-options-body">
+              <div class="platform-preview-copy-title-option">
+                <label>
+                  <input id="platformPreviewIncludeTitle" type="checkbox" />
+                  <span>內容前附上標題</span>
+                </label>
+                <select id="platformPreviewTitleStyle" class="text-input" disabled aria-label="標題格式">
+                  <option value="heading">大標題</option>
+                  <option value="bold">粗體</option>
+                </select>
+              </div>
+              <label id="platformPreviewAfterwordOption" class="platform-preview-afterword-option" hidden>
+                <input id="platformPreviewIncludeAfterword" type="checkbox" />
+                <span>附上後記</span>
+                <small id="platformPreviewAfterwordCount"></small>
+              </label>
+            </div>
+          </details>
+          <div class="platform-preview-content-head"><strong>內容預覽</strong><span>主要內容</span></div>
           <div id="platformPreviewContent" class="platform-preview-content"></div>
-          <section id="platformPreviewVisualExtras" class="platform-preview-visual-extras" hidden>
-            <article id="platformPreviewSummaryCard" hidden>
-              <div><span>摘要</span><p id="platformPreviewSummary"></p></div>
-              <button id="copyPlatformSummary" class="button tiny ghost" type="button">複製摘要</button>
-            </article>
-            <button id="copyPlatformHashtags" class="platform-preview-hashtags-copy" type="button" hidden>
-              <span>Hashtags</span><p id="platformPreviewHashtags"></p><small>點一下複製整串</small>
+          <section id="platformPreviewVisualExtras" class="platform-preview-visual-extras" aria-label="選填發布資訊" hidden>
+            <button id="copyPlatformSummary" class="platform-preview-extra-copy" type="button" hidden>
+              <span>摘要</span><p id="platformPreviewSummary"></p><small>點一下複製</small>
             </button>
-            <small>摘要與 Hashtags 是選填的發布輔助資訊，不會自動加入正文。</small>
+            <button id="copyPlatformHashtags" class="platform-preview-extra-copy" type="button" hidden>
+              <span>Hashtags</span><p id="platformPreviewHashtags"></p><small>點一下複製</small>
+            </button>
           </section>
         </div>
         <div class="platform-preview-actions">
-          <button id="confirmPlatformCopy" class="button primary" type="button">複製內容</button>
           <button id="togglePlatformPublished" class="button ghost" type="button">標註已發布</button>
+          <span class="platform-preview-actions-spacer"></span>
           <button id="cancelPlatformCopy" class="button ghost" type="button">關閉</button>
+          <button id="confirmPlatformCopy" class="button primary" type="button">複製內容</button>
         </div>
       </div>`;
     document.body.appendChild(dialog);
@@ -453,9 +457,11 @@
     const titleStyle = publishDialog.querySelector('#platformPreviewTitleStyle');
     const titleEditor = publishDialog.querySelector('#platformPreviewTitleEditor');
     const titleInput = publishDialog.querySelector('#platformPreviewTitleInput');
+    const options = publishDialog.querySelector('#platformPreviewOptions');
+    const optionsSummary = publishDialog.querySelector('#platformPreviewOptionsSummary');
     const editTitle = publishDialog.querySelector('#editPlatformTitle');
     const visualExtras = publishDialog.querySelector('#platformPreviewVisualExtras');
-    const summaryCard = publishDialog.querySelector('#platformPreviewSummaryCard');
+    const summaryCard = publishDialog.querySelector('#copyPlatformSummary');
     const hashtagsCard = publishDialog.querySelector('#copyPlatformHashtags');
     const summaryText = String(part.summary || '').trim();
     const hashtagsText = String(part.hashtags || '').trim();
@@ -501,10 +507,10 @@
     };
 
     publishDialog.querySelector('#platformPreviewMeta').textContent = platform
-      ? `這是「${platform}」實際要貼出的${visual ? '文字與圖片順序' : '內容'}。發布狀態只會修改這個平台。`
-      : '這是預設設定的輸出預覽；預設設定不是發布平台，因此不會產生發布狀態。';
+      ? `${platform} · ${visual ? '文字與圖片順序' : '貼文內容'}`
+      : '預設輸出預覽 · 不會變更發布狀態';
     if (publishTitleFor(part, platform) !== part.title) {
-      publishDialog.querySelector('#platformPreviewMeta').textContent += ` 內部文章名稱：${part.title}。`;
+      publishDialog.querySelector('#platformPreviewMeta').textContent += ` · 內部名稱：${part.title}`;
     }
     editTitle.hidden = !platform;
     titleEditor.hidden = true;
@@ -532,6 +538,13 @@
     includeTitle.checked = false;
     titleStyle.value = 'heading';
     titleStyle.disabled = true;
+    options.open = false;
+    const refreshOptionsSummary = () => {
+      const labels = [];
+      if (includeTitle.checked) labels.push(titleStyle.value === 'bold' ? '含粗體標題' : '含大標題');
+      if (!afterwordOption.hidden && includeAfterword.checked) labels.push('含後記');
+      optionsSummary.textContent = labels.length ? labels.join(' · ') : '使用預設';
+    };
     editTitle.onclick = () => {
       titleEditor.hidden = !titleEditor.hidden;
       if (!titleEditor.hidden) titleInput.focus();
@@ -559,15 +572,20 @@
     };
     includeTitle.onchange = () => {
       titleStyle.disabled = !includeTitle.checked;
+      refreshOptionsSummary();
       refreshContent();
     };
-    titleStyle.onchange = refreshContent;
+    titleStyle.onchange = () => {
+      refreshOptionsSummary();
+      refreshContent();
+    };
     afterwordOption.hidden = afterwordCount === 0;
     includeAfterword.checked = !visual && part.includeAfterword !== false;
     publishDialog.querySelector('#platformPreviewAfterwordCount').textContent = `${afterwordCount.toLocaleString()} 字`;
     includeAfterword.onchange = async () => {
       if (visual) return;
       part.includeAfterword = includeAfterword.checked;
+      refreshOptionsSummary();
       saveState('後記輸出設定已更新');
       refreshContent();
       renderParts();
@@ -581,6 +599,7 @@
         notify(`輸出設定已更新，但文章 Markdown 尚未寫入：${error.message}`, true);
       }
     };
+    refreshOptionsSummary();
     refreshTitle();
     toggle.hidden = !platform;
     toggle.textContent = isPublished ? '取消已發布標記' : '標註已發布';
@@ -955,7 +974,7 @@
         ${recordSummary ? `<small class="publish-platform-record-summary">${escapeHtml(recordSummary)}</small>` : ''}
       </div>
       <div class="publish-platform-actions">
-        <button class="button tiny ghost platform-preview-btn" type="button" aria-label="預覽／複製「${escapeHtml(platform)}」">預覽／複製</button>
+        <button class="button tiny ghost platform-preview-btn" type="button" aria-label="預覽與複製「${escapeHtml(platform)}」">預覽與複製</button>
         <button class="button tiny ghost platform-record-btn" type="button" aria-label="${published ? '查看' : '記錄'}「${escapeHtml(platform)}」發布紀錄">${published ? '發布紀錄' : '記錄發布'}</button>
         <button class="button tiny ghost platform-status-btn ${published ? 'is-published' : ''}" type="button" aria-label="${published ? '取消' : '標註'}「${escapeHtml(platform)}」已發布">${published ? '取消已發布' : '標註已發布'}</button>
       </div>`;
@@ -1068,7 +1087,7 @@
           <span class="publish-overall-status ${status.key}">${status.label}${statusCount}</span>
         </div>
         <div class="publish-list-actions">
-          <button class="button tiny ghost default-preview-btn" type="button" aria-label="${visual ? '預覽／複製' : '預覽預設設定'}「${escapeHtml(part.title || '未命名內容')}」">${visual ? '預覽／複製' : '預覽預設設定'}</button>
+          <button class="button tiny ghost default-preview-btn" type="button" aria-label="${visual ? '預覽與複製' : '預覽預設設定'}「${escapeHtml(part.title || '未命名內容')}」">${visual ? '預覽與複製' : '預覽預設設定'}</button>
           <button class="button tiny ghost publish-delete-btn" type="button" aria-label="刪除「${escapeHtml(part.title || '未命名內容')}」">刪除</button>
           <span class="sf-chevron publish-expand-indicator" aria-hidden="true"></span>
         </div>
