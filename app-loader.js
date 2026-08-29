@@ -7,7 +7,7 @@
   const scripts = [
     { src: './src/core/config.js?v=20260817-1625', owner: 'core' },
     { src: './src/projects/content-model.js?v=20260828-p25a', owner: 'projects' },
-    { src: './src/persistence/integrations.js?v=20260828-p25a', owner: 'persistence' },
+    { src: './src/persistence/integrations.js?v=20260829-p31a', owner: 'persistence' },
     { src: './src/core/app.js?v=20260828-p20a', owner: 'core' },
     { src: './src/connection/session-auth.js?v=20260817-1522', owner: 'connection' },
     { src: './src/connection/folder-session.js?v=20260825-p1e', owner: 'connection' },
@@ -35,7 +35,7 @@
     { id: 'storyflowPlatformSettingsJs', src: './src/settings/platform-settings.js?v=20260827-p18a', owner: 'settings' },
     { id: 'storyflowSettingsBootstrapJs', src: './src/settings/settings-bootstrap.js?v=20260827-p15a', owner: 'settings' },
     { id: 'storyflowSettingsFileImportJs', src: './src/settings/settings-file-import.js?v=20260825-p2b', owner: 'settings' },
-    { id: 'storyflowBackupCenterJs', src: './src/settings/backup-center.js?v=20260827-p15a', owner: 'settings' },
+    { id: 'storyflowBackupCenterJs', src: './src/settings/backup-center.js?v=20260829-p31a', owner: 'settings' },
     { id: 'storyflowQuickStartJs', src: './src/connection/quick-start.js?v=20260825-p1e', owner: 'connection' },
     { src: './src/ui/navigation.js?v=20260826-p13a', owner: 'ui' },
     { src: './src/split/confirm-continuation.js', owner: 'split' },
