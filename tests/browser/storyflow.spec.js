@@ -186,10 +186,16 @@ test('desktop pages stay bounded from laptop through extended-monitor widths', a
         viewportWidth: innerWidth,
         documentWidth: document.documentElement.scrollWidth,
         contentWidth: main.clientWidth - parseFloat(mainStyle.paddingLeft) - parseFloat(mainStyle.paddingRight),
-        sourceWidth: source?.getBoundingClientRect().width || 0
+        sourceWidth: source?.getBoundingClientRect().width || 0,
+        rightColumn: document.querySelector('.workspace-main-column')?.getBoundingClientRect() || null,
+        statsBottom: document.querySelector('.workspace-main-column > .stats-grid')?.getBoundingClientRect().bottom || 0,
+        splitterTop: document.querySelector('.workspace-main-column > .splitter-panel')?.getBoundingClientRect().top || 0
       };
     });
     expect(workspaceLayout.documentWidth).toBeLessThanOrEqual(workspaceLayout.viewportWidth);
+    expect(workspaceLayout.rightColumn).not.toBeNull();
+    expect(workspaceLayout.splitterTop - workspaceLayout.statsBottom).toBeGreaterThanOrEqual(15);
+    expect(workspaceLayout.splitterTop - workspaceLayout.statsBottom).toBeLessThanOrEqual(21);
     expect(workspaceLayout.contentWidth).toBeLessThanOrEqual(1801);
     if (size.width >= 1600) {
       expect(workspaceLayout.sourceWidth).toBeGreaterThanOrEqual(319);
@@ -1634,7 +1640,21 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(publishCard.locator('.publish-content-type')).toHaveText('圖文');
   await expect(publishCard.getByRole('button', { name: '預覽與複製「月下預告」', exact: true })).toBeVisible();
   await expect(publishCard.getByRole('button', { name: '更多「月下預告」操作', exact: true })).toBeVisible();
-  await publishCard.getByRole('button', { name: /展開「月下預告」的發布平台/ }).click();
+  await page.evaluate(() => {
+    const spacer = document.createElement('div');
+    spacer.id = 'publishingScrollAnchorFixture';
+    spacer.style.height = '720px';
+    document.getElementById('partsList').before(spacer);
+  });
+  const managePublishing = publishCard.getByRole('button', { name: /展開「月下預告」的發布平台/ });
+  await managePublishing.evaluate(button => button.scrollIntoView({ block: 'center' }));
+  const beforeManage = await publishCard.evaluate(card => ({ top: card.getBoundingClientRect().top, scrollY: window.scrollY }));
+  await managePublishing.click();
+  const afterManage = await publishCard.evaluate(card => ({ top: card.getBoundingClientRect().top, scrollY: window.scrollY }));
+  expect(beforeManage.scrollY).toBeGreaterThan(0);
+  expect(afterManage.scrollY).toBeGreaterThan(0);
+  expect(Math.abs(afterManage.top - beforeManage.top)).toBeLessThanOrEqual(2);
+  await expect(publishCard.getByRole('button', { name: /收合「月下預告」的發布平台/ })).toBeFocused();
   await expect(publishCard.locator('.visual-publish-helpers')).toHaveCount(0);
   const helperToolButton = publishCard.getByRole('button', { name: '摘要與 Hashtags', exact: true });
   await expect(helperToolButton).toBeVisible();
@@ -1668,10 +1688,18 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await platformHashtags.click();
   await expect.poll(() => page.evaluate(() => window.__copiedVisualHelper)).toBe('#StoryFlow #夜色創作');
 
-  await firstPlatformRow.getByRole('button', { name: '編輯「巴哈小屋」Hashtags', exact: true }).click();
+  await firstPlatformRow.getByRole('button', { name: '預覽與複製「巴哈小屋」', exact: true }).click();
   const publishingPreview = page.locator('#platformPreviewDialog');
   await expect(publishingPreview).toBeVisible();
-  await expect(publishingPreview.locator('#platformPreviewOptions')).toHaveJSProperty('open', true);
+  await expect(publishingPreview.locator('#platformPreviewOptions')).toHaveJSProperty('open', false);
+  await expect(publishingPreview.locator('#platformPreviewHashtagsEditor')).toBeHidden();
+  expect(await publishingPreview.evaluate(dialog => {
+    const content = dialog.querySelector('#platformPreviewContent');
+    const editor = dialog.querySelector('#platformPreviewHashtagsEditor');
+    return Boolean(content && editor && (content.compareDocumentPosition(editor) & Node.DOCUMENT_POSITION_FOLLOWING));
+  })).toBe(true);
+  await publishingPreview.locator('#editPlatformPreviewHashtags').click();
+  await expect(publishingPreview.locator('#platformPreviewHashtagsEditor')).toBeVisible();
   await expect(publishingPreview.locator('#platformPreviewHashtagsState')).toHaveText('沿用共用');
   await expect(publishingPreview.locator('#platformPreviewHashtagsInput')).toHaveValue('#StoryFlow #夜色創作');
   await publishingPreview.locator('#platformPreviewHashtagsInput').fill('#巴哈限定 #圖文');
