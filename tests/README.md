@@ -17,6 +17,7 @@ The goal is fast feedback appropriate for one private user while retaining stric
 - `workspace-safety-ui.html` renders the recovery dialog without reading or changing a real StoryFlow folder.
 - `article-image-assets-core.html` verifies private binary copy, duplicate-name handling, stable relative paths, supported-format guards, image readback and Recovery-before-delete using an in-memory File System Access API.
 - `backup-center-ui.html` renders the connected-folder backup center with safe fixture metadata.
+- `storage-management-core.html` verifies age-gated cleanup, rolling-backup retention, and that referenced or recent article/visual images are never removed.
 - `quick-start-ui.html` verifies the remembered-folder cold-start prompt without touching a real folder.
 - `mobile-safe-mode-ui.html` emulates a phone session and verifies the compact read-only label, Settings-only session switch, guarded writes, safe workspace reload and return-to-read-only save; settings import remains available.
 - `source-diff-core.html` verifies same-count replacements, exact inline change isolation in long paragraphs, whitespace-only changes, title changes and line-ending normalization.
