@@ -1,5 +1,7 @@
 # StoryFlow architecture
 
+> 狀態：現行架構規範（已落地，持續維護；最後同步：2026-08-29）
+
 StoryFlow is a build-free static site. GitHub Pages serves the repository root, while all personal content stays in the user-selected StoryFlow folder.
 
 `app-loader.js` is the authoritative classic-script manifest. Its order is part of the runtime contract: older feature files share global lexical bindings and must remain parser-ordered until a domain is migrated as one unit. `index.html` should contain only external Google loaders and the StoryFlow loader, not individual app feature scripts.
@@ -14,6 +16,7 @@ StoryFlow is a build-free static site. GitHub Pages serves the repository root, 
 | Google bootstrap and token session | `src/settings/settings-bootstrap.js`, `src/connection/session-auth.js` | `settings.json`, session storage |
 | Generated articles | `src/persistence/integrations.js` | `Works/<work>/<chapter>/` |
 | Private article images | `src/persistence/integrations.js`, `src/publishing/article-images.js` | `Works/<work>/<chapter>/assets/<part-id>/` |
+| Visual entries and private images | `src/projects/visual-workspace.js`, `src/persistence/integrations.js` | `Works/<work>/Visual/<entry-id>/` |
 
 Each publishing `part` owns `platformTitles`, legacy `publishTitle`, `images`, `afterword`, `includeAfterword`, `platformStatus` and `publicationRecords`. `platformTitles` is keyed by publishing platform; a blank/missing platform value falls back to legacy `publishTitle`, then the internal `part.title`. The legacy field remains readable for existing workspaces but new title edits write only to `platformTitles`. Titles are stored in `workspace.json` and article metadata, but must not rename the source part or its stable Markdown filename. The afterword is stored in `workspace.json` beside publishing state, not in a source chapter draft. `publicationRecords` is keyed by platform and contains only `{ publishedAt, url }`; it is normalized on load and written into generated article metadata with the rest of the part. `src/publishing/publishing-flow.js` composes the body, optional afterword and optional copy-only title prefix at preview/copy time. The title prefix is not persisted into manuscript content or generated Markdown. Source refresh therefore leaves platform titles, images, afterwords and publication records unchanged, while publishing deletion removes their workspace records after the normal Recovery guard.
 
@@ -51,7 +54,9 @@ Phone sessions default to read-only because a browser can verify neither whether
 
 The repository root contains entry assets only. Runtime JavaScript lives under domain folders in `src/`; dormant historical scripts are isolated in `src/legacy/` and are not part of the asset manifest. Script order remains explicit in `app-loader.js` until each domain can be migrated as one unit.
 
-`src/projects/content-model.js` owns the content-type boundary. Missing or invalid `contentMode` values normalize to `longform`; visual works keep `visualEntries` separate from longform `chapters`. `src/projects/visual-workspace.js` owns the Phase 1 visual-series creation transaction, visual workspace, entry/image editing and basic preview. `StoryFlowIntegrations` owns fixed-ID `Works/<work>/Visual/<entry-id>/` text, metadata and assets writes; the workspace remains the project system of record. Visual destructive actions reuse `StoryFlowProjectPersistence.prepareRecovery()`, preserve assets by default and create a separate Recovery artifact before removing generated visual text. The outer multi-project workspace remains schema version 2 because the additions are backward-compatible project-state fields.
+`src/projects/content-model.js` owns the content-type boundary. Missing or invalid `contentMode` values normalize to `longform`; visual works keep `visualEntries` separate from longform `chapters`. `src/projects/visual-workspace.js` owns the completed visual-series creation transaction, visual workspace, entry/image editing and basic preview. `StoryFlowIntegrations` owns fixed-ID `Works/<work>/Visual/<entry-id>/` text, metadata and assets writes; the workspace remains the project system of record. Optional visual `summary` and `hashtags` are publishing helpers: they are edited in Publishing, remain separate from the body, and never become required fields. Normalized `tags` support in-memory search and classification while the user-facing hashtag string remains easy to copy.
+
+Visual entries join the shared Publishing queue through the publishable adapter, including platform titles, status and publication records. Destructive actions use the same row-overflow pattern and Recovery path in Workspace, Works and Publishing: `⋯ → 刪除圖文`. They reuse `StoryFlowProjectPersistence.prepareRecovery()`, preserve assets by default and create a separate Recovery artifact before removing generated visual text. The outer multi-project workspace remains schema version 2 because these fields are backward-compatible additions.
 
 CSS owned by a page domain lives under `styles/domains/`. A domain may keep a foundation file and one explicitly late layout/refinement file when the existing cascade boundary is part of the UI contract. Page composition, grid placement, responsive order and overflow boundaries belong there instead of being spread across feature styles or injected by JavaScript.
 

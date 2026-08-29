@@ -1,5 +1,7 @@
 # StoryFlow UI system
 
+> 狀態：現行 UI 規範（已落地，持續維護；最後同步：2026-08-29）
+
 This is the small shared UI contract for StoryFlow's desktop-first interface. Prefer these patterns over page-specific variants.
 
 ## Disclosure controls
@@ -34,6 +36,8 @@ Current shared disclosures include workspace work switching, Smart Split prefere
 Page-level task order and the resulting primary action are defined in [UX_FLOW.md](UX_FLOW.md). Frequency alone does not justify a solid fill, and a page may change its primary action as the current workflow stage changes.
 
 Do not place a destructive action beside the primary action when an overflow menu can keep the decision hierarchy clearer.
+
+Longform chapters/articles and visual entries share this rule. A visual entry is deleted from its row overflow as `⋯ → 刪除圖文`; do not add a second destructive button to the editor footer or make Workspace, Works and Publishing use different delete entry points. All entry deletion paths must reach the same confirmation and Recovery guard.
 
 On the Works page, “管理章節” is the most likely next step and uses the same emphasized light-blue treatment on every work card. “工作台／開啟” is outlined navigation, while “管理發布” is a quieter tinted shortcut. The “目前作品” badge and card treatment alone communicate which work is active; action color must not duplicate selection or make identical labels look like different functions. Expanded “收合章節” uses a stronger soft selection with an inset accent, never a solid primary fill.
 
@@ -78,6 +82,8 @@ Each platform row uses two information lines: platform/status first, publication
 - Do not open command search over another visible modal decision. The search footer states that only currently loaded private data is searched.
 
 ## Responsive scope
+
+The longform “作品與章節” rail and visual “作品與圖文” rail use the same source-column contract: `--sf-workspace-source-columns` and `--sf-workspace-column-gap`. Content type may change the rail contents, but not its outer width, page alignment or breakpoint behavior.
 
 Desktop Chrome is the primary work environment. Controls still need to wrap safely at narrow widths, but mobile should preserve essential reading and recovery rather than duplicate every dense desktop composition.
 

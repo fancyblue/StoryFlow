@@ -1,5 +1,7 @@
 # StoryFlow Chrome acceptance checklist
 
+> 狀態：現行、可重複執行的人工驗收清單（最後同步：2026-08-29）。未勾選的方框表示每次驗收應重新執行，不代表功能尚未完成。
+
 Use this checklist before treating a release as ready for daily writing. It exercises Chrome's real File System Access behavior, which CI replaces with safe in-memory fixtures.
 
 StoryFlow is a private, single-user site, so this is not a mandatory checklist for every change. For an isolated UI or documentation adjustment, run only the section directly affected. Complete the whole checklist only for a major release, a change spanning several workflows, or work involving real Chrome folder/file behavior. Automated tests should follow the proportional policy in `tests/README.md`.
@@ -63,10 +65,12 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] In Works, confirm every “管理章節” is the same emphasized light-blue 40 px / 14 px action. “工作台／開啟” stays outlined, “管理發布” stays paler, and only the card border and “目前作品” badge identify the current work.
 - [ ] With no works, confirm only “建立第一個作品” is shown as the solid action. After creating a work, confirm the header “＋ 新作品” returns as an outlined 40 px / 14 px action.
 - [ ] Create a “圖文系列” with a first entry. Confirm Works shows a `圖文` label, Workspace replaces the longform/Smart Split layout, and “管理發布” opens the visual entry in the shared Publishing page.
+- [ ] Compare longform “作品與章節” and visual “作品與圖文” at the same viewport. Confirm the SOURCE card, outer rail width, gap and editor alignment are identical.
+- [ ] Open “新增圖文” with an empty title, then use both `×` and “取消”. Confirm neither action triggers required-field validation and no empty entry is created.
 - [ ] Save a visual entry as `可發布` with text or images. Confirm “前往發布” appears only after the save succeeds, platform titles and publication records remain independent, and preview/copy shows an explicit manual image-upload order without copying files.
 - [ ] Search a visual title, platform title, and (with body search enabled) visual body. Confirm the result switches to the correct work and opens that visual item in Publishing.
 - [ ] In the visual workspace, edit title/body/status, import duplicate-named JPG/PNG/WebP/GIF images, set cover/alt/caption, reorder with both drag and arrow controls, reload, and confirm text plus image order remain stable.
-- [ ] Delete a visual entry and confirm Recovery is created, `content.md`/`metadata.json` are removed, and private `assets/` remains. Explicitly delete one image file and confirm it first appears in `Recovery/Assets/`.
+- [ ] From Workspace, Works and Publishing, confirm visual deletion is reached through the entry row's `⋯ → 刪除圖文`, uses the same confirmation and Recovery guard, and is not duplicated in the editor footer. Delete a disposable entry and confirm Recovery is created, `content.md`/`metadata.json` are removed, and private `assets/` remains. Explicitly delete one image file and confirm it first appears in `Recovery/Assets/`.
 - [ ] On a phone-sized touch session in default read-only mode, confirm visual content and preview remain readable while entry creation, fields, import, ordering, removal and save controls are blocked.
 - [ ] In Publishing, confirm each row's “預覽預設設定／管理發布／⋯” actions align to the same 40 px height and management text uses 14 px. Expanded “收合發布” uses a stronger soft selection rather than a solid primary fill.
 - [ ] With no confirmed article, confirm the workspace publishing summary does not show “前往發布”. With unfinished confirmed content it becomes a solid action; when all publishing is complete it becomes the outlined “查看發布紀錄”.
@@ -76,6 +80,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 
 ## 5. Publishing and destructive-action safety
 
+- [ ] Open a visual entry in Publishing. Leave 摘要 and Hashtags empty and confirm saving/publishing remains valid. Then enter a summary and a copy-friendly hashtag string, save, reload and confirm both return unchanged, can be copied, support search/classification, and are not inserted into the visual body.
 - [ ] Create and save one test publishing part, then confirm its Markdown exists under `Works/<work>/<chapter>/`.
 - [ ] Open one platform's “預覽／複製”, give it a different title, and save. Confirm only that platform shows the custom title, the Markdown filename does not change, metadata contains `platformTitles`, and another platform still falls back to the article name.
 - [ ] In the same preview, confirm “複製標題” remains independent. Enable “複製內容時把標題放在最前面”, verify both 大標題 and 粗體 previews, then confirm rich destinations receive formatting while plain-text destinations receive equivalent Markdown.
