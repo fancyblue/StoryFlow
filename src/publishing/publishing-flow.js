@@ -278,8 +278,8 @@
               <strong id="platformPreviewPublishTitle"></strong>
             </div>
             <div class="platform-preview-title-actions">
-              <button id="copyPlatformTitle" class="button tiny ghost" type="button">複製</button>
-              <button id="editPlatformTitle" class="button tiny ghost" type="button">編輯</button>
+              <button id="copyPlatformTitle" class="button tiny ghost" type="button" aria-label="複製標題">複製</button>
+              <button id="editPlatformTitle" class="button tiny ghost" type="button" aria-label="修改此平台標題">編輯</button>
             </div>
           </section>
           <div id="platformPreviewTitleEditor" class="platform-preview-title-editor" hidden>
