@@ -11,7 +11,7 @@
       link = document.createElement('link');
       link.id = 'storyflowChapterManagementCss';
       link.rel = 'stylesheet';
-      link.href = './styles/domains/chapter-management.css?v=20260828-p23a';
+      link.href = './styles/domains/chapter-management.css?v=20260829-p33a';
       document.head.appendChild(link);
     }
     return link;
@@ -28,7 +28,7 @@
     document.querySelectorAll('.chapter-row-action-menu').forEach(menu => {
       if (menu === except) return;
       menu.hidden = true;
-      menu.closest('.chapter-row')?.querySelector('.chapter-more-button')?.setAttribute('aria-expanded', 'false');
+      menu.closest('.chapter-row, .project-visual-entry-row, .visual-entry-row')?.querySelector('.chapter-more-button')?.setAttribute('aria-expanded', 'false');
     });
   }
 
@@ -276,7 +276,7 @@
         status.textContent = entry.status;
 
         const actions = document.createElement('div');
-        actions.className = 'project-chapter-actions';
+        actions.className = 'project-chapter-actions project-visual-entry-actions';
         const edit = document.createElement('button');
         edit.type = 'button';
         edit.className = 'button tiny ghost project-visual-entry-edit';
@@ -284,13 +284,30 @@
         edit.setAttribute('aria-label', `編輯圖文「${entry.title}」`);
         edit.addEventListener('click', () => editVisualEntry(entry.id));
 
+        const more = document.createElement('button');
+        more.type = 'button';
+        more.className = 'button tiny ghost chapter-more-button project-visual-entry-more';
+        more.textContent = '⋯';
+        more.setAttribute('aria-label', `更多「${entry.title}」操作`);
+        more.setAttribute('aria-haspopup', 'menu');
+        more.setAttribute('aria-expanded', 'false');
+        more.disabled = Boolean(window.StoryFlowMobileSafeMode?.isReadOnly?.());
+
+        const menu = document.createElement('div');
+        menu.className = 'chapter-row-action-menu project-visual-entry-action-menu';
+        menu.hidden = true;
+        menu.setAttribute('role', 'menu');
+
         const remove = document.createElement('button');
         remove.type = 'button';
-        remove.className = 'button tiny ghost project-visual-entry-delete';
-        remove.textContent = '刪除圖文';
-        remove.setAttribute('aria-label', `刪除圖文「${entry.title}」`);
-        remove.disabled = Boolean(window.StoryFlowMobileSafeMode?.isReadOnly?.());
-        remove.addEventListener('click', async () => {
+        remove.className = 'chapter-row-delete-menu-item';
+        remove.setAttribute('role', 'menuitem');
+        remove.innerHTML = '<span aria-hidden="true">×</span><span>刪除圖文</span>';
+        remove.addEventListener('click', async event => {
+          event.preventDefault();
+          event.stopPropagation();
+          menu.hidden = true;
+          more.setAttribute('aria-expanded', 'false');
           const deleteVisualEntry = window.StoryFlowVisualWorkspace?.deleteEntry;
           if (typeof deleteVisualEntry !== 'function') {
             window.notify?.('圖文刪除功能尚未準備完成，請重新整理後再試。', true);
@@ -302,7 +319,17 @@
           window.StoryFlowRenderProjects?.();
           window.setTimeout(decorateProjectsView, 0);
         });
-        actions.append(edit, remove);
+        menu.appendChild(remove);
+        more.addEventListener('click', event => {
+          event.preventDefault();
+          event.stopPropagation();
+          const opening = menu.hidden;
+          closeChapterMenus(opening ? menu : null);
+          menu.hidden = !opening;
+          more.setAttribute('aria-expanded', opening ? 'true' : 'false');
+          if (opening) menu.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+        });
+        actions.append(edit, more, menu);
 
         row.append(title, status, actions);
         list.appendChild(row);
