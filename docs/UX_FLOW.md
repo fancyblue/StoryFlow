@@ -52,7 +52,7 @@ The Publishing page separates queue navigation from the actual publishing commit
 | --- | --- | --- | --- | --- |
 | P-01 | Resume the latest unfinished publication | 繼續發布 | Filters and project selector | One solid page action, visible only when pending or partial work exists |
 | P-02 | Choose a specific article to process | 管理發布 | 預覽預設設定、`⋯` | Tinted row action; preview is outlined and overflow is tertiary |
-| P-03 | Verify platform formatting | 預覽／複製 | Copy title, include/exclude afterword | Outlined until the preview dialog opens |
+| P-03 | Verify platform formatting | 預覽與複製 | Collapsed copy options, copy title, include/exclude afterword | Outlined until the preview dialog opens; body/image preview is primary and “複製內容” is the final primary action |
 | P-04 | Copy content to a platform | 複製內容 | Optionally prepend title as heading or bold, 複製標題、關閉 | The single solid action in the preview dialog |
 | P-05 | Store publication time and URL | 保存發布紀錄 | 取消、開啟文章 | The single solid action in the record dialog |
 | P-06 | Edit afterword or image metadata | 文章圖片／後記, then save the active editor | Preview and ordering controls | Compact entry row; one local solid save action only inside the active dialog |
@@ -167,7 +167,7 @@ SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認�
 
 ## Destructive actions
 
-Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). Manual chapters and visual entries use the same persistent trailing overflow, edit-then-delete item order, explicit confirmation and Recovery-first guard. A visual entry is deleted through `⋯ → 刪除圖文` from Workspace, Works or Publishing; the editor footer does not expose a competing delete button. Cancelling or closing a creation dialog is not submission and must never trigger required-field validation. Visual-entry status is explicit: both “草稿” and “可發布” save content; “可發布” means ready for the publishing workflow and never means automatically published. The save action mirrors the selected state as “保存草稿” or “保存並設為可發布”.
+Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). Manual chapters and visual entries use the same persistent trailing overflow, edit-then-delete item order, explicit confirmation and Recovery-first guard. A visual entry is deleted through `⋯ → 刪除圖文` from Workspace, Works or Publishing; the editor footer does not expose a competing delete button. Cancelling or closing a creation dialog is not submission and must never trigger required-field validation. Preview controls never overlap the reading surface: workbench preview/save actions keep a visible gap, dialog actions use a divided footer, and summary hints open below their icon without row clipping. Visual-entry status is explicit: both “草稿” and “可發布” save content; “可發布” means ready for the publishing workflow and never means automatically published. The save action mirrors the selected state as “保存草稿” or “保存並設為可發布”.
 
 Workspace does not provide a direct publishing shortcut for either content type; publication is entered from the primary navigation or the Works-page “管理發布” action. The Publishing page filters content type separately from publication status and repeats the type badge beside each work name.
 
@@ -176,7 +176,7 @@ Workspace does not provide a direct publishing shortcut for either content type;
 ## Article afterwords
 
 ```text
-發布 → 管理發布 → 後記 → 編輯／保存 → 關閉燈箱 → 預覽／複製
+發布 → 管理發布 → 後記 → 編輯／保存 → 關閉燈箱 → 預覽與複製
                                                    ↘ 可排除後記，只輸出正文
 ```
 
@@ -190,7 +190,7 @@ Workspace does not provide a direct publishing shortcut for either content type;
 ## Publishing titles
 
 ```text
-發布 → 管理發布 → 平台「預覽／複製」→ 修改此平台標題 → 保存
+發布 → 管理發布 → 平台「預覽與複製」→ 修改此平台標題 → 保存
                                          ↘ 改回沿用文章名稱
                          複製內容 → 可選「標題放最前面」→ 大標題／粗體
 ```
