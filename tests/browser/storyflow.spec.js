@@ -1503,7 +1503,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.getByRole('heading', { name: '圖文工作台', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: '作品與圖文', exact: true })).toBeVisible();
   await expect(page.locator('#visualProjectTitle')).toHaveText('夜色圖文集');
-  await expect(page.locator('#visualProjectTitle').locator('xpath=..').getByText('圖文系列', { exact: true })).toBeVisible();
+  await expect(page.locator('.visual-current-project').getByText('圖文系列', { exact: true })).toBeVisible();
   await expect(page.locator('#visualProjectSwitchBtn')).toHaveText('切換作品');
   expect(await page.locator('#visualProjectSwitchBtn').evaluate(button => Boolean(button.closest('.visual-entry-list-panel')))).toBe(true);
   await expect(page.locator('#visualNewEntryBtn')).toBeVisible();
