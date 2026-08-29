@@ -4,11 +4,19 @@
   let busy = false;
   let importCandidate = null;
   let storageSnapshot = null;
+  let cleanupPreviewVisible = false;
 
   const api = () => window.StoryFlowIntegrations;
   const formatDate = value => value
     ? new Date(value).toLocaleString('zh-TW', { dateStyle: 'medium', timeStyle: 'short' })
     : '尚無紀錄';
+  const formatBytes = value => {
+    const bytes = Number(value || 0);
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(bytes < 10 * 1024 ? 1 : 0)} KB`;
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(bytes < 10 * 1024 * 1024 ? 1 : 0)} MB`;
+    return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
+  };
 
   function ensureUi() {
     const view = document.getElementById('settingsView');
@@ -47,6 +55,36 @@
           <button id="importWorkspaceCenterBtn" class="button ghost" type="button">匯入工作區</button>
           <button id="restoreLatestBackupBtn" class="button ghost" type="button">從最近備份恢復</button>
         </div>
+        <section class="backup-storage-panel" aria-labelledby="backupStorageTitle">
+          <div class="backup-storage-head">
+            <div>
+              <h3 id="backupStorageTitle">儲存空間整理</h3>
+              <p>只列出 Recovery 與已不在目前工作區中的圖片。仍被文章或圖文引用的圖片不會列入清理。</p>
+            </div>
+          </div>
+          <div class="backup-storage-grid">
+            <article id="backupRecoveryJsonUsage" class="backup-storage-card"></article>
+            <article id="backupRecoveryImageUsage" class="backup-storage-card"></article>
+            <article id="backupOrphanImageUsage" class="backup-storage-card"></article>
+          </div>
+          <div class="backup-cleanup-controls">
+            <label for="backupCleanupAge">只清理超過</label>
+            <select id="backupCleanupAge" class="text-input compact-select">
+              <option value="30">30 天</option>
+              <option value="90">90 天</option>
+              <option value="365">1 年</option>
+            </select>
+            <button id="previewStorageCleanupBtn" class="button ghost" type="button">預覽可清理內容</button>
+          </div>
+          <div id="backupCleanupPreview" class="backup-cleanup-preview" hidden>
+            <div>
+              <strong id="backupCleanupSummary">尚未預覽</strong>
+              <p id="backupCleanupBreakdown"></p>
+              <small>循環備份固定保留最多 3 份，不在這次清理範圍。清理後無法復原。</small>
+            </div>
+            <button id="confirmStorageCleanupBtn" class="button backup-cleanup-confirm" type="button" data-mobile-safe-write-control="true">確認清理</button>
+          </div>
+        </section>
       </div>
       <div id="backupImportPreview" class="backup-import-preview" hidden>
         <div><strong>匯入前確認</strong><p id="backupImportSummary"></p><small>匯入會替換目前工作區；替換前的 workspace.json 會保留在 Recovery/。</small></div>
@@ -71,6 +109,12 @@
     section.querySelector('#confirmWorkspaceImportBtn').onclick = confirmImport;
     section.querySelector('#cancelWorkspaceImportBtn').onclick = clearImportPreview;
     section.querySelector('#backupCenterFileInput').onchange = handleImportFile;
+    section.querySelector('#previewStorageCleanupBtn').onclick = previewStorageCleanup;
+    section.querySelector('#confirmStorageCleanupBtn').onclick = confirmStorageCleanup;
+    section.querySelector('#backupCleanupAge').onchange = () => {
+      cleanupPreviewVisible = false;
+      refresh();
+    };
     return section;
   }
 
@@ -100,6 +144,49 @@
     if (!node) return;
     node.className = `backup-status-card ${tone}`.trim();
     node.innerHTML = `<span>${label}</span><strong>${title}</strong><small>${copy}</small>`;
+  }
+
+  function renderStorageCard(node, label, category, unavailable = false) {
+    if (!node) return;
+    const fileCount = Number(category?.fileCount || 0);
+    node.innerHTML = `<span>${label}</span><strong>${formatBytes(category?.bytes)}</strong><small>${
+      unavailable ? 'workspace.json 無法讀取，本次不判定' : `${fileCount} 個檔案`
+    }</small>`;
+  }
+
+  function cleanupDays() {
+    return Number(document.getElementById('backupCleanupAge')?.value || api()?.STORAGE_CLEANUP_DEFAULT_DAYS || 30);
+  }
+
+  function renderStorageUsage(storage) {
+    const usage = storage?.storageUsage || {};
+    const categories = usage.categories || {};
+    renderStorageCard(document.getElementById('backupRecoveryJsonUsage'), 'Recovery JSON', categories.recoverySnapshots);
+    renderStorageCard(document.getElementById('backupRecoveryImageUsage'), 'Recovery 圖片', categories.recoveryImages);
+    renderStorageCard(
+      document.getElementById('backupOrphanImageUsage'),
+      '未被引用的 Works 圖片',
+      categories.orphanedImages,
+      usage.workspaceScanAvailable === false
+    );
+
+    const select = document.getElementById('backupCleanupAge');
+    if (select && usage.olderThanDays) select.value = String(usage.olderThanDays);
+    const preview = document.getElementById('backupCleanupPreview');
+    if (!preview) return;
+    preview.hidden = !cleanupPreviewVisible;
+    if (!cleanupPreviewVisible) return;
+
+    const candidate = usage.cleanupPreview || {};
+    const parts = [
+      `Recovery JSON ${Number(categories.recoverySnapshots?.candidateCount || 0)} 個`,
+      `Recovery 圖片 ${Number(categories.recoveryImages?.candidateCount || 0)} 個`,
+      `未被引用圖片 ${Number(categories.orphanedImages?.candidateCount || 0)} 個`
+    ];
+    document.getElementById('backupCleanupSummary').textContent =
+      `可清理 ${Number(candidate.fileCount || 0)} 個檔案（${formatBytes(candidate.bytes)}）`;
+    document.getElementById('backupCleanupBreakdown').textContent = parts.join(' · ');
+    document.getElementById('confirmStorageCleanupBtn').disabled = busy || !Number(candidate.fileCount || 0);
   }
 
   function render(storage) {
@@ -153,6 +240,8 @@
     section.querySelector('#createWorkspaceBackupBtn').disabled = busy || !primary?.valid;
     section.querySelector('#downloadWorkspaceBtn').disabled = busy || !primary?.valid;
     section.querySelector('#restoreLatestBackupBtn').disabled = busy || !backup?.valid;
+    section.querySelector('#previewStorageCleanupBtn').disabled = busy;
+    renderStorageUsage(storage);
   }
 
   async function refresh({ announce = false } = {}) {
@@ -161,13 +250,57 @@
     try {
       const folder = await api()?.restoreOutputDirectory?.();
       const storage = folder?.connected
-        ? await api()?.inspectWorkspaceStorage?.()
+        ? await api()?.inspectWorkspaceStorage?.({ olderThanDays: cleanupDays() })
         : { connected: false, needsPermission: folder?.needsPermission, folderName: folder?.name };
       render(storage);
       if (announce) setMessage(storage?.connected ? '備份狀態已更新。' : '請先連接 StoryFlow 資料夾。');
     } catch (error) {
       render({ connected: false });
       setMessage(`無法檢查備份：${error.message}`, true);
+    }
+  }
+
+  async function previewStorageCleanup() {
+    if (busy) return;
+    setBusy(true, '正在重新掃描可清理內容…');
+    try {
+      const storage = await api().inspectWorkspaceStorage({ olderThanDays: cleanupDays() });
+      cleanupPreviewVisible = true;
+      storageSnapshot = storage;
+      setBusy(false);
+      render(storage);
+      const count = Number(storage.storageUsage?.cleanupPreview?.fileCount || 0);
+      setMessage(count ? '預覽已更新；確認後才會永久清理。' : '這個期限內沒有可安全清理的檔案。');
+    } catch (error) {
+      cleanupPreviewVisible = false;
+      setBusy(false);
+      setMessage(error.message || '無法預覽可清理內容。', true);
+    }
+  }
+
+  async function confirmStorageCleanup() {
+    if (busy || !cleanupPreviewVisible) return;
+    const preview = storageSnapshot?.storageUsage?.cleanupPreview || {};
+    const count = Number(preview.fileCount || 0);
+    if (!count) return;
+    const message = '永久清理 ' + count + ' 個檔案（' + formatBytes(preview.bytes) + '）？\n\n'
+      + '只會清理超過 ' + cleanupDays() + ' 天的 Recovery 副本與目前工作區未引用的圖片。'
+      + '循環備份與仍被引用的圖片不會刪除。此操作無法復原。';
+    if (!window.confirm(message)) return;
+
+    setBusy(true, '正在清理；系統會先重新掃描一次…');
+    try {
+      const result = await api().cleanupWorkspaceStorage({ olderThanDays: cleanupDays() });
+      cleanupPreviewVisible = false;
+      storageSnapshot = result.storage;
+      setBusy(false);
+      render(result.storage);
+      const failed = Number(result.failures?.length || 0);
+      const summary = '已清理 ' + Number(result.removedFiles || 0) + ' 個檔案（' + formatBytes(result.removedBytes) + '）';
+      setMessage(failed ? summary + '；另有 ' + failed + ' 項無法刪除，請重新檢查。' : summary + '。', failed > 0);
+    } catch (error) {
+      setBusy(false);
+      setMessage(error.message || '清理失敗，沒有繼續刪除其他內容。', true);
     }
   }
 

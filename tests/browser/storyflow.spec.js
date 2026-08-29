@@ -788,6 +788,14 @@ test('mobile editing stays enabled when returning to read-only cannot save', asy
   expect(pageErrors).toEqual([]);
 });
 
+test('storage cleanup keeps referenced and recent files', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/tests/storage-management-core.html');
+  await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
+  await expect(page.locator('#result')).toContainText('ALL PASS');
+  expect(pageErrors).toEqual([]);
+});
+
 test('backup center renders safe workspace metadata', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.goto('/tests/backup-center-ui.html');
@@ -796,6 +804,16 @@ test('backup center renders safe workspace metadata', async ({ page }) => {
   await expect(page.getByText('StoryFlow-test')).toBeVisible();
   await expect(page.getByText('2 部作品 · 8 個章節 · 3 篇發布稿')).toBeVisible();
   await expect(page.getByRole('button', { name: '從最近備份恢復', exact: true })).toBeEnabled();
+  await expect(page.getByText('儲存空間整理', { exact: true })).toBeVisible();
+  await expect(page.getByText('Recovery JSON', { exact: true })).toBeVisible();
+  await expect(page.getByText('未被引用的 Works 圖片', { exact: true })).toBeVisible();
+
+  await page.getByRole('button', { name: '預覽可清理內容', exact: true }).click();
+  await expect(page.getByText('可清理 4 個檔案（3.0 MB）', { exact: true })).toBeVisible();
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: '確認清理', exact: true }).click();
+  await expect(page.locator('#backupCenterStatus')).toContainText('已清理 4 個檔案');
+  expect(await page.evaluate(() => fixtureCleanupCalls)).toBe(1);
   expect(pageErrors).toEqual([]);
 });
 

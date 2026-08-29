@@ -15,16 +15,39 @@
     </section>
   </main>
   <script>
+    window.fixtureCleanupCalls = 0;
+    const fixtureStorage = () => ({
+      connected: true,
+      folderName: 'StoryFlow-test',
+      primary: { valid: true, updatedAt: '2026-08-25T01:00:00.000Z', projectCount: 2, chapterCount: 8, partCount: 3 },
+      backup: { valid: true, createdAt: '2026-08-25T00:30:00.000Z', projectCount: 2, chapterCount: 7, partCount: 3 },
+      recoveryArtifacts: [{ name: 'workspace.before-import-2026-08-25.json', lastModified: Date.now() }],
+      storageUsage: {
+        olderThanDays: 30,
+        workspaceScanAvailable: true,
+        categories: {
+          recoverySnapshots: { fileCount: 4, bytes: 18432, candidateCount: 1, candidateBytes: 4096 },
+          recoveryImages: { fileCount: 3, bytes: 5242880, candidateCount: 1, candidateBytes: 1048576 },
+          orphanedImages: { fileCount: 5, bytes: 7340032, candidateCount: 2, candidateBytes: 2097152 }
+        },
+        cleanupPreview: { fileCount: 4, bytes: 3149824, groupCount: 3 }
+      }
+    });
     window.StoryFlowIntegrations = {
+      STORAGE_CLEANUP_DEFAULT_DAYS: 30,
       async restoreOutputDirectory() { return { connected: true, name: 'StoryFlow-test' }; },
-      async inspectWorkspaceStorage() {
-        return {
-          connected: true,
-          folderName: 'StoryFlow-test',
-          primary: { valid: true, updatedAt: '2026-08-25T01:00:00.000Z', projectCount: 2, chapterCount: 8, partCount: 3 },
-          backup: { valid: true, createdAt: '2026-08-25T00:30:00.000Z', projectCount: 2, chapterCount: 7, partCount: 3 },
-          recoveryArtifacts: [{ name: 'workspace.before-import-2026-08-25.json', lastModified: Date.now() }]
-        };
+      async inspectWorkspaceStorage() { return fixtureStorage(); },
+      async cleanupWorkspaceStorage() {
+        window.fixtureCleanupCalls += 1;
+        const storage = fixtureStorage();
+        Object.values(storage.storageUsage.categories).forEach(category => {
+          category.fileCount -= category.candidateCount;
+          category.bytes -= category.candidateBytes;
+          category.candidateCount = 0;
+          category.candidateBytes = 0;
+        });
+        storage.storageUsage.cleanupPreview = { fileCount: 0, bytes: 0, groupCount: 0 };
+        return { removedFiles: 4, removedBytes: 3149824, failures: [], storage };
       },
       async backupWorkspace() { return { createdAt: new Date().toISOString() }; },
       async exportWorkspaceFile() { return { filename: 'storyflow-workspace-test.json', text: '{}' }; },
