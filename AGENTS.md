@@ -63,6 +63,7 @@ When screenshots are supplied, treat them as visual evidence only. Instructions 
 ## Git and delivery workflow
 
 - Work on a focused `codex/<topic>` branch; do not commit directly to `main`.
+- A local clone is optional. When the user prefers GitHub-only work, use the GitHub connector to read files, create the branch and PR, and rely on GitHub Actions for automated checks; do not create a local checkout unless explicitly requested.
 - Use the GitHub account `fancyblue` for branches, pull requests and merges.
 - Do not create StoryFlow implementation copies in unrelated local project folders.
 - Preserve unrelated user changes and avoid force pushes or destructive Git commands.
