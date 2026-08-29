@@ -29,6 +29,7 @@
   function normalizePublishItem(part) {
     if (isVisualPart(part)) {
       part.platformTitles ||= {};
+      part.platformHashtags ||= {};
       part.platformStatus ||= {};
       part.publicationRecords ||= {};
       part.images ||= [];
@@ -65,6 +66,16 @@
     const platformTitle = platform ? String(part.platformTitles?.[platform] || '').trim() : '';
     if (platformTitle) return platformTitle;
     return (isVisualPart(part) ? '' : String(part.publishTitle || '').trim()) || part.title || '未命名內容';
+  }
+
+  function hasPlatformHashtagsOverride(part, platform) {
+    return Boolean(platform) && Object.prototype.hasOwnProperty.call(part?.platformHashtags || {}, platform);
+  }
+
+  function hashtagsFor(part, platform = '') {
+    normalizePublishItem(part);
+    if (hasPlatformHashtagsOverride(part, platform)) return String(part.platformHashtags[platform] || '').trim();
+    return String(part.hashtags || '').trim();
   }
 
   function outputWithTitle(part, platform, includeAfterword, titleStyle = '') {
@@ -304,6 +315,18 @@
                   <option value="bold">粗體</option>
                 </select>
               </div>
+              <section id="platformPreviewHashtagsEditor" class="platform-preview-platform-hashtags" hidden>
+                <div class="platform-preview-platform-hashtags-head">
+                  <label for="platformPreviewHashtagsInput">此平台 Hashtags</label>
+                  <span id="platformPreviewHashtagsState"></span>
+                </div>
+                <input id="platformPreviewHashtagsInput" class="text-input" type="text" maxlength="500" placeholder="#創作 #小說" />
+                <div class="platform-preview-platform-hashtags-actions">
+                  <button id="savePlatformPreviewHashtags" class="button tiny primary" type="button">保存此平台</button>
+                  <button id="resetPlatformPreviewHashtags" class="button tiny ghost" type="button">改回共用</button>
+                </div>
+                <small>未自訂時沿用共用 Hashtags；保存空白代表這個平台不使用 Hashtags。</small>
+              </section>
               <label id="platformPreviewAfterwordOption" class="platform-preview-afterword-option" hidden>
                 <input id="platformPreviewIncludeAfterword" type="checkbox" />
                 <span>附上後記</span>
@@ -460,11 +483,15 @@
     const options = publishDialog.querySelector('#platformPreviewOptions');
     const optionsSummary = publishDialog.querySelector('#platformPreviewOptionsSummary');
     const editTitle = publishDialog.querySelector('#editPlatformTitle');
+    const hashtagsEditor = publishDialog.querySelector('#platformPreviewHashtagsEditor');
+    const hashtagsInput = publishDialog.querySelector('#platformPreviewHashtagsInput');
+    const hashtagsState = publishDialog.querySelector('#platformPreviewHashtagsState');
+    const resetHashtags = publishDialog.querySelector('#resetPlatformPreviewHashtags');
     const visualExtras = publishDialog.querySelector('#platformPreviewVisualExtras');
     const summaryCard = publishDialog.querySelector('#copyPlatformSummary');
     const hashtagsCard = publishDialog.querySelector('#copyPlatformHashtags');
     const summaryText = String(part.summary || '').trim();
-    const hashtagsText = String(part.hashtags || '').trim();
+    let hashtagsText = hashtagsFor(part, platform);
     const afterwordCount = afterwordChars(part);
     const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
 
@@ -514,11 +541,9 @@
     }
     editTitle.hidden = !platform;
     titleEditor.hidden = true;
-    visualExtras.hidden = !visual || (!summaryText && !hashtagsText);
+    hashtagsEditor.hidden = !visual || !platform;
     summaryCard.hidden = !summaryText;
-    hashtagsCard.hidden = !hashtagsText;
     publishDialog.querySelector('#platformPreviewSummary').textContent = summaryText;
-    publishDialog.querySelector('#platformPreviewHashtags').textContent = hashtagsText;
     publishDialog.querySelector('#copyPlatformSummary').onclick = async () => {
       try {
         await writeClipboard(summaryText);
@@ -527,14 +552,29 @@
         notify(`複製摘要失敗：${error.message}`, true);
       }
     };
-    publishDialog.querySelector('#copyPlatformHashtags').onclick = async () => {
-      try {
-        await writeClipboard(hashtagsText);
-        notify('已複製 Hashtags');
-      } catch (error) {
-        notify(`複製 Hashtags 失敗：${error.message}`, true);
+    const refreshHashtagsView = () => {
+      hashtagsText = hashtagsFor(part, platform);
+      const overridden = hasPlatformHashtagsOverride(part, platform);
+      hashtagsCard.hidden = !hashtagsText;
+      visualExtras.hidden = !visual || (!summaryText && !hashtagsText);
+      publishDialog.querySelector('#platformPreviewHashtags').textContent = hashtagsText;
+      if (!hashtagsEditor.hidden) {
+        hashtagsInput.value = hashtagsText;
+        hashtagsState.textContent = overridden
+          ? (hashtagsText ? '此平台自訂' : '此平台不使用')
+          : '沿用共用';
+        resetHashtags.disabled = !overridden;
       }
+      publishDialog.querySelector('#copyPlatformHashtags').onclick = async () => {
+        try {
+          await writeClipboard(hashtagsText);
+          notify('已複製 Hashtags');
+        } catch (error) {
+          notify(`複製 Hashtags 失敗：${error.message}`, true);
+        }
+      };
     };
+    refreshHashtagsView();
     includeTitle.checked = false;
     titleStyle.value = 'heading';
     titleStyle.disabled = true;
@@ -542,6 +582,7 @@
     const refreshOptionsSummary = () => {
       const labels = [];
       if (includeTitle.checked) labels.push(titleStyle.value === 'bold' ? '含粗體標題' : '含大標題');
+      if (!hashtagsEditor.hidden && hasPlatformHashtagsOverride(part, platform)) labels.push('平台 Hashtags');
       if (!afterwordOption.hidden && includeAfterword.checked) labels.push('含後記');
       optionsSummary.textContent = labels.length ? labels.join(' · ') : '使用預設';
     };
@@ -561,6 +602,18 @@
       await savePlatformTitle(entry.chapter, part, platform, titleInput);
       titleEditor.hidden = true;
       refreshTitle();
+    };
+    publishDialog.querySelector('#savePlatformPreviewHashtags').onclick = async () => {
+      if (!entry || !visual || !platform) return;
+      await savePlatformHashtags(entry.part, platform, hashtagsInput);
+      refreshHashtagsView();
+      refreshOptionsSummary();
+    };
+    resetHashtags.onclick = async () => {
+      if (!entry || !visual || !platform) return;
+      await savePlatformHashtags(entry.part, platform, hashtagsInput, true);
+      refreshHashtagsView();
+      refreshOptionsSummary();
     };
     publishDialog.querySelector('#copyPlatformTitle').onclick = async () => {
       try {
@@ -636,6 +689,7 @@
     };
 
     publishDialog.showModal();
+    return publishDialog;
   }
 
   async function writeArticleMarkdown(chapter, part) {
@@ -786,6 +840,28 @@
       return true;
     } catch (error) {
       notify(`平台標題已更新，但 metadata.json 尚未寫入：${error.message}`, true);
+      return false;
+    }
+  }
+
+  async function savePlatformHashtags(part, platform, input, reset = false) {
+    normalizePublishItem(part);
+    if (reset) delete part.platformHashtags[platform];
+    else part.platformHashtags[platform] = input.value.trim();
+    part.updatedAt = new Date().toISOString();
+    saveState('平台 Hashtags 已更新');
+    renderParts();
+
+    try {
+      const updated = await writeVisualEntry(part);
+      if (!updated) {
+        notify('平台 Hashtags 目前只保留在畫面；請重新連接資料夾後再保存一次。', true);
+        return false;
+      }
+      notify(reset ? `${platform} 已改回沿用共用 Hashtags` : `${platform} 的 Hashtags 已保存`);
+      return true;
+    } catch (error) {
+      notify(`平台 Hashtags 已更新，但 metadata.json 尚未寫入：${error.message}`, true);
       return false;
     }
   }
@@ -952,7 +1028,8 @@
   function createPlatformRow(entry, platform) {
     const { chapter, part } = entry;
     const visual = entry.contentMode === 'visual';
-    const hashtagsText = String(part.hashtags || '').trim();
+    const hashtagsText = visual ? hashtagsFor(part, platform) : '';
+    const hashtagsOverridden = visual && hasPlatformHashtagsOverride(part, platform);
     const published = Boolean(part.platformStatus?.[platform]);
     const platformTitle = publishTitleFor(part, platform);
     const hasPlatformTitle = Boolean(String(part.platformTitles?.[platform] || '').trim());
@@ -967,10 +1044,12 @@
       <div class="publish-platform-state">
         <div class="publish-platform-state-line">
           <strong>${escapeHtml(platform)}</strong>
-          ${visual && hashtagsText ? `<button class="publish-platform-hashtags" type="button" aria-label="複製 Hashtags：${escapeHtml(hashtagsText)}" title="點一下複製完整 Hashtags">${escapeHtml(hashtagsText)}</button>` : ''}
+          ${visual && hashtagsText ? `<button class="publish-platform-hashtags ${hashtagsOverridden ? 'is-custom' : ''}" type="button" aria-label="複製 Hashtags：${escapeHtml(hashtagsText)}" title="${hashtagsOverridden ? '平台自訂 Hashtags；點一下複製' : '沿用共用 Hashtags；點一下複製'}">${escapeHtml(hashtagsText)}</button>` : (visual ? '<span class="publish-platform-hashtags-empty">未設定 Hashtags</span>' : '')}
+          ${visual ? `<button class="publish-platform-hashtags-edit" type="button" aria-label="編輯「${escapeHtml(platform)}」Hashtags">編輯</button>` : ''}
           <span class="publish-platform-status ${published ? 'done' : ''}">${published ? '已發布' : '尚未發布'}</span>
         </div>
         ${hasPlatformTitle ? `<small class="publish-platform-title-summary">自訂標題：${escapeHtml(platformTitle)}</small>` : ''}
+        ${hashtagsOverridden && !hashtagsText ? '<small class="publish-platform-hashtags-summary">此平台不使用 Hashtags</small>' : ''}
         ${recordSummary ? `<small class="publish-platform-record-summary">${escapeHtml(recordSummary)}</small>` : ''}
       </div>
       <div class="publish-platform-actions">
@@ -986,6 +1065,12 @@
       } catch (error) {
         notify(`複製 Hashtags 失敗：${error.message}`, true);
       }
+    });
+    row.querySelector('.publish-platform-hashtags-edit')?.addEventListener('click', event => {
+      event.stopPropagation();
+      const dialog = previewPublish(part, platform, entry.contentMode);
+      dialog.querySelector('#platformPreviewOptions').open = true;
+      window.setTimeout(() => dialog.querySelector('#platformPreviewHashtagsInput').focus(), 0);
     });
     row.querySelector('.platform-preview-btn').addEventListener('click', event => {
       event.stopPropagation();
