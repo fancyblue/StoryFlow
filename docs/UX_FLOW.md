@@ -17,7 +17,7 @@ The Works page is the structural management hub. Managing chapters or visual ent
 | W-01 | Review, add, edit or remove a work's chapters or visual entries | 管理章節／管理圖文 | `⋯` for infrequent or destructive row actions | Consistent emphasized light-blue action on every card; expanded state uses a stronger soft selection |
 | W-02 | Return to splitting and writing work | 工作台 | — | Tinted or outlined navigation action |
 | W-03 | Jump directly to this work's publishing queue | 管理發布 | — | Tinted secondary shortcut |
-| W-04 | Make another work current | 開啟／切換並開啟 | Then manage its chapters or enter its workspace | Outlined until selected; selection is shown by the card and badge |
+| W-04 | Make another work current | 開啟 | Then manage its chapters or enter its workspace | Both longform and visual works use the same label; selection is shown by the card and badge |
 | W-05 | Create another work | ＋ 新作品 | Source chooser and creation preview | Outlined or tinted while works already exist |
 | W-06 | Create the first work | 建立第一個作品 | — | The only solid action in the empty state; do not show a competing solid header action |
 | W-07 | Rename or delete a work | `⋯` | Confirmation and Recovery for deletion | Tertiary overflow; deletion uses the danger treatment only inside the decision |
@@ -37,9 +37,8 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-05 | Move the ending within a long scene | 手動微調 | Drag or choose a paragraph boundary | Selected/toggled treatment; boundary targets are not buttons competing for primary emphasis |
 | WS-06 | Commit the reviewed article | 切篇確認／確認並存成 Markdown | 返回修改、取消 | The single solid action for the review stage |
 | WS-07 | Continue processing the remaining chapter | 產生下一篇 | Review the current ending again | Solid only when a valid next suggestion is ready |
-| WS-08 | Move from confirmed articles to publication | 前往發布 | Publishing summary | Solid only when a confirmed pending article exists; hide or demote it when there is nothing to publish |
 | WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | The row keeps a persistent `⋯`; edit is first and delete is second |
-| WS-10 | Maintain a visual entry | 保存草稿／保存並設為可發布 | 預覽、`⋯ → 編輯圖文／刪除圖文` | Use the same persistent overflow, item order and Recovery flow as manual chapters |
+| WS-10 | Maintain a visual entry | 保存草稿／保存並設為可發布 | 預覽圖文、`⋯ → 編輯圖文／刪除圖文` | Preview opens in a separate dialog; use the same persistent overflow, item order and Recovery flow as manual chapters |
 
 The “切換作品” disclosure lives in the SOURCE card heading for both content modes and includes “＋ 新增作品”. The longform “作品與章節” rail and visual “作品與圖文” rail use the same outer width and breakpoint contract. “新增文章／新增圖文” sits below the corresponding chapter or entry list, never in the page header or list heading.
 
@@ -62,7 +61,7 @@ The Publishing page separates queue navigation from the actual publishing commit
 | P-09 | Find articles by work or status | 作品／發布狀態 filters | — | Soft selected state, never solid CTA styling |
 | P-10 | Perform infrequent article or visual-entry management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation; visual deletion uses the same command and guard in every page |
 | P-11 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
-| P-12 | Prepare optional visual publishing helpers | 摘要／Hashtags | Copy helpers and search classification | Optional fields inside Publishing; never required and never inserted into the body automatically |
+| P-12 | Prepare optional visual publishing helpers | 摘要與 Hashtags | Summary hint, click-to-copy Hashtags and search classification | Maintenance opens from a button like the longform afterword tool; it is collapsed by default, optional and never inserted into the body automatically |
 
 An expanded “收合發布” control is still a disclosure. Use a stronger soft selection, border or adjacent panel treatment instead of the full primary fill; the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task.
 
@@ -169,6 +168,8 @@ SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認�
 ## Destructive actions
 
 Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). Manual chapters and visual entries use the same persistent trailing overflow, edit-then-delete item order, explicit confirmation and Recovery-first guard. A visual entry is deleted through `⋯ → 刪除圖文` from Workspace, Works or Publishing; the editor footer does not expose a competing delete button. Cancelling or closing a creation dialog is not submission and must never trigger required-field validation. Visual-entry status is explicit: both “草稿” and “可發布” save content; “可發布” means ready for the publishing workflow and never means automatically published. The save action mirrors the selected state as “保存草稿” or “保存並設為可發布”.
+
+Workspace does not provide a direct publishing shortcut for either content type; publication is entered from the primary navigation or the Works-page “管理發布” action. The Publishing page filters content type separately from publication status and repeats the type badge beside each work name.
 
 “離開此裝置” clears browser-held connection and settings state but does not delete files in the selected folder.
 
