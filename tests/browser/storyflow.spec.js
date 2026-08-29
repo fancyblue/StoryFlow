@@ -940,6 +940,7 @@ test('published articles keep an independent afterword and can exclude it from o
   await expect(preview.locator('#platformPreviewContent')).toContainText('後記');
   await expect(preview.locator('#platformPreviewContent')).toContainText('這是寫給讀者的後記。');
 
+  await preview.locator('#platformPreviewOptions summary').click();
   const include = preview.locator('#platformPreviewIncludeAfterword');
   await expect(include).toBeChecked();
   await include.uncheck();
@@ -1116,13 +1117,15 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await expect(preview.locator('#platformPreviewContent')).toHaveText('只應出現在內容區的正文。');
   await preview.getByRole('button', { name: '複製標題', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('給讀者看的正式標題');
-  await preview.getByRole('checkbox', { name: '複製內容時把標題放在最前面' }).check();
+  await preview.locator('#platformPreviewOptions summary').click();
+  await preview.getByRole('checkbox', { name: '內容前附上標題' }).check();
   await expect(preview.locator('.sf-md-heading-1')).toHaveText('給讀者看的正式標題');
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('# 給讀者看的正式標題\n\n只應出現在內容區的正文。');
 
   await platformRow.getByRole('button', { name: '預覽與複製「巴哈小屋」', exact: true }).click();
-  await preview.getByRole('checkbox', { name: '複製內容時把標題放在最前面' }).check();
+  await preview.locator('#platformPreviewOptions summary').click();
+  await preview.getByRole('checkbox', { name: '內容前附上標題' }).check();
   await preview.locator('#platformPreviewTitleStyle').selectOption('bold');
   await expect(preview.locator('#platformPreviewContent strong')).toHaveText('給讀者看的正式標題');
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
