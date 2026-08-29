@@ -314,6 +314,10 @@ const StoryFlowIntegrations = (() => {
       status: normalized.status,
       coverImageId: normalized.coverImageId,
       images: normalized.images,
+      platformTitles: normalized.platformTitles,
+      platformHashtags: normalized.platformHashtags,
+      platformStatus: normalized.platformStatus,
+      publicationRecords: normalized.publicationRecords,
       createdAt: normalized.createdAt,
       updatedAt: normalized.updatedAt
     };
