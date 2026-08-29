@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><title>StoryFlow storage management core test</title></head>
+<body>
+  <h1>Storage management core test</h1>
+  <pre id="result">RUNNING</pre>
+  <script>
+    const DAY = 24 * 60 * 60 * 1000;
+    const oldTime = Date.now() - 40 * DAY;
+    const recentTime = Date.now() - 5 * DAY;
+
+    function notFound(name) {
+      return new DOMException(name + ' not found', 'NotFoundError');
+    }
+
+    class MemoryFile {
+      constructor(name, content = '', lastModified = Date.now()) {
+        this.kind = 'file';
+        this.name = name;
+        this.content = String(content);
+        this.lastModified = lastModified;
+      }
+      async getFile() {
+        const content = this.content;
+        return {
+          name: this.name,
+          size: content.length,
+          lastModified: this.lastModified,
+          async text() { return content; }
+        };
+      }
+      async createWritable() {
+        let pending = '';
+        return {
+          write: async value => { pending = String(value); },
+          close: async () => {
+            this.content = pending;
+            this.lastModified = Date.now();
+          }
+        };
+      }
+    }
+
+    class MemoryDirectory {
+      constructor(name) {
+        this.kind = 'directory';
+        this.name = name;
+        this.children = new Map();
+      }
+      async queryPermission() { return 'granted'; }
+      async requestPermission() { return 'granted'; }
+      async getDirectoryHandle(name, options = {}) {
+        const existing = this.children.get(name);
+        if (existing?.kind === 'directory') return existing;
+        if (existing || !options.create) throw notFound(name);
+        const created = new MemoryDirectory(name);
+        this.children.set(name, created);
+        return created;
+      }
+      async getFileHandle(name, options = {}) {
+        const existing = this.children.get(name);
+        if (existing?.kind === 'file') return existing;
+        if (existing || !options.create) throw notFound(name);
+        const created = new MemoryFile(name);
+        this.children.set(name, created);
+        return created;
+      }
+      async removeEntry(name) {
+        if (!this.children.delete(name)) throw notFound(name);
+      }
+      async *entries() {
+        for (const entry of this.children.entries()) yield entry;
+      }
+    }
+
+    const root = new MemoryDirectory('StoryFlow-storage-test');
+    const addDirectory = (parent, name) => {
+      const directory = new MemoryDirectory(name);
+      parent.children.set(name, directory);
+      return directory;
+    };
+    const addFile = (parent, name, size, modified) => {
+      const file = new MemoryFile(name, 'x'.repeat(size), modified);
+      parent.children.set(name, file);
+      return file;
+    };
+
+    const workspace = {
+      schemaVersion: 2,
+      updatedAt: new Date().toISOString(),
+      activeProjectId: 'longform',
+      projects: [
+        {
+          id: 'longform',
+          title: '小說',
+          state: {
+            projectTitle: '小說',
+            contentMode: 'longform',
+            chapters: [{ id: 'chapter-1', title: '第一章', draft: '', parts: [{ id: 'keep-part', title: '保留文章' }] }]
+          }
+        },
+        {
+          id: 'visual',
+          title: '圖文',
+          state: {
+            projectTitle: '圖文',
+            contentMode: 'visual',
+            chapters: [],
+            visualEntries: [{ id: 'keep-entry', title: '保留圖文', images: [] }]
+          }
+        }
+      ]
+    };
+    root.children.set('workspace.json', new MemoryFile('workspace.json', JSON.stringify(workspace), recentTime));
+
+    const recovery = addDirectory(root, 'Recovery');
+    addFile(recovery, 'workspace.auto-old.json', 10, oldTime);
+    addFile(recovery, 'workspace.before-delete-old.json', 11, oldTime);
+    addFile(recovery, 'workspace.before-delete-recent.json', 12, recentTime);
+    const recoveryAssets = addDirectory(recovery, 'Assets');
+    addFile(recoveryAssets, 'old.png', 13, oldTime);
+    addFile(recoveryAssets, 'recent.png', 14, recentTime);
+
+    const works = addDirectory(root, 'Works');
+    const novel = addDirectory(works, '小說');
+    const chapter = addDirectory(novel, '第一章');
+    const chapterAssets = addDirectory(chapter, 'assets');
+    const keptPart = addDirectory(chapterAssets, 'keep-part');
+    addFile(keptPart, 'used.png', 15, oldTime);
+    const deletedPart = addDirectory(chapterAssets, 'deleted-part');
+    addFile(deletedPart, 'orphan.png', 16, oldTime);
+
+    const visualProject = addDirectory(works, '圖文');
+    const visual = addDirectory(visualProject, 'Visual');
+    const keptEntry = addDirectory(visual, 'keep-entry');
+    const keptEntryAssets = addDirectory(keptEntry, 'assets');
+    addFile(keptEntryAssets, 'used.png', 17, oldTime);
+    const deletedEntry = addDirectory(visual, 'deleted-entry');
+    const deletedEntryAssets = addDirectory(deletedEntry, 'assets');
+    addFile(deletedEntryAssets, 'orphan.png', 18, oldTime);
+    const recentDeletedEntry = addDirectory(visual, 'recent-deleted-entry');
+    const recentDeletedAssets = addDirectory(recentDeletedEntry, 'assets');
+    addFile(recentDeletedAssets, 'recent-orphan.png', 19, recentTime);
+
+    try { delete window.indexedDB; } catch (_) {}
+    window.showDirectoryPicker = async () => root;
+  </script>
+  <script src="../src/persistence/integrations.js"></script>
+  <script>
+    (async () => {
+      const resultNode = document.getElementById('result');
+      const checks = [];
+      const assert = (condition, message) => {
+        if (!condition) throw new Error(message);
+        checks.push('PASS ' + message);
+      };
+      try {
+        await StoryFlowIntegrations.chooseOutputDirectory();
+        const storage = await StoryFlowIntegrations.inspectWorkspaceStorage({ olderThanDays: 30 });
+        const categories = storage.storageUsage.categories;
+        assert(categories.recoverySnapshots.fileCount === 3, '列出全部 Recovery JSON');
+        assert(categories.recoverySnapshots.candidateCount === 1, '循環備份與近期 JSON 不列入清理');
+        assert(categories.recoveryImages.fileCount === 2 && categories.recoveryImages.candidateCount === 1, '只列入過期 Recovery 圖片');
+        assert(categories.orphanedImages.fileCount === 3 && categories.orphanedImages.candidateCount === 2, '辨識已刪除內容的舊圖片資料夾');
+        assert(storage.storageUsage.cleanupPreview.fileCount === 4, '預覽彙總四個可清理檔案');
+
+        const cleanup = await StoryFlowIntegrations.cleanupWorkspaceStorage({ olderThanDays: 30 });
+        assert(cleanup.removedFiles === 4 && cleanup.failures.length === 0, '確認後清理重新掃描所得項目');
+        assert(!recovery.children.has('workspace.before-delete-old.json'), '移除過期 Recovery JSON');
+        assert(recovery.children.has('workspace.auto-old.json') && recovery.children.has('workspace.before-delete-recent.json'), '保留循環備份與近期 Recovery JSON');
+        assert(!recoveryAssets.children.has('old.png') && recoveryAssets.children.has('recent.png'), '只移除過期 Recovery 圖片');
+        assert(chapterAssets.children.has('keep-part') && !chapterAssets.children.has('deleted-part'), '保留文章引用圖片並清理刪除文章的圖片');
+        assert(keptEntry.children.has('assets') && !deletedEntry.children.has('assets'), '保留圖文引用圖片並清理刪除圖文的圖片');
+        assert(recentDeletedEntry.children.has('assets'), '保留尚未超過期限的未引用圖片');
+        assert(cleanup.storage.storageUsage.cleanupPreview.fileCount === 0, '清理後狀態會重新掃描');
+
+        resultNode.textContent = checks.join('\n') + '\n\nALL PASS';
+        document.body.dataset.testStatus = 'pass';
+      } catch (error) {
+        resultNode.textContent = checks.join('\n') + '\n\nFAIL ' + (error.stack || error.message);
+        document.body.dataset.testStatus = 'fail';
+      }
+    })();
+  </script>
+</body>
+</html>
