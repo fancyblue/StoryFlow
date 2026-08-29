@@ -1478,6 +1478,8 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     };
   });
 
+  const longformSourceWidth = await page.locator('.workspace-grid > .source-panel').evaluate(panel => panel.getBoundingClientRect().width);
+
   await page.locator('.nav-item[data-view="projects"]').click();
   await page.locator('.projects-empty-state .button').click();
   const typeDialog = page.locator('#visualTypeDialog');
@@ -1504,6 +1506,8 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('#visualWorkspace > .visual-workspace-head .eyebrow')).toHaveText('STORYFLOW / WORKSPACE');
   await expect(page.locator('#visualWorkspace > .visual-workspace-head .muted')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: '作品與圖文', exact: true })).toBeVisible();
+  const visualSourceWidth = await page.locator('.visual-workspace-layout > .visual-entry-list-panel').evaluate(panel => panel.getBoundingClientRect().width);
+  expect(Math.abs(visualSourceWidth - longformSourceWidth)).toBeLessThanOrEqual(1);
   await expect(page.locator('#visualProjectTitle')).toHaveValue('夜色圖文集');
   await expect(page.locator('.visual-current-project')).toHaveCount(0);
   await expect(page.locator('#visualProjectSwitchBtn')).toHaveText('切換作品');

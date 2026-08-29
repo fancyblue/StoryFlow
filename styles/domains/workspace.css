@@ -2,9 +2,14 @@
    This file owns the two-column hierarchy, context stats, processing order and
    source-rail overflow. Component decoration remains in its feature stylesheet. */
 
+:root{
+  --sf-workspace-source-columns:minmax(280px,320px) minmax(0,1fr);
+  --sf-workspace-column-gap:16px;
+}
+
 .workspace-grid.workspace-hierarchy{
-  grid-template-columns:minmax(280px,320px) minmax(0,1fr)!important;
-  gap:16px!important;
+  grid-template-columns:var(--sf-workspace-source-columns)!important;
+  gap:var(--sf-workspace-column-gap)!important;
   align-items:start!important;
   overflow:visible!important;
 }
@@ -95,8 +100,10 @@
 }
 
 @media(max-width:1100px) and (min-width:821px){
+  :root{--sf-workspace-source-columns:minmax(240px,280px) minmax(0,1fr)}
+
   .workspace-grid.workspace-hierarchy{
-    grid-template-columns:minmax(240px,280px) minmax(0,1fr)!important;
+    grid-template-columns:var(--sf-workspace-source-columns)!important;
   }
 
   .workspace-grid.workspace-hierarchy > .stats-grid{
@@ -105,8 +112,10 @@
 }
 
 @media(max-width:820px){
+  :root{--sf-workspace-source-columns:1fr}
+
   .workspace-grid.workspace-hierarchy{
-    grid-template-columns:1fr!important;
+    grid-template-columns:var(--sf-workspace-source-columns)!important;
   }
 
   .workspace-grid.workspace-hierarchy > .source-panel{

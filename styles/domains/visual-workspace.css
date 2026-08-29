@@ -13,7 +13,7 @@
 .visual-entry-list-actions { display: grid; justify-items: end; gap: 8px; }
 .visual-entry-list-actions .button { white-space: nowrap; }
 .visual-mode-badge, .project-type-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 9px; border-radius: 999px; background: #e8f0f5; color: #31546e; font-size: 12px; font-weight: 700; }
-.visual-workspace-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
+.visual-workspace-layout { display: grid; grid-template-columns: var(--sf-workspace-source-columns); gap: var(--sf-workspace-column-gap); align-items: start; }
 .visual-entry-list-panel, .visual-editor-panel { min-width: 0; }
 .visual-entry-list-panel { position: relative; align-self: start; }
 .visual-editor-panel { padding: 18px; }
