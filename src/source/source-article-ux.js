@@ -249,14 +249,19 @@
   function reframeWorkspaceHierarchy() {
     const grid = document.querySelector('.workspace-grid');
     const stats = document.querySelector('.stats-grid');
-    if (!grid || !stats) return;
+    const source = grid?.querySelector(':scope > .source-panel');
+    const splitter = grid?.querySelector(':scope > .splitter-panel, :scope > .workspace-main-column > .splitter-panel');
+    if (!grid || !stats || !source || !splitter) return;
 
     grid.classList.add('workspace-hierarchy');
-    if (stats.parentElement !== grid) {
-      const editor = grid.querySelector(':scope > .editor-panel');
-      const splitter = grid.querySelector(':scope > .splitter-panel');
-      grid.insertBefore(stats, editor || splitter || grid.firstChild);
+    let mainColumn = grid.querySelector(':scope > .workspace-main-column');
+    if (!mainColumn) {
+      mainColumn = document.createElement('div');
+      mainColumn.className = 'workspace-main-column';
+      source.insertAdjacentElement('afterend', mainColumn);
     }
+    if (stats.parentElement !== mainColumn) mainColumn.prepend(stats);
+    if (splitter.parentElement !== mainColumn) mainColumn.appendChild(splitter);
 
     const showStats = hasSelectedArticle();
     stats.hidden = !showStats;
