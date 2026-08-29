@@ -1714,7 +1714,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(publishingPreview.locator('#platformPreviewPublishTitle')).toHaveText('巴哈月下預告');
   await publishingPreview.locator('#cancelPlatformCopy').click();
   await page.locator('#globalSearchBtn').click();
-  await page.locator('#globalSearchInput').fill('方格子月下');
+  await page.locator('#globalSearchInput').fill('巴哈月下');
   await expect(page.locator('.global-search-result-type.visual')).toHaveText('發布圖文');
   await page.locator('#globalSearchInput').fill('#夜色');
   await expect(page.locator('.global-search-empty')).toContainText('找不到符合內容');
