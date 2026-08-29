@@ -34,7 +34,7 @@ SMART SPLIT 預設只在原稿的場景分隔點提出切篇建議，並可用�
 | [`docs/CHROME_ACCEPTANCE.md`](docs/CHROME_ACCEPTANCE.md) | 可重複執行 | 高風險變更與大型發布的人工驗收清單 |
 | [`tests/README.md`](tests/README.md) | 現行測試規範 | 風險導向的自動化與人工驗證策略 |
 
-要把 StoryFlow 獨立加入 Codex Project，請使用 [Codex Project 設定指南](docs/CODEX_PROJECT_GUIDE.md)；日常工作可直接套用 [提示詞庫](docs/CODEX_PROMPT_LIBRARY.md)。完成的設計文件不刪除，因為它們仍記錄相容性、安全與驗收決策；只有在內容被其他文件完整取代且沒有獨特價值時才刪除。
+Repo 只保留會被產品使用者或 AI 協作者反覆使用的規範。個人的 Codex 建立步驟與一次性提示詞不放進 repo；完成的設計文件仍保留相容性、安全與驗收決策，只有在內容被其他文件完整取代且沒有獨特價值時才刪除。
 
 ## Clone / Fork 後使用
 
