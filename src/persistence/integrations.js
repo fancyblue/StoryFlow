@@ -523,6 +523,286 @@ const StoryFlowIntegrations = (() => {
     return artifacts.sort((left, right) => (right.lastModified || 0) - (left.lastModified || 0));
   }
 
+
+  const STORAGE_CLEANUP_DEFAULT_DAYS = 30;
+  const STORAGE_CLEANUP_MAX_DAYS = 3650;
+
+  function normalizeStorageCleanupDays(value) {
+    const days = Math.round(Number(value));
+    if (!Number.isFinite(days) || days < 1) return STORAGE_CLEANUP_DEFAULT_DAYS;
+    return Math.min(days, STORAGE_CLEANUP_MAX_DAYS);
+  }
+
+  async function optionalDirectory(parent, name) {
+    try {
+      return await parent.getDirectoryHandle(safeName(name), { create: false });
+    } catch (error) {
+      if (error?.name === 'NotFoundError') return null;
+      throw error;
+    }
+  }
+
+  async function directoryStorageStats(directory) {
+    const stats = { fileCount: 0, bytes: 0, newestModified: 0 };
+    if (!directory || typeof directory.entries !== 'function') return stats;
+    for await (const [, handle] of directory.entries()) {
+      if (handle?.kind === 'directory') {
+        const nested = await directoryStorageStats(handle);
+        stats.fileCount += nested.fileCount;
+        stats.bytes += nested.bytes;
+        stats.newestModified = Math.max(stats.newestModified, nested.newestModified);
+        continue;
+      }
+      try {
+        const file = await handle.getFile();
+        stats.fileCount += 1;
+        stats.bytes += Number(file.size || 0);
+        stats.newestModified = Math.max(stats.newestModified, Number(file.lastModified || 0));
+      } catch (_) {}
+    }
+    return stats;
+  }
+
+  function storageCategory(items) {
+    return items.reduce((summary, item) => {
+      summary.fileCount += item.fileCount;
+      summary.bytes += item.bytes;
+      summary.groupCount += 1;
+      if (item.eligible) {
+        summary.candidateCount += item.fileCount;
+        summary.candidateBytes += item.bytes;
+        summary.candidateGroupCount += 1;
+      }
+      return summary;
+    }, {
+      fileCount: 0,
+      bytes: 0,
+      groupCount: 0,
+      candidateCount: 0,
+      candidateBytes: 0,
+      candidateGroupCount: 0
+    });
+  }
+
+  function workspaceProjectStates(workspace) {
+    if (!validWorkspace(workspace)) return [];
+    if (workspace.schemaVersion >= 2) {
+      return (workspace.projects || []).map(project => ({
+        title: project?.title || project?.state?.projectTitle || '未命名作品',
+        state: project?.state
+      })).filter(project => project.state);
+    }
+    return [{ title: workspace.state?.projectTitle || '未命名作品', state: workspace.state }];
+  }
+
+  async function scanWorkspaceStorage(workspace, options = {}) {
+    const olderThanDays = normalizeStorageCleanupDays(options.olderThanDays);
+    const cutoffAt = Date.now() - olderThanDays * 24 * 60 * 60 * 1000;
+    const candidates = [];
+    const recoverySnapshots = [];
+    const recoveryImages = [];
+    const orphanedImages = [];
+    const isOldEnough = modified => Boolean(modified && modified <= cutoffAt);
+
+    const recovery = await optionalDirectory(outputDirectoryHandle, RECOVERY_DIRECTORY);
+    if (recovery && typeof recovery.entries === 'function') {
+      for await (const [name, handle] of recovery.entries()) {
+        if (handle?.kind === 'directory') continue;
+        if (!name.startsWith('workspace.') || !name.toLocaleLowerCase().endsWith('.json')) continue;
+        try {
+          const file = await handle.getFile();
+          const bytes = Number(file.size || 0);
+          const modified = Number(file.lastModified || 0);
+          const eligible = !name.startsWith(ROLLING_BACKUP_PREFIX) && isOldEnough(modified);
+          const item = {
+            category: 'recoverySnapshots',
+            kind: 'file',
+            parent: recovery,
+            name,
+            path: RECOVERY_DIRECTORY + '/' + name,
+            fileCount: 1,
+            bytes,
+            eligible
+          };
+          recoverySnapshots.push(item);
+          if (eligible) candidates.push(item);
+        } catch (_) {}
+      }
+
+      const recoveryAssets = await optionalDirectory(recovery, 'Assets');
+      async function collectRecoveryAssets(directory, pathPrefix) {
+        if (!directory || typeof directory.entries !== 'function') return;
+        for await (const [name, handle] of directory.entries()) {
+          const path = pathPrefix + '/' + name;
+          if (handle?.kind === 'directory') {
+            await collectRecoveryAssets(handle, path);
+            continue;
+          }
+          try {
+            const file = await handle.getFile();
+            const bytes = Number(file.size || 0);
+            const modified = Number(file.lastModified || 0);
+            const eligible = isOldEnough(modified);
+            const item = {
+              category: 'recoveryImages',
+              kind: 'file',
+              parent: directory,
+              name,
+              path,
+              fileCount: 1,
+              bytes,
+              eligible
+            };
+            recoveryImages.push(item);
+            if (eligible) candidates.push(item);
+          } catch (_) {}
+        }
+      }
+      await collectRecoveryAssets(recoveryAssets, RECOVERY_DIRECTORY + '/Assets');
+    }
+
+    const projectStates = workspaceProjectStates(workspace);
+    const projectMap = new Map();
+    projectStates.forEach(project => {
+      const key = safeName(project.title);
+      if (!projectMap.has(key)) projectMap.set(key, []);
+      projectMap.get(key).push(project.state);
+    });
+
+    const works = projectStates.length ? await optionalDirectory(outputDirectoryHandle, 'Works') : null;
+    if (works && typeof works.entries === 'function') {
+      for await (const [projectName, projectHandle] of works.entries()) {
+        if (projectHandle?.kind !== 'directory') continue;
+        const states = projectMap.get(projectName) || [];
+        const activeVisualEntries = new Set();
+        const chapterParts = new Map();
+
+        states.forEach(project => {
+          (project?.visualEntries || []).forEach(entry => {
+            if (entry?.id) activeVisualEntries.add(safeName(entry.id));
+          });
+          (project?.chapters || []).forEach(chapter => {
+            const chapterName = safeName(chapter?.title);
+            if (!chapterParts.has(chapterName)) chapterParts.set(chapterName, new Set());
+            (chapter?.parts || []).forEach(part => {
+              if (part?.id) chapterParts.get(chapterName).add(safeName(part.id));
+            });
+          });
+        });
+
+        const visual = await optionalDirectory(projectHandle, 'Visual');
+        if (visual && typeof visual.entries === 'function') {
+          for await (const [entryName, entryHandle] of visual.entries()) {
+            if (entryHandle?.kind !== 'directory' || activeVisualEntries.has(entryName)) continue;
+            const assets = await optionalDirectory(entryHandle, 'assets');
+            const stats = await directoryStorageStats(assets);
+            if (!stats.fileCount) continue;
+            const eligible = isOldEnough(stats.newestModified);
+            const item = {
+              category: 'orphanedImages',
+              kind: 'directory',
+              parent: entryHandle,
+              name: 'assets',
+              path: 'Works/' + projectName + '/Visual/' + entryName + '/assets',
+              fileCount: stats.fileCount,
+              bytes: stats.bytes,
+              eligible
+            };
+            orphanedImages.push(item);
+            if (eligible) candidates.push(item);
+          }
+        }
+
+        for await (const [chapterName, chapterHandle] of projectHandle.entries()) {
+          if (chapterHandle?.kind !== 'directory' || chapterName === 'Visual') continue;
+          const assets = await optionalDirectory(chapterHandle, 'assets');
+          if (!assets || typeof assets.entries !== 'function') continue;
+          const activePartIds = chapterParts.get(chapterName) || new Set();
+          for await (const [partName, partHandle] of assets.entries()) {
+            if (partHandle?.kind !== 'directory' || activePartIds.has(partName)) continue;
+            const stats = await directoryStorageStats(partHandle);
+            if (!stats.fileCount) continue;
+            const eligible = isOldEnough(stats.newestModified);
+            const item = {
+              category: 'orphanedImages',
+              kind: 'directory',
+              parent: assets,
+              name: partName,
+              path: 'Works/' + projectName + '/' + chapterName + '/assets/' + partName,
+              fileCount: stats.fileCount,
+              bytes: stats.bytes,
+              eligible
+            };
+            orphanedImages.push(item);
+            if (eligible) candidates.push(item);
+          }
+        }
+      }
+    }
+
+    const categories = {
+      recoverySnapshots: storageCategory(recoverySnapshots),
+      recoveryImages: storageCategory(recoveryImages),
+      orphanedImages: storageCategory(orphanedImages)
+    };
+    const cleanupPreview = Object.values(categories).reduce((summary, category) => ({
+      fileCount: summary.fileCount + category.candidateCount,
+      bytes: summary.bytes + category.candidateBytes,
+      groupCount: summary.groupCount + category.candidateGroupCount
+    }), { fileCount: 0, bytes: 0, groupCount: 0 });
+
+    return {
+      public: {
+        olderThanDays,
+        cutoffAt,
+        workspaceScanAvailable: projectStates.length > 0,
+        categories,
+        cleanupPreview
+      },
+      candidates
+    };
+  }
+
+  async function cleanupWorkspaceStorage(options = {}) {
+    if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
+    const olderThanDays = normalizeStorageCleanupDays(options.olderThanDays);
+    workspaceWritesPending += 1;
+    const task = workspaceWriteQueue.then(async () => {
+      const primaryFile = await readFileRecord(outputDirectoryHandle, WORKSPACE_FILENAME);
+      let workspace = null;
+      if (primaryFile) {
+        try {
+          const parsed = JSON.parse(primaryFile.text);
+          if (validWorkspace(parsed)) workspace = parsed;
+        } catch (_) {}
+      }
+      const scan = await scanWorkspaceStorage(workspace, { olderThanDays });
+      const result = { removedFiles: 0, removedBytes: 0, removedGroups: 0, failures: [] };
+      for (const candidate of scan.candidates) {
+        try {
+          await candidate.parent.removeEntry(candidate.name, candidate.kind === 'directory' ? { recursive: true } : undefined);
+          result.removedFiles += candidate.fileCount;
+          result.removedBytes += candidate.bytes;
+          result.removedGroups += 1;
+        } catch (error) {
+          result.failures.push({ path: candidate.path, message: error?.message || '無法刪除' });
+        }
+      }
+      return result;
+    });
+    workspaceWriteQueue = task.catch(() => {});
+    try {
+      const result = await task;
+      return {
+        ...result,
+        olderThanDays,
+        storage: await inspectWorkspaceStorage({ olderThanDays })
+      };
+    } finally {
+      workspaceWritesPending = Math.max(0, workspaceWritesPending - 1);
+    }
+  }
+
   async function maintainRollingWorkspaceBackup(workspace) {
     const contentSignature = workspaceContentSignature(workspace);
     if (contentSignature === lastRollingWorkspaceContent) return null;
@@ -565,7 +845,7 @@ const StoryFlowIntegrations = (() => {
     return { filename, artifactPath };
   }
 
-  async function inspectWorkspaceStorage() {
+  async function inspectWorkspaceStorage(options = {}) {
     if (!outputDirectoryHandle) return { connected: false };
     if (!(await verifyPermission(outputDirectoryHandle, false))) {
       return { connected: false, needsPermission: true, folderName: outputDirectoryHandle.name || '' };
@@ -575,11 +855,13 @@ const StoryFlowIntegrations = (() => {
     const primaryFile = await readFileRecord(outputDirectoryHandle, WORKSPACE_FILENAME);
     const backupFile = await readFileRecord(outputDirectoryHandle, WORKSPACE_BACKUP_FILENAME);
     let primary = null;
+    let primaryWorkspace = null;
     let backup = null;
 
     if (primaryFile) {
       try {
         const workspace = JSON.parse(primaryFile.text);
+        primaryWorkspace = workspace;
         primary = { ...summarizeWorkspace(workspace), valid: true, size: primaryFile.size, lastModified: primaryFile.lastModified };
       } catch (error) {
         primary = { valid: false, size: primaryFile.size, lastModified: primaryFile.lastModified, error: error.message };
@@ -602,12 +884,14 @@ const StoryFlowIntegrations = (() => {
     }
 
     const recoveryArtifacts = await listRecoveryArtifacts();
+    const storageUsage = (await scanWorkspaceStorage(primaryWorkspace, options)).public;
     return {
       connected: true,
       folderName: outputDirectoryHandle.name || '',
       primary,
       backup,
       recoveryArtifacts,
+      storageUsage,
       rollingBackupCount: recoveryArtifacts.filter(artifact => artifact.name.startsWith(ROLLING_BACKUP_PREFIX)).length
     };
   }
@@ -1106,7 +1390,7 @@ const StoryFlowIntegrations = (() => {
 
   purgeLegacyBrowserStorage();
 
-  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, importPartImages, getPartImageFile, removePartImage, saveVisualEntry, importVisualImages, getVisualImageFile, removeVisualImage, removeVisualEntryFiles, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken), LARGE_IMAGE_BYTES };
+  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, cleanupWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, importPartImages, getPartImageFile, removePartImage, saveVisualEntry, importVisualImages, getVisualImageFile, removeVisualImage, removeVisualEntryFiles, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken), LARGE_IMAGE_BYTES, STORAGE_CLEANUP_DEFAULT_DAYS };
   window.StoryFlowIntegrations = api;
   return api;
 })();
