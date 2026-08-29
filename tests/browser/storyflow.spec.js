@@ -788,6 +788,14 @@ test('mobile editing stays enabled when returning to read-only cannot save', asy
   expect(pageErrors).toEqual([]);
 });
 
+test('storage cleanup keeps referenced and recent files', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/tests/storage-management-core.html');
+  await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
+  await expect(page.locator('#result')).toContainText('ALL PASS');
+  expect(pageErrors).toEqual([]);
+});
+
 test('backup center renders safe workspace metadata', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.goto('/tests/backup-center-ui.html');
