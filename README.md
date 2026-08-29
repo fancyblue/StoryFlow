@@ -31,7 +31,7 @@ SMART SPLIT 預設只在原稿的場景分隔點提出切篇建議，並可用�
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | 已落地，持續維護 | 執行時、資料所有權與模組邊界 |
 | [`docs/UI_SYSTEM.md`](docs/UI_SYSTEM.md) | 已落地，持續維護 | 共用視覺與互動規範 |
 | [`docs/UX_FLOW.md`](docs/UX_FLOW.md) | 已落地，持續維護 | 各頁任務與操作優先順序 |
-| [`docs/VISUAL_CONTENT_MODE_DESIGN.md`](docs/VISUAL_CONTENT_MODE_DESIGN.md) | Phase 0–2 已完成 | 圖文模式的完成紀錄與 Phase 3 候選 |
+| [`docs/VISUAL_CONTENT_MODE_DESIGN.md`](docs/VISUAL_CONTENT_MODE_DESIGN.md) | Phase 0–2 已完成 | 圖文模式的完成紀錄、資料邊界與持續驗收依據 |
 | [`docs/CHROME_ACCEPTANCE.md`](docs/CHROME_ACCEPTANCE.md) | 可重複執行 | 高風險變更與大型發布的人工驗收清單 |
 | [`tests/README.md`](tests/README.md) | 現行測試規範 | 風險導向的自動化與人工驗證策略 |
 

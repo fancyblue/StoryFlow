@@ -37,7 +37,7 @@ Page-level task order and the resulting primary action are defined in [UX_FLOW.m
 
 Do not place a destructive action beside the primary action when an overflow menu can keep the decision hierarchy clearer.
 
-Longform chapters/articles and visual entries share this rule. A visual entry is deleted from its row overflow as `⋯ → 刪除圖文`; do not add a second destructive button to the editor footer or make Workspace, Works and Publishing use different delete entry points. All entry deletion paths must reach the same confirmation and Recovery guard.
+Longform chapters/articles and visual entries share this rule. Their list-level create action sits below the list, and every editable row keeps a persistent trailing `⋯`. Manual-article and visual-entry menus use the same order: edit first, delete second. A visual entry is deleted as `⋯ → 刪除圖文`; do not add a second destructive button to the editor footer or make Workspace, Works and Publishing use different delete entry points. All entry deletion paths must reach the same confirmation and Recovery guard.
 
 On the Works page, “管理章節” is the most likely next step and uses the same emphasized light-blue treatment on every work card. “工作台／開啟” is outlined navigation, while “管理發布” is a quieter tinted shortcut. The “目前作品” badge and card treatment alone communicate which work is active; action color must not duplicate selection or make identical labels look like different functions. Expanded “收合章節” uses a stronger soft selection with an inset accent, never a solid primary fill.
 

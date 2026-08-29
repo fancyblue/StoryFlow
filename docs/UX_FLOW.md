@@ -38,10 +38,10 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-06 | Commit the reviewed article | 切篇確認／確認並存成 Markdown | 返回修改、取消 | The single solid action for the review stage |
 | WS-07 | Continue processing the remaining chapter | 產生下一篇 | Review the current ending again | Solid only when a valid next suggestion is ready |
 | WS-08 | Move from confirmed articles to publication | 前往發布 | Publishing summary | Solid only when a confirmed pending article exists; hide or demote it when there is nothing to publish |
-| WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | Editing is a normal menu action; deletion stays in overflow and requires confirmation |
-| WS-10 | Maintain a visual entry | 保存草稿 | 預覽、`⋯ → 刪除圖文` | Editing stays in the editor; deletion stays in row overflow and uses the shared Recovery flow |
+| WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | The row keeps a persistent `⋯`; edit is first and delete is second |
+| WS-10 | Maintain a visual entry | 保存草稿／保存並設為可發布 | 預覽、`⋯ → 編輯圖文／刪除圖文` | Use the same persistent overflow, item order and Recovery flow as manual chapters |
 
-The “切換作品” disclosure lives in the SOURCE card heading for both content modes and includes “＋ 新增作品”. The longform “作品與章節” rail and visual “作品與圖文” rail use the same outer width and breakpoint contract. “新增文章／新增圖文” belongs beside the corresponding chapter or entry list, not in the page header.
+The “切換作品” disclosure lives in the SOURCE card heading for both content modes and includes “＋ 新增作品”. The longform “作品與章節” rail and visual “作品與圖文” rail use the same outer width and breakpoint contract. “新增文章／新增圖文” sits below the corresponding chapter or entry list, never in the page header or list heading.
 
 At any moment, the workspace should visually answer one question: “What can I safely do next?” It must not simultaneously emphasize source loading, split confirmation and publishing navigation.
 
@@ -168,7 +168,7 @@ SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認�
 
 ## Destructive actions
 
-Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). Manual chapters and visual entries use the same row-overflow interaction, explicit confirmation and Recovery-first guard. A visual entry is deleted through `⋯ → 刪除圖文` from Workspace, Works or Publishing; the editor footer does not expose a competing delete button. Cancelling or closing a creation dialog is not submission and must never trigger required-field validation.
+Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). Manual chapters and visual entries use the same persistent trailing overflow, edit-then-delete item order, explicit confirmation and Recovery-first guard. A visual entry is deleted through `⋯ → 刪除圖文` from Workspace, Works or Publishing; the editor footer does not expose a competing delete button. Cancelling or closing a creation dialog is not submission and must never trigger required-field validation. Visual-entry status is explicit: both “草稿” and “可發布” save content; “可發布” means ready for the publishing workflow and never means automatically published. The save action mirrors the selected state as “保存草稿” or “保存並設為可發布”.
 
 “離開此裝置” clears browser-held connection and settings state but does not delete files in the selected folder.
 
