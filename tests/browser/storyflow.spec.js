@@ -187,13 +187,13 @@ test('desktop pages stay bounded from laptop through extended-monitor widths', a
         documentWidth: document.documentElement.scrollWidth,
         contentWidth: main.clientWidth - parseFloat(mainStyle.paddingLeft) - parseFloat(mainStyle.paddingRight),
         sourceWidth: source?.getBoundingClientRect().width || 0,
-        rightColumn: document.querySelector('.workspace-main-column')?.getBoundingClientRect() || null,
+        hasRightColumn: Boolean(document.querySelector('.workspace-main-column')),
         statsBottom: document.querySelector('.workspace-main-column > .stats-grid')?.getBoundingClientRect().bottom || 0,
         splitterTop: document.querySelector('.workspace-main-column > .splitter-panel')?.getBoundingClientRect().top || 0
       };
     });
     expect(workspaceLayout.documentWidth).toBeLessThanOrEqual(workspaceLayout.viewportWidth);
-    expect(workspaceLayout.rightColumn).not.toBeNull();
+    expect(workspaceLayout.hasRightColumn).toBe(true);
     expect(workspaceLayout.splitterTop - workspaceLayout.statsBottom).toBeGreaterThanOrEqual(15);
     expect(workspaceLayout.splitterTop - workspaceLayout.statsBottom).toBeLessThanOrEqual(21);
     expect(workspaceLayout.contentWidth).toBeLessThanOrEqual(1801);
@@ -1655,6 +1655,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   expect(afterManage.scrollY).toBeGreaterThan(0);
   expect(Math.abs(afterManage.top - beforeManage.top)).toBeLessThanOrEqual(2);
   await expect(publishCard.getByRole('button', { name: /收合「月下預告」的發布平台/ })).toBeFocused();
+  await page.evaluate(() => document.getElementById('publishingScrollAnchorFixture')?.remove());
   await expect(publishCard.locator('.visual-publish-helpers')).toHaveCount(0);
   const helperToolButton = publishCard.getByRole('button', { name: '摘要與 Hashtags', exact: true });
   await expect(helperToolButton).toBeVisible();
