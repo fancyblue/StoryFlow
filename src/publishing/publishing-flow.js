@@ -923,36 +923,16 @@
   }
 
   async function deleteVisualEntry(entry) {
-    if (window.StoryFlowMobileSafeMode?.isReadOnly?.()) {
-      notify('手機目前為唯讀，無法刪除圖文。', true);
-      return;
+    const deleteEntry = window.StoryFlowVisualWorkspace?.deleteEntry;
+    if (typeof deleteEntry !== 'function') {
+      notify('圖文刪除功能尚未準備完成，請重新整理後再試。', true);
+      return false;
     }
-    const index = (state.visualEntries || []).findIndex(item => item.id === entry?.id);
-    if (index < 0) return;
-    const imageCount = entry.images?.length || 0;
-    const imageNote = imageCount
-      ? `\n\n這則圖文有 ${imageCount} 張圖片；工作區關聯會移除，但私人 assets 圖檔會保留。`
-      : '\n\n私人 assets 圖檔不會被刪除。';
-    if (!confirm(`刪除圖文「${entry.title}」？\n\n會移除工作區關聯與文字輸出。${imageNote}\n\n確定繼續？`)) return;
-
-    try {
-      const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
-      if (typeof prepare !== 'function') throw new Error('Recovery 安全元件尚未準備完成。');
-      await prepare('before-visual-entry-delete');
-      await StoryFlowIntegrations.removeVisualEntryFiles({
-        projectTitle: state.projectTitle,
-        entryId: entry.id,
-        entry
-      });
-      state.visualEntries.splice(index, 1);
-      selectedPartKey = null;
-      saveState('圖文已刪除');
-      await window.StoryFlowProjectPersistence?.flush?.('visual-entry-delete');
-      renderParts();
-      notify(`已刪除圖文：${entry.title}；圖片檔仍保留`);
-    } catch (error) {
-      notify(`尚未刪除圖文：${error.message}`, true);
-    }
+    const deleted = await deleteEntry(entry?.id);
+    if (!deleted) return false;
+    selectedPartKey = null;
+    renderParts();
+    return true;
   }
 
   function createPlatformRow(entry, platform) {
