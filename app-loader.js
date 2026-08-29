@@ -6,8 +6,8 @@
 (function () {
   const scripts = [
     { src: './src/core/config.js?v=20260817-1625', owner: 'core' },
-    { src: './src/projects/content-model.js?v=20260828-p25a', owner: 'projects' },
-    { src: './src/persistence/integrations.js?v=20260829-p31a', owner: 'persistence' },
+    { src: './src/projects/content-model.js?v=20260829-p38a', owner: 'projects' },
+    { src: './src/persistence/integrations.js?v=20260829-p38a', owner: 'persistence' },
     { src: './src/core/app.js?v=20260828-p20a', owner: 'core' },
     { src: './src/connection/session-auth.js?v=20260817-1522', owner: 'connection' },
     { src: './src/connection/folder-session.js?v=20260825-p1e', owner: 'connection' },
@@ -22,7 +22,7 @@
     { src: './src/source/source-flow.js?v=20260825-p3a', owner: 'source' },
     { src: './src/projects/projects.js?v=20260828-p20a', owner: 'projects' },
     { src: './src/split/boundary-engine.js?v=20260826-p11a', owner: 'split' },
-    { src: './src/publishing/publishing-flow.js?v=20260829-p37a', owner: 'publishing' },
+    { src: './src/publishing/publishing-flow.js?v=20260829-p38a', owner: 'publishing' },
     { id: 'storyflowPublishingDisclosureJs', src: './src/publishing/publishing-disclosure.js?v=20260828-p23a', owner: 'publishing' },
     { src: './src/publishing/publishing-project-switcher.js?v=20260825-p3a', owner: 'publishing' },
     { id: 'storyflowPublishingGroupingJs', src: './src/publishing/publishing-grouping.js?v=20260828-p22a', owner: 'publishing' },
