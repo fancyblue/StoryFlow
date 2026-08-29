@@ -1501,11 +1501,16 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     return form.getBoundingClientRect().top - panel.getBoundingClientRect().top;
   })).toBeLessThan(80);
   await expect(page.getByRole('heading', { name: '圖文工作台', exact: true })).toBeVisible();
+  await expect(page.locator('#visualWorkspace > .visual-workspace-head .eyebrow')).toHaveText('STORYFLOW / WORKSPACE');
+  await expect(page.locator('#visualWorkspace > .visual-workspace-head .muted')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: '作品與圖文', exact: true })).toBeVisible();
-  await expect(page.locator('#visualProjectTitle')).toHaveText('夜色圖文集');
-  await expect(page.locator('.visual-current-project').getByText('圖文系列', { exact: true })).toBeVisible();
+  await expect(page.locator('#visualProjectTitle')).toHaveValue('夜色圖文集');
+  await expect(page.locator('.visual-current-project')).toHaveCount(0);
   await expect(page.locator('#visualProjectSwitchBtn')).toHaveText('切換作品');
+  await expect(page.locator('#visualProjectSwitchBtn')).toHaveClass(/quick-switch-project-btn/);
   expect(await page.locator('#visualProjectSwitchBtn').evaluate(button => Boolean(button.closest('.visual-entry-list-panel')))).toBe(true);
+  await expect(page.locator('#visualDeleteEntryBtn')).toHaveCount(0);
+  await expect(page.locator('#visualEntryList').getByRole('button', { name: '更多「月下預告」操作', exact: true })).toBeVisible();
   await expect(page.locator('#visualNewEntryBtn')).toBeVisible();
   expect(await page.locator('#visualNewEntryBtn').evaluate(button => Boolean(button.closest('.visual-entry-list-panel')))).toBe(true);
 
@@ -1518,11 +1523,11 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
 
   const originalVisualProjectId = await page.evaluate(() => StoryFlowProjects.activeId());
   await page.evaluate(() => StoryFlowProjects.createProject({ title: '第二圖文集', contentMode: 'visual' }, { quiet: true }));
-  await expect(page.locator('#visualProjectTitle')).toHaveText('第二圖文集');
+  await expect(page.locator('#visualProjectTitle')).toHaveValue('第二圖文集');
   await page.locator('#visualProjectSwitchBtn').click();
   await expect(page.locator('#visualProjectMenu')).toBeVisible();
-  await page.locator('#visualProjectMenu .publishing-project-menu-item', { hasText: '夜色圖文集' }).click();
-  await expect(page.locator('#visualProjectTitle')).toHaveText('夜色圖文集');
+  await page.locator('#visualProjectMenu .workspace-project-quick-switch-item', { hasText: '夜色圖文集' }).click();
+  await expect(page.locator('#visualProjectTitle')).toHaveValue('夜色圖文集');
   expect(await page.evaluate(() => StoryFlowProjects.activeId())).toBe(originalVisualProjectId);
   await expect(page.locator('#visualEntryList')).toContainText('月下預告');
   await expect(page.locator('#visualEntrySummary')).toHaveCount(0);
@@ -1669,7 +1674,10 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(visualDetail).toContainText('可發布');
   await expect(visualDetail).toContainText('2 張圖片');
   await expect(visualDetail.getByRole('button', { name: '編輯圖文「月下預告」', exact: true })).toBeVisible();
-  const worksDelete = visualDetail.getByRole('button', { name: '刪除圖文「月下預告」', exact: true });
+  const worksMore = visualDetail.getByRole('button', { name: '更多「月下預告」操作', exact: true });
+  await expect(worksMore).toBeVisible();
+  await worksMore.click();
+  const worksDelete = visualDetail.getByRole('menuitem', { name: '刪除圖文', exact: true });
   await expect(worksDelete).toBeVisible();
   page.once('dialog', dialog => dialog.accept());
   await worksDelete.click();
