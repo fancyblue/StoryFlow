@@ -98,6 +98,7 @@
       coverImageId,
       images,
       platformTitles: normalizeStringRecord(entry.platformTitles),
+      platformHashtags: normalizeStringRecord(entry.platformHashtags, { keepEmpty: true }),
       platformStatus: normalizeBooleanRecord(entry.platformStatus),
       publicationRecords: normalizePublicationRecords(entry.publicationRecords),
       createdAt: typeof entry.createdAt === 'string' ? entry.createdAt : '',
@@ -161,6 +162,7 @@
     const item = record(source);
     return {
       platformTitles: normalizeStringRecord(item.platformTitles),
+      platformHashtags: normalizeStringRecord(item.platformHashtags, { keepEmpty: true }),
       platformStatus: normalizeBooleanRecord(item.platformStatus),
       publicationRecords: normalizePublicationRecords(item.publicationRecords)
     };
