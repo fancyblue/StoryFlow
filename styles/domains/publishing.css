@@ -1061,14 +1061,14 @@ button.publish-delete-btn{
   transform:translateY(-4px);
   transition:opacity .14s ease,transform .14s ease;
 }
-.publish-summary-hint:hover::after,.publish-summary-hint:focus-visible::after{opacity:1;transform:translateY(0)}
+.publish-summary-hint:hover::after,.publish-summary-hint:focus::after{opacity:1;transform:translateY(0)}
 .publish-summary-hint:focus-visible{outline:2px solid rgba(57,117,167,.24);outline-offset:2px}
 .publish-list-item:has(.publish-summary-hint:hover),
-.publish-list-item:has(.publish-summary-hint:focus-visible),
+.publish-list-item:has(.publish-summary-hint:focus),
 .publishing-chapter-group:has(.publish-summary-hint:hover),
-.publishing-chapter-group:has(.publish-summary-hint:focus-visible),
+.publishing-chapter-group:has(.publish-summary-hint:focus),
 .publishing-chapter-group-rows:has(.publish-summary-hint:hover),
-.publishing-chapter-group-rows:has(.publish-summary-hint:focus-visible){
+.publishing-chapter-group-rows:has(.publish-summary-hint:focus){
   position:relative;
   z-index:90;
   overflow:visible!important;
