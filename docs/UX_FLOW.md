@@ -1,5 +1,7 @@
 # StoryFlow UX flows
 
+> 狀態：現行 UX 流程規範（已落地，持續維護；最後同步：2026-08-29）
+
 StoryFlow is a personal desktop writing tool. Flows should stay short, preserve the current work until an action is confirmed, and avoid account-style ceremony that does not protect the user's files.
 
 ## Page-level use cases and action priority
@@ -8,11 +10,11 @@ Button weight follows the user's current task, not how often a control happens t
 
 ### Works library
 
-The Works page is the structural management hub. Managing chapters is the most likely next step for any work. The “目前作品” badge and active-card treatment already communicate selection, so identical management actions must not change color merely because one card is current.
+The Works page is the structural management hub. Managing chapters or visual entries is the most likely next step for any work. The “目前作品” badge and active-card treatment already communicate selection, so identical management actions must not change color merely because one card is current.
 
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
-| W-01 | Review, add, edit or remove chapters in a work | 管理章節 | `⋯` for infrequent or destructive chapter actions | Consistent emphasized light-blue action on every card; expanded state uses a stronger soft selection |
+| W-01 | Review, add, edit or remove a work's chapters or visual entries | 管理章節／管理圖文 | `⋯` for infrequent or destructive row actions | Consistent emphasized light-blue action on every card; expanded state uses a stronger soft selection |
 | W-02 | Return to splitting and writing work | 工作台 | — | Tinted or outlined navigation action |
 | W-03 | Jump directly to this work's publishing queue | 管理發布 | — | Tinted secondary shortcut |
 | W-04 | Make another work current | 開啟／切換並開啟 | Then manage its chapters or enter its workspace | Outlined until selected; selection is shown by the card and badge |
@@ -20,7 +22,7 @@ The Works page is the structural management hub. Managing chapters is the most l
 | W-06 | Create the first work | 建立第一個作品 | — | The only solid action in the empty state; do not show a competing solid header action |
 | W-07 | Rename or delete a work | `⋯` | Confirmation and Recovery for deletion | Tertiary overflow; deletion uses the danger treatment only inside the decision |
 
-Every “管理章節” control uses the same noticeable light-blue treatment so the same label always communicates the same function. Current-work identity belongs to the card border and badge; no repeated row action uses a solid primary fill.
+Every “管理章節” or “管理圖文” control uses the same noticeable light-blue treatment so the same label always communicates the same function. Current-work identity belongs to the card border and badge; no repeated row action uses a solid primary fill.
 
 ### Workspace
 
@@ -28,8 +30,8 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
-| WS-01 | Start an empty work or chapter | 從 Google Docs 建立／手動建立／新增第一篇文章 | 切換作品 | Emphasize the source-choice stage; keep the alternative source cards equal until one is chosen |
-| WS-02 | Select the work and chapter to process | 切換作品／章節列 | Add, edit or delete a chapter | Selection and disclosure styling, never primary CTA styling |
+| WS-01 | Start an empty work, chapter or visual entry | 從 Google Docs 建立／手動建立／新增第一篇文章／新增圖文 | 切換作品 | Emphasize the source-choice stage; keep alternative creation actions at the same level |
+| WS-02 | Select the work and chapter or visual entry to process | 切換作品／章節列／圖文列 | Add, edit or delete the matching content type | Selection and disclosure styling, never primary CTA styling |
 | WS-03 | Refresh a linked Google Docs chapter | 更新來源 | 復原來源更新 | Tinted action that opens comparison; only “套用所選變更” is solid after review |
 | WS-04 | Adjust an automatic split suggestion | 少一個場景／多一個場景 | 切篇偏好 | Outlined directional and disclosure controls |
 | WS-05 | Move the ending within a long scene | 手動微調 | Drag or choose a paragraph boundary | Selected/toggled treatment; boundary targets are not buttons competing for primary emphasis |
@@ -37,6 +39,9 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-07 | Continue processing the remaining chapter | 產生下一篇 | Review the current ending again | Solid only when a valid next suggestion is ready |
 | WS-08 | Move from confirmed articles to publication | 前往發布 | Publishing summary | Solid only when a confirmed pending article exists; hide or demote it when there is nothing to publish |
 | WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | Editing is a normal menu action; deletion stays in overflow and requires confirmation |
+| WS-10 | Maintain a visual entry | 保存草稿 | 預覽、`⋯ → 刪除圖文` | Editing stays in the editor; deletion stays in row overflow and uses the shared Recovery flow |
+
+The “切換作品” disclosure lives in the SOURCE card heading for both content modes and includes “＋ 新增作品”. The longform “作品與章節” rail and visual “作品與圖文” rail use the same outer width and breakpoint contract. “新增文章／新增圖文” belongs beside the corresponding chapter or entry list, not in the page header.
 
 At any moment, the workspace should visually answer one question: “What can I safely do next?” It must not simultaneously emphasize source loading, split confirmation and publishing navigation.
 
@@ -55,8 +60,9 @@ The Publishing page separates queue navigation from the actual publishing commit
 | P-07 | Give one platform a different publishing title | 修改此平台標題, then 保存標題 | 改回沿用 | Kept inside that platform's preview/copy dialog; never a large article-level form |
 | P-08 | Mark or undo platform publication | 標註已發布／取消已發布 | Publication record | State control, not a global primary action; reversal requires a clear warning |
 | P-09 | Find articles by work or status | 作品／發布狀態 filters | — | Soft selected state, never solid CTA styling |
-| P-10 | Perform infrequent article management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation |
+| P-10 | Perform infrequent article or visual-entry management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation; visual deletion uses the same command and guard in every page |
 | P-11 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
+| P-12 | Prepare optional visual publishing helpers | 摘要／Hashtags | Copy helpers and search classification | Optional fields inside Publishing; never required and never inserted into the body automatically |
 
 An expanded “收合發布” control is still a disclosure. Use a stronger soft selection, border or adjacent panel treatment instead of the full primary fill; the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task.
 
@@ -162,7 +168,9 @@ SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認�
 
 ## Destructive actions
 
-Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). “離開此裝置” clears browser-held connection and settings state but does not delete files in the selected folder.
+Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). Manual chapters and visual entries use the same row-overflow interaction, explicit confirmation and Recovery-first guard. A visual entry is deleted through `⋯ → 刪除圖文` from Workspace, Works or Publishing; the editor footer does not expose a competing delete button. Cancelling or closing a creation dialog is not submission and must never trigger required-field validation.
+
+“離開此裝置” clears browser-held connection and settings state but does not delete files in the selected folder.
 
 ## Article afterwords
 
