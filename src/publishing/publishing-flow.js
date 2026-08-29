@@ -461,7 +461,7 @@
     const optionsSummary = publishDialog.querySelector('#platformPreviewOptionsSummary');
     const editTitle = publishDialog.querySelector('#editPlatformTitle');
     const visualExtras = publishDialog.querySelector('#platformPreviewVisualExtras');
-    const summaryCard = publishDialog.querySelector('#platformPreviewSummaryCard');
+    const summaryCard = publishDialog.querySelector('#copyPlatformSummary');
     const hashtagsCard = publishDialog.querySelector('#copyPlatformHashtags');
     const summaryText = String(part.summary || '').trim();
     const hashtagsText = String(part.hashtags || '').trim();
