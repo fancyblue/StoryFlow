@@ -10,8 +10,22 @@
     document.querySelectorAll('#visualEntryList .visual-entry-action-menu').forEach(menu => {
       if (menu === except) return;
       menu.hidden = true;
+      menu.classList.remove('opens-up');
       menu.closest('.visual-entry-row')?.querySelector('.visual-entry-more')?.setAttribute('aria-expanded', 'false');
     });
+  }
+
+  function positionEntryMenu(menu) {
+    const row = menu?.closest('.visual-entry-row');
+    const panel = menu?.closest('.visual-entry-list-panel');
+    if (!row || !panel || menu.hidden) return;
+    menu.classList.remove('opens-up');
+    const panelRect = panel.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    const menuHeight = menu.getBoundingClientRect().height;
+    const spaceBelow = panelRect.bottom - (rowRect.top + rowRect.height / 2 + 20);
+    const spaceAbove = rowRect.top + rowRect.height / 2 - 20 - panelRect.top;
+    if (spaceBelow < menuHeight + 8 && spaceAbove >= menuHeight + 8) menu.classList.add('opens-up');
   }
 
   const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
@@ -147,16 +161,17 @@
           <input id="visualProjectTitle" class="text-input visual-project-title-input" maxlength="160" />
           <div class="visual-entry-section-head">
             <div><p class="eyebrow">ENTRIES</p><h3>圖文清單</h3></div>
-            <div class="visual-entry-list-actions"><span id="visualEntryCount" class="muted"></span><button id="visualNewEntryBtn" class="button tiny primary" type="button">＋ 新增圖文</button></div>
+            <div class="visual-entry-list-actions"><span id="visualEntryCount" class="muted"></span></div>
           </div>
           <div id="visualEntryList" class="visual-entry-list"></div>
+          <button id="visualNewEntryBtn" class="button full ghost visual-entry-add-button" type="button">＋ 新增圖文</button>
         </aside>
         <section class="panel visual-editor-panel">
           <div id="visualEditorEmpty" class="visual-editor-empty"></div>
           <form id="visualEditorForm" class="visual-editor-form" hidden>
             <div class="visual-editor-toolbar">
               <label class="visual-field" style="flex:1"><span>圖文標題</span><input id="visualEntryTitle" class="text-input" required maxlength="160" /></label>
-              <label class="visual-field visual-editor-status"><span>準備狀態</span><select id="visualEntryStatus" class="text-input"><option value="draft">草稿</option><option value="ready">可發布</option></select></label>
+              <label class="visual-field visual-editor-status"><span>發布狀態</span><select id="visualEntryStatus" class="text-input" aria-describedby="visualEntryStatusHelp"><option value="draft">草稿</option><option value="ready">可發布</option></select><small id="visualEntryStatusHelp" class="muted">兩種狀態都會保存。草稿代表仍在編輯；可發布代表內容已準備完成，但不會自動發布。</small></label>
             </div>
             <label class="visual-field"><span>正文</span><textarea id="visualEntryBody" class="text-input visual-body-input" placeholder="輸入圖文正文；可使用 Markdown。"></textarea></label>
             <section class="visual-image-section">
@@ -334,7 +349,20 @@
         closeEntryMenus(opening ? menu : null);
         menu.hidden = !opening;
         more.setAttribute('aria-expanded', opening ? 'true' : 'false');
-        if (opening) menu.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+        if (opening) {
+          positionEntryMenu(menu);
+          menu.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+        }
+        return;
+      }
+      const edit = event.target.closest('[data-edit-entry]');
+      if (edit) {
+        event.preventDefault();
+        event.stopPropagation();
+        activeEntryId = edit.dataset.editEntry;
+        closeEntryMenus();
+        render();
+        requestAnimationFrame(() => document.getElementById('visualEntryTitle')?.focus({ preventScroll: true }));
         return;
       }
       const remove = event.target.closest('[data-delete-entry]');
@@ -359,7 +387,7 @@
     const status = root.querySelector('#visualEntryStatus');
     title.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.title = title.value; markChanged(); renderPreview(); renderList(); } });
     body.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.body = body.value; markChanged(); renderPreview(); renderMeta(); } });
-    status.addEventListener('change', () => { const entry = activeEntry(); if (entry) { entry.status = status.value; markChanged(); renderList(); renderMeta(); } });
+    status.addEventListener('change', () => { const entry = activeEntry(); if (entry) { entry.status = status.value; markChanged(); renderList(); renderMeta(); renderSaveAction(); } });
     root.querySelector('#visualEditorForm').addEventListener('submit', saveEntry);
     root.querySelector('#visualOpenPublishingBtn').addEventListener('click', () => {
       const entry = activeEntry();
@@ -599,6 +627,7 @@
         </button>
         <button type="button" class="chapter-delete-button chapter-more-button visual-entry-more" aria-label="更多「${esc(entry.title || '未命名圖文')}」操作" aria-haspopup="menu" aria-expanded="false" ${isReadOnly() ? 'disabled' : ''}>⋯</button>
         <div class="chapter-row-action-menu visual-entry-action-menu" role="menu" hidden>
+          <button type="button" class="chapter-row-edit-menu-item" role="menuitem" data-edit-entry="${esc(entry.id)}"><span aria-hidden="true">✎</span><span>編輯圖文</span></button>
           <button type="button" class="chapter-row-delete-menu-item" role="menuitem" data-delete-entry="${esc(entry.id)}"><span aria-hidden="true">×</span><span>刪除圖文</span></button>
         </div>
       </div>`).join('') : '<div class="visual-entry-empty">這個系列還沒有圖文。</div>';
@@ -662,6 +691,13 @@
     button.disabled = isReadOnly() || !canPublish(entry);
   }
 
+  function renderSaveAction() {
+    const status = document.getElementById('visualEntryStatus')?.value || activeEntry()?.status || 'draft';
+    const button = document.getElementById('visualSaveEntryBtn');
+    if (!button) return;
+    button.textContent = status === 'ready' ? '保存並設為可發布' : '保存草稿';
+  }
+
   function renderEditor() {
     const root = document.getElementById('visualWorkspace');
     const entry = activeEntry();
@@ -681,7 +717,7 @@
     root.querySelectorAll('#visualEditorForm input, #visualEditorForm textarea, #visualEditorForm select, #visualEditorForm button').forEach(control => {
       control.disabled = isReadOnly();
     });
-    renderImages(); renderPreview(); renderMeta(); renderPublishingAction();
+    renderImages(); renderPreview(); renderMeta(); renderPublishingAction(); renderSaveAction();
   }
 
   function render() {
