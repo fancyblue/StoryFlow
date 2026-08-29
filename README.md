@@ -6,7 +6,7 @@ StoryFlow 是一個以瀏覽器執行的長篇內容切篇與多平台發布工�
 
 建立圖文系列後，工作台會切換成獨立的圖文編輯介面，不顯示 Smart Split。每則圖文使用固定 ID 儲存在 `Works/<作品>/Visual/<entry-id>/`，改名不會移動圖片；刪除圖文前會建立 Recovery，預設保留私人 assets 圖檔。手機唯讀模式可以閱讀與預覽，但不允許新增、匯入、排序、刪除或保存。
 
-圖文在成功保存且設為「可發布」後，工作台會顯示「前往發布」。圖文與長文共用發布篩選與繼續發布逻輯，但圖片不會被複製或上傳到平台；預覽會保留封面、圖說、替代文字與手動上傳順序。
+圖文在成功保存且設為「可發布」後，工作台會顯示「前往發布」。圖文與長文共用發布篩選與繼續發布邏輯，但圖片不會被複製或上傳到平台；預覽會保留封面、圖說、替代文字與手動上傳順序。
 
 SMART SPLIT 預設只在原稿的場景分隔點提出切篇建議，並可用「少一個場景／多一個場景」快速調整。遇到單一場景過長時，可在「切篇確認」開啟「手動微調」，拖曳「這一篇結束」或直接點選任一段落間的位置；切點只吸附在段落之間，會即時更新本篇與後續字數，而且不會改寫原稿。手動微調只作用於目前尚未確認的文章，不會回溯重切已建立或已發布的文章。
 
@@ -21,6 +21,20 @@ SMART SPLIT 預設只在原稿的場景分隔點提出切篇建議，並可用�
 側欄的「搜尋」或 `⌘ K`（Windows / Linux 自動顯示為 `Ctrl K`）可跨目前工作區內的作品、章節、內部名稱與發布標題快速跳轉；手機／觸控介面會隱藏鍵盤提示。正文搜尋預設關閉，需要時才勾選「同時搜尋正文」；搜尋索引只在當下記憶體建立，不會把私人內容另存進 GitHub Pages 或瀏覽器儲存空間。
 
 發布文章也可「匯入圖片」。檔案來源可以是桌面、Google Drive、iCloud 或作業系統檔案選擇器提供的位置；瀏覽器會把 JPG、PNG、WebP 或 GIF 複製到私人 StoryFlow 資料夾，不會上傳到 GitHub Pages。每張圖片可保存替代文字、圖說與正文前／正文後／後記後位置，並在發布預覽中顯示、放大或複製 Markdown。平台的「複製內容」不會傳送圖片檔，實際發布時仍需依預覽順序逐張上傳。
+
+## 文件狀態與 Codex Project
+
+| 文件 | 狀態 | 用途 |
+| --- | --- | --- |
+| [`AGENTS.md`](AGENTS.md) | 現行專案規則 | Codex 與協作者的產品、安全、Git、測試與完成條件 |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | 已落地，持續維護 | 執行時、資料所有權與模組邊界 |
+| [`docs/UI_SYSTEM.md`](docs/UI_SYSTEM.md) | 已落地，持續維護 | 共用視覺與互動規範 |
+| [`docs/UX_FLOW.md`](docs/UX_FLOW.md) | 已落地，持續維護 | 各頁任務與操作優先順序 |
+| [`docs/VISUAL_CONTENT_MODE_DESIGN.md`](docs/VISUAL_CONTENT_MODE_DESIGN.md) | Phase 0–2 已完成 | 圖文模式的完成紀錄與 Phase 3 候選 |
+| [`docs/CHROME_ACCEPTANCE.md`](docs/CHROME_ACCEPTANCE.md) | 可重複執行 | 高風險變更與大型發布的人工驗收清單 |
+| [`tests/README.md`](tests/README.md) | 現行測試規範 | 風險導向的自動化與人工驗證策略 |
+
+要把 StoryFlow 獨立加入 Codex Project，請使用 [Codex Project 設定指南](docs/CODEX_PROJECT_GUIDE.md)；日常工作可直接套用 [提示詞庫](docs/CODEX_PROMPT_LIBRARY.md)。完成的設計文件不刪除，因為它們仍記錄相容性、安全與驗收決策；只有在內容被其他文件完整取代且沒有獨特價值時才刪除。
 
 ## Clone / Fork 後使用
 
@@ -55,10 +69,15 @@ StoryFlow/
 ├─ workspace.backup.json # 最近一次正常寫入前的工作區備份
 ├─ Recovery/         # 循環備份、衝突副本、高風險操作快照與刪除圖片備份
 └─ Works/
-   └─ <作品>/<章節>/
-      ├─ *.md
-      ├─ metadata.json
-      └─ assets/<文章固定 ID>/*.{jpg,jpeg,png,webp,gif}
+   └─ <作品>/
+      ├─ <章節>/
+      │  ├─ *.md
+      │  ├─ metadata.json
+      │  └─ assets/<文章固定 ID>/*.{jpg,jpeg,png,webp,gif}
+      └─ Visual/<圖文固定 ID>/
+         ├─ content.md
+         ├─ metadata.json
+         └─ assets/*.{jpg,jpeg,png,webp,gif}
 ```
 
 StoryFlow 只會在 `workspace.json` 實際寫入完成後顯示「已保存」；尚未連接資料夾、準備保存、保存中或寫入失敗都會分別顯示。所有工作區寫入都依序執行，並在改寫前把最近正常版本保存為 `workspace.backup.json`。
