@@ -22,11 +22,12 @@ SMART SPLIT 預設只在原稿的場景分隔點提出切篇建議，並可用�
 
 發布文章也可「匯入圖片」。檔案來源可以是桌面、Google Drive、iCloud 或作業系統檔案選擇器提供的位置；瀏覽器會把 JPG、PNG、WebP 或 GIF 複製到私人 StoryFlow 資料夾，不會上傳到 GitHub Pages。每張圖片可保存替代文字、圖說與正文前／正文後／後記後位置，並在發布預覽中顯示、放大或複製 Markdown。平台的「複製內容」不會傳送圖片檔，實際發布時仍需依預覽順序逐張上傳。
 
-## 文件狀態與 Codex Project
+## 文件狀態與 AI 協作
 
 | 文件 | 狀態 | 用途 |
 | --- | --- | --- |
-| [`AGENTS.md`](AGENTS.md) | 現行專案規則 | Codex 與協作者的產品、安全、Git、測試與完成條件 |
+| [`AGENTS.md`](AGENTS.md) | 現行專案規則 | AI 與協作者的產品、安全、Git、測試與完成條件 |
+| [`AI_HANDOFF.md`](AI_HANDOFF.md) | 現行交接入口 | 跨 AI 的啟動檢查、帳號確認、導覽與任務交接格式 |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | 已落地，持續維護 | 執行時、資料所有權與模組邊界 |
 | [`docs/UI_SYSTEM.md`](docs/UI_SYSTEM.md) | 已落地，持續維護 | 共用視覺與互動規範 |
 | [`docs/UX_FLOW.md`](docs/UX_FLOW.md) | 已落地，持續維護 | 各頁任務與操作優先順序 |
