@@ -52,6 +52,7 @@
                   { id: 'image-cover', fileName: '封面.png', size: 128, order: 1, alt: '封面' }
                 ],
                 platformTitles: { 巴哈姆特: ' 平台標題 ' },
+                platformHashtags: { 巴哈姆特: ' #巴哈限定 #圖文 ', 方格子: '' },
                 platformStatus: { 巴哈姆特: true },
                 publicationRecords: { 巴哈姆特: { publishedAt: '2026-08-28T00:00:00.000Z', url: 'https://example.com/post' } },
                 createdAt: '2026-08-28T00:00:00.000Z',
@@ -70,6 +71,10 @@
           '選填摘要與 Hashtags 以純文字保存');
         assert(visualEntry.tags.join(',') === 'StoryFlow,夜色',
           'Hashtag 純文字會同步解析成結構化標籤');
+        assert(visualEntry.platformHashtags['巴哈姆特'] === '#巴哈限定 #圖文'
+          && Object.prototype.hasOwnProperty.call(visualEntry.platformHashtags, '方格子')
+          && visualEntry.platformHashtags['方格子'] === '',
+          '平台 Hashtags 保留自訂值與明確停用的空字串');
         assert(StoryFlowContentModel.tagsFromHashtags('#奇幻 #奇幻 #角色').join(',') === '奇幻,角色',
           '結構化標籤採完整 Hashtag 並去除重複');
         assert(visualEntry.images.map(image => image.id).join(',') === 'image-cover,image-body', '圖片依固定順序正規化');
@@ -103,7 +108,7 @@
           projectId: 'project-visual', projectTitle: '圖文系列', entry: visualEntry
         });
         const sharedKeys = ['key', 'contentMode', 'projectId', 'projectTitle', 'id', 'title', 'body', 'images',
-          'platformTitles', 'platformStatus', 'publicationRecords', 'status', 'source'];
+          'platformTitles', 'platformHashtags', 'platformStatus', 'publicationRecords', 'status', 'source'];
         assert(sharedKeys.every(key => key in longformPublishable && key in visualPublishable),
           '長文與圖文可轉成相同發布 view model');
         assert(longformPublishable.title === '公開標題' && longformPublishable.body === '長文正文',
@@ -113,6 +118,9 @@
           '圖文 adapter 保留封面與平台發布狀態');
         assert(visualPublishable.summary === '月光下的短篇預告' && visualPublishable.hashtags === '#StoryFlow #夜色',
           '圖文發布 view model 保留選填複製文字');
+        assert(visualPublishable.platformHashtags['巴哈姆特'] === '#巴哈限定 #圖文'
+          && visualPublishable.platformHashtags['方格子'] === '',
+          '圖文發布 view model 保留平台 Hashtags 覆寫');
         assert(visualPublishable.tags.join(',') === 'StoryFlow,夜色',
           '圖文發布 view model 保留結構化標籤');
 
