@@ -1514,9 +1514,20 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('#visualProjectSwitchBtn')).toHaveClass(/quick-switch-project-btn/);
   expect(await page.locator('#visualProjectSwitchBtn').evaluate(button => Boolean(button.closest('.visual-entry-list-panel')))).toBe(true);
   await expect(page.locator('#visualDeleteEntryBtn')).toHaveCount(0);
-  await expect(page.locator('#visualEntryList').getByRole('button', { name: '更多「月下預告」操作', exact: true })).toBeVisible();
+  const visualWorkspaceMore = page.locator('#visualEntryList').getByRole('button', { name: '更多「月下預告」操作', exact: true });
+  await expect(visualWorkspaceMore).toBeVisible();
+  await visualWorkspaceMore.click();
+  await expect(page.locator('#visualEntryList').getByRole('menuitem', { name: '編輯圖文', exact: true })).toBeVisible();
+  await expect(page.locator('#visualEntryList').getByRole('menuitem', { name: '刪除圖文', exact: true })).toBeVisible();
+  await page.locator('#visualEntryList').getByRole('menuitem', { name: '編輯圖文', exact: true }).click();
+  await expect(page.locator('#visualEntryTitle')).toBeFocused();
   await expect(page.locator('#visualNewEntryBtn')).toBeVisible();
   expect(await page.locator('#visualNewEntryBtn').evaluate(button => Boolean(button.closest('.visual-entry-list-panel')))).toBe(true);
+  expect(await page.locator('.visual-entry-list-panel').evaluate(panel => {
+    const list = panel.querySelector('#visualEntryList').getBoundingClientRect();
+    const button = panel.querySelector('#visualNewEntryBtn').getBoundingClientRect();
+    return button.top >= list.bottom;
+  })).toBe(true);
 
   await page.locator('#visualProjectSwitchBtn').click();
   await expect(page.locator('#visualProjectNewWork')).toBeVisible();
@@ -1536,6 +1547,8 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('#visualEntryList')).toContainText('月下預告');
   await expect(page.locator('#visualEntrySummary')).toHaveCount(0);
   await expect(page.locator('#visualEntryHashtags')).toHaveCount(0);
+  await expect(page.locator('#visualEntryStatusHelp')).toHaveText('兩種狀態都會保存。草稿代表仍在編輯；可發布代表內容已準備完成，但不會自動發布。');
+  await expect(page.locator('#visualSaveEntryBtn')).toHaveText('保存草稿');
   const bodyLayout = await page.locator('#visualEntryBody').evaluate(bodyElement => {
     const bodyStyle = getComputedStyle(bodyElement);
     return {
@@ -1552,6 +1565,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   expect(bodyLayout.lineHeight).toBeGreaterThan(bodyLayout.fontSize);
   await page.locator('#visualEntryBody').fill('月光落在城牆上。\n\n第二段圖文內容。');
   await page.locator('#visualEntryStatus').selectOption('ready');
+  await expect(page.locator('#visualSaveEntryBtn')).toHaveText('保存並設為可發布');
 
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z8xQAAAAASUVORK5CYII=', 'base64');
   await page.locator('#visualImageInput').setInputFiles([
