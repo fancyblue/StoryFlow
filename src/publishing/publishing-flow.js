@@ -974,7 +974,7 @@
         ${recordSummary ? `<small class="publish-platform-record-summary">${escapeHtml(recordSummary)}</small>` : ''}
       </div>
       <div class="publish-platform-actions">
-        <button class="button tiny ghost platform-preview-btn" type="button" aria-label="預覽／複製「${escapeHtml(platform)}」">預覽／複製</button>
+        <button class="button tiny ghost platform-preview-btn" type="button" aria-label="預覽與複製「${escapeHtml(platform)}」">預覽與複製</button>
         <button class="button tiny ghost platform-record-btn" type="button" aria-label="${published ? '查看' : '記錄'}「${escapeHtml(platform)}」發布紀錄">${published ? '發布紀錄' : '記錄發布'}</button>
         <button class="button tiny ghost platform-status-btn ${published ? 'is-published' : ''}" type="button" aria-label="${published ? '取消' : '標註'}「${escapeHtml(platform)}」已發布">${published ? '取消已發布' : '標註已發布'}</button>
       </div>`;
