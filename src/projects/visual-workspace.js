@@ -6,6 +6,14 @@
   let objectUrls = [];
   const dirtyEntryIds = new Set();
 
+  function closeEntryMenus(except = null) {
+    document.querySelectorAll('#visualEntryList .visual-entry-action-menu').forEach(menu => {
+      if (menu === except) return;
+      menu.hidden = true;
+      menu.closest('.visual-entry-row')?.querySelector('.visual-entry-more')?.setAttribute('aria-expanded', 'false');
+    });
+  }
+
   const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;'
   }[char]));
@@ -27,13 +35,17 @@
     const projects = api.list?.() || [];
     const activeId = api.activeId?.();
     const active = projects.find(project => project.id === activeId) || projects[0];
-    title.textContent = active?.title || state.projectTitle || '未命名作品';
+    title.value = active?.title || state.projectTitle || '未命名作品';
 
     menu.replaceChildren();
+    const menuTitle = document.createElement('div');
+    menuTitle.className = 'workspace-project-quick-switch-title';
+    menuTitle.textContent = '切換作品';
+    menu.appendChild(menuTitle);
     const newWork = document.createElement('button');
     newWork.id = 'visualProjectNewWork';
     newWork.type = 'button';
-    newWork.className = 'publishing-project-menu-item visual-project-new-work';
+    newWork.className = 'workspace-project-quick-switch-item visual-project-new-work';
     newWork.innerHTML = '<span>＋ 新增作品</span>';
     newWork.addEventListener('click', event => {
       event.preventDefault();
@@ -46,7 +58,7 @@
     projects.forEach(project => {
       const item = document.createElement('button');
       item.type = 'button';
-      item.className = `publishing-project-menu-item ${project.id === activeId ? 'active' : ''}`;
+      item.className = `workspace-project-quick-switch-item${project.id === activeId ? ' active' : ''}`;
       item.disabled = project.id === activeId;
       item.innerHTML = `<span>${esc(project.title || '未命名作品')}</span>${project.id === activeId ? '<small>目前</small>' : ''}`;
       item.addEventListener('click', () => {
@@ -61,7 +73,7 @@
     button.disabled = false;
     button.classList.remove('single-project');
     button.title = '切換或新增作品';
-    button.querySelector('.visual-project-chevron').hidden = false;
+    button.querySelector('.sf-chevron').hidden = false;
   }
 
   function isVisual() {
@@ -111,30 +123,28 @@
     visual.className = 'visual-workspace';
     visual.hidden = true;
     visual.innerHTML = `
-      <header class="visual-workspace-head">
-        <div>
-          <p class="eyebrow">STORYFLOW / VISUAL WORKSPACE</p>
-          <h1>圖文工作台</h1>
-          <p class="muted">編排文字與私人圖片；StoryFlow 不會把圖片上傳到發布平台。</p>
-        </div>
+      <header class="topbar visual-workspace-head">
+        <div><p class="eyebrow">STORYFLOW / WORKSPACE</p><h1>圖文工作台</h1></div>
       </header>
       <div id="visualReadonlyNote" class="visual-readonly-note" hidden>手機目前為唯讀：可以閱讀與預覽，但不會新增、排序、匯入、刪除或保存。</div>
       <div class="visual-workspace-layout">
-        <aside class="panel visual-entry-list-panel">
+        <aside class="panel source-panel visual-entry-list-panel">
           <div class="panel-head visual-project-panel-head">
-            <div><p class="eyebrow">SOURCE</p><h2>作品與圖文</h2></div>
-            <div class="visual-project-switcher">
-              <button id="visualProjectSwitchBtn" class="button ghost visual-project-switch-btn" type="button" aria-haspopup="menu" aria-expanded="false">
-                <span>切換作品</span>
-                <span class="sf-chevron visual-project-chevron" aria-hidden="true"></span>
-              </button>
-              <div id="visualProjectMenu" class="publishing-project-menu visual-project-menu" role="menu" hidden></div>
+            <div>
+              <p class="eyebrow">SOURCE</p>
+              <div class="source-heading-title-row">
+                <h2>作品與圖文</h2>
+                <div class="source-heading-actions">
+                  <button id="visualProjectSwitchBtn" class="quick-switch-project-btn" type="button" aria-haspopup="menu" aria-expanded="false">
+                    <span>切換作品</span><span class="sf-chevron" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="visual-current-project">
-            <span>目前作品</span>
-            <div><strong id="visualProjectTitle"></strong><span class="visual-mode-badge">圖文系列</span></div>
-          </div>
+          <div id="visualProjectMenu" class="workspace-project-quick-switch visual-project-menu" role="menu" hidden></div>
+          <label class="field-label" for="visualProjectTitle">作品名稱</label>
+          <input id="visualProjectTitle" class="text-input visual-project-title-input" maxlength="160" />
           <div class="visual-entry-section-head">
             <div><p class="eyebrow">ENTRIES</p><h3>圖文清單</h3></div>
             <div class="visual-entry-list-actions"><span id="visualEntryCount" class="muted"></span><button id="visualNewEntryBtn" class="button tiny primary" type="button">＋ 新增圖文</button></div>
@@ -157,7 +167,7 @@
             <section class="visual-preview" aria-label="圖文基本預覽">
               <p class="eyebrow">PREVIEW</p><h2 id="visualPreviewTitle"></h2><div id="visualPreviewBody" class="visual-preview-body"></div><div id="visualPreviewImages" class="visual-preview-images"></div>
             </section>
-            <footer class="visual-editor-footer"><span id="visualEditorMeta" class="muted"></span><div class="visual-editor-footer-actions"><button id="visualDeleteEntryBtn" class="button ghost" type="button">刪除圖文</button><button id="visualOpenPublishingBtn" class="button ghost" type="button" hidden>前往發布 →</button><button id="visualSaveEntryBtn" class="button primary" type="submit">保存草稿</button></div></footer>
+            <footer class="visual-editor-footer"><span id="visualEditorMeta" class="muted"></span><div class="visual-editor-footer-actions"><button id="visualOpenPublishingBtn" class="button ghost" type="button" hidden>前往發布 →</button><button id="visualSaveEntryBtn" class="button primary" type="submit">保存草稿</button></div></footer>
           </form>
         </section>
       </div>`;
@@ -312,11 +322,37 @@
     root.querySelector('#visualEditorEmpty').addEventListener('click', event => {
       if (event.target.closest?.('#visualEmptyNewEntry')) openEntryDialog();
     });
-    root.querySelector('#visualEntryList').addEventListener('click', event => {
-      const button = event.target.closest('[data-entry-id]');
+    root.querySelector('#visualEntryList').addEventListener('click', async event => {
+      const more = event.target.closest('.visual-entry-more');
+      if (more) {
+        event.preventDefault();
+        event.stopPropagation();
+        const row = more.closest('.visual-entry-row');
+        const menu = row?.querySelector('.visual-entry-action-menu');
+        if (!menu) return;
+        const opening = menu.hidden;
+        closeEntryMenus(opening ? menu : null);
+        menu.hidden = !opening;
+        more.setAttribute('aria-expanded', opening ? 'true' : 'false');
+        if (opening) menu.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+        return;
+      }
+      const remove = event.target.closest('[data-delete-entry]');
+      if (remove) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeEntryMenus();
+        await deleteEntry(remove.dataset.deleteEntry);
+        return;
+      }
+      const button = event.target.closest('.visual-entry-select[data-entry-id]');
       if (!button) return;
       activeEntryId = button.dataset.entryId;
       render();
+    });
+    root.querySelector('#visualProjectTitle').addEventListener('input', event => {
+      state.projectTitle = event.target.value;
+      saveState('作品名稱已更新');
     });
     const title = root.querySelector('#visualEntryTitle');
     const body = root.querySelector('#visualEntryBody');
@@ -325,7 +361,6 @@
     body.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.body = body.value; markChanged(); renderPreview(); renderMeta(); } });
     status.addEventListener('change', () => { const entry = activeEntry(); if (entry) { entry.status = status.value; markChanged(); renderList(); renderMeta(); } });
     root.querySelector('#visualEditorForm').addEventListener('submit', saveEntry);
-    root.querySelector('#visualDeleteEntryBtn').addEventListener('click', deleteEntry);
     root.querySelector('#visualOpenPublishingBtn').addEventListener('click', () => {
       const entry = activeEntry();
       if (!entry || !canPublish(entry)) return;
@@ -538,6 +573,7 @@
         activeEntryId = list[Math.min(index, list.length - 1)]?.id || null;
       }
       saveState('圖文已刪除');
+      await window.StoryFlowProjectPersistence?.flush?.('visual-entry-delete');
       window.dispatchEvent(new CustomEvent('storyflow:visual-entry-changed', {
         detail: { projectId: window.StoryFlowProjects?.activeId?.(), entryId: entry.id, deleted: true }
       }));
@@ -557,9 +593,15 @@
     const items = entries();
     root.querySelector('#visualEntryCount').textContent = `${items.length} 則`;
     list.innerHTML = items.length ? items.map(entry => `
-      <button type="button" data-entry-id="${esc(entry.id)}" class="${entry.id === activeEntryId ? 'active' : ''}">
-        <strong>${esc(entry.title || '未命名圖文')}</strong><small>${entry.status === 'ready' ? '可發布' : '草稿'} · ${entry.images?.length || 0} 張圖片</small>
-      </button>`).join('') : '<div class="visual-entry-empty">這個系列還沒有圖文。</div>';
+      <div class="visual-entry-row ${entry.id === activeEntryId ? 'active' : ''}">
+        <button type="button" data-entry-id="${esc(entry.id)}" class="visual-entry-select">
+          <strong>${esc(entry.title || '未命名圖文')}</strong><small>${entry.status === 'ready' ? '可發布' : '草稿'} · ${entry.images?.length || 0} 張圖片</small>
+        </button>
+        <button type="button" class="chapter-delete-button chapter-more-button visual-entry-more" aria-label="更多「${esc(entry.title || '未命名圖文')}」操作" aria-haspopup="menu" aria-expanded="false" ${isReadOnly() ? 'disabled' : ''}>⋯</button>
+        <div class="chapter-row-action-menu visual-entry-action-menu" role="menu" hidden>
+          <button type="button" class="chapter-row-delete-menu-item" role="menuitem" data-delete-entry="${esc(entry.id)}"><span aria-hidden="true">×</span><span>刪除圖文</span></button>
+        </div>
+      </div>`).join('') : '<div class="visual-entry-empty">這個系列還沒有圖文。</div>';
   }
 
   async function renderImages() {
@@ -637,9 +679,8 @@
     root.querySelector('#visualEntryBody').value = entry.body;
     root.querySelector('#visualEntryStatus').value = entry.status;
     root.querySelectorAll('#visualEditorForm input, #visualEditorForm textarea, #visualEditorForm select, #visualEditorForm button').forEach(control => {
-      if (control.id !== 'visualDeleteEntryBtn') control.disabled = isReadOnly();
+      control.disabled = isReadOnly();
     });
-    root.querySelector('#visualDeleteEntryBtn').disabled = isReadOnly();
     renderImages(); renderPreview(); renderMeta(); renderPublishingAction();
   }
 
@@ -693,7 +734,8 @@
   // Intercept only the internal starter so every real work now chooses longform or
   // visual first; source selection remains the second step for longform.
   document.addEventListener('click', event => {
-    if (!event.target.closest?.('.visual-project-switcher')) closeProjectMenu();
+    if (!event.target.closest?.('#visualProjectSwitchBtn, #visualProjectMenu')) closeProjectMenu();
+    if (!event.target.closest?.('.visual-entry-more, .visual-entry-action-menu')) closeEntryMenus();
   });
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') closeProjectMenu();
