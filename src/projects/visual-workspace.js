@@ -114,24 +114,29 @@
       <header class="visual-workspace-head">
         <div>
           <p class="eyebrow">STORYFLOW / VISUAL WORKSPACE</p>
-          <div class="visual-workspace-head-copy">
-            <div class="visual-project-switcher">
-              <button id="visualProjectSwitchBtn" class="visual-project-switch-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="切換作品">
-                <h1 id="visualProjectTitle"></h1>
-                <span class="sf-chevron visual-project-chevron" aria-hidden="true"></span>
-              </button>
-              <div id="visualProjectMenu" class="publishing-project-menu visual-project-menu" role="menu" hidden></div>
-            </div>
-            <span class="visual-mode-badge">圖文系列</span>
-          </div>
+          <h1>圖文工作台</h1>
           <p class="muted">編排文字與私人圖片；StoryFlow 不會把圖片上傳到發布平台。</p>
         </div>
       </header>
       <div id="visualReadonlyNote" class="visual-readonly-note" hidden>手機目前為唯讀：可以閱讀與預覽，但不會新增、排序、匯入、刪除或保存。</div>
       <div class="visual-workspace-layout">
         <aside class="panel visual-entry-list-panel">
-          <div class="panel-head visual-entry-list-head">
-            <div><p class="eyebrow">ENTRIES</p><h2>圖文清單</h2></div>
+          <div class="panel-head visual-project-panel-head">
+            <div><p class="eyebrow">SOURCE</p><h2>作品與圖文</h2></div>
+            <div class="visual-project-switcher">
+              <button id="visualProjectSwitchBtn" class="button ghost visual-project-switch-btn" type="button" aria-haspopup="menu" aria-expanded="false">
+                <span>切換作品</span>
+                <span class="sf-chevron visual-project-chevron" aria-hidden="true"></span>
+              </button>
+              <div id="visualProjectMenu" class="publishing-project-menu visual-project-menu" role="menu" hidden></div>
+            </div>
+          </div>
+          <div class="visual-current-project">
+            <span>目前作品</span>
+            <div><strong id="visualProjectTitle"></strong><span class="visual-mode-badge">圖文系列</span></div>
+          </div>
+          <div class="visual-entry-section-head">
+            <div><p class="eyebrow">ENTRIES</p><h3>圖文清單</h3></div>
             <div class="visual-entry-list-actions"><span id="visualEntryCount" class="muted"></span><button id="visualNewEntryBtn" class="button tiny primary" type="button">＋ 新增圖文</button></div>
           </div>
           <div id="visualEntryList" class="visual-entry-list"></div>
