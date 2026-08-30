@@ -53,7 +53,7 @@ Keep `src/projects/content-model.js` loaded before project consumers. Preserve w
 - Longform “作品與章節” and visual “作品與圖文” use the same SOURCE column-width contract.
 - Work switching belongs in the SOURCE heading and includes “新增作品”.
 - Content creation belongs with the relevant chapter or visual-entry list.
-- Summary and Hashtags are optional publishing helpers, edited in Publishing rather than the visual content editor. Hashtags remain copyable text; parsed values support search/classification.
+- Summary, Hashtags and afterword are optional publishing helpers shared by longform and visual content and edited in Publishing rather than source editors. Hashtags remain copyable text; parsed values support search/classification for both content types. The list-level preview is a plain content check; platform title/style and optional helper controls belong only to each platform's preview-and-copy flow.
 - Infrequent or destructive row actions use `⋯` → menu action. Do not add a second always-visible delete button in an editor footer.
 - Closing or canceling a creation dialog must bypass required-field validation and create nothing.
 - Use the shared `.sf-chevron` for disclosures and the ellipsis pattern for contextual actions.
