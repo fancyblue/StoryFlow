@@ -7,6 +7,7 @@ StoryFlow is a private, single-user browser workbench for long-form splitting, v
 - GitHub contains application code, tests and public documentation only.
 - Manuscripts, images, workspace state and personal integration settings belong only in the user-selected StoryFlow folder.
 - StoryFlow prepares and tracks content; it does not automatically publish to third-party platforms.
+- Browser startup must never delete legacy localStorage or IndexedDB. Compatibility APIs may inspect key/database names without reading values, but cleanup requires a future explicit, Recovery-backed migration and user confirmation.
 - Longform and visual projects share navigation, persistence, Recovery, search and Publishing, but keep separate source models and editing workspaces.
 - Do not turn private single-user needs into account, collaboration, server or cloud-storage features without an explicit request.
 
