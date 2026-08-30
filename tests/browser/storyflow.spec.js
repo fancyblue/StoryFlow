@@ -1729,12 +1729,6 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await visualHelperDialog.getByRole('button', { name: '保存摘要與 Hashtags', exact: true }).click();
   await expect(visualHelperDialog).toBeHidden();
   await expect.poll(() => page.evaluate(() => state.visualEntries[0].summary)).toBe('月光下的城堡預告');
-  await publishCard.getByRole('button', { name: '後記', exact: true }).click();
-  const visualAfterwordDialog = page.getByRole('dialog', { name: '後記' });
-  await visualAfterwordDialog.locator('.publish-afterword-input').fill('圖文也有後記。');
-  await visualAfterwordDialog.getByRole('button', { name: '保存後記', exact: true }).click();
-  await expect(visualAfterwordDialog).toBeHidden();
-  await expect.poll(() => page.evaluate(() => state.visualEntries[0].afterword)).toBe('圖文也有後記。');
   expect(await page.evaluate(() => ({
     hashtags: state.visualEntries[0].hashtags,
     tags: state.visualEntries[0].tags,
@@ -1750,6 +1744,12 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(summaryHint).toHaveAttribute('aria-label', '摘要：月光下的城堡預告');
   await summaryHint.focus();
   await expect.poll(() => summaryHint.evaluate(element => getComputedStyle(element.closest('.publish-list-item')).overflow)).toBe('visible');
+  await publishCard.getByRole('button', { name: '後記', exact: true }).click();
+  const visualAfterwordDialog = page.getByRole('dialog', { name: '後記' });
+  await visualAfterwordDialog.locator('.publish-afterword-input').fill('圖文也有後記。');
+  await visualAfterwordDialog.getByRole('button', { name: '保存後記', exact: true }).click();
+  await expect(visualAfterwordDialog).toBeHidden();
+  await expect.poll(() => page.evaluate(() => state.visualEntries[0].afterword)).toBe('圖文也有後記。');
   await expect(publishCard.locator('.publish-platform-row')).toHaveCount(2);
   const firstPlatformRow = publishCard.locator('.publish-platform-row').first();
   const platformHashtags = firstPlatformRow.locator('.publish-platform-hashtags');
