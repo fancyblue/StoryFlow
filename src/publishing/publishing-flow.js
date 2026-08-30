@@ -329,23 +329,37 @@
               <strong>選填發布資訊</strong>
               <span>主要內容與圖片確認後，再依需要複製或調整。</span>
             </div>
-            <button id="copyPlatformSummary" class="platform-preview-extra-copy" type="button" hidden>
-              <span>摘要</span><p id="platformPreviewSummary"></p><small>點一下複製</small>
-            </button>
-            <div id="platformPreviewHashtagsBlock" class="platform-preview-hashtags-block" hidden>
-              <div class="platform-preview-hashtags-row">
+            <div id="platformPreviewSummaryBlock" class="platform-preview-extra-block" hidden>
+              <div class="platform-preview-extra-row">
+                <button id="copyPlatformSummary" class="platform-preview-extra-copy" type="button">
+                  <span>摘要</span><p id="platformPreviewSummary"></p><small>點一下複製</small>
+                </button>
+                <button id="editPlatformPreviewSummary" class="button tiny ghost" type="button" aria-expanded="false">編輯</button>
+              </div>
+              <section id="platformPreviewSummaryEditor" class="platform-preview-extra-editor" hidden>
+                <label for="platformPreviewSummaryInput">共用摘要</label>
+                <textarea id="platformPreviewSummaryInput" class="text-input" rows="3" maxlength="500" placeholder="簡短介紹這則圖文"></textarea>
+                <div class="platform-preview-extra-editor-actions">
+                  <button id="savePlatformPreviewSummary" class="button tiny primary" type="button">儲存</button>
+                  <button id="cancelPlatformPreviewSummary" class="button tiny ghost" type="button">取消</button>
+                </div>
+                <small>摘要為所有平台共用的選填資訊，不會加入主要內容。</small>
+              </section>
+            </div>
+            <div id="platformPreviewHashtagsBlock" class="platform-preview-extra-block platform-preview-hashtags-block" hidden>
+              <div class="platform-preview-extra-row platform-preview-hashtags-row">
                 <button id="copyPlatformHashtags" class="platform-preview-extra-copy" type="button">
                   <span>Hashtags</span><p id="platformPreviewHashtags"></p><small>點一下複製</small>
                 </button>
                 <button id="editPlatformPreviewHashtags" class="button tiny ghost" type="button" aria-expanded="false">編輯</button>
               </div>
-              <section id="platformPreviewHashtagsEditor" class="platform-preview-platform-hashtags" hidden>
-                <div class="platform-preview-platform-hashtags-head">
+              <section id="platformPreviewHashtagsEditor" class="platform-preview-extra-editor platform-preview-platform-hashtags" hidden>
+                <div class="platform-preview-extra-editor-head platform-preview-platform-hashtags-head">
                   <label for="platformPreviewHashtagsInput">此平台 Hashtags</label>
                   <span id="platformPreviewHashtagsState"></span>
                 </div>
                 <input id="platformPreviewHashtagsInput" class="text-input" type="text" maxlength="500" placeholder="#創作 #小說" />
-                <div class="platform-preview-platform-hashtags-actions">
+                <div class="platform-preview-extra-editor-actions platform-preview-platform-hashtags-actions">
                   <button id="savePlatformPreviewHashtags" class="button tiny primary" type="button">儲存</button>
                   <button id="resetPlatformPreviewHashtags" class="button tiny ghost" type="button">沿用共用</button>
                 </div>
@@ -492,6 +506,11 @@
     const options = publishDialog.querySelector('#platformPreviewOptions');
     const optionsSummary = publishDialog.querySelector('#platformPreviewOptionsSummary');
     const editTitle = publishDialog.querySelector('#editPlatformTitle');
+    const summaryBlock = publishDialog.querySelector('#platformPreviewSummaryBlock');
+    const summaryEditor = publishDialog.querySelector('#platformPreviewSummaryEditor');
+    const summaryInput = publishDialog.querySelector('#platformPreviewSummaryInput');
+    const editSummary = publishDialog.querySelector('#editPlatformPreviewSummary');
+    const cancelSummary = publishDialog.querySelector('#cancelPlatformPreviewSummary');
     const hashtagsBlock = publishDialog.querySelector('#platformPreviewHashtagsBlock');
     const hashtagsEditor = publishDialog.querySelector('#platformPreviewHashtagsEditor');
     const hashtagsInput = publishDialog.querySelector('#platformPreviewHashtagsInput');
@@ -501,7 +520,7 @@
     const visualExtras = publishDialog.querySelector('#platformPreviewVisualExtras');
     const summaryCard = publishDialog.querySelector('#copyPlatformSummary');
     const hashtagsCard = publishDialog.querySelector('#copyPlatformHashtags');
-    const summaryText = String(part.summary || '').trim();
+    let summaryText = String(part.summary || '').trim();
     let hashtagsText = hashtagsFor(part, platform);
     const afterwordCount = afterwordChars(part);
     const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
@@ -529,6 +548,7 @@
           container.textContent = outputWithTitle(part, platform, includeAfterword.checked, titleStyle.value);
         }
       }
+      window.StoryFlowPreviewMode?.refresh?.();
     };
 
     const refreshTitle = () => {
@@ -544,33 +564,60 @@
       refreshContent();
     };
 
-    publishDialog.querySelector('#platformPreviewMeta').textContent = platform
+    const previewMeta = publishDialog.querySelector('#platformPreviewMeta');
+    previewMeta.textContent = platform
       ? `${platform} · ${visual ? '文字與圖片順序' : '貼文內容'}`
       : '預設輸出預覽 · 不會變更發布狀態';
     if (publishTitleFor(part, platform) !== part.title) {
-      publishDialog.querySelector('#platformPreviewMeta').textContent += ` · 內部名稱：${part.title}`;
+      previewMeta.textContent += ` · 內部名稱：${part.title}`;
     }
+    previewMeta.hidden = visual;
     editTitle.hidden = !platform;
     titleEditor.hidden = true;
+    summaryEditor.hidden = true;
     hashtagsEditor.hidden = true;
+    editSummary.hidden = !visual;
+    editSummary.setAttribute('aria-expanded', 'false');
+    editSummary.textContent = '編輯';
     editHashtags.hidden = !visual || !platform;
     editHashtags.setAttribute('aria-expanded', 'false');
-    summaryCard.hidden = !summaryText;
-    publishDialog.querySelector('#platformPreviewSummary').textContent = summaryText;
-    publishDialog.querySelector('#copyPlatformSummary').onclick = async () => {
-      try {
-        await writeClipboard(summaryText);
-        notify('已複製摘要');
-      } catch (error) {
-        notify(`複製摘要失敗：${error.message}`, true);
+    editHashtags.textContent = '編輯';
+    summaryBlock.hidden = !visual;
+    visualExtras.hidden = !visual;
+
+    const setExtraEditorExpanded = (button, editor, expanded, input) => {
+      editor.hidden = !expanded;
+      button.setAttribute('aria-expanded', String(expanded));
+      button.textContent = expanded ? '收合' : '編輯';
+      if (expanded) {
+        input.focus();
+        editor.scrollIntoView({ block: 'nearest' });
       }
     };
+
+    const refreshSummaryView = () => {
+      summaryText = String(part.summary || '').trim();
+      summaryCard.disabled = !summaryText;
+      publishDialog.querySelector('#platformPreviewSummary').textContent = summaryText || '尚未設定';
+      summaryCard.querySelector('small').textContent = summaryText ? '點一下複製' : '尚未設定';
+      summaryInput.value = summaryText;
+      summaryCard.onclick = async () => {
+        if (!summaryText) return;
+        try {
+          await writeClipboard(summaryText);
+          notify('已複製摘要');
+        } catch (error) {
+          notify(`複製摘要失敗：${error.message}`, true);
+        }
+      };
+    };
+    refreshSummaryView();
     const refreshHashtagsView = () => {
       hashtagsText = hashtagsFor(part, platform);
       const overridden = hasPlatformHashtagsOverride(part, platform);
       hashtagsBlock.hidden = !visual || (!platform && !hashtagsText);
       hashtagsCard.disabled = !hashtagsText;
-      visualExtras.hidden = !visual || (!summaryText && hashtagsBlock.hidden);
+      visualExtras.hidden = !visual;
       publishDialog.querySelector('#platformPreviewHashtags').textContent = hashtagsText || '尚未設定';
       hashtagsCard.querySelector('small').textContent = hashtagsText ? '點一下複製' : '尚未設定';
       hashtagsInput.value = hashtagsText;
@@ -603,21 +650,29 @@
       titleEditor.hidden = !titleEditor.hidden;
       if (!titleEditor.hidden) titleInput.focus();
     };
+    editSummary.onclick = () => {
+      if (!visual) return;
+      setExtraEditorExpanded(editSummary, summaryEditor, summaryEditor.hidden, summaryInput);
+    };
+    cancelSummary.onclick = () => {
+      summaryInput.value = summaryText;
+      setExtraEditorExpanded(editSummary, summaryEditor, false, summaryInput);
+    };
     editHashtags.onclick = () => {
       if (!visual || !platform) return;
-      hashtagsEditor.hidden = !hashtagsEditor.hidden;
-      editHashtags.setAttribute('aria-expanded', String(!hashtagsEditor.hidden));
-      editHashtags.textContent = hashtagsEditor.hidden ? '編輯' : '收合';
-      if (!hashtagsEditor.hidden) {
-        hashtagsInput.focus();
-        hashtagsEditor.scrollIntoView({ block: 'nearest' });
-      }
+      setExtraEditorExpanded(editHashtags, hashtagsEditor, hashtagsEditor.hidden, hashtagsInput);
     };
     publishDialog.querySelector('#savePlatformPreviewTitle').onclick = async () => {
       if (!entry || !platform) return;
       await savePlatformTitle(entry.chapter, part, platform, titleInput);
       titleEditor.hidden = true;
       refreshTitle();
+    };
+    publishDialog.querySelector('#savePlatformPreviewSummary').onclick = async () => {
+      if (!entry || !visual) return;
+      await saveVisualSummary(entry.part, summaryInput);
+      refreshSummaryView();
+      setExtraEditorExpanded(editSummary, summaryEditor, false, summaryInput);
     };
     publishDialog.querySelector('#resetPlatformPreviewTitle').onclick = async () => {
       if (!entry || !platform) return;
@@ -631,12 +686,14 @@
       await savePlatformHashtags(entry.part, platform, hashtagsInput);
       refreshHashtagsView();
       refreshOptionsSummary();
+      setExtraEditorExpanded(editHashtags, hashtagsEditor, false, hashtagsInput);
     };
     resetHashtags.onclick = async () => {
       if (!entry || !visual || !platform) return;
       await savePlatformHashtags(entry.part, platform, hashtagsInput, true);
       refreshHashtagsView();
       refreshOptionsSummary();
+      setExtraEditorExpanded(editHashtags, hashtagsEditor, false, hashtagsInput);
     };
     publishDialog.querySelector('#copyPlatformTitle').onclick = async () => {
       try {
@@ -712,6 +769,9 @@
     };
 
     publishDialog.showModal();
+    window.StoryFlowPreviewMode?.refresh?.();
+    const previewModeControl = publishDialog.querySelector('[data-sf-preview-control="publish"]');
+    if (previewModeControl) previewModeControl.hidden = visual || ['article-images', 'visual'].includes(publishDialog.querySelector('#platformPreviewContent')?.dataset.sfPreviewManaged);
     return publishDialog;
   }
 
@@ -885,6 +945,27 @@
       return true;
     } catch (error) {
       notify(`平台 Hashtags 已更新，但 metadata.json 尚未寫入：${error.message}`, true);
+      return false;
+    }
+  }
+
+  async function saveVisualSummary(part, input) {
+    normalizePublishItem(part);
+    part.summary = input.value.trim();
+    part.updatedAt = new Date().toISOString();
+    saveState('圖文摘要已更新');
+    renderParts();
+
+    try {
+      const updated = await writeVisualEntry(part);
+      if (!updated) {
+        notify('摘要目前只保留在畫面；請重新連接資料夾後再保存一次。', true);
+        return false;
+      }
+      notify(part.summary ? '摘要已保存' : '摘要已清除');
+      return true;
+    } catch (error) {
+      notify(`摘要已更新，但 metadata.json 尚未寫入：${error.message}`, true);
       return false;
     }
   }

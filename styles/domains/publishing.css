@@ -1195,3 +1195,108 @@ button.publish-delete-btn{
   .visual-publish-helper-actions{display:grid}
   .visual-publish-helper-actions .button{width:100%}
 }
+
+
+/* Compact visual publishing preview: keep metadata secondary and editors contained. */
+.platform-preview-dialog-card .platform-preview-body{
+  gap:10px;
+  padding:14px 22px 18px;
+}
+.platform-preview-dialog-card .sf-preview-mode-control[hidden],
+.platform-preview-meta[hidden],
+.platform-preview-visual-extras[hidden],
+.platform-preview-extra-block[hidden],
+.platform-preview-extra-editor[hidden]{display:none!important}
+.platform-preview-dialog-card .platform-preview-title-copy{
+  align-items:center;
+  gap:12px;
+  padding:9px 11px;
+  border:1px solid #dce7ee;
+  border-radius:10px;
+  background:#fff;
+}
+.platform-preview-title-actions .button{
+  min-height:34px;
+  height:34px;
+  padding:0 11px!important;
+}
+.platform-preview-dialog-card .platform-preview-options summary{
+  min-height:36px;
+  padding:0 11px;
+}
+.platform-preview-dialog-card .platform-preview-content-head{margin:3px 0 -2px}
+.platform-preview-extra-block{display:grid;gap:8px;min-width:0}
+.platform-preview-extra-row,
+.platform-preview-hashtags-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  min-width:0;
+  padding:2px;
+}
+.platform-preview-extra-row>.button,
+.platform-preview-hashtags-row>.button{
+  box-sizing:border-box;
+  align-self:center;
+  min-width:56px;
+  min-height:36px;
+  height:36px;
+  padding:0 10px!important;
+}
+.platform-preview-extra-row>.button:focus-visible,
+.platform-preview-hashtags-row>.button:focus-visible{
+  outline:2px solid rgba(57,117,167,.28);
+  outline-offset:2px;
+  box-shadow:none;
+}
+.platform-preview-extra-copy{min-width:0}
+.platform-preview-extra-copy p{min-width:0}
+.platform-preview-extra-editor,
+.platform-preview-platform-hashtags{
+  display:grid;
+  gap:8px;
+  padding:12px;
+  border:1px solid #d8e7f1;
+  border-radius:10px;
+  background:#fff;
+}
+.platform-preview-extra-editor>label,
+.platform-preview-extra-editor-head label{
+  color:#315e80;
+  font-size:12px;
+  font-weight:850;
+}
+.platform-preview-extra-editor-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.platform-preview-extra-editor-head span{color:#71899c;font-size:10px;font-weight:750}
+.platform-preview-extra-editor .text-input{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  min-height:38px;
+  padding:8px 10px!important;
+}
+.platform-preview-extra-editor textarea.text-input{
+  min-height:72px;
+  line-height:1.55;
+  resize:vertical;
+}
+.platform-preview-extra-editor-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.platform-preview-extra-editor>small{color:#71899c;font-size:10px;line-height:1.5}
+@media(max-width:680px){
+  .platform-preview-dialog-card .platform-preview-body{padding:12px 14px 16px}
+  .platform-preview-extra-row,
+  .platform-preview-hashtags-row{grid-template-columns:minmax(0,1fr) auto}
+  .platform-preview-extra-row>.button,
+  .platform-preview-hashtags-row>.button{width:auto}
+}

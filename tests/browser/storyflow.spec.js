@@ -1693,12 +1693,38 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   const publishingPreview = page.locator('#platformPreviewDialog');
   await expect(publishingPreview).toBeVisible();
   await expect(publishingPreview.locator('#platformPreviewOptions')).toHaveJSProperty('open', false);
+  await expect(publishingPreview.locator('#platformPreviewMeta')).toBeHidden();
+  await expect(publishingPreview.locator('[data-sf-preview-control="publish"]')).toBeHidden();
+  await expect(publishingPreview.locator('#platformPreviewSummaryEditor')).toBeHidden();
   await expect(publishingPreview.locator('#platformPreviewHashtagsEditor')).toBeHidden();
   expect(await publishingPreview.evaluate(dialog => {
+    const body = dialog.querySelector('.platform-preview-body');
+    const contentHead = dialog.querySelector('.platform-preview-content-head');
     const content = dialog.querySelector('#platformPreviewContent');
-    const editor = dialog.querySelector('#platformPreviewHashtagsEditor');
-    return Boolean(content && editor && (content.compareDocumentPosition(editor) & Node.DOCUMENT_POSITION_FOLLOWING));
-  })).toBe(true);
+    const summaryEditor = dialog.querySelector('#platformPreviewSummaryEditor');
+    const hashtagsEditor = dialog.querySelector('#platformPreviewHashtagsEditor');
+    const rows = [...dialog.querySelectorAll('.platform-preview-extra-row')];
+    const buttonsContained = rows.every(row => {
+      const rowBox = row.getBoundingClientRect();
+      const buttonBox = row.querySelector(':scope > .button')?.getBoundingClientRect();
+      return buttonBox && buttonBox.left >= rowBox.left - 1 && buttonBox.right <= rowBox.right + 1
+        && buttonBox.top >= rowBox.top - 1 && buttonBox.bottom <= rowBox.bottom + 1;
+    });
+    return {
+      contentBeforeEditors: Boolean(content && summaryEditor && hashtagsEditor
+        && (content.compareDocumentPosition(summaryEditor) & Node.DOCUMENT_POSITION_FOLLOWING)
+        && (content.compareDocumentPosition(hashtagsEditor) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      compactTop: Boolean(body && contentHead && contentHead.getBoundingClientRect().top - body.getBoundingClientRect().top <= 170),
+      buttonsContained
+    };
+  })).toEqual({ contentBeforeEditors: true, compactTop: true, buttonsContained: true });
+  await publishingPreview.locator('#editPlatformPreviewSummary').click();
+  await expect(publishingPreview.locator('#platformPreviewSummaryEditor')).toBeVisible();
+  await publishingPreview.locator('#platformPreviewSummaryInput').fill('更新後的月光摘要');
+  await publishingPreview.locator('#savePlatformPreviewSummary').click();
+  await expect(publishingPreview.locator('#platformPreviewSummaryEditor')).toBeHidden();
+  await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('更新後的月光摘要');
+  await expect.poll(() => page.evaluate(() => state.visualEntries[0].summary)).toBe('更新後的月光摘要');
   await publishingPreview.locator('#editPlatformPreviewHashtags').click();
   await expect(publishingPreview.locator('#platformPreviewHashtagsEditor')).toBeVisible();
   await expect(publishingPreview.locator('#platformPreviewHashtagsState')).toHaveText('沿用共用');
@@ -1720,7 +1746,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   expect(await publishingPreview.locator('.platform-preview-actions .button').allTextContents()).toEqual(['標註已發布', '關閉', '複製內容']);
   await expect(publishingPreview.locator('.visual-upload-order')).toContainText('圖片不會被複製或自動上傳');
   await expect(publishingPreview.locator('.visual-upload-order li')).toHaveCount(2);
-  await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('月光下的城堡預告');
+  await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('更新後的月光摘要');
   await expect(publishingPreview.locator('#platformPreviewHashtags')).toHaveText('#巴哈限定 #圖文');
   expect(await publishingPreview.evaluate(dialog => {
     const content = dialog.querySelector('#platformPreviewContent');

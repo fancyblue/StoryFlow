@@ -61,7 +61,7 @@ The Publishing page separates queue navigation from the actual publishing commit
 | P-09 | Find articles by work or status | 作品／發布狀態 filters | — | Soft selected state, never solid CTA styling |
 | P-10 | Perform infrequent article or visual-entry management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation; visual deletion uses the same command and guard in every page |
 | P-11 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
-| P-12 | Prepare optional visual publishing helpers | 摘要與 Hashtags | Summary hint, click-to-copy Hashtags and bottom preview editor | Common Hashtags are the fallback; a platform may override them or explicitly use none, and can return to the common value. The main content and image order come first; maintenance stays collapsed at the bottom, optional and never enters the body automatically |
+| P-12 | Prepare optional visual publishing helpers | 摘要與 Hashtags | Click-to-copy rows and matching bottom preview editors | The main content and image order come first. Summary and Hashtags show their effective values before editing and reveal one contained field only on demand; summary updates the shared value, while a platform may override Hashtags, explicitly use none or return to the common value. Neither helper enters the body automatically |
 
 An expanded “收合發布” control is still a disclosure. Use a stronger soft selection, border or adjacent panel treatment instead of the full primary fill; the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task.
 
