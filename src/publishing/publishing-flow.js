@@ -584,6 +584,7 @@
     }
     previewMeta.hidden = true;
     settings.hidden = !platformSpecific;
+    settings.classList.toggle('hidden', !platformSpecific);
     editTitle.hidden = !platformSpecific;
     titleEditor.hidden = true;
     summaryEditor.hidden = true;
@@ -595,7 +596,9 @@
     editHashtags.setAttribute('aria-expanded', 'false');
     editHashtags.textContent = '編輯';
     summaryBlock.hidden = !platformSpecific;
+    summaryBlock.classList.toggle('hidden', !platformSpecific);
     visualExtras.hidden = !platformSpecific;
+    visualExtras.classList.toggle('hidden', !platformSpecific);
 
     const setExtraEditorExpanded = (button, editor, expanded, input) => {
       editor.hidden = !expanded;
@@ -628,8 +631,10 @@
       hashtagsText = hashtagsFor(part, platform);
       const overridden = hasPlatformHashtagsOverride(part, platform);
       hashtagsBlock.hidden = !platformSpecific;
+      hashtagsBlock.classList.toggle('hidden', !platformSpecific);
       hashtagsCard.disabled = !hashtagsText;
       visualExtras.hidden = !platformSpecific;
+      visualExtras.classList.toggle('hidden', !platformSpecific);
       publishDialog.querySelector('#platformPreviewHashtags').textContent = hashtagsText || '尚未設定';
       hashtagsCard.querySelector('small').textContent = hashtagsText ? '點一下複製' : '尚未設定';
       hashtagsInput.value = hashtagsText;
