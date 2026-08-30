@@ -282,8 +282,9 @@
           <button id="closePlatformPreview" class="icon-button" type="button" aria-label="關閉">×</button>
         </div>
         <div class="platform-preview-body">
-          <p id="platformPreviewMeta" class="muted platform-preview-meta"></p>
-          <section class="platform-preview-title-copy" aria-label="發布標題">
+          <p id="platformPreviewMeta" class="muted platform-preview-meta" hidden></p>
+          <section id="platformPreviewSettings" class="platform-preview-settings" aria-label="發布與複製設定">
+            <div class="platform-preview-title-copy" aria-label="發布標題">
             <div>
               <span id="platformPreviewTitleSource">發布標題</span>
               <strong id="platformPreviewPublishTitle"></strong>
@@ -292,7 +293,7 @@
               <button id="copyPlatformTitle" class="button tiny ghost" type="button" aria-label="複製標題">複製</button>
               <button id="editPlatformTitle" class="button tiny ghost" type="button" aria-label="修改此平台標題">編輯</button>
             </div>
-          </section>
+            </div>
           <div id="platformPreviewTitleEditor" class="platform-preview-title-editor" hidden>
             <label class="field-label" for="platformPreviewTitleInput">此平台標題</label>
             <div class="platform-preview-title-editor-controls">
@@ -302,8 +303,8 @@
             </div>
             <small>只影響目前平台，不修改來源文章名稱或 Markdown 檔名。</small>
           </div>
-          <details id="platformPreviewOptions" class="platform-preview-options">
-            <summary>複製選項 <span id="platformPreviewOptionsSummary">使用預設</span></summary>
+          <div id="platformPreviewOptions" class="platform-preview-options">
+            <div class="platform-preview-options-head"><strong>內容組合</strong><span id="platformPreviewOptionsSummary">使用預設</span></div>
             <div class="platform-preview-options-body">
               <div class="platform-preview-copy-title-option">
                 <label>
@@ -321,7 +322,8 @@
                 <small id="platformPreviewAfterwordCount"></small>
               </label>
             </div>
-          </details>
+          </div>
+          </section>
           <div class="platform-preview-content-head"><strong>內容預覽</strong><span>主要內容</span></div>
           <div id="platformPreviewContent" class="platform-preview-content"></div>
           <section id="platformPreviewVisualExtras" class="platform-preview-visual-extras" aria-label="選填發布資訊" hidden>
@@ -555,7 +557,9 @@
       const currentTitle = publishTitleFor(part, platform);
       const platformOverride = platform && String(part.platformTitles?.[platform] || '').trim();
       const legacyOverride = String(part.publishTitle || '').trim();
-      publishDialog.querySelector('#platformPreviewTitle').textContent = `${currentTitle} · ${platformLabel(platform)}`;
+      publishDialog.querySelector('#platformPreviewTitle').textContent = platform
+        ? `預覽與複製 · ${platformLabel(platform)}`
+        : '預覽與複製';
       publishDialog.querySelector('#platformPreviewPublishTitle').textContent = currentTitle;
       publishDialog.querySelector('#platformPreviewTitleSource').textContent = platformOverride
         ? '發布標題 · 此平台自訂'
@@ -571,7 +575,7 @@
     if (publishTitleFor(part, platform) !== part.title) {
       previewMeta.textContent += ` · 內部名稱：${part.title}`;
     }
-    previewMeta.hidden = visual;
+    previewMeta.hidden = true;
     editTitle.hidden = !platform;
     titleEditor.hidden = true;
     summaryEditor.hidden = true;
@@ -639,7 +643,6 @@
     includeTitle.checked = false;
     titleStyle.value = 'heading';
     titleStyle.disabled = true;
-    options.open = false;
     const refreshOptionsSummary = () => {
       const labels = [];
       if (includeTitle.checked) labels.push(titleStyle.value === 'bold' ? '含粗體標題' : '含大標題');
@@ -770,8 +773,6 @@
 
     publishDialog.showModal();
     window.StoryFlowPreviewMode?.refresh?.();
-    const previewModeControl = publishDialog.querySelector('[data-sf-preview-control="publish"]');
-    if (previewModeControl) previewModeControl.hidden = visual || ['article-images', 'visual'].includes(publishDialog.querySelector('#platformPreviewContent')?.dataset.sfPreviewManaged);
     return publishDialog;
   }
 
@@ -1269,7 +1270,7 @@
           <span class="publish-overall-status ${status.key}">${status.label}${statusCount}</span>
         </div>
         <div class="publish-list-actions">
-          <button class="button tiny ghost default-preview-btn" type="button" aria-label="${visual ? '預覽與複製' : '預覽預設設定'}「${escapeHtml(part.title || '未命名內容')}」">${visual ? '預覽與複製' : '預覽預設設定'}</button>
+          <button class="button tiny ghost default-preview-btn" type="button" aria-label="預覽／複製「${escapeHtml(part.title || '未命名內容')}」">預覽／複製</button>
           <button class="button tiny ghost publish-delete-btn" type="button" aria-label="刪除「${escapeHtml(part.title || '未命名內容')}」">刪除</button>
           <span class="sf-chevron publish-expand-indicator" aria-hidden="true"></span>
         </div>
