@@ -349,7 +349,7 @@
         </div>
         <div class="publish-list-meta"><span class="publish-overall-status ${status.key}">${status.label}${statusCount}</span></div>
         <div class="publish-list-actions">
-          <button class="button tiny ghost default-preview-btn" type="button">預覽／複製</button>
+          <button class="button tiny ghost default-preview-btn" type="button">預覽</button>
           <button class="button tiny ghost publish-manage-btn" type="button">管理發布</button>
           <button class="button tiny ghost publish-more-btn" type="button" aria-label="更多文章操作">⋯</button>
         </div>
