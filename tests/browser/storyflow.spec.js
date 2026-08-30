@@ -1973,15 +1973,9 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   const deletionCard = page.locator('.publish-list-item', { hasText: '準備刪除的圖文' });
   await expect(deletionCard).toBeVisible();
   await expect(deletionCard.locator('.publish-readiness-badge')).toHaveText('內容尚未完成');
-  const incompletePublishing = await page.evaluate(async () => {
-    const entry = state.visualEntries.find(item => item.title === '準備刪除的圖文');
-    const changed = await togglePlatformPublished(entry, '安全測試平台');
-    return {
-      changed,
-      platformState: Boolean(entry.platformStatus?.['安全測試平台'])
-    };
-  });
-  expect(incompletePublishing).toEqual({ changed: false, platformState: false });
+  await deletionCard.getByRole('button', { name: '展開「準備刪除的圖文」的發布平台', exact: true }).click();
+  await expect(deletionCard.locator('.platform-status-btn').first()).toBeDisabled();
+  await expect(deletionCard.locator('.platform-record-btn').first()).toBeDisabled();
   await deletionCard.getByRole('button', { name: '更多「準備刪除的圖文」操作', exact: true }).click();
   page.once('dialog', dialog => dialog.accept());
   await deletionCard.getByRole('menuitem', { name: '刪除圖文', exact: true }).click();
