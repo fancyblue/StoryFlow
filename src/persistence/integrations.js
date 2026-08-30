@@ -12,6 +12,14 @@ const StoryFlowIntegrations = (() => {
   const CONNECTION_DB = 'storyflow-connections-v1';
   const CONNECTION_STORE = 'handles';
   const OUTPUT_HANDLE_KEY = 'storyflow-output-directory';
+  const LEGACY_BROWSER_STORAGE_KEYS = Object.freeze([
+    'storyflow.state.v1',
+    'storyflow.state.v2',
+    'storyflow.state.v3',
+    'storyflow.state.v4',
+    'storyflow.googlePickerApiKey'
+  ]);
+  const LEGACY_DATABASE_NAMES = Object.freeze(['storyflow-handles']);
   let outputDirectoryHandle = null;
   let accessToken = null;
   let tokenClient = null;
@@ -77,14 +85,40 @@ const StoryFlowIntegrations = (() => {
     return outputDirectoryHandle;
   }
 
-  async function purgeLegacyBrowserStorage() {
+  async function inspectLegacyBrowserStorage() {
+    const localKeys = [];
     try {
-      ['storyflow.state.v1','storyflow.state.v2','storyflow.state.v3','storyflow.state.v4','storyflow.googlePickerApiKey']
-        .forEach(key => localStorage.removeItem(key));
+      LEGACY_BROWSER_STORAGE_KEYS.forEach(key => {
+        if (localStorage.getItem(key) !== null) localKeys.push(key);
+      });
     } catch (_) {}
-    // Old experimental databases may have contained obsolete StoryFlow state.
-    // The new storyflow-connections-v1 database stores only the directory handle.
-    try { indexedDB.deleteDatabase('storyflow-handles'); } catch (_) {}
+
+    let databaseNames = [];
+    const databaseInspectionSupported = 'indexedDB' in window && Boolean(indexedDB.databases);
+    if (databaseInspectionSupported) {
+      try {
+        const databases = await indexedDB.databases();
+        databaseNames = databases
+          .map(database => database?.name || '')
+          .filter(name => LEGACY_DATABASE_NAMES.includes(name));
+      } catch (_) {}
+    }
+
+    return {
+      localKeys,
+      databaseNames,
+      databaseInspectionSupported,
+      hasLegacyData: Boolean(localKeys.length || databaseNames.length)
+    };
+  }
+
+  async function purgeLegacyBrowserStorage() {
+    const inspection = await inspectLegacyBrowserStorage();
+    return {
+      ...inspection,
+      removed: false,
+      reason: 'disabled-for-data-safety'
+    };
   }
 
   async function verifyPermission(handle, request = false) {
@@ -311,6 +345,8 @@ const StoryFlowIntegrations = (() => {
       summary: normalized.summary,
       hashtags: normalized.hashtags,
       tags: normalized.tags,
+      afterword: normalized.afterword,
+      includeAfterword: normalized.includeAfterword,
       status: normalized.status,
       coverImageId: normalized.coverImageId,
       images: normalized.images,
@@ -1392,9 +1428,9 @@ const StoryFlowIntegrations = (() => {
     return { ...chapter, tabTitle: tab.title, warnings: tab.warnings };
   }
 
-  purgeLegacyBrowserStorage();
-
-  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, cleanupWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, importPartImages, getPartImageFile, removePartImage, saveVisualEntry, importVisualImages, getVisualImageFile, removeVisualImage, removeVisualEntryFiles, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken), LARGE_IMAGE_BYTES, STORAGE_CLEANUP_DEFAULT_DAYS };
+  // Browser startup is intentionally non-destructive. Legacy data remains available
+  // until a future explicit, Recovery-backed migration is designed.
+  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, cleanupWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, importPartImages, getPartImageFile, removePartImage, saveVisualEntry, importVisualImages, getVisualImageFile, removeVisualImage, removeVisualEntryFiles, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, inspectLegacyBrowserStorage, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken), LARGE_IMAGE_BYTES, STORAGE_CLEANUP_DEFAULT_DAYS };
   window.StoryFlowIntegrations = api;
   return api;
 })();

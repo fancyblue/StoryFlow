@@ -7,7 +7,7 @@
   const scripts = [
     { src: './src/core/config.js?v=20260817-1625', owner: 'core' },
     { src: './src/projects/content-model.js?v=20260830-p45a', owner: 'projects' },
-    { src: './src/persistence/integrations.js?v=20260829-p38a', owner: 'persistence' },
+    { src: './src/persistence/integrations.js?v=20260830-p46a', owner: 'persistence' },
     { src: './src/core/app.js?v=20260830-p45a', owner: 'core' },
     { src: './src/connection/session-auth.js?v=20260817-1522', owner: 'connection' },
     { src: './src/connection/folder-session.js?v=20260825-p1e', owner: 'connection' },
