@@ -538,7 +538,7 @@
       const container = publishDialog.querySelector('#platformPreviewContent');
       const sections = outputSections(part, platform, includeAfterword.checked);
       if (visual) {
-        renderVisualPublishPreview(container, part, sections.body, includeTitle.checked ? titleStyle.value : '', platform);
+        renderVisualPublishPreview(container, part, outputFor(part, platform, includeAfterword.checked), includeTitle.checked ? titleStyle.value : '', platform);
       } else if (window.StoryFlowArticleImages?.renderPreview) {
         window.StoryFlowArticleImages.renderPreview(container, part, sections, {
           projectTitle: state.projectTitle,
