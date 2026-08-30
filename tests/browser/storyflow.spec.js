@@ -7,6 +7,100 @@ async function prepare(page) {
   return pageErrors;
 }
 
+
+test('startup and legacy compatibility API preserve browser data', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.addInitScript(() => {
+    localStorage.setItem('storyflow.state.v4', 'legacy-workspace-fixture');
+    localStorage.setItem('storyflow.googlePickerApiKey', 'legacy-picker-fixture');
+    window.__legacyDatabaseDeleteCalls = [];
+    Object.defineProperty(indexedDB, 'deleteDatabase', {
+      configurable: true,
+      value: name => {
+        window.__legacyDatabaseDeleteCalls.push(name);
+        return {};
+      }
+    });
+  });
+  await page.goto('/');
+
+  const result = await page.evaluate(async () => {
+    const inspection = await StoryFlowIntegrations.inspectLegacyBrowserStorage();
+    const compatibility = await StoryFlowIntegrations.purgeLegacyBrowserStorage();
+    return {
+      stateValue: localStorage.getItem('storyflow.state.v4'),
+      pickerValue: localStorage.getItem('storyflow.googlePickerApiKey'),
+      deleteCalls: window.__legacyDatabaseDeleteCalls,
+      inspection,
+      compatibility
+    };
+  });
+
+  expect(result.stateValue).toBe('legacy-workspace-fixture');
+  expect(result.pickerValue).toBe('legacy-picker-fixture');
+  expect(result.deleteCalls).toEqual([]);
+  expect(result.inspection.localKeys).toEqual([
+    'storyflow.state.v4',
+    'storyflow.googlePickerApiKey'
+  ]);
+  expect(result.compatibility).toMatchObject({
+    removed: false,
+    reason: 'disabled-for-data-safety',
+    hasLegacyData: true
+  });
+  expect(pageErrors).toEqual([]);
+});
+
+test('visual metadata stores afterword and its platform-output preference', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+
+  const metadata = await page.evaluate(async () => {
+    const writtenFiles = new Map();
+    const makeDirectory = path => ({
+      kind: 'directory',
+      name: path.split('/').filter(Boolean).at(-1) || 'StoryFlow-test',
+      queryPermission: async () => 'granted',
+      requestPermission: async () => 'granted',
+      getDirectoryHandle: async name => makeDirectory(`${path}/${name}`),
+      getFileHandle: async name => ({
+        kind: 'file',
+        name,
+        createWritable: async () => ({
+          write: async value => writtenFiles.set(`${path}/${name}`, String(value)),
+          close: async () => {}
+        })
+      })
+    });
+    const root = makeDirectory('StoryFlow-test');
+    window.showDirectoryPicker = async () => root;
+    await StoryFlowIntegrations.chooseOutputDirectory();
+
+    await StoryFlowIntegrations.saveVisualEntry({
+      projectTitle: '安全測試作品',
+      entry: {
+        id: 'visual-afterword-metadata',
+        title: '圖文後記測試',
+        body: '圖文正文',
+        afterword: '獨立保存的圖文後記',
+        includeAfterword: false,
+        images: []
+      }
+    });
+
+    const metadataText = [...writtenFiles.entries()]
+      .find(([path]) => path.endsWith('/metadata.json'))?.[1];
+    return JSON.parse(metadataText);
+  });
+
+  expect(metadata).toMatchObject({
+    id: 'visual-afterword-metadata',
+    afterword: '獨立保存的圖文後記',
+    includeAfterword: false
+  });
+  expect(pageErrors).toEqual([]);
+});
+
 test('primary action scale and navigation icon language stay consistent', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 900 });
