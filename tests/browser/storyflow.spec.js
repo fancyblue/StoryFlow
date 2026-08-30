@@ -63,14 +63,23 @@ test('visual metadata stores afterword and its platform-output preference', asyn
       queryPermission: async () => 'granted',
       requestPermission: async () => 'granted',
       getDirectoryHandle: async name => makeDirectory(`${path}/${name}`),
-      getFileHandle: async name => ({
-        kind: 'file',
-        name,
-        createWritable: async () => ({
-          write: async value => writtenFiles.set(`${path}/${name}`, String(value)),
-          close: async () => {}
-        })
-      })
+      getFileHandle: async (name, options = {}) => {
+        const filePath = `${path}/${name}`;
+        if (!options.create && !writtenFiles.has(filePath)) {
+          throw new DOMException(`File not found: ${name}`, 'NotFoundError');
+        }
+        return {
+          kind: 'file',
+          name,
+          getFile: async () => ({
+            text: async () => writtenFiles.get(filePath) || ''
+          }),
+          createWritable: async () => ({
+            write: async value => writtenFiles.set(filePath, String(value)),
+            close: async () => {}
+          })
+        };
+      }
     });
     const root = makeDirectory('StoryFlow-test');
     window.showDirectoryPicker = async () => root;
