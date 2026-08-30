@@ -231,7 +231,7 @@
   }
 
   function ensureControl(group) {
-    if (!group || document.querySelector(`[data-sf-preview-control="${group}"]`)) return;
+    if (!group || group === 'publish' || document.querySelector(`[data-sf-preview-control="${group}"]`)) return;
     const anchor = controlAnchor(group);
     if (!anchor) return;
     const control = document.createElement('div');
@@ -252,9 +252,6 @@
   function syncControl(group) {
     const control = document.querySelector(`[data-sf-preview-control="${group}"]`);
     if (!control) return;
-    if (group === 'publish') {
-      control.hidden = ['article-images', 'visual'].includes(document.getElementById('platformPreviewContent')?.dataset.sfPreviewManaged);
-    }
     const mode = groupModes.get(group) || 'preview';
     control.querySelectorAll('[data-sf-mode]').forEach(button => {
       const active = button.dataset.sfMode === mode;
