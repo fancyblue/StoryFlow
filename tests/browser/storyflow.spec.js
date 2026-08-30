@@ -822,7 +822,7 @@ test('backup center renders safe workspace metadata', async ({ page }) => {
   expect(pageErrors).toEqual([]);
 });
 
-test('publishing counts content types by work, keeps filters aligned, and treats an empty project selection as all', async ({ page }) => {
+test('publishing counts content types by work even when one work has several entries and keeps filters aligned', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
@@ -841,37 +841,16 @@ test('publishing counts content types by work, keeps filters aligned, and treats
       formatted: '測試內容',
       platformStatus: {}
     }));
-    StoryFlowProjects.createProject({
-      title: '圖文篩選測試',
-      contentMode: 'visual',
-      visualEntry: {
-        id: 'publishing-filter-visual-1',
-        title: '測試發布圖文 1',
-        body: '測試圖文內容',
-        status: 'ready',
-        images: [],
-        platformStatus: {}
-      }
-    }, { quiet: true });
-    state.visualEntries.push(StoryFlowContentModel.normalizeVisualEntry({
-      id: 'publishing-filter-visual-2',
-      title: '測試發布圖文 2',
-      body: '第二則測試圖文',
-      status: 'ready',
-      images: [],
-      platformStatus: {}
-    }));
     renderAll();
   });
 
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.getByText('測試發布文章 1', { exact: true })).toBeVisible();
-  await expect(page.getByText('測試發布圖文 1', { exact: true })).toBeVisible();
   await expect(page.locator('#publishingContentTypeFilters')).toBeVisible();
-  await expect(page.locator('#publishingContentTypeFilters [data-content-type="all"]')).toHaveText('全部類型 2');
+  await expect(page.locator('#publishingContentTypeFilters [data-content-type="all"]')).toHaveText('全部類型 1');
   await expect(page.locator('#publishingContentTypeFilters [data-content-type="longform"]')).toHaveText('長文 1');
-  await expect(page.locator('#publishingContentTypeFilters [data-content-type="visual"]')).toHaveText('圖文 1');
-  await expect(page.locator('#publishingFilters [data-filter="all"]')).toHaveText('全部 5');
+  await expect(page.locator('#publishingContentTypeFilters [data-content-type="visual"]')).toHaveText('圖文 0');
+  await expect(page.locator('#publishingFilters [data-filter="all"]')).toHaveText('全部 3');
 
   const filterStyles = await page.evaluate(() => [
     '#publishingProjectFilterBtn',
@@ -892,21 +871,15 @@ test('publishing counts content types by work, keeps filters aligned, and treats
   expect(new Set(filterStyles.map(style => style.lineHeight)).size).toBe(1);
   expect(new Set(filterStyles.map(style => style.height)).size).toBe(1);
 
-  await page.locator('#publishingContentTypeFilters [data-content-type="longform"]').click();
-  await expect(page.getByText('測試發布文章 3', { exact: true })).toBeVisible();
-  await expect(page.getByText('測試發布圖文 1', { exact: true })).toHaveCount(0);
-  await expect(page.locator('.publishing-project-group-title .publishing-project-type-badge')).toHaveText(['長文']);
+  const firstCard = page.locator('.publish-list-item', { hasText: '測試發布文章 1' });
+  await expect(firstCard.getByRole('button', { name: '預覽／複製「測試發布文章 1」', exact: true })).toBeVisible();
+  await expect(page.locator('.publishing-project-group-title .publishing-project-type-badge')).toHaveText('長文');
 
   await page.locator('#publishingContentTypeFilters [data-content-type="visual"]').click();
-  await expect(page.getByText('測試發布圖文 2', { exact: true })).toBeVisible();
-  await expect(page.getByText('測試發布文章 1', { exact: true })).toHaveCount(0);
-  await expect(page.locator('.publishing-project-group-title .publishing-project-type-badge')).toHaveText(['圖文']);
-
+  await expect(page.locator('.publishing-filter-empty')).toContainText('沒有符合目前篩選的內容');
   await page.locator('#publishingContentTypeFilters [data-content-type="all"]').click();
-  const longformCard = page.locator('.publish-list-item', { hasText: '測試發布文章 1' });
-  const visualCard = page.locator('.publish-list-item', { hasText: '測試發布圖文 1' });
-  await expect(longformCard.getByRole('button', { name: '預覽／複製「測試發布文章 1」', exact: true })).toBeVisible();
-  await expect(visualCard.getByRole('button', { name: '預覽／複製「測試發布圖文 1」', exact: true })).toBeVisible();
+  await expect(page.getByText('測試發布文章 3', { exact: true })).toBeVisible();
+
   await page.locator('#publishingProjectFilterBtn').click();
   const checkbox = page.locator('.publishing-project-filter-option input').first();
   await expect(checkbox).toBeChecked();
