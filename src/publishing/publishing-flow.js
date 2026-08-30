@@ -304,7 +304,7 @@
             <small>只影響目前平台，不修改來源文章名稱或 Markdown 檔名。</small>
           </div>
           <div id="platformPreviewOptions" class="platform-preview-options">
-            <div class="platform-preview-options-head"><strong>內容組合</strong><span id="platformPreviewOptionsSummary">使用預設</span></div>
+            <span id="platformPreviewOptionsSummary" hidden>使用預設</span>
             <div class="platform-preview-options-body">
               <div class="platform-preview-copy-title-option">
                 <label>
