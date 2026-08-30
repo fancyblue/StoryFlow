@@ -121,6 +121,16 @@
   color:#2f6f9f;
   font-weight:800;
 }
+.publish-list-title-row .publish-readiness-badge.incomplete{
+  display:inline-flex;
+  align-items:center;
+  min-height:22px;
+  padding:2px 7px;
+  border-radius:999px;
+  background:#fff4e5;
+  color:#9a5a13;
+  font-weight:800;
+}
 .publish-internal-title{
   display:block;
   margin-top:4px;
