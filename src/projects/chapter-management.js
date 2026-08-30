@@ -133,13 +133,18 @@
 
   function activeVisualMetadata() {
     try {
-      return (state?.visualEntries || []).map(entry => ({
-        id: entry.id,
-        title: String(entry.title || '未命名圖文'),
-        status: entry.status === 'ready' ? '可發布' : '草稿',
-        chars: typeof charCount === 'function' ? charCount(entry.body || '') : String(entry.body || '').length,
-        images: Array.isArray(entry.images) ? entry.images.length : 0
-      }));
+      return (state?.visualEntries || []).map(entry => {
+        const title = String(entry.title || '未命名圖文');
+        const chars = typeof charCount === 'function' ? charCount(entry.body || '') : String(entry.body || '').length;
+        const images = Array.isArray(entry.images) ? entry.images.length : 0;
+        return {
+          id: entry.id,
+          title,
+          chars,
+          images,
+          complete: Boolean(title.trim()) && Boolean(String(entry.body || '').trim() || images)
+        };
+      });
     } catch (_) {
       return [];
     }
@@ -272,8 +277,8 @@
         title.append(name, meta);
 
         const status = document.createElement('span');
-        status.className = `project-chapter-source visual ${entry.status === '可發布' ? 'ready' : 'draft'}`;
-        status.textContent = entry.status;
+        status.className = `project-chapter-source visual ${entry.complete ? 'ready' : 'draft'}`;
+        status.textContent = entry.complete ? '內容完整' : '內容尚未完成';
 
         const actions = document.createElement('div');
         actions.className = 'project-chapter-actions project-visual-entry-actions';

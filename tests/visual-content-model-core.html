@@ -66,7 +66,8 @@
         const visualEntry = visualProject.visualEntries[0];
         assert(StoryFlowContentModel.isProjectState(visualProject), '沒有章節的圖文作品仍是有效作品狀態');
         assert(visualProject.contentMode === 'visual' && visualProject.chapters.length === 0, '圖文作品不需要假裝成章節');
-        assert(visualEntry.title === '夜色預告' && visualEntry.status === 'ready', '圖文標題與準備狀態正規化');
+        assert(visualEntry.title === '夜色預告' && !Object.prototype.hasOwnProperty.call(visualEntry, 'status'),
+          '圖文標題正規化，舊準備狀態不再進入來源模型');
         assert(visualEntry.summary === '月光下的短篇預告' && visualEntry.hashtags === '#StoryFlow #夜色',
           '選填摘要與 Hashtags 以純文字保存');
         assert(visualEntry.tags.join(',') === 'StoryFlow,夜色',
@@ -108,7 +109,7 @@
           projectId: 'project-visual', projectTitle: '圖文系列', entry: visualEntry
         });
         const sharedKeys = ['key', 'contentMode', 'projectId', 'projectTitle', 'id', 'title', 'body', 'images',
-          'platformTitles', 'platformHashtags', 'platformStatus', 'publicationRecords', 'status', 'source'];
+          'platformTitles', 'platformHashtags', 'platformStatus', 'publicationRecords', 'source'];
         assert(sharedKeys.every(key => key in longformPublishable && key in visualPublishable),
           '長文與圖文可轉成相同發布 view model');
         assert(longformPublishable.title === '公開標題' && longformPublishable.body === '長文正文',

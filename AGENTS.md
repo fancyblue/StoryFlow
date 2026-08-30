@@ -57,6 +57,8 @@ Keep `src/projects/content-model.js` loaded before project consumers. Preserve w
 - Summary, Hashtags and afterword are optional publishing helpers shared by longform and visual content and edited in Publishing rather than source editors. Hashtags remain copyable text; parsed values support search/classification for both content types. The list-level preview is a plain content check; platform title/style and optional helper controls belong only to each platform's preview-and-copy flow.
 - Infrequent or destructive row actions use `⋯` → menu action. Do not add a second always-visible delete button in an editor footer.
 - Closing or canceling a creation dialog must bypass required-field validation and create nothing.
+- Visual source editing uses debounced autosave with explicit saving/saved/failure feedback. Entry, work and view switches flush pending writes; destructive actions remain explicit, confirmed and Recovery-backed rather than joining routine autosave.
+- Visual entries have no manual draft/ready state. Publishing completeness is derived from a title plus body text or at least one image; summary, Hashtags and afterword remain optional.
 - Use the shared `.sf-chevron` for disclosures and the ellipsis pattern for contextual actions.
 - Desktop Chrome is primary, but every changed layout must remain usable at the repository breakpoints and must not introduce horizontal overflow.
 

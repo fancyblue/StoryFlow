@@ -3,7 +3,6 @@
 // storage and publishing boundaries for later feature modules.
 (function () {
   const CONTENT_MODES = Object.freeze({ LONGFORM: 'longform', VISUAL: 'visual' });
-  const VISUAL_STATUSES = new Set(['draft', 'ready']);
   const IMAGE_PLACEMENTS = new Set(['cover', 'body']);
 
   function clone(value) {
@@ -96,7 +95,6 @@
       body: typeof entry.body === 'string' ? entry.body : '',
       afterword: typeof entry.afterword === 'string' ? entry.afterword : '',
       includeAfterword: entry.includeAfterword !== false,
-      status: VISUAL_STATUSES.has(entry.status) ? entry.status : 'draft',
       coverImageId,
       images,
       platformTitles: normalizeStringRecord(entry.platformTitles),
@@ -214,7 +212,6 @@
       includeAfterword: sourceEntry.includeAfterword,
       coverImageId: sourceEntry.coverImageId,
       images: clone(sourceEntry.images),
-      status: sourceEntry.status,
       ...publishingFields(sourceEntry),
       source: { kind: CONTENT_MODES.VISUAL, entryId: sourceEntry.id }
     };
