@@ -20,10 +20,24 @@
     const belongsToActiveVisualProject = state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL
       && Array.isArray(state.visualEntries)
       && state.visualEntries.some(entry => entry === part || (entry.id && entry.id === part?.id));
-    const isVisualSnapshot = part && typeof part.body === 'string'
-      && !Object.prototype.hasOwnProperty.call(part, 'raw')
-      && ['draft', 'ready'].includes(part.status);
+    const isVisualSnapshot = part
+      && (part.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL
+        || part.source?.kind === StoryFlowContentModel.CONTENT_MODES.VISUAL
+        || (typeof part.body === 'string'
+          && Array.isArray(part.images)
+          && !Object.prototype.hasOwnProperty.call(part, 'raw')
+          && !Object.prototype.hasOwnProperty.call(part, 'formatted')));
     return belongsToActiveVisualProject || isVisualSnapshot;
+  }
+
+  function visualContentComplete(part) {
+    if (!isVisualPart(part)) return true;
+    return Boolean(String(part?.title || '').trim())
+      && Boolean(String(part?.body || '').trim() || part?.images?.length);
+  }
+
+  function notifyIncompleteVisual() {
+    notify('這則圖文尚未完成：請保留標題，並加入正文或至少一張圖片。', true);
   }
 
   function normalizePublishItem(part) {
@@ -488,6 +502,10 @@
     if (!platform) return false;
     normalizePartStatus(part);
     const next = !part.platformStatus[platform];
+    if (next && !visualContentComplete(part)) {
+      notifyIncompleteVisual();
+      return false;
+    }
     const record = publicationRecord(part, platform);
     if (!next && (record.publishedAt || record.url)) {
       const confirmed = window.confirm(`取消「${platform}」的已發布標記？\n\n這會一併清除已記錄的發布時間與文章網址。`);
@@ -752,6 +770,8 @@
     refreshTitle();
     toggle.hidden = !platform;
     toggle.textContent = isPublished ? '取消已發布標記' : '標註已發布';
+    toggle.disabled = Boolean(platform && visual && !isPublished && !visualContentComplete(part));
+    toggle.title = toggle.disabled ? '請先完成圖文標題，並加入正文或至少一張圖片' : '';
 
     publishDialog.querySelector('#confirmPlatformCopy').onclick = async () => {
       try {
@@ -767,7 +787,7 @@
         notify(`複製失敗：${error.message}`, true);
         return;
       }
-      if (platform && !part.platformStatus?.[platform]) {
+      if (platform && !part.platformStatus?.[platform] && (!visual || visualContentComplete(part))) {
         const markPublished = window.confirm(`已複製「${platform}」版本。\n\n要將這個平台標註為已發布嗎？`);
         if (markPublished) {
           setPlatformPublished(part, platform, true);
@@ -840,6 +860,10 @@
   }
 
   function openPublicationRecord(chapter, part, platform) {
+    if (!part.platformStatus?.[platform] && !visualContentComplete(part)) {
+      notifyIncompleteVisual();
+      return;
+    }
     const record = publicationRecord(part, platform);
     const dateInput = publicationDialog.querySelector('#publicationRecordDate');
     const urlInput = publicationDialog.querySelector('#publicationRecordUrl');
@@ -1157,6 +1181,7 @@
     const recordSummary = published
       ? `${publishedAt || '未記錄發布時間'}${record.url ? ' · 已記錄網址' : ''}`
       : '';
+    const publishingBlocked = visual && !published && !visualContentComplete(part);
     const row = document.createElement('div');
     row.className = 'publish-platform-row';
     row.innerHTML = `
@@ -1172,8 +1197,8 @@
       </div>
       <div class="publish-platform-actions">
         <button class="button tiny ghost platform-preview-btn" type="button" aria-label="預覽與複製「${escapeHtml(platform)}」">預覽與複製</button>
-        <button class="button tiny ghost platform-record-btn" type="button" aria-label="${published ? '查看' : '記錄'}「${escapeHtml(platform)}」發布紀錄">${published ? '發布紀錄' : '記錄發布'}</button>
-        <button class="button tiny ghost platform-status-btn ${published ? 'is-published' : ''}" type="button" aria-label="${published ? '取消' : '標註'}「${escapeHtml(platform)}」已發布">${published ? '取消已發布' : '標註已發布'}</button>
+        <button class="button tiny ghost platform-record-btn" type="button" aria-label="${published ? '查看' : '記錄'}「${escapeHtml(platform)}」發布紀錄" ${publishingBlocked ? 'disabled title="請先完成圖文內容"' : ''}>${published ? '發布紀錄' : '記錄發布'}</button>
+        <button class="button tiny ghost platform-status-btn ${published ? 'is-published' : ''}" type="button" aria-label="${published ? '取消' : '標註'}「${escapeHtml(platform)}」已發布" ${publishingBlocked ? 'disabled title="請先完成圖文內容"' : ''}>${published ? '取消已發布' : '標註已發布'}</button>
       </div>`;
     row.querySelector('.publish-platform-hashtags')?.addEventListener('click', async event => {
       event.stopPropagation();
@@ -1267,6 +1292,7 @@
     const bodyChars = visual ? charCount(part.body) : part.chars;
     const summaryText = String(part.summary || '').trim();
     const hashtagsText = String(part.hashtags || '').trim();
+    const incompleteVisual = visual && !visualContentComplete(part);
     card.innerHTML = `
       <div class="publish-list-summary" role="button" tabindex="0" aria-expanded="${expanded}">
         <div class="publish-list-title-block">
@@ -1277,6 +1303,7 @@
             <span>${bodyChars.toLocaleString()} 字</span>
             ${afterwordCount ? `<span class="publish-afterword-badge">有後記 ${afterwordCount.toLocaleString()} 字</span>` : ''}
             ${imageCount ? `<span class="publish-image-badge">附圖 ${imageCount.toLocaleString()} 張</span>` : ''}
+            ${incompleteVisual ? '<span class="publish-readiness-badge incomplete">內容尚未完成</span>' : ''}
           </div>
           ${hasCustomPublishTitle ? `<small class="publish-internal-title">內部名稱：${escapeHtml(part.title)}</small>` : ''}
         </div>
