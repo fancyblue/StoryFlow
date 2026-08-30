@@ -51,14 +51,14 @@ The Publishing page separates queue navigation from the actual publishing commit
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
 | P-01 | Resume the latest unfinished publication | 繼續發布 | Filters and project selector | One solid page action, visible only when pending or partial work exists |
-| P-02 | Choose a specific article to process | 管理發布 | 預覽預設設定、`⋯` | Tinted row action; preview is outlined and overflow is tertiary |
-| P-03 | Verify platform formatting | 預覽與複製 | Collapsed copy options, copy title, include/exclude afterword | Outlined until the preview dialog opens; body/image preview is primary and “複製內容” is the final primary action |
+| P-02 | Choose a specific article or visual entry to process | 管理發布 | 預覽／複製、`⋯` | Same labels and order for longform and visual content; management is tinted, preview is outlined and overflow is tertiary |
+| P-03 | Verify platform formatting | 預覽與複製 | One compact title-and-content settings card, then the body/image preview | No Markdown-mode switch or duplicate platform line; “複製內容” is the final primary action |
 | P-04 | Copy content to a platform | 複製內容 | Optionally prepend title as heading or bold, 複製標題、關閉 | The single solid action in the preview dialog |
 | P-05 | Store publication time and URL | 保存發布紀錄 | 取消、開啟文章 | The single solid action in the record dialog |
 | P-06 | Edit afterword or image metadata | 文章圖片／後記, then save the active editor | Preview and ordering controls | Compact entry row; one local solid save action only inside the active dialog |
 | P-07 | Give one platform a different publishing title | 修改此平台標題, then 保存標題 | 改回沿用 | Kept inside that platform's preview/copy dialog; never a large article-level form |
 | P-08 | Mark or undo platform publication | 標註已發布／取消已發布 | Publication record | State control, not a global primary action; reversal requires a clear warning |
-| P-09 | Find articles by work or status | 作品／發布狀態 filters | — | Soft selected state, never solid CTA styling |
+| P-09 | Find content by work, type or status | 作品／類型／發布狀態 filters | — | Type chips count works, status chips count entries; every filter control shares one typography and height scale |
 | P-10 | Perform infrequent article or visual-entry management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation; visual deletion uses the same command and guard in every page |
 | P-11 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
 | P-12 | Prepare optional visual publishing helpers | 摘要與 Hashtags | Click-to-copy rows and matching bottom preview editors | The main content and image order come first. Summary and Hashtags show their effective values before editing and reveal one contained field only on demand; summary updates the shared value, while a platform may override Hashtags, explicitly use none or return to the common value. Neither helper enters the body automatically |
@@ -171,14 +171,14 @@ SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認�
 
 Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). Manual chapters and visual entries use the same persistent trailing overflow, edit-then-delete item order, explicit confirmation and Recovery-first guard. A visual entry is deleted through `⋯ → 刪除圖文` from Workspace, Works or Publishing; the editor footer does not expose a competing delete button. Cancelling or closing a creation dialog is not submission and must never trigger required-field validation. Preview controls never overlap the reading surface: workbench preview/save actions keep a visible gap, dialog actions use a divided footer, and summary hints open below their icon without row clipping. Visual-entry status is explicit: both “草稿” and “可發布” save content; “可發布” means ready for the publishing workflow and never means automatically published. The save action mirrors the selected state as “保存草稿” or “保存並設為可發布”.
 
-Workspace does not provide a direct publishing shortcut for either content type; publication is entered from the primary navigation or the Works-page “管理發布” action. The Publishing page filters content type separately from publication status and repeats the type badge beside each work name.
+Workspace does not provide a direct publishing shortcut for either content type; publication is entered from the primary navigation or the Works-page “管理發布” action. The Publishing page filters content type separately from publication status and repeats the type badge beside each work name. “全部類型／長文／圖文” count works after the current work selection, while status counts continue to count individual publishable entries.
 
 “離開此裝置” clears browser-held connection and settings state but does not delete files in the selected folder.
 
 ## Article afterwords
 
 ```text
-發布 → 管理發布 → 後記 → 編輯／保存 → 關閉燈箱 → 預覽與複製
+發布 → 管理發布 → 後記 → 編輯／保存 → 關閉燈箱 → 預覽／複製
                                                    ↘ 可排除後記，只輸出正文
 ```
 

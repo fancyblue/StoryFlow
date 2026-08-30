@@ -1300,3 +1300,95 @@ button.publish-delete-btn{
   .platform-preview-extra-row>.button,
   .platform-preview-hashtags-row>.button{width:auto}
 }
+
+/* Publishing consistency: project, type and status filters share one control scale. */
+body #publishingView #publishingProjectFilterBtn,
+body #publishingView #publishingContentTypeFilters .publishing-type-filter,
+body #publishingView #publishingFilters .publishing-filter{
+  box-sizing:border-box!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:34px!important;
+  height:34px!important;
+  padding:0 10px!important;
+  font-size:12px!important;
+  line-height:1!important;
+  font-weight:800!important;
+}
+body #publishingView #publishingProjectFilterBtn strong{
+  font-size:inherit!important;
+  line-height:inherit!important;
+}
+
+/* Publishing preview uses one compact settings card for title and content composition. */
+.platform-preview-settings{
+  display:grid;
+  overflow:hidden;
+  border:1px solid #d8e7f1;
+  border-radius:10px;
+  background:#fff;
+}
+.platform-preview-settings .platform-preview-title-copy{
+  gap:12px;
+  margin:0;
+  padding:11px 12px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+.platform-preview-settings .platform-preview-title-editor{
+  margin:0 12px 12px;
+}
+.platform-preview-settings .platform-preview-options{
+  margin:0;
+  border:0;
+  border-top:1px solid #e1ebf1;
+  border-radius:0;
+  background:#f8fbfd;
+}
+.platform-preview-options-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:34px;
+  padding:0 12px;
+  color:#315e80;
+}
+.platform-preview-options-head strong{
+  font-size:11px;
+  font-weight:850;
+}
+.platform-preview-options-head span{
+  margin-left:auto;
+  color:#71899c;
+  font-size:10px;
+  font-weight:750;
+}
+.platform-preview-settings .platform-preview-options-body{
+  gap:8px;
+  padding:8px 12px 10px;
+  border-top:0;
+}
+.platform-preview-settings .platform-preview-copy-title-option{
+  padding-top:0;
+}
+@media(max-width:680px){
+  body #publishingView #publishingProjectFilterBtn,
+  body #publishingView #publishingContentTypeFilters .publishing-type-filter,
+  body #publishingView #publishingFilters .publishing-filter{
+    min-height:36px!important;
+    height:36px!important;
+  }
+  .platform-preview-settings .platform-preview-title-copy{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .platform-preview-title-actions{width:100%}
+  .platform-preview-title-actions .button{flex:1 1 0}
+  .platform-preview-settings .platform-preview-copy-title-option{
+    grid-template-columns:1fr;
+  }
+}
+
