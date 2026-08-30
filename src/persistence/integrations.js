@@ -347,7 +347,6 @@ const StoryFlowIntegrations = (() => {
       tags: normalized.tags,
       afterword: normalized.afterword,
       includeAfterword: normalized.includeAfterword,
-      status: normalized.status,
       coverImageId: normalized.coverImageId,
       images: normalized.images,
       platformTitles: normalized.platformTitles,
