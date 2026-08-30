@@ -6,6 +6,12 @@
   let objectUrls = [];
   let previewObjectUrls = [];
   const dirtyEntryIds = new Set();
+  const entrySaveStates = new Map();
+  const AUTO_SAVE_DELAY = 800;
+  let autoSaveTimer = null;
+  let autoSaveQueue = Promise.resolve();
+  let autoSaveRevision = 0;
+  let pendingAutoSaveEntryId = null;
 
   function closeEntryMenus(except = null) {
     document.querySelectorAll('#visualEntryList .visual-entry-action-menu').forEach(menu => {
@@ -62,9 +68,10 @@
     newWork.type = 'button';
     newWork.className = 'workspace-project-quick-switch-item visual-project-new-work';
     newWork.innerHTML = '<span>＋ 新增作品</span>';
-    newWork.addEventListener('click', event => {
+    newWork.addEventListener('click', async event => {
       event.preventDefault();
       event.stopPropagation();
+      await flushEntryAutoSave('visual-new-work');
       closeProjectMenu();
       window.StoryFlowStartNewWork?.();
     });
@@ -76,8 +83,9 @@
       item.className = `workspace-project-quick-switch-item${project.id === activeId ? ' active' : ''}`;
       item.disabled = project.id === activeId;
       item.innerHTML = `<span>${esc(project.title || '未命名作品')}</span>${project.id === activeId ? '<small>目前</small>' : ''}`;
-      item.addEventListener('click', () => {
+      item.addEventListener('click', async () => {
         if (project.id === api.activeId?.()) return;
+        await flushEntryAutoSave('visual-project-switch');
         api.switchProject?.(project.id, { quiet: true });
         closeProjectMenu();
         window.StoryFlowNavigate?.('workspace');
@@ -110,6 +118,97 @@
     return list.find(entry => entry.id === activeEntryId) || null;
   }
 
+  function visualEntryComplete(entry) {
+    return Boolean(String(entry?.title || '').trim())
+      && Boolean(String(entry?.body || '').trim() || entry?.images?.length);
+  }
+
+  function autoSaveTimeLabel() {
+    return new Intl.DateTimeFormat('zh-TW', {
+      hour: '2-digit', minute: '2-digit', hour12: false
+    }).format(new Date());
+  }
+
+  function setEntrySaveStatus(entryId, message, isError = false) {
+    if (!entryId) return;
+    entrySaveStates.set(entryId, { message, isError });
+    if (entryId === activeEntryId) renderAutoSaveStatus();
+  }
+
+  function renderAutoSaveStatus() {
+    const entry = activeEntry();
+    const node = document.getElementById('visualEditorSaveStatus');
+    const retry = document.getElementById('visualRetrySaveBtn');
+    if (!entry || !node || !retry) return;
+    const current = entrySaveStates.get(entry.id);
+    const fallback = dirtyEntryIds.has(entry.id)
+      ? { message: '尚未儲存 · 準備中', isError: false }
+      : { message: '已儲存', isError: false };
+    const status = current || fallback;
+    node.textContent = status.message;
+    node.classList.toggle('error-text', status.isError);
+    retry.hidden = !status.isError;
+  }
+
+  async function persistVisualEntrySnapshot(entryId, revision, reason) {
+    const entry = entries().find(item => item.id === entryId);
+    if (!entry) return true;
+    const snapshot = structuredClone(entry);
+    const projectTitle = state.projectTitle;
+    setEntrySaveStatus(entryId, '儲存中…');
+
+    try {
+      await StoryFlowIntegrations.saveVisualEntry({ projectTitle, entry: snapshot });
+      const workspaceSaved = await window.StoryFlowProjectPersistence?.flush?.(reason);
+      if (workspaceSaved === false) throw new Error('工作區尚未寫入 StoryFlow 資料夾。');
+
+      if (autoSaveRevision === revision && pendingAutoSaveEntryId === entryId) {
+        pendingAutoSaveEntryId = null;
+        dirtyEntryIds.delete(entryId);
+        setEntrySaveStatus(entryId, `已儲存 ${autoSaveTimeLabel()}`);
+      }
+      renderList();
+      renderMeta();
+      if (typeof renderPublishingAction === 'function') renderPublishingAction();
+      return true;
+    } catch (error) {
+      pendingAutoSaveEntryId ||= entryId;
+      setEntrySaveStatus(entryId, '儲存失敗 · 請重試', true);
+      console.warn('StoryFlow visual entry autosave failed', error);
+      return false;
+    }
+  }
+
+  async function drainEntryAutoSave(reason = 'visual-entry-autosave') {
+    while (pendingAutoSaveEntryId) {
+      const entryId = pendingAutoSaveEntryId;
+      const revision = autoSaveRevision;
+      const saved = await persistVisualEntrySnapshot(entryId, revision, reason);
+      if (!saved) return false;
+    }
+    return true;
+  }
+
+  function flushEntryAutoSave(reason = 'visual-entry-autosave') {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = null;
+    autoSaveQueue = autoSaveQueue.then(() => drainEntryAutoSave(reason));
+    return autoSaveQueue;
+  }
+
+  function scheduleEntryAutoSave({ immediate = false, reason = 'visual-entry-autosave' } = {}) {
+    const entry = activeEntry();
+    if (!entry || isReadOnly()) return Promise.resolve(false);
+    autoSaveRevision += 1;
+    pendingAutoSaveEntryId = entry.id;
+    dirtyEntryIds.add(entry.id);
+    setEntrySaveStatus(entry.id, '尚未儲存 · 準備中');
+    clearTimeout(autoSaveTimer);
+    if (immediate) return flushEntryAutoSave(reason);
+    autoSaveTimer = window.setTimeout(() => flushEntryAutoSave(reason), AUTO_SAVE_DELAY);
+    return Promise.resolve(true);
+  }
+
   function revokeObjectUrls() {
     objectUrls.forEach(url => URL.revokeObjectURL(url));
     objectUrls = [];
@@ -120,13 +219,11 @@
     previewObjectUrls = [];
   }
 
-  function markChanged(label = '圖文編輯中') {
+  function markChanged(label = '圖文編輯中', { immediate = false } = {}) {
     const entry = activeEntry();
-    if (entry) {
-      entry.updatedAt = new Date().toISOString();
-      dirtyEntryIds.add(entry.id);
-    }
+    if (entry) entry.updatedAt = new Date().toISOString();
     saveState(label);
+    scheduleEntryAutoSave({ immediate, reason: label });
     window.dispatchEvent(new CustomEvent('storyflow:visual-entry-changed', {
       detail: { projectId: window.StoryFlowProjects?.activeId?.(), entryId: entry?.id || null }
     }));
@@ -175,8 +272,7 @@
           <div id="visualEditorEmpty" class="visual-editor-empty"></div>
           <form id="visualEditorForm" class="visual-editor-form" hidden>
             <div class="visual-editor-toolbar">
-              <label class="visual-field" style="flex:1"><span>圖文標題</span><input id="visualEntryTitle" class="text-input" required maxlength="160" /></label>
-              <label class="visual-field visual-editor-status"><span>發布狀態</span><select id="visualEntryStatus" class="text-input" aria-describedby="visualEntryStatusHelp"><option value="draft">草稿</option><option value="ready">可發布</option></select><small id="visualEntryStatusHelp" class="muted">兩種狀態都會保存。草稿代表仍在編輯；可發布代表內容已準備完成，但不會自動發布。</small></label>
+              <label class="visual-field"><span>圖文標題</span><input id="visualEntryTitle" class="text-input" maxlength="160" /></label>
             </div>
             <label class="visual-field"><span>正文</span><textarea id="visualEntryBody" class="text-input visual-body-input" placeholder="輸入圖文正文；可使用 Markdown。"></textarea></label>
             <section class="visual-image-section">
@@ -184,7 +280,7 @@
               <input id="visualImageInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden />
               <div id="visualImageGrid" class="visual-image-grid"></div>
             </section>
-            <footer class="visual-editor-footer"><span id="visualEditorMeta" class="muted"></span><div class="visual-editor-footer-actions"><button id="visualPreviewEntryBtn" class="button ghost" type="button">預覽圖文</button><button id="visualSaveEntryBtn" class="button primary" type="submit">保存草稿</button></div></footer>
+            <footer class="visual-editor-footer"><span id="visualEditorMeta" class="muted"></span><div class="visual-editor-footer-actions"><span id="visualEditorSaveStatus" class="visual-autosave-status" role="status" aria-live="polite">已儲存</span><button id="visualRetrySaveBtn" class="button tiny ghost" type="button" hidden>重試</button><button id="visualPreviewEntryBtn" class="button ghost" type="button">預覽圖文</button></div></footer>
           </form>
         </section>
       </div>`;
@@ -297,14 +393,14 @@
       const now = new Date().toISOString();
       const entryTitle = dialog.querySelector('#visualFirstEntryTitle').value.trim();
       const visualEntry = firstToggle.checked ? {
-        id: crypto.randomUUID(), title: entryTitle || '第一則圖文', summary: '', hashtags: '', tags: [], body: '', status: 'draft', images: [],
+        id: crypto.randomUUID(), title: entryTitle || '第一則圖文', summary: '', hashtags: '', tags: [], body: '', images: [],
         coverImageId: '', platformTitles: {}, platformStatus: {}, publicationRecords: {}, createdAt: now, updatedAt: now
       } : null;
       const project = window.StoryFlowProjects?.createProject?.({ title, contentMode: 'visual', visualEntry }, { quiet: true });
       if (!project) return;
       activeEntryId = visualEntry?.id || null;
       dialog.close();
-      saveState('圖文系列已建立');
+      markChanged('圖文系列已建立', { immediate: true });
       window.StoryFlowNavigate?.('workspace');
       render();
       notify(`已建立圖文系列：${title}`);
@@ -341,13 +437,13 @@
     if (!title) return dialog.querySelector('#newVisualEntryTitle').reportValidity();
     const now = new Date().toISOString();
     const entry = StoryFlowContentModel.normalizeVisualEntry({
-      id: crypto.randomUUID(), title, summary: '', hashtags: '', tags: [], body: '', status: 'draft', images: [], coverImageId: '',
+      id: crypto.randomUUID(), title, summary: '', hashtags: '', tags: [], body: '', images: [], coverImageId: '',
       platformTitles: {}, platformStatus: {}, publicationRecords: {}, createdAt: now, updatedAt: now
     });
     entries().push(entry);
     activeEntryId = entry.id;
     dialog.close();
-    markChanged('圖文已新增');
+    markChanged('圖文已新增', { immediate: true });
     render();
     notify(`已新增圖文：${title}`);
   }
@@ -379,6 +475,7 @@
       if (edit) {
         event.preventDefault();
         event.stopPropagation();
+        await flushEntryAutoSave('visual-entry-switch');
         activeEntryId = edit.dataset.editEntry;
         closeEntryMenus();
         render();
@@ -395,6 +492,7 @@
       }
       const button = event.target.closest('.visual-entry-select[data-entry-id]');
       if (!button) return;
+      await flushEntryAutoSave('visual-entry-switch');
       activeEntryId = button.dataset.entryId;
       render();
     });
@@ -404,11 +502,9 @@
     });
     const title = root.querySelector('#visualEntryTitle');
     const body = root.querySelector('#visualEntryBody');
-    const status = root.querySelector('#visualEntryStatus');
-    title.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.title = title.value; markChanged(); renderList(); } });
-    body.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.body = body.value; markChanged(); renderMeta(); } });
-    status.addEventListener('change', () => { const entry = activeEntry(); if (entry) { entry.status = status.value; markChanged(); renderList(); renderMeta(); renderSaveAction(); } });
-    root.querySelector('#visualEditorForm').addEventListener('submit', saveEntry);
+    title.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.title = title.value; markChanged(); renderList(); renderMeta(); } });
+    body.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.body = body.value; markChanged(); renderList(); renderMeta(); } });
+    root.querySelector('#visualRetrySaveBtn').addEventListener('click', () => flushEntryAutoSave('visual-entry-retry'));
     root.querySelector('#visualPreviewEntryBtn').addEventListener('click', openEntryPreview);
     const fileInput = root.querySelector('#visualImageInput');
     root.querySelector('#visualImportImagesBtn').addEventListener('click', () => {
@@ -467,7 +563,7 @@
         ...image, ...dimensions[index], order: start + index
       }, start + index)));
       if (!entry.coverImageId && entry.images.length) entry.coverImageId = entry.images[0].id;
-      markChanged('圖文圖片已更新');
+      markChanged('圖文圖片已更新', { immediate: true });
       render();
       const large = imported.filter(image => image.large).length;
       notify(`已匯入 ${imported.length} 張圖片${large ? `；其中 ${large} 張超過 8 MB` : ''}`);
@@ -483,7 +579,7 @@
     const [image] = entry.images.splice(index, 1);
     entry.images.splice(target, 0, image);
     entry.images.forEach((item, order) => { item.order = order; });
-    markChanged('圖文圖片已更新');
+    markChanged('圖文圖片已更新', { immediate: true });
     renderImages();
   }
 
@@ -496,7 +592,7 @@
     const [image] = entry.images.splice(source, 1);
     entry.images.splice(target, 0, image);
     entry.images.forEach((item, order) => { item.order = order; });
-    markChanged('圖文圖片已更新');
+    markChanged('圖文圖片已更新', { immediate: true });
     renderImages();
   }
 
@@ -547,7 +643,7 @@
       if (dialog.querySelector('#visualImageCover').checked) entry.coverImageId = image.id;
       else if (entry.coverImageId === image.id) entry.coverImageId = '';
       dialog.close();
-      markChanged('圖文圖片已更新');
+      markChanged('圖文圖片已更新', { immediate: true });
       renderImages();
     });
     dialog.querySelector('#visualRemoveImageAssociation').addEventListener('click', () => removeImage(dialog, false));
@@ -571,31 +667,10 @@
       entry.images.forEach((item, order) => { item.order = order; });
       if (entry.coverImageId === image.id) entry.coverImageId = '';
       dialog.close();
-      markChanged('圖文圖片已更新');
+      markChanged('圖文圖片已更新', { immediate: true });
       render();
       notify(deleteFile ? '圖片已備份後刪除' : '已移除圖片關聯；原檔仍保留');
     } catch (error) { notify(`尚未移除圖片：${error.message}`, true); }
-  }
-
-  async function saveEntry(event) {
-    event.preventDefault();
-    if (isReadOnly()) return notify('手機目前為唯讀，無法保存。', true);
-    const entry = activeEntry();
-    if (!entry) return;
-    entry.title = document.getElementById('visualEntryTitle').value.trim();
-    if (!entry.title) return document.getElementById('visualEntryTitle').reportValidity();
-    entry.body = document.getElementById('visualEntryBody').value;
-    entry.status = document.getElementById('visualEntryStatus').value;
-    entry.updatedAt = new Date().toISOString();
-    try {
-      window.StoryFlowSaveStatus?.set?.('保存圖文中…');
-      const path = await StoryFlowIntegrations.saveVisualEntry({ projectTitle: state.projectTitle, entry });
-      dirtyEntryIds.delete(entry.id);
-      saveState('圖文已保存');
-      await window.StoryFlowProjectPersistence?.flush?.('visual-entry-save');
-      renderList(); renderMeta(); renderPublishingAction();
-      notify(`圖文已保存：${path}`);
-    } catch (error) { notify(`圖文尚未完整保存：${error.message}`, true); }
   }
 
   async function deleteEntry(entryId = activeEntry()?.id) {
@@ -638,7 +713,7 @@
     list.innerHTML = items.length ? items.map(entry => `
       <div class="visual-entry-row ${entry.id === activeEntryId ? 'active' : ''}">
         <button type="button" data-entry-id="${esc(entry.id)}" class="visual-entry-select">
-          <strong>${esc(entry.title || '未命名圖文')}</strong><small>${entry.status === 'ready' ? '可發布' : '草稿'} · ${entry.images?.length || 0} 張圖片</small>
+          <strong>${esc(entry.title || '未命名圖文')}</strong><small>${visualEntryComplete(entry) ? `${charCount(entry.body).toLocaleString()} 字 · ${entry.images?.length || 0} 張圖片` : `內容尚未完成 · ${entry.images?.length || 0} 張圖片`}${dirtyEntryIds.has(entry.id) ? ' · 尚未儲存' : ''}</small>
         </button>
         <button type="button" class="chapter-delete-button chapter-more-button visual-entry-more" aria-label="更多「${esc(entry.title || '未命名圖文')}」操作" aria-haspopup="menu" aria-expanded="false" ${isReadOnly() ? 'disabled' : ''}>⋯</button>
         <div class="chapter-row-action-menu visual-entry-action-menu" role="menu" hidden>
@@ -693,14 +768,8 @@
     const entry = activeEntry();
     const node = document.getElementById('visualEditorMeta');
     if (!entry || !node) return;
-    node.textContent = `${charCount(entry.body).toLocaleString()} 字 · ${entry.images.length} 張圖片 · ${entry.status === 'ready' ? '可發布' : '草稿'}`;
-  }
-
-  function renderSaveAction() {
-    const status = document.getElementById('visualEntryStatus')?.value || activeEntry()?.status || 'draft';
-    const button = document.getElementById('visualSaveEntryBtn');
-    if (!button) return;
-    button.textContent = status === 'ready' ? '保存並設為可發布' : '保存草稿';
+    const readiness = visualEntryComplete(entry) ? '' : ' · 內容尚未完成';
+    node.textContent = `${charCount(entry.body).toLocaleString()} 字 · ${entry.images.length} 張圖片${readiness}`;
   }
 
   function renderEditor() {
@@ -718,11 +787,10 @@
     form.hidden = false;
     root.querySelector('#visualEntryTitle').value = entry.title;
     root.querySelector('#visualEntryBody').value = entry.body;
-    root.querySelector('#visualEntryStatus').value = entry.status;
     root.querySelectorAll('#visualEditorForm input, #visualEditorForm textarea, #visualEditorForm select, #visualEditorForm button').forEach(control => {
       control.disabled = isReadOnly();
     });
-    renderImages(); renderMeta(); renderSaveAction();
+    renderImages(); renderMeta(); renderAutoSaveStatus();
   }
 
   function render() {
@@ -742,8 +810,9 @@
     renderList(); renderEditor();
   }
 
-  function openEntry(entryId) {
+  async function openEntry(entryId) {
     if (!isVisual() || !entries().some(entry => entry.id === entryId)) return false;
+    await flushEntryAutoSave('visual-entry-switch');
     activeEntryId = entryId;
     window.StoryFlowNavigate?.('workspace');
     queueMicrotask(render);
@@ -768,6 +837,7 @@
   });
   window.addEventListener('storyflow:view-changed', event => {
     if (event.detail?.view === 'workspace' && isVisual()) queueMicrotask(render);
+    else if (isVisual()) flushEntryAutoSave('visual-view-change');
   });
   window.addEventListener('storyflow:mobile-safe-mode-changed', () => { if (isVisual()) render(); });
 
@@ -801,6 +871,16 @@
     openTypeChooser();
   }, true);
 
-  window.StoryFlowVisualWorkspace = { openTypeChooser, openEntry, deleteEntry, render, hide, activeEntry: () => activeEntry() };
+  window.addEventListener('beforeunload', event => {
+    if (!autoSaveTimer && !pendingAutoSaveEntryId) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
+
+  window.StoryFlowVisualWorkspace = {
+    openTypeChooser, openEntry, deleteEntry, render, hide,
+    flush: flushEntryAutoSave,
+    activeEntry: () => activeEntry()
+  };
   if (isVisual()) render();
 })();
