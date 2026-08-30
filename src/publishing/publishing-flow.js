@@ -33,6 +33,11 @@
       part.platformStatus ||= {};
       part.publicationRecords ||= {};
       part.images ||= [];
+      part.summary = typeof part.summary === 'string' ? part.summary.trim() : '';
+      part.hashtags = typeof part.hashtags === 'string' ? part.hashtags.trim() : '';
+      part.tags = StoryFlowContentModel.tagsFromHashtags(part.hashtags);
+      part.afterword = typeof part.afterword === 'string' ? part.afterword : '';
+      if (typeof part.includeAfterword !== 'boolean') part.includeAfterword = true;
       return part;
     }
     return normalizePublishingPart(part);
@@ -496,9 +501,11 @@
 
   function previewPublish(part, platform, contentMode = '') {
     const visual = contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL || isVisualPart(part);
+    const platformSpecific = Boolean(platform);
     normalizePartStatus(part);
     const entry = allEntries().find(item => item.part === part);
     const toggle = publishDialog.querySelector('#togglePlatformPublished');
+    const settings = publishDialog.querySelector('#platformPreviewSettings');
     const afterwordOption = publishDialog.querySelector('#platformPreviewAfterwordOption');
     const includeAfterword = publishDialog.querySelector('#platformPreviewIncludeAfterword');
     const includeTitle = publishDialog.querySelector('#platformPreviewIncludeTitle');
@@ -531,7 +538,7 @@
       const container = publishDialog.querySelector('#platformPreviewContent');
       const sections = outputSections(part, platform, includeAfterword.checked);
       if (visual) {
-        renderVisualPublishPreview(container, part, sections.body, includeTitle.checked ? titleStyle.value : '', platform);
+        renderVisualPublishPreview(container, part, outputFor(part, platform, includeAfterword.checked), includeTitle.checked ? titleStyle.value : '', platform);
       } else if (window.StoryFlowArticleImages?.renderPreview) {
         window.StoryFlowArticleImages.renderPreview(container, part, sections, {
           projectTitle: state.projectTitle,
@@ -557,9 +564,9 @@
       const currentTitle = publishTitleFor(part, platform);
       const platformOverride = platform && String(part.platformTitles?.[platform] || '').trim();
       const legacyOverride = String(part.publishTitle || '').trim();
-      publishDialog.querySelector('#platformPreviewTitle').textContent = platform
+      publishDialog.querySelector('#platformPreviewTitle').textContent = platformSpecific
         ? `預覽與複製 · ${platformLabel(platform)}`
-        : '預覽與複製';
+        : '預覽';
       publishDialog.querySelector('#platformPreviewPublishTitle').textContent = currentTitle;
       publishDialog.querySelector('#platformPreviewTitleSource').textContent = platformOverride
         ? '發布標題 · 此平台自訂'
@@ -576,18 +583,22 @@
       previewMeta.textContent += ` · 內部名稱：${part.title}`;
     }
     previewMeta.hidden = true;
-    editTitle.hidden = !platform;
+    settings.hidden = !platformSpecific;
+    settings.classList.toggle('hidden', !platformSpecific);
+    editTitle.hidden = !platformSpecific;
     titleEditor.hidden = true;
     summaryEditor.hidden = true;
     hashtagsEditor.hidden = true;
-    editSummary.hidden = !visual;
+    editSummary.hidden = !platformSpecific;
     editSummary.setAttribute('aria-expanded', 'false');
     editSummary.textContent = '編輯';
-    editHashtags.hidden = !visual || !platform;
+    editHashtags.hidden = !platformSpecific;
     editHashtags.setAttribute('aria-expanded', 'false');
     editHashtags.textContent = '編輯';
-    summaryBlock.hidden = !visual;
-    visualExtras.hidden = !visual;
+    summaryBlock.hidden = !platformSpecific;
+    summaryBlock.classList.toggle('hidden', !platformSpecific);
+    visualExtras.hidden = !platformSpecific;
+    visualExtras.classList.toggle('hidden', !platformSpecific);
 
     const setExtraEditorExpanded = (button, editor, expanded, input) => {
       editor.hidden = !expanded;
@@ -619,9 +630,11 @@
     const refreshHashtagsView = () => {
       hashtagsText = hashtagsFor(part, platform);
       const overridden = hasPlatformHashtagsOverride(part, platform);
-      hashtagsBlock.hidden = !visual || (!platform && !hashtagsText);
+      hashtagsBlock.hidden = !platformSpecific;
+      hashtagsBlock.classList.toggle('hidden', !platformSpecific);
       hashtagsCard.disabled = !hashtagsText;
-      visualExtras.hidden = !visual;
+      visualExtras.hidden = !platformSpecific;
+      visualExtras.classList.toggle('hidden', !platformSpecific);
       publishDialog.querySelector('#platformPreviewHashtags').textContent = hashtagsText || '尚未設定';
       hashtagsCard.querySelector('small').textContent = hashtagsText ? '點一下複製' : '尚未設定';
       hashtagsInput.value = hashtagsText;
@@ -654,7 +667,7 @@
       if (!titleEditor.hidden) titleInput.focus();
     };
     editSummary.onclick = () => {
-      if (!visual) return;
+      if (!platformSpecific) return;
       setExtraEditorExpanded(editSummary, summaryEditor, summaryEditor.hidden, summaryInput);
     };
     cancelSummary.onclick = () => {
@@ -662,7 +675,7 @@
       setExtraEditorExpanded(editSummary, summaryEditor, false, summaryInput);
     };
     editHashtags.onclick = () => {
-      if (!visual || !platform) return;
+      if (!platformSpecific) return;
       setExtraEditorExpanded(editHashtags, hashtagsEditor, hashtagsEditor.hidden, hashtagsInput);
     };
     publishDialog.querySelector('#savePlatformPreviewTitle').onclick = async () => {
@@ -672,8 +685,8 @@
       refreshTitle();
     };
     publishDialog.querySelector('#savePlatformPreviewSummary').onclick = async () => {
-      if (!entry || !visual) return;
-      await saveVisualSummary(entry.part, summaryInput);
+      if (!entry || !platformSpecific) return;
+      await savePublishingSummary(entry.chapter, entry.part, summaryInput);
       refreshSummaryView();
       setExtraEditorExpanded(editSummary, summaryEditor, false, summaryInput);
     };
@@ -685,15 +698,15 @@
       refreshTitle();
     };
     publishDialog.querySelector('#savePlatformPreviewHashtags').onclick = async () => {
-      if (!entry || !visual || !platform) return;
-      await savePlatformHashtags(entry.part, platform, hashtagsInput);
+      if (!entry || !platformSpecific) return;
+      await savePlatformHashtags(entry.chapter, entry.part, platform, hashtagsInput);
       refreshHashtagsView();
       refreshOptionsSummary();
       setExtraEditorExpanded(editHashtags, hashtagsEditor, false, hashtagsInput);
     };
     resetHashtags.onclick = async () => {
-      if (!entry || !visual || !platform) return;
-      await savePlatformHashtags(entry.part, platform, hashtagsInput, true);
+      if (!entry || !platformSpecific) return;
+      await savePlatformHashtags(entry.chapter, entry.part, platform, hashtagsInput, true);
       refreshHashtagsView();
       refreshOptionsSummary();
       setExtraEditorExpanded(editHashtags, hashtagsEditor, false, hashtagsInput);
@@ -715,11 +728,11 @@
       refreshOptionsSummary();
       refreshContent();
     };
-    afterwordOption.hidden = afterwordCount === 0;
-    includeAfterword.checked = !visual && part.includeAfterword !== false;
+    afterwordOption.hidden = !platformSpecific || afterwordCount === 0;
+    includeAfterword.checked = part.includeAfterword !== false;
     publishDialog.querySelector('#platformPreviewAfterwordCount').textContent = `${afterwordCount.toLocaleString()} 字`;
     includeAfterword.onchange = async () => {
-      if (visual) return;
+      if (!platformSpecific) return;
       part.includeAfterword = includeAfterword.checked;
       refreshOptionsSummary();
       saveState('後記輸出設定已更新');
@@ -728,8 +741,8 @@
       const entry = allEntries().find(item => item.part === part);
       if (!entry) return;
       try {
-        const updated = await writeArticleMarkdown(entry.chapter, part);
-        if (updated) notify('後記輸出設定與文章 Markdown 已更新');
+        const updated = visual ? await writeVisualEntry(part) : await writeArticleMarkdown(entry.chapter, part);
+        if (updated) notify('後記輸出設定已更新');
         else notify('輸出設定目前只保留在畫面；請重新連接資料夾後再調整一次。', true);
       } catch (error) {
         notify(`輸出設定已更新，但文章 Markdown 尚未寫入：${error.message}`, true);
@@ -889,19 +902,20 @@
     const nextAfterword = textarea.value.trim();
     part.afterword = nextAfterword;
     part.includeAfterword = nextAfterword ? includeControl.checked : true;
+    part.updatedAt = new Date().toISOString();
     saveState('後記已更新');
     renderParts();
 
     try {
-      const updated = await writeArticleMarkdown(chapter, part);
+      const updated = isVisualPart(part) ? await writeVisualEntry(part) : await writeArticleMarkdown(chapter, part);
       if (!updated) {
-        notify('後記目前只保留在畫面；請重新連接資料夾後再按一次「保存後記」。', true);
+        notify('後記目前只保留在工作區；請重新連接資料夾後再按一次「保存後記」。', true);
         return false;
       }
-      notify(nextAfterword ? '後記與文章 Markdown 已更新' : '後記已移除，文章 Markdown 已更新');
+      notify(nextAfterword ? '後記已保存' : '後記已移除');
       return true;
     } catch (error) {
-      notify(`後記已更新，但文章 Markdown 尚未寫入：${error.message}`, true);
+      notify(`後記已更新，但檔案尚未寫入：${error.message}`, true);
       return false;
     }
   }
@@ -928,7 +942,7 @@
     }
   }
 
-  async function savePlatformHashtags(part, platform, input, reset = false) {
+  async function savePlatformHashtags(chapter, part, platform, input, reset = false) {
     normalizePublishItem(part);
     if (reset) delete part.platformHashtags[platform];
     else part.platformHashtags[platform] = input.value.trim();
@@ -937,42 +951,42 @@
     renderParts();
 
     try {
-      const updated = await writeVisualEntry(part);
+      const updated = isVisualPart(part) ? await writeVisualEntry(part) : await writeArticleMarkdown(chapter, part);
       if (!updated) {
-        notify('平台 Hashtags 目前只保留在畫面；請重新連接資料夾後再保存一次。', true);
+        notify('平台 Hashtags 目前只保留在工作區；請重新連接資料夾後再保存一次。', true);
         return false;
       }
       notify(reset ? `${platform} 已改回沿用共用 Hashtags` : `${platform} 的 Hashtags 已保存`);
       return true;
     } catch (error) {
-      notify(`平台 Hashtags 已更新，但 metadata.json 尚未寫入：${error.message}`, true);
+      notify(`平台 Hashtags 已更新，但檔案尚未寫入：${error.message}`, true);
       return false;
     }
   }
 
-  async function saveVisualSummary(part, input) {
+  async function savePublishingSummary(chapter, part, input) {
     normalizePublishItem(part);
     part.summary = input.value.trim();
     part.updatedAt = new Date().toISOString();
-    saveState('圖文摘要已更新');
+    saveState('摘要已更新');
     renderParts();
 
     try {
-      const updated = await writeVisualEntry(part);
+      const updated = isVisualPart(part) ? await writeVisualEntry(part) : await writeArticleMarkdown(chapter, part);
       if (!updated) {
-        notify('摘要目前只保留在畫面；請重新連接資料夾後再保存一次。', true);
+        notify('摘要目前只保留在工作區；請重新連接資料夾後再保存一次。', true);
         return false;
       }
       notify(part.summary ? '摘要已保存' : '摘要已清除');
       return true;
     } catch (error) {
-      notify(`摘要已更新，但 metadata.json 尚未寫入：${error.message}`, true);
+      notify(`摘要已更新，但檔案尚未寫入：${error.message}`, true);
       return false;
     }
   }
 
   function createAfterwordEditor(chapter, part, { onSaved } = {}) {
-    normalizePublishingPart(part);
+    normalizePublishItem(part);
     const section = document.createElement('section');
     section.className = 'publish-afterword-editor';
     section.innerHTML = `
@@ -983,10 +997,10 @@
         </div>
         <label class="publish-afterword-include">
           <input type="checkbox" ${part.includeAfterword !== false ? 'checked' : ''} ${part.afterword.trim() ? '' : 'disabled'} />
-          <span>預覽與複製時附上</span>
+          <span>分平台預覽與複製時附上</span>
         </label>
       </div>
-      <textarea class="publish-afterword-input" rows="5" aria-label="文章後記" placeholder="寫下完稿後想補充給讀者的話。後記不會回寫 Google Docs。"></textarea>
+      <textarea class="publish-afterword-input" rows="5" aria-label="內容後記" placeholder="寫下完稿後想補充給讀者的話。後記會與來源正文分開保存。"></textarea>
       <div class="publish-afterword-footer">
         <span class="muted publish-afterword-count">後記 ${afterwordChars(part).toLocaleString()} 字</span>
         <button class="button tiny primary publish-afterword-save" type="button">保存後記</button>
@@ -1016,8 +1030,8 @@
     const { chapter, part, tool } = articleToolContext;
     const body = articleToolDialog.querySelector('#publishingArticleToolBody');
     body.replaceChildren();
-    if (tool === 'visual-helpers') {
-      body.appendChild(createVisualPublishingHelpers(part, {
+    if (tool === 'publishing-helpers') {
+      body.appendChild(createPublishingHelpers(chapter, part, {
         onSaved: () => articleToolDialog.close()
       }));
       return;
@@ -1042,9 +1056,9 @@
   function openArticleTool(chapter, part, tool) {
     articleToolContext = { chapter, part, tool };
     const isImages = tool === 'images';
-    const isVisualHelpers = tool === 'visual-helpers';
-    articleToolDialog.querySelector('#publishingArticleToolTitle').textContent = isVisualHelpers ? '摘要與 Hashtags' : isImages ? '文章圖片' : '後記';
-    articleToolDialog.querySelector('#publishingArticleToolMeta').textContent = isVisualHelpers
+    const isPublishingHelpers = tool === 'publishing-helpers';
+    articleToolDialog.querySelector('#publishingArticleToolTitle').textContent = isPublishingHelpers ? '摘要與 Hashtags' : isImages ? '文章圖片' : '後記';
+    articleToolDialog.querySelector('#publishingArticleToolMeta').textContent = isPublishingHelpers
       ? `${publishTitleFor(part)} · 兩者皆為選填，不會自動加入正文。`
       : `${publishTitleFor(part)} · ${isImages
         ? `${part.images.length.toLocaleString()} 張圖片，檔案保存在私人 StoryFlow 資料夾。`
@@ -1133,8 +1147,8 @@
   function createPlatformRow(entry, platform) {
     const { chapter, part } = entry;
     const visual = entry.contentMode === 'visual';
-    const hashtagsText = visual ? hashtagsFor(part, platform) : '';
-    const hashtagsOverridden = visual && hasPlatformHashtagsOverride(part, platform);
+    const hashtagsText = hashtagsFor(part, platform);
+    const hashtagsOverridden = hasPlatformHashtagsOverride(part, platform);
     const published = Boolean(part.platformStatus?.[platform]);
     const platformTitle = publishTitleFor(part, platform);
     const hasPlatformTitle = Boolean(String(part.platformTitles?.[platform] || '').trim());
@@ -1149,7 +1163,7 @@
       <div class="publish-platform-state">
         <div class="publish-platform-state-line">
           <strong>${escapeHtml(platform)}</strong>
-          ${visual && hashtagsText ? `<button class="publish-platform-hashtags ${hashtagsOverridden ? 'is-custom' : ''}" type="button" aria-label="複製 Hashtags：${escapeHtml(hashtagsText)}" title="${hashtagsOverridden ? '平台自訂 Hashtags；點一下複製' : '沿用共用 Hashtags；點一下複製'}">${escapeHtml(hashtagsText)}</button>` : (visual ? '<span class="publish-platform-hashtags-empty">未設定 Hashtags</span>' : '')}
+          ${hashtagsText ? `<button class="publish-platform-hashtags ${hashtagsOverridden ? 'is-custom' : ''}" type="button" aria-label="複製 Hashtags：${escapeHtml(hashtagsText)}" title="${hashtagsOverridden ? '平台自訂 Hashtags；點一下複製' : '沿用共用 Hashtags；點一下複製'}">${escapeHtml(hashtagsText)}</button>` : '<span class="publish-platform-hashtags-empty">未設定 Hashtags</span>'}
           <span class="publish-platform-status ${published ? 'done' : ''}">${published ? '已發布' : '尚未發布'}</span>
         </div>
         ${hasPlatformTitle ? `<small class="publish-platform-title-summary">自訂標題：${escapeHtml(platformTitle)}</small>` : ''}
@@ -1185,24 +1199,24 @@
     return row;
   }
 
-  async function saveVisualPublishingHelpers(entry, summaryInput, hashtagsInput) {
+  async function savePublishingHelpers(chapter, entry, summaryInput, hashtagsInput) {
     entry.summary = summaryInput.value.trim();
     entry.hashtags = hashtagsInput.value.trim();
     entry.tags = StoryFlowContentModel.tagsFromHashtags(entry.hashtags);
     entry.updatedAt = new Date().toISOString();
-    saveState('圖文發布輔助資訊已更新');
+    saveState('發布輔助資訊已更新');
     try {
-      const updated = await writeVisualEntry(entry);
+      const updated = isVisualPart(entry) ? await writeVisualEntry(entry) : await writeArticleMarkdown(chapter, entry);
       if (updated) notify('摘要與 Hashtags 已保存');
       else notify('摘要與 Hashtags 已保留在工作區；連接資料夾後可再保存一次。', true);
     } catch (error) {
-      notify(`摘要與 Hashtags 已更新，但 metadata.json 尚未寫入：${error.message}`, true);
+      notify(`摘要與 Hashtags 已更新，但檔案尚未寫入：${error.message}`, true);
     }
     renderParts();
     return true;
   }
 
-  function createVisualPublishingHelpers(entry, { onSaved } = {}) {
+  function createPublishingHelpers(chapter, entry, { onSaved } = {}) {
     const section = document.createElement('section');
     section.className = 'visual-publish-helpers';
     section.innerHTML = `
@@ -1228,7 +1242,7 @@
     hashtagsInput.value = entry.hashtags || '';
     section.querySelector('.visual-publish-save-helpers').addEventListener('click', async event => {
       event.stopPropagation();
-      const saved = await saveVisualPublishingHelpers(entry, summaryInput, hashtagsInput);
+      const saved = await savePublishingHelpers(chapter, entry, summaryInput, hashtagsInput);
       if (saved) onSaved?.();
     });
     section.addEventListener('click', event => event.stopPropagation());
@@ -1248,11 +1262,11 @@
     card.dataset.contentMode = visual ? 'visual' : 'longform';
 
     const statusCount = status.total ? ` · ${status.published}/${status.total}` : '';
-    const afterwordCount = visual ? 0 : afterwordChars(part);
+    const afterwordCount = afterwordChars(part);
     const imageCount = part.images?.length || 0;
     const bodyChars = visual ? charCount(part.body) : part.chars;
-    const summaryText = visual ? String(part.summary || '').trim() : '';
-    const hashtagsText = visual ? String(part.hashtags || '').trim() : '';
+    const summaryText = String(part.summary || '').trim();
+    const hashtagsText = String(part.hashtags || '').trim();
     card.innerHTML = `
       <div class="publish-list-summary" role="button" tabindex="0" aria-expanded="${expanded}">
         <div class="publish-list-title-block">
@@ -1270,25 +1284,23 @@
           <span class="publish-overall-status ${status.key}">${status.label}${statusCount}</span>
         </div>
         <div class="publish-list-actions">
-          <button class="button tiny ghost default-preview-btn" type="button" aria-label="預覽／複製「${escapeHtml(part.title || '未命名內容')}」">預覽／複製</button>
+          <button class="button tiny ghost default-preview-btn" type="button" aria-label="預覽「${escapeHtml(part.title || '未命名內容')}」">預覽</button>
           <button class="button tiny ghost publish-delete-btn" type="button" aria-label="刪除「${escapeHtml(part.title || '未命名內容')}」">刪除</button>
           <span class="sf-chevron publish-expand-indicator" aria-hidden="true"></span>
         </div>
       </div>
       <div class="publish-platform-details" ${expanded ? '' : 'hidden'}>
-        ${visual ? `<div class="publish-article-tools visual-publish-summary">
-          <div class="publish-article-tools-copy"><strong>圖文發布清單</strong><span>文字 ${bodyChars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張；圖片需依序手動上傳。</span></div>
-          <div class="publish-article-tool-actions"><button class="button tiny ghost visual-publish-helper-tool-btn" type="button">摘要與 Hashtags${summaryText || hashtagsText ? ' · 已設定' : ''}</button></div>
-        </div>` : `<div class="publish-article-tools">
+        <div class="publish-article-tools ${visual ? 'visual-publish-summary' : ''}">
           <div class="publish-article-tools-copy">
-            <strong>文章補充內容</strong>
-            <span>正文 ${part.chars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張 · 後記 ${afterwordCount.toLocaleString()} 字</span>
+            <strong>發布補充內容</strong>
+            <span>${visual ? `文字 ${bodyChars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張` : `正文 ${part.chars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張`} · 後記 ${afterwordCount.toLocaleString()} 字</span>
           </div>
           <div class="publish-article-tool-actions">
-            <button class="button tiny ghost publish-images-tool-btn" type="button">文章圖片${imageCount ? ` ${imageCount.toLocaleString()}` : ''}</button>
+            <button class="button tiny ghost publish-helper-tool-btn" type="button">摘要與 Hashtags${summaryText || hashtagsText ? ' · 已設定' : ''}</button>
+            ${visual ? '' : `<button class="button tiny ghost publish-images-tool-btn" type="button">文章圖片${imageCount ? ` ${imageCount.toLocaleString()}` : ''}</button>`}
             <button class="button tiny ghost publish-afterword-tool-btn" type="button">後記${afterwordCount ? ` ${afterwordCount.toLocaleString()} 字` : ''}</button>
           </div>
-        </div>`}
+        </div>
         <div class="publish-platform-details-head">
           <strong>發布平台</strong>
           <span class="muted">各平台狀態彼此獨立</span>
@@ -1333,9 +1345,9 @@
     });
 
     if (expanded) {
-      card.querySelector('.visual-publish-helper-tool-btn')?.addEventListener('click', event => {
+      card.querySelector('.publish-helper-tool-btn')?.addEventListener('click', event => {
         event.stopPropagation();
-        openArticleTool(null, part, 'visual-helpers');
+        openArticleTool(chapter, part, 'publishing-helpers');
       });
       card.querySelector('.publish-images-tool-btn')?.addEventListener('click', event => {
         event.stopPropagation();

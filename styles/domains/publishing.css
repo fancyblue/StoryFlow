@@ -1367,11 +1367,14 @@ body #publishingView #publishingProjectFilterBtn strong{
   font-weight:750;
 }
 .platform-preview-settings .platform-preview-options-body{
-  gap:8px;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
   padding:8px 12px 10px;
   border-top:0;
 }
 .platform-preview-settings .platform-preview-copy-title-option{
+  grid-template-columns:minmax(0,1fr) 112px;
   padding-top:0;
 }
 @media(max-width:680px){
@@ -1387,6 +1390,10 @@ body #publishingView #publishingProjectFilterBtn strong{
   }
   .platform-preview-title-actions{width:100%}
   .platform-preview-title-actions .button{flex:1 1 0}
+  .platform-preview-settings .platform-preview-options-body{
+    grid-template-columns:1fr;
+    align-items:stretch;
+  }
   .platform-preview-settings .platform-preview-copy-title-option{
     grid-template-columns:1fr;
   }

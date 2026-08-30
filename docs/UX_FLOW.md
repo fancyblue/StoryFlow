@@ -51,17 +51,17 @@ The Publishing page separates queue navigation from the actual publishing commit
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
 | P-01 | Resume the latest unfinished publication | 繼續發布 | Filters and project selector | One solid page action, visible only when pending or partial work exists |
-| P-02 | Choose a specific article or visual entry to process | 管理發布 | 預覽／複製、`⋯` | Same labels and order for longform and visual content; management is tinted, preview is outlined and overflow is tertiary |
-| P-03 | Verify platform formatting | 預覽與複製 | One compact title-and-content settings card, then the body/image preview | No Markdown-mode switch or duplicate platform line; “複製內容” is the final primary action |
+| P-02 | Choose a specific article or visual entry to process | 管理發布 | 預覽、`⋯` | Same labels and order for longform and visual content; the outer preview is a plain body/image check without platform formatting controls |
+| P-03 | Verify platform formatting | 預覽與複製 | One compact title/content settings card, then body/images, shared summary and effective platform Hashtags | Platform title style and optional publishing helpers exist only here; “複製內容” is the final primary action |
 | P-04 | Copy content to a platform | 複製內容 | Optionally prepend title as heading or bold, 複製標題、關閉 | The single solid action in the preview dialog |
 | P-05 | Store publication time and URL | 保存發布紀錄 | 取消、開啟文章 | The single solid action in the record dialog |
-| P-06 | Edit afterword or image metadata | 文章圖片／後記, then save the active editor | Preview and ordering controls | Compact entry row; one local solid save action only inside the active dialog |
+| P-06 | Edit optional helpers or image metadata | 摘要與 Hashtags／後記／文章圖片, then save the active editor | Preview and ordering controls | Summary, Hashtags and afterword are shared by both types; article images remain longform-only |
 | P-07 | Give one platform a different publishing title | 修改此平台標題, then 保存標題 | 改回沿用 | Kept inside that platform's preview/copy dialog; never a large article-level form |
 | P-08 | Mark or undo platform publication | 標註已發布／取消已發布 | Publication record | State control, not a global primary action; reversal requires a clear warning |
 | P-09 | Find content by work, type or status | 作品／類型／發布狀態 filters | — | Type chips count works, status chips count entries; every filter control shares one typography and height scale |
 | P-10 | Perform infrequent article or visual-entry management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation; visual deletion uses the same command and guard in every page |
 | P-11 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
-| P-12 | Prepare optional visual publishing helpers | 摘要與 Hashtags | Click-to-copy rows and matching bottom preview editors | The main content and image order come first. Summary and Hashtags show their effective values before editing and reveal one contained field only on demand; summary updates the shared value, while a platform may override Hashtags, explicitly use none or return to the common value. Neither helper enters the body automatically |
+| P-12 | Prepare optional publishing helpers | 摘要與 Hashtags | Click-to-copy rows and matching bottom platform-preview editors | Longform and visual content share the same helper behavior. The main content and image order come first. Summary and Hashtags show their effective values before editing and reveal one contained field only on demand; summary updates the shared value, while a platform may override Hashtags, explicitly use none or return to the common value. Neither helper enters the body automatically |
 
 An expanded “收合發布” control is still a disclosure. Use a stronger soft selection, border or adjacent panel treatment instead of the full primary fill; the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task.
 
@@ -178,12 +178,12 @@ Workspace does not provide a direct publishing shortcut for either content type;
 ## Article afterwords
 
 ```text
-發布 → 管理發布 → 後記 → 編輯／保存 → 關閉燈箱 → 預覽／複製
+發布 → 管理發布 → 後記 → 編輯／保存 → 關閉燈箱 → 預覽
                                                    ↘ 可排除後記，只輸出正文
 ```
 
 - One publishing article owns one shared afterword; platform-specific variants are intentionally out of scope.
-- The expanded article shows only a compact body/image/afterword summary. “後記” opens a focused dialog, so platform rows remain visible without scrolling past a large textarea.
+- The expanded item shows only a compact body/image/helper summary. “摘要與 Hashtags” and “後記” open focused dialogs for both content types, so platform rows remain visible without scrolling past large fields.
 - Saving updates `workspace.json` and, when the StoryFlow folder is connected, rewrites that article Markdown with `正文 → 分隔線 → 後記`.
 - Source refresh may update a chapter draft but must not change an existing publishing part or its afterword.
 - Preview and copy use the article-level `includeAfterword` choice consistently across platforms.

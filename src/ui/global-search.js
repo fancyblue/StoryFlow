@@ -88,7 +88,11 @@
             internalTitle,
             subtitle: `${projectTitle} · ${chapterTitle}${displayTitle !== internalTitle ? ` · 內部名稱：${internalTitle}` : ''}`,
             titleFields: [publishTitle, ...platformTitles, internalTitle],
-            bodyFields: [part.raw || part.formatted || ''],
+            tagFields: [...new Set([
+              ...(Array.isArray(part.tags) ? part.tags : []),
+              ...(window.StoryFlowContentModel?.tagsFromHashtags?.(part.hashtags) || [])
+            ])],
+            bodyFields: [part.summary || '', part.raw || part.formatted || ''],
             order: orderBase + chapterIndex / 1000 + partIndex / 100000
           });
         });

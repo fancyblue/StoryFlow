@@ -69,7 +69,7 @@ test('primary action scale and navigation icon language stay consistent', async 
   await expect(page.locator('#openPublishingFromWorkspace')).toHaveCount(0);
   const publishingRow = page.locator('.publish-list-item', { hasText: '樣式測試文章' });
   const rowManage = publishingRow.getByRole('button', { name: /展開.*發布平台/ });
-  const rowPreview = publishingRow.getByRole('button', { name: '預覽／複製「樣式測試文章」', exact: true });
+  const rowPreview = publishingRow.getByRole('button', { name: '預覽「樣式測試文章」', exact: true });
   await expect(rowManage).toBeVisible();
   const manageStyle = await controlStyle(rowManage);
   const previewStyle = await controlStyle(rowPreview);
@@ -872,7 +872,7 @@ test('publishing counts content types by work even when one work has several ent
   expect(new Set(filterStyles.map(style => style.height)).size).toBe(1);
 
   const firstCard = page.locator('.publish-list-item', { hasText: '測試發布文章 1' });
-  await expect(firstCard.getByRole('button', { name: '預覽／複製「測試發布文章 1」', exact: true })).toBeVisible();
+  await expect(firstCard.getByRole('button', { name: '預覽「測試發布文章 1」', exact: true })).toBeVisible();
   await expect(page.locator('.publishing-project-group-title .publishing-project-type-badge')).toHaveText('長文');
 
   await page.locator('#publishingContentTypeFilters [data-content-type="visual"]').click();
@@ -965,14 +965,20 @@ test('published articles keep an independent afterword and can exclude it from o
   await expect(card.locator('.publish-afterword-badge')).toContainText('有後記 10 字');
   await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
 
-  await card.getByRole('button', { name: '預覽／複製「有後記的文章」', exact: true }).click();
+  await card.getByRole('button', { name: '預覽「有後記的文章」', exact: true }).click();
   const preview = page.locator('#platformPreviewDialog');
   await expect(preview).toBeVisible();
   await expect(preview.locator('#platformPreviewContent')).toContainText('正文原稿。');
   await expect(preview.locator('#platformPreviewContent')).toContainText('後記');
   await expect(preview.locator('#platformPreviewContent')).toContainText('這是寫給讀者的後記。');
+  await expect(preview.locator('#platformPreviewSettings')).toBeHidden();
+  await expect(preview.locator('#platformPreviewVisualExtras')).toBeHidden();
+  await preview.getByRole('button', { name: '關閉', exact: true }).last().click();
 
+  const platformRow = card.locator('.publish-platform-row').first();
+  await platformRow.getByRole('button', { name: /預覽與複製/ }).click();
   const include = preview.locator('#platformPreviewIncludeAfterword');
+  await expect(preview.locator('#platformPreviewSettings')).toBeVisible();
   await expect(include).toBeChecked();
   await include.uncheck();
   await expect(preview.locator('#platformPreviewContent')).not.toContainText('這是寫給讀者的後記。');
@@ -1113,7 +1119,17 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await page.locator('.nav-item[data-view="publishing"]').click();
   const card = page.locator('.publish-list-item', { hasText: '內部文章名稱' });
   await card.getByRole('button', { name: /展開.*發布平台/ }).click();
+  const helperButton = card.getByRole('button', { name: '摘要與 Hashtags', exact: true });
+  await helperButton.click();
+  const helperDialog = page.getByRole('dialog', { name: '摘要與 Hashtags' });
+  await helperDialog.locator('.visual-publish-summary-input').fill('長文共用摘要');
+  await helperDialog.locator('.visual-publish-hashtags-input').fill('#長文 #共用');
+  await helperDialog.getByRole('button', { name: '保存摘要與 Hashtags', exact: true }).click();
+  await expect(helperDialog).toBeHidden();
+  await expect(card.locator('.publish-summary-hint')).toHaveAttribute('aria-label', '摘要：長文共用摘要');
+
   const platformRow = card.locator('.publish-platform-row', { hasText: '巴哈小屋' });
+  await expect(platformRow.locator('.publish-platform-hashtags')).toHaveText('#長文 #共用');
   await platformRow.getByRole('button', { name: '預覽與複製「巴哈小屋」', exact: true }).click();
   const preview = page.locator('#platformPreviewDialog');
   await preview.getByRole('button', { name: '修改此平台標題', exact: true }).click();
@@ -1133,7 +1149,10 @@ test('platform titles stay separate and copy can prepend heading or bold title',
       otherPlatformTitle: StoryFlowPublishingOutput.titleFor(part, '方格子'),
       output: StoryFlowPublishingOutput.forPart(part, ''),
       metadataVersion: metadata.schemaVersion,
-      metadataTitle: metadata.parts[0].platformTitles['巴哈小屋']
+      metadataTitle: metadata.parts[0].platformTitles['巴哈小屋'],
+      summary: metadata.parts[0].summary,
+      hashtags: metadata.parts[0].hashtags,
+      tags: metadata.parts[0].tags
     };
   });
   expect(saved).toEqual({
@@ -1141,8 +1160,11 @@ test('platform titles stay separate and copy can prepend heading or bold title',
     platformTitle: '給讀者看的正式標題',
     otherPlatformTitle: '內部文章名稱',
     output: '只應出現在內容區的正文。',
-    metadataVersion: 8,
-    metadataTitle: '給讀者看的正式標題'
+    metadataVersion: 9,
+    metadataTitle: '給讀者看的正式標題',
+    summary: '長文共用摘要',
+    hashtags: '#長文 #共用',
+    tags: ['長文', '共用']
   });
 
   await expect(preview.locator('#platformPreviewContent')).toHaveText('只應出現在內容區的正文。');
@@ -1150,6 +1172,8 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await expect(preview.locator('[data-sf-preview-control="publish"]')).toHaveCount(0);
   await expect(preview.locator('#platformPreviewSettings')).toBeVisible();
   await expect(preview.locator('#platformPreviewOptions')).toBeVisible();
+  await expect(preview.locator('#platformPreviewSummary')).toHaveText('長文共用摘要');
+  await expect(preview.locator('#platformPreviewHashtags')).toHaveText('#長文 #共用');
   await preview.getByRole('button', { name: '複製標題', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('給讀者看的正式標題');
   await preview.getByRole('checkbox', { name: '內容前附上標題' }).check();
@@ -1163,6 +1187,10 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await expect(preview.locator('#platformPreviewContent strong')).toHaveText('給讀者看的正式標題');
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('**給讀者看的正式標題**\n\n只應出現在內容區的正文。');
+  await page.locator('#globalSearchBtn').click();
+  await page.locator('#globalSearchInput').fill('#長文');
+  await expect(page.locator('.global-search-result-type')).toHaveText('Hashtag');
+  await page.locator('#closeGlobalSearch').click();
   expect(pageErrors).toEqual([]);
 });
 
@@ -1274,7 +1302,7 @@ test('article images import private copies, preview, reorder, describe, and remo
   expect(reordered.filenames).toEqual(['插圖-2.png', '插圖.png']);
   expect(reordered.firstAlt).toBe('夜空中的城堡');
   expect(reordered.firstPlacement).toBe('before-body');
-  expect(reordered.metadataVersion).toBe(8);
+  expect(reordered.metadataVersion).toBe(9);
   expect(reordered.metadataImages).toBe(2);
   expect(reordered.markdown).toContain('![夜空中的城堡](<./assets/image-test-part/插圖.png>)');
   expect(reordered.markdown).toContain('_抵達王都前的夜景_');
@@ -1284,7 +1312,7 @@ test('article images import private copies, preview, reorder, describe, and remo
   await expect.poll(() => page.evaluate(() => window.__copiedImageMarkdown)).toContain('夜空中的城堡');
 
   await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
-  await card.getByRole('button', { name: '預覽／複製「附圖文章」', exact: true }).click();
+  await card.getByRole('button', { name: '預覽「附圖文章」', exact: true }).click();
   const preview = page.locator('#platformPreviewDialog');
   await expect(preview).toBeVisible();
   await expect(preview.locator('.platform-preview-image')).toHaveCount(2);
@@ -1665,8 +1693,15 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   const publishCard = page.locator('.publish-list-item', { hasText: '月下預告' });
   await expect(publishCard).toBeVisible();
   await expect(publishCard.locator('.publish-content-type')).toHaveText('圖文');
-  await expect(publishCard.getByRole('button', { name: '預覽／複製「月下預告」', exact: true })).toBeVisible();
+  const defaultVisualPreview = publishCard.getByRole('button', { name: '預覽「月下預告」', exact: true });
+  await expect(defaultVisualPreview).toBeVisible();
   await expect(publishCard.getByRole('button', { name: '更多「月下預告」操作', exact: true })).toBeVisible();
+  await defaultVisualPreview.click();
+  const plainVisualPreview = page.locator('#platformPreviewDialog');
+  await expect(plainVisualPreview.locator('#platformPreviewTitle')).toHaveText('預覽');
+  await expect(plainVisualPreview.locator('#platformPreviewSettings')).toBeHidden();
+  await expect(plainVisualPreview.locator('#platformPreviewVisualExtras')).toBeHidden();
+  await plainVisualPreview.getByRole('button', { name: '關閉', exact: true }).last().click();
   await page.evaluate(() => {
     const spacer = document.createElement('div');
     spacer.id = 'publishingScrollAnchorFixture';
@@ -1709,6 +1744,12 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(summaryHint).toHaveAttribute('aria-label', '摘要：月光下的城堡預告');
   await summaryHint.focus();
   await expect.poll(() => summaryHint.evaluate(element => getComputedStyle(element.closest('.publish-list-item')).overflow)).toBe('visible');
+  await publishCard.getByRole('button', { name: '後記', exact: true }).click();
+  const visualAfterwordDialog = page.getByRole('dialog', { name: '後記' });
+  await visualAfterwordDialog.locator('.publish-afterword-input').fill('圖文也有後記。');
+  await visualAfterwordDialog.getByRole('button', { name: '保存後記', exact: true }).click();
+  await expect(visualAfterwordDialog).toBeHidden();
+  await expect.poll(() => page.evaluate(() => state.visualEntries[0].afterword)).toBe('圖文也有後記。');
   await expect(publishCard.locator('.publish-platform-row')).toHaveCount(2);
   const firstPlatformRow = publishCard.locator('.publish-platform-row').first();
   const platformHashtags = firstPlatformRow.locator('.publish-platform-hashtags');
@@ -1776,6 +1817,8 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(publishingPreview.locator('.visual-upload-order li')).toHaveCount(2);
   await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('更新後的月光摘要');
   await expect(publishingPreview.locator('#platformPreviewHashtags')).toHaveText('#巴哈限定 #圖文');
+  await expect(publishingPreview.locator('#platformPreviewIncludeAfterword')).toBeChecked();
+  await expect(publishingPreview.locator('#platformPreviewContent')).toContainText('圖文也有後記。');
   expect(await publishingPreview.evaluate(dialog => {
     const content = dialog.querySelector('#platformPreviewContent');
     const lastImage = dialog.querySelector('.visual-upload-order li:last-child');
