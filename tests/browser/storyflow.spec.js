@@ -1189,7 +1189,7 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('**給讀者看的正式標題**\n\n只應出現在內容區的正文。');
   await page.locator('#globalSearchBtn').click();
   await page.locator('#globalSearchInput').fill('#長文');
-  await expect(page.locator('.global-search-result-type')).toHaveText('發布文章');
+  await expect(page.locator('.global-search-result-type')).toHaveText('Hashtag');
   await page.locator('#closeGlobalSearch').click();
   expect(pageErrors).toEqual([]);
 });
