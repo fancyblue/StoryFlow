@@ -117,6 +117,15 @@ function normalizePublishingPart(part) {
   part.platformTitles = Object.fromEntries(Object.entries(part.platformTitles)
     .map(([platform, title]) => [String(platform), typeof title === 'string' ? title.trim() : ''])
     .filter(([platform, title]) => platform && title));
+  part.summary = typeof part.summary === 'string' ? part.summary.trim() : '';
+  part.hashtags = typeof part.hashtags === 'string' ? part.hashtags.trim() : '';
+  part.tags = window.StoryFlowContentModel?.tagsFromHashtags?.(part.hashtags) || [];
+  if (!part.platformHashtags || typeof part.platformHashtags !== 'object' || Array.isArray(part.platformHashtags)) {
+    part.platformHashtags = {};
+  }
+  part.platformHashtags = Object.fromEntries(Object.entries(part.platformHashtags)
+    .map(([platform, hashtags]) => [String(platform).trim(), typeof hashtags === 'string' ? hashtags.trim() : ''])
+    .filter(([platform]) => platform));
   if (typeof part.afterword !== 'string') part.afterword = '';
   if (typeof part.includeAfterword !== 'boolean') part.includeAfterword = true;
   if (!Array.isArray(part.images)) part.images = [];
@@ -303,7 +312,7 @@ function adjustSuggestion(delta) {
 
 function chapterMetadata(chapter) {
   return {
-    schemaVersion: 8,
+    schemaVersion: 9,
     projectTitle: state.projectTitle,
     chapter: chapter.title,
     source: chapter.source,
@@ -314,7 +323,9 @@ function chapterMetadata(chapter) {
     parts: chapter.parts.map(part => ({
       id: part.id, title: part.title, startBlock: part.startBlock, endBlock: part.endBlock,
       publishTitle: part.publishTitle || '', platformTitles: structuredClone(part.platformTitles || {}), chars: part.chars,
-      afterwordChars: charCount(part.afterword), includeAfterword: part.includeAfterword !== false,
+      summary: part.summary || '', hashtags: part.hashtags || '', tags: structuredClone(part.tags || []),
+      platformHashtags: structuredClone(part.platformHashtags || {}),
+      afterword: part.afterword || '', afterwordChars: charCount(part.afterword), includeAfterword: part.includeAfterword !== false,
       images: structuredClone(part.images || []),
       publicationRecords: structuredClone(part.publicationRecords || {}),
       published: part.published, platformStatus: part.platformStatus
@@ -328,8 +339,8 @@ async function confirmSuggestion() {
   const part = {
     id: crypto.randomUUID(), title: suggestion.name, startBlock: suggestion.start, endBlock: suggestion.end,
     chars: suggestion.chars, raw: suggestion.raw, formatted: suggestion.formatted, published: false,
-    publishTitle: '', platformTitles: {}, afterword: '', includeAfterword: true, images: [],
-    publicationRecords: {},
+    publishTitle: '', platformTitles: {}, summary: '', hashtags: '', tags: [], platformHashtags: {},
+    afterword: '', includeAfterword: true, images: [], publicationRecords: {},
     platformStatus: Object.fromEntries(platforms.map(platform => [platform, false]))
   };
   chapter.parts.push(part);
