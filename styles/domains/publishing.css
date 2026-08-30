@@ -1202,6 +1202,7 @@ button.publish-delete-btn{
   gap:10px;
   padding:14px 22px 18px;
 }
+.platform-preview-dialog-card .sf-preview-mode-control[hidden],
 .platform-preview-meta[hidden],
 .platform-preview-visual-extras[hidden],
 .platform-preview-extra-block[hidden],
