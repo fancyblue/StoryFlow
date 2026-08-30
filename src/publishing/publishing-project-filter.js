@@ -151,26 +151,27 @@
     return entries;
   }
 
-  function allSelectedEntries() {
+  function selectedProjects() {
     const snapshot = mergeActiveState(workspaceSnapshot || fallbackSnapshot());
     const projects = snapshot.projects || [];
     const selected = selectedProjectIds.size
       ? selectedProjectIds
       : new Set(projects.map(project => project.id));
-    return projects
-      .filter(project => selected.has(project.id))
-      .flatMap(entriesForProject);
+    return projects.filter(project => selected.has(project.id));
   }
 
   function activeStatusFilter() {
     return document.querySelector('#publishingFilters .publishing-filter.active')?.dataset.filter || 'all';
   }
 
-  function updateContentTypeCounts(entries) {
+  function updateContentTypeCounts(projects) {
+    const projectModes = projects
+      .map(project => entriesForProject(project)[0]?.contentMode)
+      .filter(Boolean);
     const counts = {
-      all: entries.length,
-      longform: entries.filter(entry => entry.contentMode === 'longform').length,
-      visual: entries.filter(entry => entry.contentMode === 'visual').length
+      all: projectModes.length,
+      longform: projectModes.filter(mode => mode === 'longform').length,
+      visual: projectModes.filter(mode => mode === 'visual').length
     };
     document.querySelectorAll('#publishingContentTypeFilters [data-content-type]').forEach(button => {
       const key = button.dataset.contentType || 'all';
@@ -348,7 +349,7 @@
         </div>
         <div class="publish-list-meta"><span class="publish-overall-status ${status.key}">${status.label}${statusCount}</span></div>
         <div class="publish-list-actions">
-          <button class="button tiny ghost default-preview-btn" type="button">${visual ? '預覽／複製' : '預覽預設設定'}</button>
+          <button class="button tiny ghost default-preview-btn" type="button">預覽／複製</button>
           <button class="button tiny ghost publish-manage-btn" type="button">管理發布</button>
           <button class="button tiny ghost publish-more-btn" type="button" aria-label="更多文章操作">⋯</button>
         </div>
@@ -435,8 +436,9 @@
       if (card.dataset.partKey) nativeCards.set(card.dataset.partKey, card);
     });
 
-    const selectedEntries = allSelectedEntries();
-    updateContentTypeCounts(selectedEntries);
+    const visibleProjects = selectedProjects();
+    const selectedEntries = visibleProjects.flatMap(entriesForProject);
+    updateContentTypeCounts(visibleProjects);
     const contentEntries = currentContentType === 'all'
       ? selectedEntries
       : selectedEntries.filter(entry => entry.contentMode === currentContentType);
