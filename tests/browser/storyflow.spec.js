@@ -107,6 +107,7 @@ test('visual metadata stores afterword and its platform-output preference', asyn
     afterword: '獨立保存的圖文後記',
     includeAfterword: false
   });
+  expect(metadata).not.toHaveProperty('status');
   expect(pageErrors).toEqual([]);
 });
 
@@ -1720,8 +1721,10 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('#visualEntryList')).toContainText('月下預告');
   await expect(page.locator('#visualEntrySummary')).toHaveCount(0);
   await expect(page.locator('#visualEntryHashtags')).toHaveCount(0);
-  await expect(page.locator('#visualEntryStatusHelp')).toHaveText('兩種狀態都會保存。草稿代表仍在編輯；可發布代表內容已準備完成，但不會自動發布。');
-  await expect(page.locator('#visualSaveEntryBtn')).toHaveText('保存草稿');
+  await expect(page.locator('#visualEntryStatus')).toHaveCount(0);
+  await expect(page.locator('#visualEntryStatusHelp')).toHaveCount(0);
+  await expect(page.locator('#visualSaveEntryBtn')).toHaveCount(0);
+  await expect(page.locator('#visualEditorSaveStatus')).toContainText(/已儲存|儲存中/);
   const bodyLayout = await page.locator('#visualEntryBody').evaluate(bodyElement => {
     const bodyStyle = getComputedStyle(bodyElement);
     return {
@@ -1737,8 +1740,10 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   expect(bodyLayout.paddingBottom).toBeGreaterThanOrEqual(10);
   expect(bodyLayout.lineHeight).toBeGreaterThan(bodyLayout.fontSize);
   await page.locator('#visualEntryBody').fill('月光落在城牆上。\n\n第二段圖文內容。');
-  await page.locator('#visualEntryStatus').selectOption('ready');
-  await expect(page.locator('#visualSaveEntryBtn')).toHaveText('保存並設為可發布');
+  await expect(page.locator('#visualEditorSaveStatus')).toContainText(/尚未儲存|儲存中/);
+  await expect.poll(() => page.evaluate(() => window.__savedVisualEntry?.entry?.body))
+    .toBe('月光落在城牆上。\n\n第二段圖文內容。');
+  await expect(page.locator('#visualEditorSaveStatus')).toContainText('已儲存');
 
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z8xQAAAAASUVORK5CYII=', 'base64');
   await page.locator('#visualImageInput').setInputFiles([
@@ -1758,15 +1763,11 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('.visual-image-card').first()).toContainText('封面');
 
   await page.locator('.visual-image-card').nth(1).getByRole('button', { name: '向前移動', exact: true }).click();
-  await page.locator('#visualSaveEntryBtn').click();
-  await expect.poll(() => page.evaluate(() => window.__savedVisualEntry?.entry?.title)).toBe('月下預告');
+  await expect.poll(() => page.evaluate(() => window.__savedVisualEntry?.entry?.images?.map(image => image.storedName)))
+    .toEqual(['插圖-2.png', '插圖.png']);
+  await expect(page.locator('#visualEditorSaveStatus')).toContainText('已儲存');
   await expect(page.locator('#visualOpenPublishingBtn')).toHaveCount(0);
-  const visualActionGap = await page.evaluate(() => {
-    const preview = document.getElementById('visualPreviewEntryBtn')?.getBoundingClientRect();
-    const save = document.getElementById('visualSaveEntryBtn')?.getBoundingClientRect();
-    return preview && save ? save.left - preview.right : 0;
-  });
-  expect(visualActionGap).toBeGreaterThanOrEqual(12);
+  await expect(page.locator('#visualPreviewEntryBtn')).toBeVisible();
   await page.locator('#visualPreviewEntryBtn').click();
   const workspacePreview = page.getByRole('dialog', { name: '圖文預覽 · 月下預告' });
   await expect(workspacePreview).toBeVisible();
@@ -1779,13 +1780,13 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     mode: state.contentMode,
     chapters: state.chapters.length,
     entryCount: state.visualEntries.length,
-    status: state.visualEntries[0].status,
+    hasLegacyStatus: Object.prototype.hasOwnProperty.call(state.visualEntries[0], 'status'),
     order: state.visualEntries[0].images.map(image => image.storedName),
     cover: state.visualEntries[0].coverImageId,
     firstImageId: state.visualEntries[0].images[0].id
   }));
   expect(stored).toMatchObject({
-    mode: 'visual', chapters: 0, entryCount: 1, status: 'ready',
+    mode: 'visual', chapters: 0, entryCount: 1, hasLegacyStatus: false,
     order: ['插圖-2.png', '插圖.png']
   });
   expect(stored.cover).not.toBe(stored.firstImageId);
@@ -1965,13 +1966,17 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('#visualEntryList [data-entry-id]')).toHaveCount(1);
 
   await page.locator('#visualNewEntryBtn').click();
-  await entryDialog.locator('#newVisualEntryTitle').fill('準備刪除的草稿');
+  await entryDialog.locator('#newVisualEntryTitle').fill('準備刪除的圖文');
   await entryDialog.getByRole('button', { name: '新增圖文', exact: true }).click();
   await expect(page.locator('#visualEntryList [data-entry-id]')).toHaveCount(2);
   await page.locator('.nav-item[data-view="publishing"]').click();
-  const deletionCard = page.locator('.publish-list-item', { hasText: '準備刪除的草稿' });
+  const deletionCard = page.locator('.publish-list-item', { hasText: '準備刪除的圖文' });
   await expect(deletionCard).toBeVisible();
-  await deletionCard.getByRole('button', { name: '更多「準備刪除的草稿」操作', exact: true }).click();
+  await expect(deletionCard.locator('.publish-readiness-badge')).toHaveText('內容尚未完成');
+  await deletionCard.locator('.publish-list-summary').click();
+  await expect(deletionCard.locator('.platform-status-btn').first()).toBeDisabled();
+  await expect(deletionCard.locator('.platform-record-btn').first()).toBeDisabled();
+  await deletionCard.getByRole('button', { name: '更多「準備刪除的圖文」操作', exact: true }).click();
   page.once('dialog', dialog => dialog.accept());
   await deletionCard.getByRole('menuitem', { name: '刪除圖文', exact: true }).click();
   await expect(deletionCard).toHaveCount(0);
@@ -1990,7 +1995,8 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await card.getByRole('button', { name: '查看圖文', exact: true }).click();
   await expect(card.locator('.project-chapter-manager-head strong')).toHaveText('圖文');
   const visualDetail = card.locator('.project-visual-entry-row', { hasText: '月下預告' });
-  await expect(visualDetail).toContainText('可發布');
+  await expect(visualDetail).toContainText('內容完整');
+  await expect(visualDetail).not.toContainText(/草稿|可發布/);
   await expect(visualDetail).toContainText('2 張圖片');
   await expect(visualDetail.getByRole('button', { name: '編輯圖文「月下預告」', exact: true })).toBeVisible();
   const worksMore = visualDetail.getByRole('button', { name: '更多「月下預告」操作', exact: true });
@@ -2007,6 +2013,68 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     recoveryCount: window.__visualRecoveryReasons.filter(reason => reason === 'before-visual-entry-delete').length
   }));
   expect(worksDeletion).toEqual({ removed: 2, recoveryCount: 2 });
+  expect(pageErrors).toEqual([]);
+});
+
+test('visual autosave retries failures and flushes before entry switches', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+  await page.evaluate(() => {
+    StoryFlowIntegrations.restoreOutputDirectory = async () => ({ connected: true, name: 'StoryFlow-test' });
+    StoryFlowIntegrations.saveWorkspace = async () => 'StoryFlow-test/workspace.json';
+    window.__visualAutosaveAttempts = [];
+    window.__visualAutosaveSaved = {};
+    window.__visualAutosaveFailNext = true;
+    StoryFlowIntegrations.saveVisualEntry = async payload => {
+      window.__visualAutosaveAttempts.push(structuredClone(payload));
+      if (window.__visualAutosaveFailNext) {
+        window.__visualAutosaveFailNext = false;
+        throw new Error('fixture write failure');
+      }
+      window.__visualAutosaveSaved[payload.entry.id] = structuredClone(payload.entry);
+      return `StoryFlow-test/Works/${payload.projectTitle}/Visual/${payload.entry.id}`;
+    };
+
+    const now = new Date().toISOString();
+    StoryFlowProjects.createProject({
+      title: '自動儲存測試',
+      contentMode: 'visual',
+      visualEntry: {
+        id: 'autosave-first',
+        title: '第一則',
+        body: '',
+        images: [],
+        createdAt: now,
+        updatedAt: now
+      }
+    }, { quiet: true });
+    state.visualEntries.push(StoryFlowContentModel.normalizeVisualEntry({
+      id: 'autosave-second',
+      title: '第二則',
+      body: '第二則內容',
+      images: [],
+      createdAt: now,
+      updatedAt: now
+    }));
+    StoryFlowNavigate('workspace');
+    StoryFlowVisualWorkspace.render();
+  });
+
+  await expect(page.locator('#visualEntryTitle')).toHaveValue('第一則');
+  await page.locator('#visualEntryBody').fill('第一次寫入會失敗');
+  await expect(page.locator('#visualEditorSaveStatus')).toHaveText('儲存失敗 · 請重試', { timeout: 5000 });
+  await expect(page.locator('#visualRetrySaveBtn')).toBeVisible();
+  await page.locator('#visualRetrySaveBtn').click();
+  await expect(page.locator('#visualEditorSaveStatus')).toContainText('已儲存');
+  await expect.poll(() => page.evaluate(() => window.__visualAutosaveSaved['autosave-first']?.body))
+    .toBe('第一次寫入會失敗');
+
+  await page.locator('#visualEntryBody').fill('切換前必須立即儲存');
+  await page.locator('#visualEntryList [data-entry-id="autosave-second"]').click();
+  await expect(page.locator('#visualEntryTitle')).toHaveValue('第二則');
+  await expect.poll(() => page.evaluate(() => window.__visualAutosaveSaved['autosave-first']?.body))
+    .toBe('切換前必須立即儲存');
+  expect(await page.evaluate(() => window.__visualAutosaveAttempts.length)).toBeGreaterThanOrEqual(3);
   expect(pageErrors).toEqual([]);
 });
 
