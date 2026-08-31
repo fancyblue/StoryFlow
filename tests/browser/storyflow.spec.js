@@ -528,6 +528,7 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   await page.keyboard.press('Escape');
   await activeCard.getByRole('button', { name: '收合章節', exact: true }).click();
   await page.evaluate(() => document.activeElement?.blur());
+  await page.mouse.move(0, 0);
   await expect.poll(() => activeCard.getByRole('button', { name: '管理章節', exact: true })
     .evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(220, 235, 245)');
   const managementStyles = await page.evaluate(() => {
