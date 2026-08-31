@@ -1011,7 +1011,8 @@ test('publishing counts content types by work even when one work has several ent
   await expect(page.locator('.publishing-project-group-title .publishing-project-type-badge')).toHaveText('長文');
 
   const projectGroup = page.locator('.publishing-project-group', { hasText: '長文篩選測試' });
-  const collapseWork = projectGroup.getByRole('button', { name: '收合作品「長文篩選測試」', exact: true });
+  const collapseWork = projectGroup.locator('.publishing-project-collapse-btn');
+  await expect(collapseWork).toHaveAttribute('aria-label', '收合作品「長文篩選測試」');
   await expect(collapseWork).toHaveAttribute('aria-expanded', 'true');
   await expect(collapseWork).toHaveAttribute('aria-controls', /publishing-project-body-/);
   const collapseGeometry = await collapseWork.evaluate(button => {
