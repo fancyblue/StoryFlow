@@ -229,6 +229,28 @@
     }));
   }
 
+  function hasLongformContent() {
+    return Array.isArray(state?.chapters)
+      && state.chapters.some(chapter => Boolean(String(chapter?.draft || '').trim()) || Boolean(chapter?.parts?.length));
+  }
+
+  function syncSharedWorkspaceHeader(visualMode) {
+    const header = document.querySelector('#workspaceView > .topbar');
+    if (!header) return;
+    header.hidden = false;
+    header.classList.toggle('visual-workspace-mode', visualMode);
+
+    const title = header.querySelector('h1');
+    if (title) title.textContent = visualMode ? '圖文工作台' : '內容發布工作台';
+
+    const saveStatus = document.getElementById('saveState');
+    const save = document.getElementById('saveBtn');
+    const generate = document.getElementById('generateBtn');
+    if (saveStatus) saveStatus.hidden = visualMode;
+    if (save) save.hidden = visualMode || !hasLongformContent();
+    if (generate) generate.hidden = visualMode || !hasLongformContent();
+  }
+
   function ensureWorkspace() {
     const workspaceView = document.getElementById('workspaceView');
     if (!workspaceView) return null;
@@ -239,9 +261,6 @@
     visual.className = 'visual-workspace';
     visual.hidden = true;
     visual.innerHTML = `
-      <header class="topbar visual-workspace-head">
-        <div><p class="eyebrow">STORYFLOW / WORKSPACE</p><h1>圖文工作台</h1></div>
-      </header>
       <div id="visualReadonlyNote" class="visual-readonly-note" hidden>手機目前為唯讀：可以閱讀與預覽，但不會新增、排序、匯入、刪除或保存。</div>
       <div class="visual-workspace-layout">
         <aside class="panel source-panel visual-entry-list-panel">
@@ -799,7 +818,8 @@
     if (!root || !isVisual()) return hide();
     revokeObjectUrls();
     root.hidden = false;
-    document.querySelectorAll('#workspaceView > .topbar, #workspaceView > .connection-bar, #workspaceView > .stats-grid, #workspaceView > .workspace-grid')
+    syncSharedWorkspaceHeader(true);
+    document.querySelectorAll('#workspaceView > .stats-grid, #workspaceView > .workspace-grid')
       .forEach(node => {
         node.hidden = true;
         node.classList.add('visual-workspace-suppressed');
@@ -823,7 +843,8 @@
     revokeObjectUrls();
     const root = document.getElementById('visualWorkspace');
     if (root) root.hidden = true;
-    document.querySelectorAll('#workspaceView > .topbar, #workspaceView > .connection-bar, #workspaceView > .stats-grid, #workspaceView > .workspace-grid')
+    syncSharedWorkspaceHeader(false);
+    document.querySelectorAll('#workspaceView > .stats-grid, #workspaceView > .workspace-grid')
       .forEach(node => {
         node.hidden = false;
         node.classList.remove('visual-workspace-suppressed');
