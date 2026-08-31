@@ -1,6 +1,6 @@
 # Browser smoke tests
 
-> 狀態：現行測試規範與覆蓋索引（持續維護；最後同步：2026-08-29）
+> 狀態：現行測試規範與覆蓋索引（持續維護；最後同步：2026-09-01）
 
 ## Proportional testing for this project
 
@@ -28,7 +28,7 @@ The goal is fast feedback appropriate for one private user while retaining stric
 - `browser/storyflow.spec.js` covers the completed Phase 1–2 visual flow: transactional series/entry creation and cancellation, dedicated workspace, shared SOURCE-rail geometry, entry editing, private image adapter, cover/alt/caption, ordering, preview, optional summary/hashtag publishing helpers, shared search/publishing adapters, save, overflow-based Recovery-gated deletion and Works type label.
 - `source-sync-history-core.html` verifies pre-sync staging, durable snapshot order, project isolation and one-time undo consumption.
 - `browser/storyflow.spec.js` exercises the authoritative project source controller end to end with a mocked Google Docs response, verifies transactional new-work cancel/confirm behavior and the shared disclosure chevron, covers compact paragraph-snapped click/drag boundary movement without source mutation and end-marker scroll retention after leaving manual mode, preserves source-rail scroll/menu containment across long chapter lists, checks equal large add/edit dialogs, filled editor space, discoverable work-management/new-work actions, scene boundaries in compact output, all-project publishing fallback, compact image/afterword tools, per-platform publishing-title overrides, optional heading/bold title prefixes during copy, private image import/metadata/order/preview/Markdown/removal, OS-aware and touch-hidden search shortcuts, the `×` search close control, cross-work search with opt-in body lookup, five-column narrow navigation, laptop-to-2560 px desktop layout bounds, independent article afterwords, optional output, per-platform publication date/URL records and deletion warnings.
-- `browser/visual-regression.spec.js` captures the real app at 1280, 1440 and 1920 desktop widths, including a long chapter rail, works library, publishing queue and settings.
+- `browser/visual-regression.spec.js` combines intentional 1440 px visual baselines with resilient geometry contracts at 1280, 1440, 1920 and 390 px. It blocks document overflow, overlapping action groups, crossed workspace columns, off-screen dialogs and clipped dialog footers across the longform workspace, visual workspace, Works, Publishing, previews and Settings.
 
 No user files or Google credentials are used.
 
