@@ -1,6 +1,6 @@
 # StoryFlow UX flows
 
-> 狀態：現行 UX 流程規範（已落地，持續維護；最後同步：2026-08-29）
+> 狀態：現行 UX 流程規範（已落地，持續維護；最後同步：2026-08-31）
 
 StoryFlow is a personal desktop writing tool. Flows should stay short, preserve the current work until an action is confirmed, and avoid account-style ceremony that does not protect the user's files.
 
@@ -18,7 +18,7 @@ The Works page is the structural management hub. Managing chapters or visual ent
 | W-02 | Return to splitting and writing work | 工作台 | — | Tinted or outlined navigation action |
 | W-03 | Jump directly to this work's publishing queue | 管理發布 | — | Tinted secondary shortcut |
 | W-04 | Make another work current | 開啟 | Then manage its chapters or enter its workspace | Both longform and visual works use the same label; selection is shown by the card and badge |
-| W-05 | Create another work | ＋ 新作品 | Source chooser and creation preview | Outlined or tinted while works already exist |
+| W-05 | Create another work | ＋ 新作品 | 作品類型、來源與內容表單可逐步返回 | Outlined or tinted while works already exist |
 | W-06 | Create the first work | 建立第一個作品 | — | The only solid action in the empty state; do not show a competing solid header action |
 | W-07 | Rename or delete a work | `⋯` | Confirmation and Recovery for deletion | Tertiary overflow; deletion uses the danger treatment only inside the decision |
 
@@ -38,7 +38,7 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-06 | Commit the reviewed article | 切篇確認／確認並存成 Markdown | 返回修改、取消 | The single solid action for the review stage |
 | WS-07 | Continue processing the remaining chapter | 產生下一篇 | Review the current ending again | Solid only when a valid next suggestion is ready |
 | WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | The row keeps a persistent `⋯`; edit is first and delete is second |
-| WS-10 | Maintain a visual entry | 保存草稿／保存並設為可發布 | 預覽圖文、`⋯ → 編輯圖文／刪除圖文` | Preview opens in a separate dialog; use the same persistent overflow, item order and Recovery flow as manual chapters |
+| WS-10 | Maintain a visual entry | 編輯即自動儲存 | 預覽圖文、`⋯ → 刪除圖文` | Preview opens in a separate dialog; use the same direct-edit plus persistent-overflow pattern and Recovery flow as manual chapters |
 
 The “切換作品” disclosure lives in the SOURCE card heading for both content modes and includes “＋ 新增作品”. The longform “作品與章節” rail and visual “作品與圖文” rail use the same outer width and breakpoint contract. “新增文章／新增圖文” sits below the corresponding chapter or entry list, never in the page header or list heading.
 
@@ -169,7 +169,7 @@ SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認�
 
 ## Destructive actions
 
-Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). Manual chapters and visual entries use the same persistent trailing overflow, edit-then-delete item order, explicit confirmation and Recovery-first guard. A visual entry is deleted through `⋯ → 刪除圖文` from Workspace, Works or Publishing; the editor footer does not expose a competing delete button. Cancelling or closing a creation dialog is not submission and must never trigger required-field validation. Preview controls never overlap the reading surface: workbench preview/save actions keep a visible gap, dialog actions use a divided footer, and summary hints open below their icon without row clipping. Visual-entry status is explicit: both “草稿” and “可發布” save content; “可發布” means ready for the publishing workflow and never means automatically published. The save action mirrors the selected state as “保存草稿” or “保存並設為可發布”.
+Deletion, replacement and source refresh follow the safety rules in [ARCHITECTURE.md](ARCHITECTURE.md). Manual chapters and visual entries use the same direct-edit plus persistent trailing overflow, explicit confirmation and Recovery-first guard. A visual entry is deleted through `⋯ → 刪除圖文` from Workspace, Works or Publishing; the editor footer does not expose a competing delete button. Cancelling or closing a creation dialog is not submission and must never trigger required-field validation. The new-work flow can move backward from source choice to work type and from the manual form to source choice without creating an empty work. Preview controls never overlap the reading surface: workbench preview actions keep a visible gap, dialog actions use a divided footer, and summary hints open below their icon without row clipping. Editing content auto-saves; publishing readiness is derived from whether the entry has usable text or images, not from a separate draft/ready toggle.
 
 Workspace does not provide a direct publishing shortcut for either content type; publication is entered from the primary navigation or the Works-page “管理發布” action. The Publishing page filters content type separately from publication status and repeats the type badge beside each work name. “全部類型／長文／圖文” count works after the current work selection, while status counts continue to count individual publishable entries.
 

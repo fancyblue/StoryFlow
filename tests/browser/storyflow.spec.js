@@ -143,6 +143,9 @@ test('primary action scale and navigation icon language stay consistent', async 
   });
 
   await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('.publishing-empty')).toContainText('尚未有可發布內容');
+  await expect(page.locator('.publishing-empty')).toContainText('文章或第一則圖文');
+  await expect(page.locator('.publishing-empty .button')).toHaveText('回到工作台');
   await expect(page.locator('.publishing-empty .button')).toBeVisible();
   expect(await controlStyle(page.locator('.publishing-empty .button'))).toMatchObject({
     height: 40,
@@ -225,6 +228,9 @@ test('dialogs expose their visible heading and close control semantics', async (
 
   await page.locator('#sidebarSettingsBtn').click();
   await expect(page.getByRole('region', { name: '設定', exact: true })).toHaveAttribute('id', 'settingsDialog');
+  await page.getByRole('button', { name: '搜尋', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: '搜尋 StoryFlow' })).toBeVisible();
+  await page.getByRole('button', { name: '關閉搜尋', exact: true }).click();
   await page.getByRole('button', { name: '工作台', exact: true }).click();
 
   await page.getByRole('button', { name: /手動建立/ }).click();
@@ -511,6 +517,20 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   const managePublishing = page.getByRole('button', { name: /管理發布/ });
   await expect(manageChapters.first()).toBeVisible();
   await expect(managePublishing.first()).toBeVisible();
+  const activeCard = page.locator('.project-library-card.active');
+  await activeCard.getByRole('button', { name: '管理章節', exact: true }).click();
+  const manualRow = activeCard.locator('.project-chapter-manager-row').last();
+  await expect(manualRow.getByRole('button', { name: /編輯章節/ })).toBeVisible();
+  const manualMore = manualRow.getByRole('button', { name: /更多「.*」操作/ });
+  await expect(manualMore).toBeVisible();
+  await manualMore.click();
+  await expect(manualRow.getByRole('menuitem', { name: /刪除章節/ })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await activeCard.getByRole('button', { name: '收合章節', exact: true }).click();
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.mouse.move(0, 0);
+  await expect.poll(() => activeCard.getByRole('button', { name: '管理章節', exact: true })
+    .evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(220, 235, 245)');
   const managementStyles = await page.evaluate(() => {
     const values = element => {
       const style = getComputedStyle(element);
@@ -725,10 +745,18 @@ test('canceling a new manual work does not create an empty project', async ({ pa
   expect(openTransform).not.toBe(closedTransform);
 
   await page.locator('#workspaceQuickNewProject').click();
-  await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
+  const typeDialog = page.getByRole('dialog', { name: '選擇作品類型' });
+  await typeDialog.locator('#chooseLongformType').click();
+  await expect(page.locator('#backSourceCreationBtn')).toBeVisible();
+  await page.locator('#backSourceCreationBtn').click();
+  await expect(typeDialog).toBeVisible();
+  await typeDialog.locator('#chooseLongformType').click();
   await page.locator('#sourceManualBtn').click();
   await expect(page.locator('#manualProjectTitleField')).toBeVisible();
-  await page.locator('#closeManualSourceDialog').click();
+  await expect(page.locator('#backManualCreationBtn')).toBeVisible();
+  await page.locator('#backManualCreationBtn').click();
+  await expect(page.locator('#sourceDialog')).toBeVisible();
+  await page.locator('#closeSourceDialog').click();
 
   const afterCancel = await page.evaluate(() => ({
     activeId: StoryFlowProjects.activeId(),
@@ -1992,7 +2020,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(inactiveVisualCard.getByRole('button', { name: '開啟「第二圖文集」', exact: true })).toBeVisible();
   await expect(card.getByRole('button', { name: '管理發布「夜色圖文集」', exact: true })).toBeVisible();
   await expect(card.getByRole('button', { name: '更多「夜色圖文集」操作', exact: true })).toBeVisible();
-  await card.getByRole('button', { name: '查看圖文', exact: true }).click();
+  await card.getByRole('button', { name: '管理圖文', exact: true }).click();
   await expect(card.locator('.project-chapter-manager-head strong')).toHaveText('圖文');
   const visualDetail = card.locator('.project-visual-entry-row', { hasText: '月下預告' });
   await expect(visualDetail).toContainText('內容完整');

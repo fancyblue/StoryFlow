@@ -41,6 +41,7 @@
     const googleCopy = dialog.querySelector('#sourceGoogleBtn span');
     const manualTitle = dialog.querySelector('#sourceManualBtn strong');
     const manualCopy = dialog.querySelector('#sourceManualBtn span');
+    const back = dialog.querySelector('#backSourceCreationBtn');
 
     if (heading) heading.textContent = creation ? '建立作品' : '載入來源';
     if (intro) {
@@ -53,6 +54,7 @@
     if (manualTitle) manualTitle.textContent = creation ? '手動建立' : '手動新增';
     if (manualCopy) manualCopy.textContent = creation ? '輸入第一篇文章的章節名稱與內容' : '直接輸入章節標題與文章內容';
     dialog.dataset.storyflowCreationMode = creation ? '1' : '0';
+    if (back) back.hidden = !creation;
     return dialog;
   }
 

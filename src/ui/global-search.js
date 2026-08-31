@@ -281,7 +281,10 @@
 
   function openSearch() {
     const blockingDialog = [...document.querySelectorAll('dialog[open]')]
-      .find(node => node !== dialog && !node.closest('[hidden]') && node.getClientRects().length > 0);
+      .find(node => node !== dialog
+        && !node.matches('.settings-page-dialog[role="region"]')
+        && !node.closest('[hidden]')
+        && node.getClientRects().length > 0);
     if (blockingDialog) return;
     input.value = '';
     includeBody.checked = false;

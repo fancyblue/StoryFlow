@@ -464,10 +464,10 @@
       empty.className = 'empty-state publishing-empty publishing-filter-empty';
       const allEntries = (snapshot.projects || []).flatMap(entriesForProject);
       if (!snapshot.projects?.length) {
-        empty.innerHTML = '<strong>尚未建立作品</strong><span>先建立第一個作品，再載入內容並開始切篇。</span><button class="button primary" type="button">建立作品</button>';
+        empty.innerHTML = '<strong>尚未建立作品</strong><span>先建立第一個長文或圖文作品，內容會顯示在這裡。</span><button class="button primary" type="button">建立作品</button>';
         empty.querySelector('button').onclick = () => window.StoryFlowNavigate?.('projects');
       } else if (!allEntries.length) {
-        empty.innerHTML = '<strong>尚未有已確認文章</strong><span>先回到工作台載入內容並完成第一篇切篇。</span><button class="button primary" type="button">回到工作台開始切篇</button>';
+        empty.innerHTML = '<strong>尚未有可發布內容</strong><span>完成第一篇文章或第一則圖文後，會顯示在這裡。</span><button class="button primary" type="button">回到工作台</button>';
         empty.querySelector('button').onclick = () => window.StoryFlowNavigate?.('workspace');
       } else {
         empty.innerHTML = '<strong>沒有符合目前篩選的內容</strong><span>內容仍然存在，只是沒有符合目前選擇的類型或發布狀態。</span><button class="button ghost" type="button">清除篩選</button>';

@@ -1,6 +1,6 @@
 # StoryFlow Chrome acceptance checklist
 
-> 狀態：現行、可重複執行的人工驗收清單（最後同步：2026-08-29）。未勾選的方框表示每次驗收應重新執行，不代表功能尚未完成。
+> 狀態：現行、可重複執行的人工驗收清單（最後同步：2026-08-31）。未勾選的方框表示每次驗收應重新執行，不代表功能尚未完成。
 
 Use this checklist before treating a release as ready for daily writing. It exercises Chrome's real File System Access behavior, which CI replaces with safe in-memory fixtures.
 
@@ -16,8 +16,8 @@ StoryFlow is a private, single-user site, so this is not a mandatory checklist f
 ## 1. Connect, save and reload
 
 - [ ] Open StoryFlow and connect `StoryFlow-Acceptance`.
-- [ ] From an existing work, choose “切換作品” → “新增作品” → “手動新增”, then close the dialog. Confirm the original work is still active and no empty work was added.
-- [ ] Open the manual source, search, split confirmation and publishing preview dialogs. Confirm each dialog is announced by its visible heading and every `×` button is announced as “關閉”.
+- [ ] From an existing work, choose “切換作品” → “新增作品” → “長文作品”. Confirm the source chooser can return to work type, the manual form can return to source choice, and closing the flow leaves the original work active without adding an empty work.
+- [ ] Open the manual source, search, split confirmation and publishing preview dialogs. Confirm each dialog is announced by its visible heading and every `×` button is announced as “關閉”. Open Settings and confirm global search still opens above the page region.
 - [ ] Create a manual work and add one test chapter.
 - [ ] Confirm the new work appears only after “確定新增” or preview confirmation.
 - [ ] Check that “切換作品”, “切篇偏好” and publishing work filters use the same down/up chevron behavior.
@@ -48,7 +48,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Confirm manual mode shows only the current-part and chapter columns; candidate endings are thin lines whose labels appear on hover/focus, while the blue current ending stays visible without creating large gaps between paragraphs.
 - [ ] Choose an ending in the middle of a long chapter and press “結束微調”. Confirm the normal chapter view stays at “這一篇結束” instead of jumping to the chapter bottom.
 - [ ] Confirm “本篇／後續” counts are visually smaller than the article title and “結束微調” action, while remaining readable without wrapping.
-- [ ] In the works library, confirm “工作台／開啟／管理發布／管理章節” use the same text size and control height. Every “管理章節” uses the same emphasized light-blue style; Workbench is outlined and publishing is paler.
+- [ ] In the works library, confirm “工作台／開啟／管理發布／管理章節／管理圖文” use the same text size and control height. Expanded manual chapters and visual entries both show direct edit plus a persistent `⋯` containing the Recovery-guarded delete action.
 - [ ] Give the suggestion a custom title before moving it and confirm the title is preserved.
 - [ ] Close and reopen confirmation; confirm manual mode resets. Confirm the source draft is byte-for-byte unchanged and no confirmed publishing article was rewritten.
 - [ ] Turn off “段落間空一行” for a disposable platform. Confirm ordinary paragraphs are compact but an original scene boundary still shows the configured marker.
@@ -67,13 +67,13 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Create a “圖文系列” with a first entry. Confirm Works shows a `圖文` label, Workspace replaces the longform/Smart Split layout, and “管理發布” opens the visual entry in the shared Publishing page.
 - [ ] Compare longform “作品與章節” and visual “作品與圖文” at the same viewport. Confirm the SOURCE card, outer rail width, gap and editor alignment are identical.
 - [ ] Open “新增圖文” with an empty title, then use both `×` and “取消”. Confirm neither action triggers required-field validation and no empty entry is created.
-- [ ] Save a visual entry as `可發布` with text or images. Confirm “前往發布” appears only after the save succeeds, platform titles and publication records remain independent, and preview/copy shows an explicit manual image-upload order without copying files.
+- [ ] Edit a visual entry with text or images. Confirm it auto-saves, publishing readiness follows content completeness, platform titles and publication records remain independent, and preview shows an explicit manual image-upload order without copying files.
 - [ ] Search a visual title, platform title, and (with body search enabled) visual body. Confirm the result switches to the correct work and opens that visual item in Publishing.
 - [ ] In the visual workspace, edit title/body/status, import duplicate-named JPG/PNG/WebP/GIF images, set cover/alt/caption, reorder with both drag and arrow controls, reload, and confirm text plus image order remain stable.
 - [ ] From Workspace, Works and Publishing, confirm visual deletion is reached through the entry row's `⋯ → 刪除圖文`, uses the same confirmation and Recovery guard, and is not duplicated in the editor footer. Delete a disposable entry and confirm Recovery is created, `content.md`/`metadata.json` are removed, and private `assets/` remains. Explicitly delete one image file and confirm it first appears in `Recovery/Assets/`.
 - [ ] On a phone-sized touch session in default read-only mode, confirm visual content and preview remain readable while entry creation, fields, import, ordering, removal and save controls are blocked.
 - [ ] In Publishing, confirm each row's “預覽預設設定／管理發布／⋯” actions align to the same 40 px height and management text uses 14 px. Expanded “收合發布” uses a stronger soft selection rather than a solid primary fill.
-- [ ] With no confirmed article, confirm the workspace publishing summary does not show “前往發布”. With unfinished confirmed content it becomes a solid action; when all publishing is complete it becomes the outlined “查看發布紀錄”.
+- [ ] In Workspace, confirm neither content type shows a direct publishing shortcut. Enter Publishing from primary navigation or the Works-page “管理發布” action.
 - [ ] Confirm Publishing's empty-state return action remains the single solid 40 px / 14 px CTA, while publishing filters remain compact pills.
 - [ ] In Settings, confirm “匯入 settings.json” is primary when Google integration is missing; the save button remains disabled and quiet until valid fields change. “新增平台” and “建立目前備份” stay secondary.
 - [ ] Check the expanded and collapsed sidebar on macOS and Windows Chrome. Workspace, Works, Publishing, Settings, Search and the collapse control should all use the same stroke-icon language without platform-dependent text glyphs.
