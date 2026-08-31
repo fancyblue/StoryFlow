@@ -62,6 +62,9 @@
             <button id="sourceGoogleBtn" class="source-choice" type="button"><strong>Google Docs</strong><span>選文件與分頁，再預覽轉換後內容</span></button>
             <button id="sourceManualBtn" class="source-choice" type="button"><strong>手動新增</strong><span>直接輸入章節標題與文章內容</span></button>
           </div>
+          <div class="source-flow-actions">
+            <button id="backSourceCreationBtn" class="button ghost" type="button" hidden>返回作品類型</button>
+          </div>
           <div id="detachSourceArea" class="detach-source-area hidden">
             <div><strong>目前章節已有 Google Docs 來源</strong><span id="detachSourceLabel" class="muted"></span></div>
             <div class="source-linked-actions">
@@ -72,6 +75,11 @@
         </div>`;
       document.body.appendChild(dialog);
       document.getElementById('closeSourceDialog').onclick = () => closeAndCancelNewWork(dialog);
+      document.getElementById('backSourceCreationBtn').onclick = () => {
+        closeForHandoff(dialog);
+        window.StoryFlowNewWorkFlow?.cancel?.();
+        window.StoryFlowVisualWorkspace?.openTypeChooser?.();
+      };
       document.getElementById('sourceGoogleBtn').onclick = () => {
         const creation = dialog.dataset.storyflowCreationMode === '1';
         closeForHandoff(dialog);
@@ -110,11 +118,16 @@
           <label class="field-label">文章內容</label>
           <textarea id="manualSourceText" class="source-manual-text" placeholder="貼上或輸入文章內容……"></textarea>
           <div class="source-flow-actions">
+            <button id="backManualCreationBtn" class="button ghost" type="button" hidden>返回建立方式</button>
             <button id="previewManualSourceBtn" class="button primary" type="button">預覽轉換內容</button>
           </div>
         </div>`;
       document.body.appendChild(dialog);
       document.getElementById('closeManualSourceDialog').onclick = () => closeAndCancelNewWork(dialog);
+      document.getElementById('backManualCreationBtn').onclick = () => {
+        closeForHandoff(dialog);
+        window.StoryFlowSourceOnboarding?.openSourceChooser?.({ creation: true, allowManualBeforeSettings: true });
+      };
       document.getElementById('previewManualSourceBtn').onclick = previewManualSource;
       cancelNewWorkOnClose(dialog);
     }
@@ -193,8 +206,10 @@
     const titleField = document.getElementById('manualProjectTitleField');
     const projectTitle = document.getElementById('manualProjectTitle');
     const heading = dialog.querySelector('.sticky-dialog-head h3');
+    const back = document.getElementById('backManualCreationBtn');
     dialog.dataset.storyflowCreationMode = creation ? '1' : '0';
     titleField.hidden = !creation;
+    if (back) back.hidden = !creation;
     if (heading) heading.textContent = creation ? '建立手動作品' : '手動新增文章';
     if (projectTitle) projectTitle.value = '';
     document.getElementById('manualSourceTitle').value = '';

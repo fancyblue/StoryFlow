@@ -137,10 +137,10 @@
       renderAll();
       window.StoryFlowNavigate?.('publishing');
       notify('這個章節仍有已確認文章。請先在「發布」刪除相關文章，讓 Markdown 一併處理，再回來刪除章節。', true);
-      return;
+      return false;
     }
 
-    if (!confirm(`刪除章節「${chapter.title}」？\n\n會從目前作品移除這個章節與工作區內容；Google Docs 原稿不會刪除。`)) return;
+    if (!confirm(`刪除章節「${chapter.title}」？\n\n會從目前作品移除這個章節與工作區內容；Google Docs 原稿不會刪除。`)) return false;
 
     try {
       const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
@@ -148,7 +148,7 @@
       await prepare('before-chapter-delete');
     } catch (error) {
       notify(`尚未刪除章節：無法建立 Recovery 安全副本（${error.message}）`, true);
-      return;
+      return false;
     }
 
     state.chapters.splice(index, 1);
@@ -161,6 +161,7 @@
     renderAll();
     if (activeChapter()?.draft) suggestNextPart();
     notify(`已刪除章節：${chapter.title}`);
+    return true;
   }
 
   function chapterGroups() {
@@ -294,6 +295,9 @@
     syncSourceActionState();
   });
   window.StoryFlowRenderProjects = renderProjectsView;
+  window.StoryFlowChapterManagement = {
+    deleteChapter: removeChapter
+  };
 
   const observer = new MutationObserver(() => {
     removeLegacyReset();

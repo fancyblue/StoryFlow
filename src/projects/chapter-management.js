@@ -28,7 +28,7 @@
     document.querySelectorAll('.chapter-row-action-menu').forEach(menu => {
       if (menu === except) return;
       menu.hidden = true;
-      menu.closest('.chapter-row, .project-visual-entry-row, .visual-entry-row')?.querySelector('.chapter-more-button')?.setAttribute('aria-expanded', 'false');
+      menu.closest('.chapter-row, .project-chapter-manager-row, .visual-entry-row')?.querySelector('.chapter-more-button')?.setAttribute('aria-expanded', 'false');
     });
   }
 
@@ -385,7 +385,55 @@
         edit.textContent = '編輯章節';
         edit.setAttribute('aria-label', `編輯章節「${chapter.title}」的標題與內容`);
         edit.addEventListener('click', () => editManualChapter(row, chapter));
-        actions.appendChild(edit);
+
+        const more = document.createElement('button');
+        more.type = 'button';
+        more.className = 'button tiny ghost chapter-more-button project-visual-entry-more';
+        more.textContent = '⋯';
+        more.setAttribute('aria-label', `更多「${chapter.title}」操作`);
+        more.setAttribute('aria-haspopup', 'menu');
+        more.setAttribute('aria-expanded', 'false');
+        more.disabled = Boolean(window.StoryFlowMobileSafeMode?.isReadOnly?.());
+
+        const menu = document.createElement('div');
+        menu.className = 'chapter-row-action-menu project-visual-entry-action-menu';
+        menu.hidden = true;
+        menu.setAttribute('role', 'menu');
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'chapter-row-delete-menu-item';
+        remove.setAttribute('role', 'menuitem');
+        remove.setAttribute('aria-label', `刪除章節「${chapter.title}」`);
+        remove.innerHTML = '<span aria-hidden="true">×</span><span>刪除章節</span>';
+        remove.addEventListener('click', async event => {
+          event.preventDefault();
+          event.stopPropagation();
+          menu.hidden = true;
+          more.setAttribute('aria-expanded', 'false');
+          const deleteChapter = window.StoryFlowChapterManagement?.deleteChapter;
+          if (typeof deleteChapter !== 'function') {
+            window.notify?.('章節刪除功能尚未準備完成，請重新整理後再試。', true);
+            return;
+          }
+          const deleted = await deleteChapter(chapter.id);
+          if (!deleted) return;
+          expandedProjects.add(projectId);
+          window.StoryFlowRenderProjects?.();
+          window.setTimeout(decorateProjectsView, 0);
+        });
+        menu.appendChild(remove);
+        more.addEventListener('click', event => {
+          event.preventDefault();
+          event.stopPropagation();
+          const opening = menu.hidden;
+          closeChapterMenus(opening ? menu : null);
+          menu.hidden = !opening;
+          more.setAttribute('aria-expanded', opening ? 'true' : 'false');
+          if (opening) menu.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+        });
+        actions.classList.add('project-visual-entry-actions');
+        actions.append(edit, more, menu);
       } else {
         const locked = document.createElement('span');
         locked.className = 'project-chapter-source-note';
@@ -426,7 +474,7 @@
 
       const visual = project.contentMode === 'visual';
       const expanded = expandedProjects.has(project.id) && project.id === activeId;
-      manage.textContent = expanded ? (visual ? '收合圖文' : '收合章節') : (visual ? '查看圖文' : '管理章節');
+      manage.textContent = expanded ? (visual ? '收合圖文' : '收合章節') : (visual ? '管理圖文' : '管理章節');
       manage.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       manage.onclick = () => {
         if (project.id !== window.StoryFlowProjects?.activeId?.()) {

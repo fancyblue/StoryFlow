@@ -1468,15 +1468,13 @@
     if (selectedPartKey && !filtered.some(entry => partKey(entry.part) === selectedPartKey)) selectedPartKey = null;
 
     if (!entries.length) {
-      els.partsList.innerHTML = state.contentMode === 'visual'
-        ? '<div class="empty-state publishing-empty"><div class="empty-icon">↗</div><strong>還沒有圖文</strong><span>先回到圖文工作區建立第一則內容。</span><button class="button primary publishing-empty-action" type="button">回到圖文工作區</button></div>'
-        : '<div class="empty-state publishing-empty"><div class="empty-icon">↗</div><strong>還沒有已確認文章</strong><span>先回到工作台載入內容並完成第一篇切篇。</span><button class="button primary publishing-empty-action" type="button">回到工作台開始切篇</button></div>';
+      els.partsList.innerHTML = '<div class="empty-state publishing-empty"><div class="empty-icon">↗</div><strong>尚未有可發布內容</strong><span>完成第一篇文章或第一則圖文後，會顯示在這裡。</span><button class="button primary publishing-empty-action" type="button">回到工作台</button></div>';
       els.partsList.querySelector('.publishing-empty-action')?.addEventListener('click', () => window.StoryFlowNavigate?.('workspace'));
       return;
     }
 
     if (!filtered.length) {
-      els.partsList.innerHTML = '<div class="empty-state publishing-empty"><strong>這個篩選條件目前沒有文章</strong><span>目前文章存在，只是沒有符合選擇的發布狀態。</span><button class="button ghost publishing-empty-action" type="button">清除狀態篩選</button></div>';
+      els.partsList.innerHTML = '<div class="empty-state publishing-empty"><strong>這個篩選條件目前沒有內容</strong><span>目前已有內容，只是沒有符合選擇的發布狀態。</span><button class="button ghost publishing-empty-action" type="button">清除狀態篩選</button></div>';
       els.partsList.querySelector('.publishing-empty-action')?.addEventListener('click', () => {
         currentFilter = 'all';
         renderParts();
