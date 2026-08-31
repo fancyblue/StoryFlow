@@ -74,7 +74,8 @@ Each platform row uses two information lines: platform/status first, publication
 - The desktop chapter rail owns its vertical scrolling. Selecting a chapter preserves that rail position even when the list rerenders.
 - Opening a chapter overflow menu must not change the source panel from contained scrolling to page-height content. Near the panel bottom, the menu opens upward and remains inside the visible viewport.
 - Main workspace content must keep its grid position while the source rail scrolls or a row menu opens.
-- The desktop source rail and `.workspace-main-column` are independent vertical flows. The right column owns the statistics strip and splitter/editor stack with the shared section gap; a taller source rail must never stretch an empty grid row or push the splitter below the statistics.
+- Longform and visual modes reuse the same `#workspaceView > .topbar`. Only the page title and mode-specific editing actions change; connection controls stay in the same place, and visual mode relies on its editor autosave status instead of duplicating a page-level save state.
+- The desktop source rail and `.workspace-main-column` are independent vertical flows. The right column owns a single-line, at-most-50 px statistics strip and the splitter/editor stack with the shared section gap; a taller source rail must never stretch an empty grid row or push the splitter below the statistics.
 
 ## Command search
 

@@ -298,12 +298,14 @@ test('desktop pages stay bounded from laptop through extended-monitor widths', a
         contentWidth: main.clientWidth - parseFloat(mainStyle.paddingLeft) - parseFloat(mainStyle.paddingRight),
         sourceWidth: source?.getBoundingClientRect().width || 0,
         hasRightColumn: Boolean(document.querySelector('.workspace-main-column')),
+        statsHeight: document.querySelector('.workspace-main-column > .stats-grid')?.getBoundingClientRect().height || 0,
         statsBottom: document.querySelector('.workspace-main-column > .stats-grid')?.getBoundingClientRect().bottom || 0,
         splitterTop: document.querySelector('.workspace-main-column > .splitter-panel')?.getBoundingClientRect().top || 0
       };
     });
     expect(workspaceLayout.documentWidth).toBeLessThanOrEqual(workspaceLayout.viewportWidth);
     expect(workspaceLayout.hasRightColumn).toBe(true);
+    expect(workspaceLayout.statsHeight).toBeLessThanOrEqual(50);
     expect(workspaceLayout.splitterTop - workspaceLayout.statsBottom).toBeGreaterThanOrEqual(15);
     expect(workspaceLayout.splitterTop - workspaceLayout.statsBottom).toBeLessThanOrEqual(21);
     expect(workspaceLayout.contentWidth).toBeLessThanOrEqual(1801);
@@ -1005,6 +1007,7 @@ test('publishing counts content types by work even when one work has several ent
 
   const firstCard = page.locator('.publish-list-item', { hasText: '測試發布文章 1' });
   await expect(firstCard.getByRole('button', { name: '預覽「測試發布文章 1」', exact: true })).toBeVisible();
+  await expect(firstCard.locator('.publish-list-actions > button:visible')).toHaveText(['預覽', '管理發布', '⋯']);
   await expect(page.locator('.publishing-project-group-title .publishing-project-type-badge')).toHaveText('長文');
 
   await page.locator('#publishingContentTypeFilters [data-content-type="visual"]').click();
@@ -1704,9 +1707,14 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     const panel = form.closest('.visual-editor-panel');
     return form.getBoundingClientRect().top - panel.getBoundingClientRect().top;
   })).toBeLessThan(80);
-  await expect(page.getByRole('heading', { name: '圖文工作台', exact: true })).toBeVisible();
-  await expect(page.locator('#visualWorkspace > .visual-workspace-head .eyebrow')).toHaveText('STORYFLOW / WORKSPACE');
-  await expect(page.locator('#visualWorkspace > .visual-workspace-head .muted')).toHaveCount(0);
+  await expect(page.locator('#workspaceView > .topbar')).toBeVisible();
+  await expect(page.locator('#workspaceView > .topbar').getByRole('heading', { name: '圖文工作台', exact: true })).toBeVisible();
+  await expect(page.locator('#workspaceView > .topbar .eyebrow')).toHaveText('STORYFLOW / WORKSPACE');
+  await expect(page.locator('#workspaceView > .topbar #topConnectionStatus')).toBeVisible();
+  await expect(page.locator('#visualWorkspace > .visual-workspace-head')).toHaveCount(0);
+  await expect(page.locator('#saveState')).toBeHidden();
+  await expect(page.locator('#saveBtn')).toBeHidden();
+  await expect(page.locator('#generateBtn')).toBeHidden();
   await expect(page.getByRole('heading', { name: '作品與圖文', exact: true })).toBeVisible();
   const visualSourceWidth = await page.locator('.visual-workspace-layout > .visual-entry-list-panel').evaluate(panel => panel.getBoundingClientRect().width);
   expect(Math.abs(visualSourceWidth - longformSourceWidth)).toBeLessThanOrEqual(1);
@@ -1827,6 +1835,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(publishCard.locator('.publish-content-type')).toHaveText('圖文');
   const defaultVisualPreview = publishCard.getByRole('button', { name: '預覽「月下預告」', exact: true });
   await expect(defaultVisualPreview).toBeVisible();
+  await expect(publishCard.locator('.publish-list-actions > button:visible')).toHaveText(['預覽', '管理發布', '⋯']);
   await expect(publishCard.getByRole('button', { name: '更多「月下預告」操作', exact: true })).toBeVisible();
   await defaultVisualPreview.click();
   const plainVisualPreview = page.locator('#platformPreviewDialog');
