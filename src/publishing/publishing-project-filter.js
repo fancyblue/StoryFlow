@@ -10,6 +10,7 @@
   let workspaceSnapshot = null;
   let selectedProjectIds = new Set();
   let currentContentType = 'all';
+  const collapsedProjectIds = new Set();
   let initializedSelection = false;
   let refreshTimer = null;
   let refreshEpoch = 0;
@@ -366,13 +367,14 @@
     const group = document.createElement('section');
     group.className = 'publishing-project-group publishing-multi-project-group';
     group.dataset.projectId = project.id;
+    const projectName = project.title || project.state?.projectTitle || '未命名作品';
 
     const head = document.createElement('header');
     head.className = 'publishing-project-group-head';
     const titleWrap = document.createElement('div');
     titleWrap.className = 'publishing-project-group-title';
     const title = document.createElement('strong');
-    title.textContent = project.title || project.state?.projectTitle || '未命名作品';
+    title.textContent = projectName;
     const typeBadge = document.createElement('span');
     typeBadge.className = 'project-type-badge publishing-project-type-badge';
     typeBadge.textContent = project.state?.contentMode === 'visual' ? '圖文' : '長文';
@@ -384,9 +386,22 @@
       titleWrap.appendChild(current);
     }
     const count = document.createElement('span');
+    count.className = 'publishing-project-group-count';
     count.textContent = `${entries.length.toLocaleString()} 項`;
-    head.append(titleWrap, count);
-    group.appendChild(head);
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'publishing-project-collapse-btn';
+    toggle.innerHTML = '<span class="sf-chevron" aria-hidden="true"></span>';
+    const controls = document.createElement('div');
+    controls.className = 'publishing-project-group-controls';
+    controls.append(count, toggle);
+    head.append(titleWrap, controls);
+
+    const body = document.createElement('div');
+    body.className = 'publishing-project-group-body';
+    body.id = `publishing-project-body-${String(project.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+    toggle.setAttribute('aria-controls', body.id);
+    group.append(head, body);
 
     const chapters = new Map();
     entries.forEach(entry => {
@@ -407,7 +422,7 @@
         section.append(chapterHead, rows);
         chapter = { section, rows, count: chapterCount, size: 0 };
         chapters.set(chapterId, chapter);
-        group.appendChild(section);
+        body.appendChild(section);
       }
 
       let row = null;
@@ -419,6 +434,24 @@
       chapter.size += 1;
     });
     chapters.forEach(chapter => { chapter.count.textContent = `${chapter.size.toLocaleString()} 項`; });
+
+    const applyProjectCollapse = () => {
+      const collapsed = collapsedProjectIds.has(project.id);
+      group.classList.toggle('is-collapsed', collapsed);
+      group.dataset.collapsed = collapsed ? 'true' : 'false';
+      body.hidden = collapsed;
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      const action = collapsed ? '展開' : '收合';
+      const label = `${action}作品「${projectName}」`;
+      toggle.setAttribute('aria-label', label);
+      toggle.title = label;
+    };
+    toggle.addEventListener('click', () => {
+      if (collapsedProjectIds.has(project.id)) collapsedProjectIds.delete(project.id);
+      else collapsedProjectIds.add(project.id);
+      applyProjectCollapse();
+    });
+    applyProjectCollapse();
     return group;
   }
 
