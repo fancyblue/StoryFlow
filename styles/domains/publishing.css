@@ -810,6 +810,43 @@
   font-size:11px;
   font-weight:750;
 }
+.publishing-project-group-controls{
+  display:flex;
+  align-items:center;
+  flex:0 0 auto;
+  gap:5px;
+}
+.publishing-project-group-body{
+  display:grid;
+  gap:10px;
+  min-width:0;
+}
+.publishing-project-group-body[hidden]{display:none!important}
+.publishing-project-group.is-collapsed{gap:0}
+.publishing-project-collapse-btn{
+  display:inline-grid;
+  place-items:center;
+  flex:0 0 26px;
+  width:26px;
+  height:26px;
+  padding:0;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:#5f7d96;
+  cursor:pointer;
+}
+.publishing-project-collapse-btn:hover{background:#eef5fa;color:#2d5d85}
+.publishing-project-collapse-btn:focus-visible{
+  outline:2px solid #91b8d9;
+  outline-offset:1px;
+  background:#eef5fa;
+}
+.publishing-project-collapse-btn .sf-chevron{
+  flex-basis:12px;
+  width:12px;
+  height:12px;
+}
 
 .publishing-chapter-group{
   min-width:0;

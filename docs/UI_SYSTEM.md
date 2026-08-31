@@ -1,6 +1,6 @@
 # StoryFlow UI system
 
-> 狀態：現行 UI 規範（已落地，持續維護；最後同步：2026-08-31）
+> 狀態：現行 UI 規範（已落地，持續維護；最後同步：2026-09-01）
 
 This is the small shared UI contract for StoryFlow's desktop-first interface. Prefer these patterns over page-specific variants.
 
@@ -24,7 +24,7 @@ Rules:
 - Keep chevron size, stroke and motion shared. Page CSS may change only color or spacing.
 - “更多” actions use the ellipsis pattern and do not use a chevron. Navigation arrows and directional actions are not disclosures.
 
-Current shared disclosures include workspace work switching, Smart Split preferences, publishing project switching and publishing project filtering.
+Current shared disclosures include workspace work switching, Smart Split preferences, publishing project switching, publishing project filtering and Publishing work-group collapse.
 
 ## Action hierarchy
 
@@ -45,7 +45,7 @@ Split confirmation has two precision levels. “少一個場景／多一個場�
 
 Character counts in review headers are supporting metadata, not headings: keep them smaller and quieter than the article title and action label. In the works library, “工作台”, “開啟”, “管理發布” and “管理章節” share one control height, font size and weight. All “管理章節” buttons use one emphasized light-blue treatment; Workbench stays outlined and publishing uses a paler tinted treatment.
 
-The publishing list uses one action vocabulary for both content types: “預覽”, “管理發布”, then the persistent trailing `⋯`. “管理發布” uses the light-blue management identity and 40 px / 14 px geometry; “預覽” remains white and outlined, while `⋯` remains tertiary. An expanded “收合發布” state uses a stronger soft selection or border rather than the primary fill; solid emphasis belongs to copy or save actions inside the active task.
+The publishing list uses one action vocabulary for both content types: “預覽”, “管理發布”, then the persistent trailing `⋯`. “管理發布” uses the light-blue management identity and 40 px / 14 px geometry; “預覽” remains white and outlined, while `⋯` remains tertiary. An expanded “收合發布” state uses a stronger soft selection or border rather than the primary fill; solid emphasis belongs to copy or save actions inside the active task. Each Publishing work-group heading ends with a compact chevron-only disclosure beside its item count. It collapses only that work's chapter/visual-entry body, defaults to expanded after reload, retains its session state through filter rerenders, and must expose the full work name through `aria-label` without becoming a large text button.
 
 Top-level and empty-state actions use the same 40 px / 14 px control geometry without automatically sharing the same visual weight. “建立第一個作品” is the solid empty-state action, while “＋ 新作品” becomes tinted or outlined once works exist. The publishing empty-state return action may be solid; the workspace publishing CTA is solid only when confirmed pending content makes publishing the valid next step. Settings form actions use the same scale within each decision group; compact 34 px controls are reserved for filters, segmented controls and dense row utilities. Navigation icons use one 21 px stroke-SVG family so Chrome renders them consistently across macOS and Windows.
 

@@ -26,7 +26,7 @@
     { id: 'storyflowPublishingDisclosureJs', src: './src/publishing/publishing-disclosure.js?v=20260828-p23a', owner: 'publishing' },
     { src: './src/publishing/publishing-project-switcher.js?v=20260825-p3a', owner: 'publishing' },
     { id: 'storyflowPublishingGroupingJs', src: './src/publishing/publishing-grouping.js?v=20260828-p22a', owner: 'publishing' },
-    { id: 'storyflowPublishingProjectFilterJs', src: './src/publishing/publishing-project-filter.js?v=20260831-p48b', owner: 'publishing' },
+    { id: 'storyflowPublishingProjectFilterJs', src: './src/publishing/publishing-project-filter.js?v=20260901-p50a', owner: 'publishing' },
     { src: './src/ui/app-ux.js?v=20260831-p48a', owner: 'ui' },
     { src: './src/source/source-relink.js?v=20260817-1117', owner: 'source' },
     { src: './src/connection/connection-ui.js?v=20260824-flow2', owner: 'connection' },

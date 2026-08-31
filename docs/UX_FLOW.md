@@ -1,6 +1,6 @@
 # StoryFlow UX flows
 
-> 狀態：現行 UX 流程規範（已落地，持續維護；最後同步：2026-08-31）
+> 狀態：現行 UX 流程規範（已落地，持續維護；最後同步：2026-09-01）
 
 StoryFlow is a personal desktop writing tool. Flows should stay short, preserve the current work until an action is confirmed, and avoid account-style ceremony that does not protect the user's files.
 
@@ -62,8 +62,9 @@ The Publishing page separates queue navigation from the actual publishing commit
 | P-10 | Perform infrequent article or visual-entry management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation; visual deletion uses the same command and guard in every page |
 | P-11 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
 | P-12 | Prepare optional publishing helpers | 摘要與 Hashtags | Click-to-copy rows and matching bottom platform-preview editors | Longform and visual content share the same helper behavior. The main content and image order come first. Summary and Hashtags show their effective values before editing and reveal one contained field only on demand; summary updates the shared value, while a platform may override Hashtags, explicitly use none or return to the common value. Neither helper enters the body automatically |
+| P-13 | Reduce a long Publishing queue by work | Small chevron in the work-group heading | Work count remains visible | Defaults expanded; collapse is session-only, keyboard accessible and survives filter rerenders without changing content or publishing state |
 
-An expanded “收合發布” control is still a disclosure. Use a stronger soft selection, border or adjacent panel treatment instead of the full primary fill; the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task.
+An expanded “收合發布” control is still a disclosure. Use a stronger soft selection, border or adjacent panel treatment instead of the full primary fill; the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task. The separate work-group collapse control is icon-only and intentionally smaller: it hides or reveals the whole work body while leaving the title, content-type badge and item count visible. It is a view preference for the current browser session, not workspace data.
 
 Expanding or collapsing “管理發布” must preserve the active card's viewport position and restore focus to its replacement disclosure control after the list rerenders. Opening a management panel must not return the page to the top.
 

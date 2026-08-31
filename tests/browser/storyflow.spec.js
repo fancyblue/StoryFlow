@@ -1010,9 +1010,43 @@ test('publishing counts content types by work even when one work has several ent
   await expect(firstCard.locator('.publish-list-actions > button:visible')).toHaveText(['預覽', '管理發布', '⋯']);
   await expect(page.locator('.publishing-project-group-title .publishing-project-type-badge')).toHaveText('長文');
 
+  const projectGroup = page.locator('.publishing-project-group', { hasText: '長文篩選測試' });
+  const collapseWork = projectGroup.locator('.publishing-project-collapse-btn');
+  await expect(collapseWork).toHaveAttribute('aria-label', '收合作品「長文篩選測試」');
+  await expect(collapseWork).toHaveAttribute('aria-expanded', 'true');
+  await expect(collapseWork).toHaveAttribute('aria-controls', /publishing-project-body-/);
+  const collapseGeometry = await collapseWork.evaluate(button => {
+    const rect = button.getBoundingClientRect();
+    const controls = button.closest('.publishing-project-group-controls').getBoundingClientRect();
+    const count = button.closest('.publishing-project-group-controls')
+      .querySelector('.publishing-project-group-count').getBoundingClientRect();
+    return {
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      noText: button.textContent.trim() === '',
+      contained: rect.left >= controls.left && rect.right <= controls.right,
+      followsCount: count.right <= rect.left
+    };
+  });
+  expect(collapseGeometry).toEqual({
+    width: 26,
+    height: 26,
+    noText: true,
+    contained: true,
+    followsCount: true
+  });
+  await collapseWork.click();
+  await expect(collapseWork).toHaveAttribute('aria-expanded', 'false');
+  await expect(collapseWork).toHaveAttribute('aria-label', '展開作品「長文篩選測試」');
+  await expect(firstCard).toBeHidden();
+
   await page.locator('#publishingContentTypeFilters [data-content-type="visual"]').click();
   await expect(page.locator('.publishing-filter-empty')).toContainText('沒有符合目前篩選的內容');
   await page.locator('#publishingContentTypeFilters [data-content-type="all"]').click();
+  const expandWork = page.getByRole('button', { name: '展開作品「長文篩選測試」', exact: true });
+  await expect(expandWork).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByText('測試發布文章 3', { exact: true })).toBeHidden();
+  await expandWork.click();
   await expect(page.getByText('測試發布文章 3', { exact: true })).toBeVisible();
 
   await page.locator('#publishingProjectFilterBtn').click();
