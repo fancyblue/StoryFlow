@@ -2084,7 +2084,15 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     recoveryCount: window.__visualRecoveryReasons.filter(reason => reason === 'before-visual-entry-delete').length
   }));
   expect(worksDeletion).toEqual({ removed: 2, recoveryCount: 2 });
-  expect(pageErrors).toEqual([]);
+
+  await inactiveVisualCard.getByRole('button', { name: '管理圖文', exact: true }).click();
+  await expect(inactiveVisualCard).toHaveClass(/active/);
+  await expect(inactiveVisualCard.getByRole('button', {
+    name: '更多「第二圖文集」操作',
+    exact: true
+  })).toBeVisible();
+  await expect(inactiveVisualCard.locator('.project-chapter-manager-empty')).toHaveText('目前還沒有圖文。');
+  await expect(pageErrors).toEqual([]);
 });
 
 test('visual autosave retries failures and flushes before entry switches', async ({ page }) => {
