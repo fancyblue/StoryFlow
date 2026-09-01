@@ -480,10 +480,10 @@
         if (project.id !== window.StoryFlowProjects?.activeId?.()) {
           expandedProjects.add(project.id);
           window.StoryFlowProjects?.switchProject?.(project.id, { quiet: true });
-          window.setTimeout(() => {
-            window.StoryFlowRenderProjects?.();
-            window.setTimeout(decorateProjectsView, 0);
-          }, 0);
+          // switchProject dispatches storyflow:projects-changed, whose core listener
+          // already rebuilds the library. Rendering it again here used to erase the
+          // overflow action that works-library-ux had just restored.
+          window.setTimeout(decorateProjectsView, 0);
           return;
         }
         if (expandedProjects.has(project.id)) expandedProjects.delete(project.id);
