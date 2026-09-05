@@ -7,7 +7,11 @@
 */
 
 /* --- settings-page.css --- */
-/* Settings is a full app page reached from the primary navigation at every width. */
+/* Settings is a full app page. Desktop reaches it from the sidebar utility footer,
+   so the nav item is hidden here; the mobile layer re-shows it for the bottom bar,
+   which is the only persistent surface a phone has. Breakpoint CSS owns this, never
+   the `hidden` attribute. */
+.nav .nav-item[data-view="settings"]{display:none!important}
 
 .settings-view{width:100%}
 .settings-page-head{

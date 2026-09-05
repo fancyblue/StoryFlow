@@ -196,7 +196,7 @@ test('primary action scale and navigation icon language stay consistent', async 
     color: 'rgb(35, 68, 99)'
   });
 
-  await page.locator('.nav-item[data-view="settings"]').click();
+  await page.locator('#sidebarSettingsBtn').click();
   await expect(page.locator('#settingsView')).toBeVisible();
   const settingsActions = await Promise.all([
     '#savePickerKeyBtn',
@@ -226,7 +226,7 @@ test('dialogs expose their visible heading and close control semantics', async (
   const pageErrors = await prepare(page);
   await page.goto('/');
 
-  await page.locator('.nav-item[data-view="settings"]').click();
+  await page.locator('#sidebarSettingsBtn').click();
   await expect(page.getByRole('region', { name: '設定', exact: true })).toHaveAttribute('id', 'settingsDialog');
   await page.getByRole('button', { name: '搜尋', exact: true }).click();
   await expect(page.getByRole('dialog', { name: '搜尋 StoryFlow' })).toBeVisible();
@@ -320,7 +320,7 @@ test('desktop pages stay bounded from laptop through extended-monitor widths', a
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(size.width);
     }
 
-    await page.locator('.nav-item[data-view="settings"]').click();
+    await page.locator('#sidebarSettingsBtn').click();
     await expect(page.locator('#settingsView')).toBeVisible();
     const settingsLayout = await page.locator('#settingsDialog').evaluate(element => ({
       width: element.getBoundingClientRect().width,
@@ -396,7 +396,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
   await expect(page.getByRole('heading', { name: '發布', exact: true })).toBeVisible();
   await expect(page.locator('#publishingView')).toBeVisible();
 
-  await page.locator('.nav-item[data-view="settings"]').click();
+  await page.locator('#sidebarSettingsBtn').click();
   await expect(page.getByRole('heading', { name: '設定', exact: true })).toBeVisible();
   await expect(page.getByText('備份與復原')).toBeVisible();
   await expect(page.getByRole('button', { name: '離開此裝置', exact: true })).toBeVisible();

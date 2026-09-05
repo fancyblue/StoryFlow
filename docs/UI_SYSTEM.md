@@ -9,11 +9,16 @@ This is the small shared UI contract for StoryFlow's desktop-first interface. Pr
 `[hidden]` is a global contract declared once in `styles/layers/foundation.css` as
 `[hidden]{display:none!important}`. Author rules that set `display` — including
 `.field-label{display:block}` and mobile `.nav-item{display:grid!important}` —
-otherwise outrank the user-agent rule, so `element.hidden = true` fails silently and
-leaves orphaned labels or controls that stay reachable at one breakpoint only. Hide
-and show through the `hidden` property or attribute; do not add per-component
-`[hidden]{display:none}` patches, and never rely on a component rule to keep a
-hidden element visible.
+otherwise outrank the user-agent rule, so `element.hidden = true` fails silently.
+That is how an orphaned `作品名稱` label survived beside its hidden input.
+
+Use `hidden` for state — this element has nothing to show right now — and never for
+breakpoint visibility. A control that one width shows and another hides is a
+stylesheet decision: express it with breakpoint rules on both sides, as the Settings
+nav item and sidebar gear now do. Setting `hidden` and relying on a media-query
+`display` rule to override it reads as a bug even when the intent is deliberate, and
+it stops working the moment the cascade is corrected. Do not add per-component
+`[hidden]{display:none}` patches either; the global rule already covers them.
 
 ## Disclosure controls
 
@@ -78,7 +83,7 @@ Each platform row uses two information lines: platform/status first, publication
 - Every dialog exposes its visible heading as the dialog's accessible name. Dynamic dialogs use the shared UI semantics helper instead of relying on the heading's visual proximity alone; compact surfaces without headings use explicit names (`搜尋 StoryFlow` and `圖片預覽`). A legacy dialog promoted into a page region, such as Settings, must not block global search or other true modal dialogs.
 - Visual workbench preview is opened by an explicit “預覽圖文” button instead of occupying the editor canvas. Preview and save actions require clear spacing. The preview body scrolls as one surface; its content card must expand to contain every visual-upload row before optional summary and Hashtags sections begin. The preview dialog separates its reading surface from the closing action with a footer divider. Publishing preview uses the same structure for longform and visual content: the list-level preview contains only the main body/image sequence, while each platform preview contains one title-and-composition settings card, then the main body/image sequence, then optional shared summary and effective platform Hashtags. Neither content type shows a “預覽／原始 MD” switch or repeats platform metadata above the settings card. In platform previews, optional summary and Hashtags sit below as contained click-to-copy rows with compact trailing “編輯” controls. Both editors use progressive disclosure inside that final section: show the effective value first and reveal one field only after “編輯”. Summary saves the shared optional value; platform Hashtags keep “儲存” plus “沿用共用” adjacent to the field. The edit control must remain inside its row at every supported width.
 - A visible `×` close control always has the accessible name `關閉`; task-specific cancel or defer actions keep their own explicit labels.
-- Settings is a full application view and is exposed as the named `設定` region, never as a modal dialog after its legacy form is moved into the page. It is reached from the primary navigation at every width; the sidebar footer keeps connection status and leave-this-device only, and must not repeat Settings as a second entry point.
+- Settings is a full application view and is exposed as the named `設定` region, never as a modal dialog after its legacy form is moved into the page. It is a utility rather than a content destination, so the primary navigation stays the three content surfaces (Workspace / Works / Publishing) and desktop reaches Settings from the sidebar utility footer, beside connection status and leave-this-device. A phone has no persistent utility footer, so there and only there Settings is promoted into the five-item bottom bar. Exactly one of the two controls is visible at any width, and breakpoint CSS decides which — never the `hidden` attribute.
 - Focus starts at the first missing required field.
 - Source chooser → editor → preview are handoffs, so only one dialog is open at a time.
 - Closing a creation dialog preserves the existing work and creates nothing.

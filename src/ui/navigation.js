@@ -52,6 +52,12 @@
       if (active) item.setAttribute('aria-current', 'page');
       else item.removeAttribute('aria-current');
     });
+    const settingsButton = document.getElementById('sidebarSettingsBtn');
+    settingsButton?.classList.toggle('active', view === 'settings');
+    if (settingsButton) {
+      if (view === 'settings') settingsButton.setAttribute('aria-current', 'page');
+      else settingsButton.removeAttribute('aria-current');
+    }
   }
 
   function hideAllViews() {

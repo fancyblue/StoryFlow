@@ -211,7 +211,7 @@ test('works, publishing, and settings retain their desktop composition', async (
   await expectVisibleChildrenSeparated(page.locator('.publish-list-actions'));
   await expect(page.locator('#publishingView')).toHaveScreenshot('publishing-queue-1440.png');
 
-  await page.locator('.nav-item[data-view="settings"]').click();
+  await page.locator('#sidebarSettingsBtn').click();
   await expectDocumentBounded(page);
   await expectHorizontallyBounded(page.locator('#settingsDialog'));
   await expect(page).toHaveScreenshot('settings-1440.png', {
