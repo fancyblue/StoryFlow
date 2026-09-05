@@ -904,6 +904,13 @@
 .publishing-chapter-group .publish-chapter-name{
   display:none!important;
 }
+/* An unwrapped single-chapter work lets the row name its own chapter again. A visual
+   entry has no chapter, and a chapter sharing its only part's name states nothing
+   new, so both stay suppressed. */
+.publishing-project-group-body > .publish-list-item[data-content-mode="visual"] .publish-chapter-name,
+.publishing-project-group-body > .publish-list-item[data-chapter-repeats-title="true"] .publish-chapter-name{
+  display:none!important;
+}
 
 /* Delete is intentionally only available from the final overflow action. */
 .publish-list-actions .publish-delete-btn,

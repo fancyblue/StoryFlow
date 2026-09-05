@@ -42,6 +42,8 @@ npx playwright install chromium
 npm run test:browser
 ```
 
+`npm run test:assets` is a separate, fast check that every asset changed against the base branch also had its `?v=` cache query updated; GitHub Pages serves this repository directly, so a stale query means returning browsers keep the previous file. `npm run bump:assets` performs the update.
+
 `npm test` runs both the static checks and browser suite. Reserve it for the higher-risk or cross-flow cases described above. The Playwright web server starts the local static site automatically.
 Static validation also requires project, chapter, publishing and single-chapter source-refresh flows to use the centralized Recovery guard.
 

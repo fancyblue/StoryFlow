@@ -5,7 +5,9 @@
   "scripts": {
     "test:static": "node scripts/check-static.mjs",
     "test:browser": "playwright test --config playwright.config.mjs",
-    "test": "npm run test:static && npm run test:browser"
+    "test": "npm run test:static && npm run test:browser",
+    "test:assets": "node scripts/bump-assets.mjs --check",
+    "bump:assets": "node scripts/bump-assets.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1"

@@ -13,10 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Cache-query checking compares this branch against its base, so the
+          # shallow default checkout is not enough.
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: node scripts/check-static.mjs
+      # GitHub Pages serves these files directly, so a changed asset that keeps its
+      # old ?v= query reaches returning browsers as the previous version.
+      - name: Cache queries match changed assets
+        if: github.event_name == 'pull_request'
+        run: node scripts/bump-assets.mjs --check --base "origin/${{ github.base_ref }}"
 
   chromium-smoke:
     runs-on: ubuntu-latest

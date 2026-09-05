@@ -9,11 +9,16 @@ This is the small shared UI contract for StoryFlow's desktop-first interface. Pr
 `[hidden]` is a global contract declared once in `styles/layers/foundation.css` as
 `[hidden]{display:none!important}`. Author rules that set `display` — including
 `.field-label{display:block}` and mobile `.nav-item{display:grid!important}` —
-otherwise outrank the user-agent rule, so `element.hidden = true` fails silently and
-leaves orphaned labels or controls that stay reachable at one breakpoint only. Hide
-and show through the `hidden` property or attribute; do not add per-component
-`[hidden]{display:none}` patches, and never rely on a component rule to keep a
-hidden element visible.
+otherwise outrank the user-agent rule, so `element.hidden = true` fails silently.
+That is how an orphaned `作品名稱` label survived beside its hidden input.
+
+Use `hidden` for state — this element has nothing to show right now — and never for
+breakpoint visibility. A control that one width shows and another hides is a
+stylesheet decision: express it with breakpoint rules on both sides, as the Settings
+nav item and sidebar gear now do. Setting `hidden` and relying on a media-query
+`display` rule to override it reads as a bug even when the intent is deliberate, and
+it stops working the moment the cascade is corrected. Do not add per-component
+`[hidden]{display:none}` patches either; the global rule already covers them.
 
 ## Disclosure controls
 
@@ -62,7 +67,7 @@ Split confirmation has two precision levels. “少一個場景／多一個場�
 
 Character counts in review headers are supporting metadata, not headings: keep them smaller and quieter than the article title and action label. In the works library, “工作台”, “開啟”, “管理發布” and “管理章節” share one control height, font size and weight. All “管理章節” buttons use one emphasized light-blue treatment; Workbench stays outlined and publishing uses a paler tinted treatment.
 
-The publishing list uses one action vocabulary for both content types: “預覽”, “管理發布”, then the persistent trailing `⋯`. “管理發布” uses the light-blue management identity and 40 px / 14 px geometry; “預覽” remains white and outlined, while `⋯` remains tertiary. An expanded “收合發布” state uses a stronger soft selection or border rather than the primary fill; solid emphasis belongs to copy or save actions inside the active task. Each Publishing work-group heading ends with a compact chevron-only disclosure beside its item count. It collapses only that work's chapter/visual-entry body, defaults to expanded after reload, retains its session state through filter rerenders, and must expose the full work name through `aria-label` without becoming a large text button.
+The publishing list uses one action vocabulary for both content types: “預覽”, “管理發布”, then the persistent trailing `⋯`. “管理發布” uses the light-blue management identity and 40 px / 14 px geometry; “預覽” remains white and outlined, while `⋯` remains tertiary. An expanded “收合發布” state uses a stronger soft selection or border rather than the primary fill; solid emphasis belongs to copy or save actions inside the active task. A chapter group inside a work earns its header by separating one chapter from another or by labelling several parts at once. One chapter holding one part does neither, so that case is unwrapped and the row states its own chapter name — suppressed in turn when the chapter and the part share a name. A single chapter with several parts keeps its header but drops its count, which could only repeat the work count above it. Visual entries have no chapter and are never grouped: the synthetic list they used to form restated the work header. Each Publishing work-group heading ends with a compact chevron-only disclosure beside its item count. It collapses only that work's chapter/visual-entry body, defaults to expanded after reload, retains its session state through filter rerenders, and must expose the full work name through `aria-label` without becoming a large text button.
 
 Top-level and empty-state actions use the same 40 px / 14 px control geometry without automatically sharing the same visual weight. “建立第一個作品” is the solid empty-state action, while “＋ 新作品” becomes tinted or outlined once works exist. The publishing empty-state return action may be solid; the workspace publishing CTA is solid only when confirmed pending content makes publishing the valid next step. Settings form actions use the same scale within each decision group; compact 34 px controls are reserved for filters, segmented controls and dense row utilities. Navigation icons use one 21 px stroke-SVG family so Chrome renders them consistently across macOS and Windows.
 
@@ -78,7 +83,7 @@ Each platform row uses two information lines: platform/status first, publication
 - Every dialog exposes its visible heading as the dialog's accessible name. Dynamic dialogs use the shared UI semantics helper instead of relying on the heading's visual proximity alone; compact surfaces without headings use explicit names (`搜尋 StoryFlow` and `圖片預覽`). A legacy dialog promoted into a page region, such as Settings, must not block global search or other true modal dialogs.
 - Visual workbench preview is opened by an explicit “預覽圖文” button instead of occupying the editor canvas. Preview and save actions require clear spacing. The preview body scrolls as one surface; its content card must expand to contain every visual-upload row before optional summary and Hashtags sections begin. The preview dialog separates its reading surface from the closing action with a footer divider. Publishing preview uses the same structure for longform and visual content: the list-level preview contains only the main body/image sequence, while each platform preview contains one title-and-composition settings card, then the main body/image sequence, then optional shared summary and effective platform Hashtags. Neither content type shows a “預覽／原始 MD” switch or repeats platform metadata above the settings card. In platform previews, optional summary and Hashtags sit below as contained click-to-copy rows with compact trailing “編輯” controls. Both editors use progressive disclosure inside that final section: show the effective value first and reveal one field only after “編輯”. Summary saves the shared optional value; platform Hashtags keep “儲存” plus “沿用共用” adjacent to the field. The edit control must remain inside its row at every supported width.
 - A visible `×` close control always has the accessible name `關閉`; task-specific cancel or defer actions keep their own explicit labels.
-- Settings is a full application view and is exposed as the named `設定` region, never as a modal dialog after its legacy form is moved into the page. It is reached from the primary navigation at every width; the sidebar footer keeps connection status and leave-this-device only, and must not repeat Settings as a second entry point.
+- Settings is a full application view and is exposed as the named `設定` region, never as a modal dialog after its legacy form is moved into the page. It is a utility rather than a content destination, so the primary navigation stays the three content surfaces (Workspace / Works / Publishing) and desktop reaches Settings from the sidebar utility footer, beside connection status and leave-this-device. A phone has no persistent utility footer, so there and only there Settings is promoted into the five-item bottom bar. Exactly one of the two controls is visible at any width, and breakpoint CSS decides which — never the `hidden` attribute.
 - Focus starts at the first missing required field.
 - Source chooser → editor → preview are handoffs, so only one dialog is open at a time.
 - Closing a creation dialog preserves the existing work and creates nothing.

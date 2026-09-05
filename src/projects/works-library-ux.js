@@ -25,11 +25,6 @@
       publish.setAttribute('aria-label', `管理發布「${projectTitle}」`);
     }
 
-    const meta = card.querySelector('.project-library-meta');
-    if (meta) {
-      const text = meta.textContent || '';
-      if (text.includes('手動／尚未綁定來源')) meta.textContent = text.replace('手動／尚未綁定來源', '手動建立');
-    }
   }
 
   function ensureOverflow(card) {

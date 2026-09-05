@@ -114,7 +114,7 @@
       card.dataset.projectId = project.id;
       card.dataset.contentMode = project.contentMode || 'longform';
       const visual = project.contentMode === 'visual';
-      const sourceLabel = project.sourceDocId ? 'Google Docs' : '手動／尚未綁定來源';
+      const sourceLabel = project.sourceDocId ? 'Google Docs' : '手動建立';
       card.innerHTML = `
         <div class="project-library-main">
           <div class="project-library-title-row">
