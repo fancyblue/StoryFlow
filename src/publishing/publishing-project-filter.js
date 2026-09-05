@@ -405,7 +405,21 @@
 
     const chapters = new Map();
     entries.forEach(entry => {
-      const chapterId = entry.contentMode === 'visual' ? 'visual' : (entry.chapter?.id || entry.chapter?.title || 'chapter');
+      // Visual entries have no chapter. Grouping them produced a single synthetic
+      // "圖文清單" section that restated the work header and its count, so they go
+      // straight into the body.
+      if (entry.contentMode === 'visual') {
+        let row = null;
+        if (project.id === window.StoryFlowProjects?.activeId?.()) row = nativeCards.get(entry.key) || null;
+        if (!row) row = createCombinedRow(entry);
+        row.dataset.projectId = project.id;
+        row.dataset.partKey = entry.key;
+        row.dataset.contentMode = 'visual';
+        body.appendChild(row);
+        return;
+      }
+
+      const chapterId = entry.chapter?.id || entry.chapter?.title || 'chapter';
       let chapter = chapters.get(chapterId);
       if (!chapter) {
         const section = document.createElement('section');
@@ -430,10 +444,34 @@
       if (!row) row = createCombinedRow(entry);
       row.dataset.projectId = project.id;
       row.dataset.partKey = entry.key;
+      row.dataset.contentMode = 'longform';
       chapter.rows.appendChild(row);
       chapter.size += 1;
+      chapter.title = entry.chapter?.title || '';
+      chapter.lastRowTitle = entry.part?.title || '';
     });
     chapters.forEach(chapter => { chapter.count.textContent = `${chapter.size.toLocaleString()} 項`; });
+
+    // A chapter header earns its place by separating one chapter from another, or by
+    // labelling several parts at once. One chapter holding one row does neither: it
+    // restates the work header and repeats its count. Unwrap only that case — keeping
+    // the header for a single chapter with many parts, where removing it would replace
+    // one label with the same label repeated on every row.
+    if (chapters.size === 1) {
+      const only = chapters.values().next().value;
+      if (only.size === 1) {
+        only.section.replaceWith(...only.rows.children);
+        // The unwrapped row shows its own chapter name again. Suppress it only when
+        // the chapter and the part carry the same name, where it states nothing new.
+        if (only.title && only.title === only.lastRowTitle) {
+          body.querySelector(':scope > .publish-list-item')?.setAttribute('data-chapter-repeats-title', 'true');
+        }
+      } else {
+        // The header still labels its parts, but with no sibling chapter its count
+        // can only repeat the work count directly above it.
+        only.count.remove();
+      }
+    }
 
     const applyProjectCollapse = () => {
       const collapsed = collapsedProjectIds.has(project.id);
