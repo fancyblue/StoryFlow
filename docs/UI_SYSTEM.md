@@ -48,6 +48,12 @@ Page-level task order and the resulting primary action are defined in [UX_FLOW.m
 
 Do not place a destructive action beside the primary action when an overflow menu can keep the decision hierarchy clearer.
 
+A destructive action must never be the only enabled control in an empty state. When there is nothing to destroy it is disabled, and it must also *render* as disabled: danger controls are selected by id or by a single class, which outranks the shared `.button:disabled` treatment, so the disabled rule is restated at matching specificity in the theme layer. "清除 Google 設定" follows this, staying disabled until integration settings exist.
+
+One action carries one label and one weight wherever it appears. Connecting the StoryFlow folder is reached from the Settings folder card and from the backup centre, so both read "連接資料夾" and both stay outlined; the backup control only proxies the owning card and must not out-emphasize it. Sidebar chrome ranks below navigation: the collapse toggle rests on a translucent fill, never on the `--denim-800` used by an active nav item, so a utility control cannot read as the current destination.
+
+A disabled control states why it is unavailable. The split scene controls carry the reason in `title` and in an `aria-label` suffix rather than repeating only what the action would have done.
+
 Longform chapters/articles and visual entries share this rule. Their list-level create action sits below the list, and every editable row keeps a persistent trailing `⋯`. Manual-article and visual-entry menus use the same order: edit first, delete second. A visual entry is deleted as `⋯ → 刪除圖文`; do not add a second destructive button to the editor footer or make Workspace, Works and Publishing use different delete entry points. All entry deletion paths must reach the same confirmation and Recovery guard.
 
 On the Works page, “管理章節／管理圖文” is the most likely next step and uses the same emphasized light-blue treatment on every work card. Both content types use “工作台” for the active work and “開啟” for inactive works; never substitute type-specific open labels for that open action. “管理發布” is a quieter tinted shortcut. The “目前作品” badge and card treatment alone communicate which work is active; action color must not duplicate selection or make identical labels look like different functions. Expanded management uses a stronger soft selection with an inset accent, never a solid primary fill. Manual chapters and visual entries show direct “編輯” plus a persistent trailing `⋯` for Recovery-guarded deletion.
@@ -87,6 +93,10 @@ Each platform row uses two information lines: platform/status first, publication
 - Main workspace content must keep its grid position while the source rail scrolls or a row menu opens.
 - Longform and visual modes reuse the same `#workspaceView > .topbar`. Only the page title and mode-specific editing actions change; connection controls stay in the same place, and visual mode relies on its editor autosave status instead of duplicating a page-level save state.
 - The desktop source rail and `.workspace-main-column` are independent vertical flows. The right column owns a single-line, at-most-50 px statistics strip and the splitter/editor stack with the shared section gap; a taller source rail must never stretch an empty grid row or push the splitter below the statistics.
+
+## Transient feedback
+
+Toasts stack above the mobile navigation and dismiss on a timer, but on a phone they overlay the list they are reporting on. A tap or click anywhere on a toast dismisses it immediately so the covered row can be read without waiting out the timer.
 
 ## Command search
 

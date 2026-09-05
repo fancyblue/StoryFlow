@@ -220,11 +220,24 @@
     for (const [id, direction] of CONTROL_DIRECTIONS) {
       const button = document.getElementById(id);
       if (!button) continue;
-      button.textContent = direction < 0 ? '← 少一個場景' : '多一個場景 →';
-      button.disabled = !suggestion || (direction < 0 ? previousEnd === currentEnd : nextEnd === currentEnd);
-      button.title = direction < 0
+      const label = direction < 0 ? '← 少一個場景' : '多一個場景 →';
+      const atLimit = suggestion && (direction < 0 ? previousEnd === currentEnd : nextEnd === currentEnd);
+      button.textContent = label;
+      button.disabled = !suggestion || atLimit;
+
+      // A disabled control that never says why reads as a malfunction. Name the
+      // reason instead of leaving only the action description behind.
+      let reason = '';
+      if (!suggestion) reason = '目前沒有可調整的切篇建議';
+      else if (atLimit) reason = direction < 0
+        ? '這一篇已經停在第一個場景，前面沒有可退回的分隔點'
+        : '這一篇已經到章節結尾，後面沒有可延伸的分隔點';
+
+      button.title = reason || (direction < 0
         ? '將切篇結尾移到上一個原稿場景分隔點'
-        : '將切篇結尾移到下一個原稿場景分隔點；後面沒有分隔點時直接到章節尾';
+        : '將切篇結尾移到下一個原稿場景分隔點；後面沒有分隔點時直接到章節尾');
+      if (reason) button.setAttribute('aria-label', `${label.replace(/[←→]\s*/g, '').trim()}（無法使用：${reason}）`);
+      else button.removeAttribute('aria-label');
     }
   }
 

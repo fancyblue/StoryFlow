@@ -24,10 +24,17 @@
     toast.textContent = text;
     stack.appendChild(toast);
     requestAnimationFrame(() => toast.classList.add('show'));
-    window.setTimeout(() => {
+
+    // On a phone the toast sits over the list it is reporting on, so let a tap
+    // clear it instead of making the user wait out the timer to read the row.
+    let dismissTimer = 0;
+    const dismiss = () => {
+      window.clearTimeout(dismissTimer);
       toast.classList.remove('show');
       window.setTimeout(() => toast.remove(), 180);
-    }, isError ? 4800 : 3200);
+    };
+    toast.addEventListener('click', dismiss);
+    dismissTimer = window.setTimeout(dismiss, isError ? 4800 : 3200);
   }
 
   const baseNotify = window.notify;
