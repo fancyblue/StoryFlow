@@ -97,7 +97,6 @@
   align-items:center;
   justify-content:space-between;
   gap:24px;
-  margin-top:16px;
   padding:22px;
   border:1px solid var(--line);
   border-radius:16px;
@@ -111,25 +110,11 @@
    settings/sign-out utilities. On desktop it is pushed to the bottom by flex layout,
    so it stays grounded regardless of viewport height or the amount of navigation. */
 .sidebar-connection-status{
-  display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr) 30px;
-  align-items:center;
-  gap:5px;
-  margin-top:6px;
-  padding-top:8px;
   border-top:1px solid rgba(255,255,255,.10);
 }
-.sidebar-connection-title{display:none}
 .sidebar-connection-row{
-  display:flex;
-  align-items:center;
-  gap:6px;
   min-width:0;
-  min-height:30px;
-  padding:5px 7px;
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:9px;
-  background:rgba(255,255,255,.035);
   color:#e5e7eb;
   text-align:left;
   cursor:pointer;
@@ -137,24 +122,18 @@
 }
 .sidebar-connection-row:hover,
 .sidebar-connection-row:focus-visible{
-  background:rgba(255,255,255,.075);
   border-color:rgba(255,255,255,.12);
   outline:none;
 }
 .sidebar-status-dot{
-  width:6px;
-  height:6px;
   border-radius:50%;
   background:#6b7280;
-  flex:0 0 auto;
 }
 .sidebar-connection-row.connected .sidebar-status-dot{background:#4ade80;box-shadow:0 0 0 2px rgba(74,222,128,.12)}
 .sidebar-connection-row.restoring .sidebar-status-dot{background:#fbbf24;box-shadow:0 0 0 2px rgba(251,191,36,.12)}
 .sidebar-connection-copy{
-  display:flex;
   align-items:baseline;
   gap:4px;
-  min-width:0;
   overflow:hidden;
   white-space:nowrap;
 }
@@ -177,16 +156,9 @@
 .sidebar-logout{
   display:grid;
   place-items:center;
-  width:30px;
   min-width:30px;
-  min-height:30px;
   margin:0;
-  padding:0;
-  border:1px solid transparent;
   border-radius:9px;
-  background:transparent;
-  color:#fca5a5;
-  font-size:13px;
   cursor:pointer;
 }
 .sidebar-logout-label{display:none}

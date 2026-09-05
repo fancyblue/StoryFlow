@@ -74,7 +74,6 @@
 }
 .settings-view .settings-section:has(#defaultIndent){
   grid-column:1 / -1;
-  padding:22px 24px;
 }
 .settings-view .security-note{
   grid-column:1 / -1;
@@ -89,13 +88,9 @@
   margin-top:12px;
 }
 .settings-view .platform-manager{
-  margin:22px 0 0!important;
-  padding:18px 0!important;
-  border:0!important;
   border-top:1px solid var(--line)!important;
   border-bottom:1px solid var(--line)!important;
   border-radius:0!important;
-  background:transparent!important;
 }
 .settings-view .platform-manager-head{
   display:grid!important;
@@ -112,10 +107,8 @@
 }
 .settings-view .platform-add-row{
   display:grid!important;
-  grid-template-columns:minmax(220px,360px) auto;
   align-items:center!important;
   gap:8px!important;
-  width:min(100%,460px);
 }
 .settings-view .platform-add-row .text-input{
   min-width:0!important;
@@ -124,7 +117,6 @@
 }
 .settings-view .platform-add-row .button{
   width:auto;
-  min-width:72px;
   min-height:42px;
   padding:9px 14px;
   white-space:nowrap;
@@ -138,11 +130,9 @@
 }
 .settings-view .portable-settings-note{
   width:fit-content;
-  max-width:760px;
   margin-top:14px;
   padding:9px 11px;
   border-radius:9px;
-  background:#f8fafc;
   line-height:1.6;
 }
 .settings-view .platform-settings{
@@ -150,14 +140,7 @@
   gap:0;
 }
 .settings-view .platform-setting-row{
-  grid-template-columns:120px minmax(0,1fr)!important;
   gap:18px!important;
-  align-items:center!important;
-  padding:14px 0!important;
-  border-top:1px solid var(--line)!important;
-}
-.settings-view .platform-setting-row:first-child{
-  border-top:0!important;
 }
 .settings-view .platform-format-controls{
   grid-template-columns:minmax(220px,360px) max-content max-content!important;
@@ -229,12 +212,7 @@
   cursor:pointer;
 }
 .sidebar-settings-button{
-  width:38px;
-  min-height:38px!important;
-  border:1px solid rgba(255,255,255,.12)!important;
-  background:rgba(255,255,255,.07)!important;
   color:#e5e7eb;
-  font-size:19px!important;
 }
 .sidebar-settings-button:hover,
 .sidebar-settings-button:focus-visible,
@@ -427,7 +405,6 @@
 
 .settings-view .platform-manager{
   margin:18px 0 0!important;
-  padding:0!important;
   border:0!important;
   background:transparent!important;
 }

@@ -2,47 +2,37 @@
 .projects-view{min-height:calc(100dvh - 56px)}
 .projects-page-head{
   display:flex;
-  align-items:flex-start;
   justify-content:space-between;
   gap:20px;
-  margin-bottom:16px;
 }
 .projects-page-head h1{margin:0}
 .projects-page-subtitle{
   margin:7px 0 0;
-  max-width:720px;
   color:var(--muted);
   font-size:13px;
   line-height:1.6;
 }
 .projects-page-head>.button{flex:0 0 auto;white-space:nowrap}
-.projects-library{display:grid;gap:10px}
+.projects-library{display:grid;}
 .project-library-card{
   display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  align-items:center;
   gap:16px;
   padding:16px 18px;
   border:1px solid var(--line);
-  border-radius:14px;
-  background:#fff;
-  box-shadow:0 2px 8px rgba(17,24,39,.025);
 }
 .project-library-card.active{border-color:#c4b5fd;box-shadow:0 0 0 2px #f3f0ff inset}
-.project-library-main{min-width:0}
-.project-library-title-row{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.project-library-title-row{display:flex;align-items:center;min-width:0;flex-wrap:wrap}
 .project-library-title-row strong{font-size:17px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .project-current-badge{
   display:inline-flex;
   padding:4px 7px;
-  border-radius:999px;
   background:var(--primary-soft);
   color:#4c1d95;
   font-size:9px;
   font-weight:800;
 }
 .project-library-meta{display:block;margin-top:6px;color:var(--muted);font-size:11px}
-.project-library-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.project-library-actions{gap:7px;}
 .project-library-delete{color:#b91c1c}
 .project-library-delete:hover{background:#fff1f2!important;border-color:#fecdd3!important}
 
@@ -55,7 +45,7 @@
    and manual input stays under the single "載入來源" entry point. */
 .source-panel .project-switcher-actions{display:none!important}
 .source-panel #addChapterBtn{display:none!important}
-.source-panel .project-switcher{padding-bottom:12px}
+.source-panel .project-switcher{}
 
 /* A chapter is a selectable item plus one secondary destructive affordance. */
 .chapter-list{gap:7px!important}

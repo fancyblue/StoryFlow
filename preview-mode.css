@@ -45,7 +45,6 @@
 
 /* Main Smart Split: the format selector and display mode form one compact utility row. */
 #splitPlatformBar .sf-preview-mode-control{
-  margin-left:auto;
   align-self:flex-end;
   padding-bottom:1px;
 }
