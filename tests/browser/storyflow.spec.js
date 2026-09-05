@@ -2278,3 +2278,70 @@ test('project source controller compares, applies, preserves manual articles, an
   await expect(undo).not.toBeVisible();
   expect(pageErrors).toEqual([]);
 });
+
+test('works cards report publishing progress per content type using publishing rules', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/?visual-regression=1');
+
+  await page.locator('#createProjectManually').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
+  await page.locator('#sourceManualBtn').click();
+  await page.locator('#manualProjectTitle').fill('進度作品');
+  await page.locator('#manualSourceTitle').fill('08、印紋');
+  await page.locator('#manualSourceText').fill('第一段。\n\n第二段。\n\n第三段。');
+  await page.locator('#previewManualSourceBtn').click();
+  await page.locator('#confirmSourcePreviewBtn').click();
+  await page.locator('#confirmBtn').click();
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  const progress = page.locator('.project-library-card .project-progress').first();
+  await expect(progress).toBeVisible();
+  await expect(progress).toContainText('已完成 0 / 1');
+
+  // The card must not invent its own definition of "published": marking every platform
+  // through the normal publishing controls is what moves it.
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await page.locator('.publish-manage-btn').first().click();
+  const toggles = page.locator('.platform-status-btn');
+  const platformCount = await toggles.count();
+  expect(platformCount).toBeGreaterThan(1);
+
+  // Publishing to some platforms but not all is "部分發布", not done. The card has to
+  // agree, or it would be reporting a second, looser definition of finished.
+  await toggles.first().click();
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await expect(progress).toContainText('已完成 0 / 1');
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  // The expanded state survives navigation, so only expand when it is actually closed.
+  if (!(await page.locator('.platform-status-btn').first().isVisible())) {
+    await page.locator('.publish-manage-btn').first().click();
+  }
+  for (let index = 1; index < platformCount; index += 1) {
+    await page.locator('.platform-status-btn').nth(index).click();
+  }
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await expect(progress).toContainText('已完成 1 / 1');
+  // The bar is decorative; the numbers reach assistive technology through one name.
+  await expect(progress).toHaveAttribute('aria-label', /已完成 1 \/ 1/);
+
+  // A visual series counts entries, not chapters.
+  await page.evaluate(() => {
+    window.StoryFlowIntegrations.saveVisualEntry = async payload => 'x/' + payload.entry.id;
+  });
+  await page.locator('#projectsNewWorkBtn').click();
+  const typeDialog = page.locator('#visualTypeDialog');
+  await typeDialog.locator('#chooseVisualType').click();
+  await typeDialog.locator('#visualSeriesTitle').fill('圖文進度');
+  await typeDialog.locator('#visualFirstEntryTitle').fill('月下預告');
+  await typeDialog.getByRole('button', { name: '建立圖文系列', exact: true }).click();
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  const visualCard = page.locator('.project-library-card', { hasText: '圖文進度' });
+  await expect(visualCard.locator('.project-library-meta')).toContainText('則圖文');
+  await expect(visualCard.locator('.project-progress')).toContainText('已完成 0 / 1');
+
+  expect(pageErrors).toEqual([]);
+});
