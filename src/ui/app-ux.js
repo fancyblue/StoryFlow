@@ -66,6 +66,23 @@
     return view;
   }
 
+  // Which work to open is a recency decision, so the card states when it was last
+  // edited instead of leaving the row to carry a title and nothing else.
+  function editedLabel(updatedAt) {
+    if (!updatedAt) return '';
+    const edited = new Date(updatedAt);
+    if (Number.isNaN(edited.getTime())) return '';
+    const minutes = Math.floor((Date.now() - edited.getTime()) / 60000);
+    if (minutes < 0) return '';
+    if (minutes < 1) return '剛剛編輯';
+    if (minutes < 60) return `${minutes} 分鐘前編輯`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} 小時前編輯`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} 天前編輯`;
+    return `${edited.getFullYear()}/${String(edited.getMonth() + 1).padStart(2, '0')}/${String(edited.getDate()).padStart(2, '0')} 編輯`;
+  }
+
   function renderProjectsView() {
     const api = projectApi();
     const view = ensureProjectsView();
@@ -100,7 +117,8 @@
           </div>
           <span class="project-library-meta">${visual
             ? `${Number(project.visualEntryCount || 0).toLocaleString()} 則圖文`
-            : `${Number(project.chapterCount || 0).toLocaleString()} 個章節 · ${sourceLabel}`}</span>
+            : `${Number(project.chapterCount || 0).toLocaleString()} 個章節 · ${sourceLabel}`}${
+            editedLabel(project.updatedAt) ? ` · ${escapeHtml(editedLabel(project.updatedAt))}` : ''}</span>
         </div>
         <div class="project-library-actions">
           <button class="button tiny ghost project-open-btn" type="button">${active ? '工作台' : '開啟'}</button>
