@@ -7,8 +7,7 @@
 */
 
 /* --- settings-page.css --- */
-/* Settings is a full app page. The hidden legacy nav item remains only for backwards compatibility. */
-.nav .nav-item[data-view="settings"]{display:none!important}
+/* Settings is a full app page reached from the primary navigation at every width. */
 
 .settings-view{width:100%}
 .settings-page-head{

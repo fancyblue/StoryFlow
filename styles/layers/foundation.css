@@ -1,3 +1,10 @@
+/* The [hidden] attribute is a global contract, not a suggestion. Author rules such
+   as `.field-label{display:block}` or `.nav-item{display:grid!important}` otherwise
+   beat the user-agent `[hidden]{display:none}` rule, so `element.hidden = true`
+   silently fails and leaves orphaned labels or accidentally reachable controls.
+   Declaring it once here removes the need for per-component `[hidden]` patches. */
+[hidden] { display: none !important; }
+
 :root {
   color-scheme: light;
   --bg: #f6f7fb;

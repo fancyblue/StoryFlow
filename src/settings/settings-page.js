@@ -1,6 +1,6 @@
-// Settings is a full app view, not a modal. Primary content navigation stays focused
-// on Workspace / Works / Publishing; settings lives with the persistent connection
-// utilities in the lower-left sidebar.
+// Settings is a full app view, not a modal, and a primary navigation destination
+// alongside Workspace / Works / Publishing. The lower-left sidebar keeps only the
+// persistent connection status and leave-this-device action.
 (function () {
   // Keep the final theme layers deterministic after settings creates its app view.
   function ensureThemeOrder() {
@@ -72,34 +72,23 @@
     return view;
   }
 
-  function ensureSidebarSettingsButton() {
+  // The sidebar footer owns leave-this-device only. Settings is reached from the
+  // primary navigation, so repeating it here as an unlabeled gear would give one
+  // destination two entry points with different visual weight.
+  function ensureSidebarUtilityActions() {
     const status = document.getElementById('sidebarConnectionStatus');
-    if (!status || document.getElementById('sidebarSettingsBtn')) return;
+    if (!status || status.querySelector('.sidebar-utility-actions')) return;
 
-    let utilities = status.querySelector('.sidebar-utility-actions');
+    const utilities = document.createElement('div');
+    utilities.className = 'sidebar-utility-actions';
+    status.appendChild(utilities);
+
     const logout = document.getElementById('sidebarLogoutBtn');
-    if (!utilities) {
-      utilities = document.createElement('div');
-      utilities.className = 'sidebar-utility-actions';
-      status.appendChild(utilities);
-    }
-
-    const button = document.createElement('button');
-    button.id = 'sidebarSettingsBtn';
-    button.className = 'sidebar-settings-button';
-    button.type = 'button';
-    button.title = '設定';
-    button.dataset.hint = '設定';
-    button.setAttribute('aria-label', '設定');
-    button.innerHTML = '<span aria-hidden="true">⚙</span><span class="sidebar-settings-label">設定</span>';
-    utilities.appendChild(button);
-
     if (logout) {
       logout.dataset.hint = '離開此裝置';
       logout.setAttribute('aria-label', '離開此裝置');
       utilities.appendChild(logout);
     }
-    button.addEventListener('click', () => window.StoryFlowNavigate?.('settings'));
   }
 
   function hasLoadedIntegrationSettings() {
@@ -139,7 +128,7 @@
   }
 
   ensureSettingsView();
-  ensureSidebarSettingsButton();
+  ensureSidebarUtilityActions();
   ensureThemeOrder();
   syncSettingsAvailability();
 
@@ -150,9 +139,12 @@
     showSettings({ focusPicker: true });
   };
 
+  // Settings is a primary destination at every width. It previously stayed hidden
+  // here and only reappeared on phones because a mobile `.nav-item` display rule
+  // overrode the `hidden` attribute, so desktop and mobile disagreed by accident.
   const legacyNav = document.getElementById('settingsNav');
   if (legacyNav) {
-    legacyNav.hidden = true;
+    legacyNav.hidden = false;
     legacyNav.onclick = event => {
       event?.preventDefault?.();
       showSettings();
