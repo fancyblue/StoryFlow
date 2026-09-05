@@ -18,10 +18,20 @@ worth stating plainly: adding a stylesheet late in the document does not make it
 authoritative, and the two `ensureStyleLast()` modules are in a standing race with each
 other that only settles because of the order they happen to run in.
 
+That startup order is fixed, so it is recorded in `scripts/cascade-order.json` and
+asserted against the running page by `tests/browser/cascade-contract.spec.js`. What is
+not fixed is the tail: `ensureStyleLast()` re-appends its own stylesheet every time its
+view renders, so `project-source-mode.css`, `source-article-ux.css` and
+`chapter-management.css` change places during ordinary use — confirming a split moves
+`chapter-management.css` out of last position. Those three currently contest no
+property with each other, so nothing renders differently, but a future rule placed in
+two of them would resolve differently depending on what the user had done. Keep them
+free of shared properties, or give them a fixed order instead of a race.
+
 `node scripts/dead-declarations.mjs` reports declarations that cannot affect anything —
-same selector text, same property, both unconditional, one overriding the other. It
-excludes any cross-file pair involving a re-appended stylesheet, because their relative
-order is not decidable from source. `--apply` removes them.
+same selector text, same property, both unconditional, one overriding the other by the
+recorded order. Cross-file pairs involving that indeterminate tail are excluded.
+`--apply` removes them and the rules they empty.
 
 ## Hiding elements
 

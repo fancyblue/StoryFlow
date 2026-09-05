@@ -23,9 +23,7 @@
 .publishing-project-badge{
   min-width:180px;
   max-width:320px;
-  padding:9px 12px;
   border:1px solid var(--line);
-  border-radius:11px;
   background:#fff;
 }
 .publishing-project-badge span,.publishing-project-badge strong{display:block}
@@ -47,8 +45,6 @@
 .publishing-toolbar{
   display:flex;
   justify-content:space-between;
-  gap:14px;
-  margin-bottom:12px;
 }
 .publishing-filters,.publishing-content-type-filters{display:flex;gap:6px;flex-wrap:wrap}
 .publishing-content-type-filters{padding-right:8px;border-right:1px solid #dce7ef}
@@ -62,7 +58,6 @@
   font-size:11px;
   font-weight:700;
 }
-.publishing-filter.active{background:var(--primary-soft);border-color:#c4b5fd;color:#4c1d95}
 .publishing-type-filter.active{background:#edf6fc;border-color:#9fc5df;color:#2f6f9f}
 .publishing-type-filter[data-content-type="visual"].active{background:#e8f4ef;border-color:#a7cfbe;color:#356b58}
 
@@ -78,30 +73,25 @@
 
 .publish-list-item{
   border:1px solid var(--line);
-  border-radius:11px;
   background:#fff;
   overflow:hidden;
   transition:border-color .15s ease,box-shadow .15s ease;
 }
-.publish-list-item:hover{border-color:#d8d4e8}
-.publish-list-item.expanded{border-color:#c4b5fd;box-shadow:0 5px 18px rgba(76,29,149,.06)}
 
 .publish-list-summary{
   display:grid;
   grid-template-columns:minmax(0,1fr) auto auto;
   gap:14px;
   align-items:center;
-  min-height:68px;
-  padding:11px 14px;
   cursor:pointer;
   outline:none;
 }
 .publish-list-summary:focus-visible{box-shadow:inset 0 0 0 2px #c4b5fd}
 .publish-list-title-block{min-width:0}
-.publish-chapter-name{display:block;color:var(--muted);font-size:10px;font-weight:700;margin-bottom:3px}
+.publish-chapter-name{display:block;color:var(--muted);margin-bottom:3px}
 .publish-list-title-row{display:flex;align-items:baseline;gap:9px;min-width:0;flex-wrap:wrap}
-.publish-list-title-row strong{font-size:15px;line-height:1.35}
-.publish-list-title-row span{font-size:10px;color:var(--muted);white-space:nowrap}
+.publish-list-title-row strong{line-height:1.35}
+.publish-list-title-row span{color:var(--muted);white-space:nowrap}
 .publish-list-title-row .publish-afterword-badge{
   display:inline-flex;
   align-items:center;
@@ -142,7 +132,6 @@
   font-weight:800;
   white-space:nowrap;
 }
-.publish-overall-status.partial{border-color:#fde68a;background:#fffbeb;color:#92400e}
 .publish-overall-status.complete{border-color:#bbf7d0;background:#f0fdf4;color:#166534}
 
 .publish-list-actions{
@@ -249,8 +238,7 @@
   gap:12px;
   padding:10px 14px 7px;
 }
-.publish-platform-details-head strong{font-size:11px;letter-spacing:.02em}
-.publish-platform-details-head .muted{font-size:10px}
+.publish-platform-details-head strong{letter-spacing:.02em}
 .publish-platform-list{display:grid;padding:0 8px 8px}
 .publish-platform-row{
   display:grid;
@@ -263,7 +251,6 @@
 .publish-platform-row:first-child{border-top:0}
 .publish-platform-state{display:grid;gap:4px;min-width:0}
 .publish-platform-state-line{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
-.publish-platform-state strong{font-size:13px}
 .publish-platform-hashtags{
   min-width:0;
   max-width:min(34vw,300px);
@@ -457,12 +444,9 @@
   overflow:visible!important;
   overflow-wrap:anywhere;
   word-break:break-word;
-  background:#fbfbfd;
   border:1px solid var(--line);
   border-radius:12px;
   font:inherit;
-  font-size:16px;
-  line-height:1.9;
 }
 .platform-preview-actions{
   position:relative!important;
@@ -718,8 +702,8 @@
 }
 .publishing-dashboard-panel > .panel-head{display:none!important}
 .publishing-dashboard-panel .parts-list{display:block!important;padding:0!important}
-.publishing-toolbar{margin-bottom:10px!important}
-.publish-list-summary{min-height:60px!important;padding:10px 12px!important}
+.publishing-toolbar{}
+.publish-list-summary{}
 .publishing-dashboard-panel .publishing-empty{
   box-sizing:border-box;
   min-height:180px!important;
@@ -932,7 +916,6 @@ button.publish-delete-btn{
 
 .publishing-toolbar{
   align-items:center!important;
-  gap:12px!important;
 }
 .publishing-filter-stack{
   display:flex;

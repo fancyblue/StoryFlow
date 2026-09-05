@@ -10,6 +10,7 @@
 // further than intended: confirm the new value is wanted, then update the expectation
 // in the same commit so the diff records the decision.
 
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 
 const DESKTOP = { width: 1440, height: 900 };
@@ -47,6 +48,46 @@ async function longformWorkspace(page) {
   await page.locator('#confirmSourcePreviewBtn').click();
   await expect(page.locator('#suggestionCard')).toBeVisible();
 }
+
+async function stylesheetOrder(page) {
+  return page.evaluate(() => [...document.querySelectorAll('link[rel="stylesheet"]')]
+    .map(link => link.getAttribute('href').replace(/^\.\//, '').split('?')[0]));
+}
+
+test('the cascade order matches the list the tooling reasons from', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  await page.goto('/');
+  await expect(page.locator('.sidebar .nav')).toBeVisible();
+
+  // `ensureThemeOrder()` re-appends seven stylesheets at startup, so this is not the
+  // order in index.html. scripts/dead-declarations.mjs decides which of two competing
+  // declarations wins from the committed list, so the list has to stay true.
+  const committed = JSON.parse(readFileSync('scripts/cascade-order.json', 'utf8')).order;
+  expect(await stylesheetOrder(page)).toEqual(committed);
+});
+
+test('only the ensureStyleLast tail changes order while the app is used', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+  const before = await stylesheetOrder(page);
+  await page.locator('#confirmBtn').click();
+  await expect(page.locator('.nav-item[data-view="publishing"]')).toBeVisible();
+  await page.waitForTimeout(300);
+  const after = await stylesheetOrder(page);
+
+  // Confirming a split makes two modules re-append their own stylesheet, which moves
+  // chapter-management.css out of last place. That much is known and tolerated. What
+  // must not drift is everything before them, because the tooling orders from it.
+  const tail = new Set([
+    'styles/domains/project-source-mode.css',
+    'styles/domains/source-article-ux.css',
+    'styles/domains/chapter-management.css'
+  ]);
+  expect(before.filter(file => !tail.has(file))).toEqual(after.filter(file => !tail.has(file)));
+  expect(new Set(before.slice(-3))).toEqual(tail);
+  expect(new Set(after.slice(-3))).toEqual(tail);
+});
 
 test('shared controls keep their resolved appearance', async ({ page }) => {
   await page.setViewportSize(DESKTOP);

@@ -30,9 +30,7 @@
   position:relative!important;
   grid-template-columns:minmax(0,1fr) auto!important;
   align-items:center!important;
-  gap:18px!important;
   min-height:0!important;
-  padding:14px 16px!important;
   border-radius:15px!important;
   border-color:#dbe7f0!important;
   background:#fff!important;
@@ -43,24 +41,15 @@
   box-shadow:0 5px 18px rgba(31,72,107,.055)!important;
 }
 .project-library-card.active{
-  border-color:#9fc9e5!important;
   background:#fbfdff!important;
-  box-shadow:inset 3px 0 0 #75afd5,0 4px 18px rgba(31,72,107,.045)!important;
 }
 .project-library-main{min-width:0!important}
 .project-library-title-row{gap:7px!important}
 .project-library-title-row strong{
-  font-size:17px!important;
-  font-weight:850!important;
   color:#234463!important;
 }
 .project-current-badge{
-  min-height:24px!important;
-  padding:4px 8px!important;
   border-radius:999px!important;
-  background:#eaf5fd!important;
-  color:#3473a5!important;
-  font-size:10.5px!important;
   line-height:1!important;
 }
 .project-library-status-row{
@@ -87,7 +76,6 @@
   align-items:center!important;
   justify-content:flex-end!important;
   flex-wrap:nowrap!important;
-  gap:6px!important;
 }
 .project-library-actions > .button,
 .project-publishing-cluster > .button{

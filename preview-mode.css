@@ -3,22 +3,14 @@
   display:flex;
   align-items:center;
   justify-content:flex-end;
-  gap:7px;
   min-width:max-content;
-  color:var(--muted);
-  font-size:10px;
 }
 .sf-preview-mode-label{
-  font-weight:700;
   letter-spacing:.02em;
 }
 .sf-preview-mode-segment{
   display:inline-flex;
   align-items:center;
-  padding:3px;
-  border:1px solid var(--line);
-  border-radius:9px;
-  background:#f7f8fb;
 }
 .sf-preview-mode-segment button{
   min-height:28px;
@@ -122,7 +114,6 @@
   font-size:.88em;
 }
 .sf-preview-rendered-root a{
-  color:#5d3ed3;
   text-decoration:underline;
   text-underline-offset:2px;
 }

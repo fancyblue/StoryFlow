@@ -4,24 +4,14 @@
 .top-connection-status{
   display:flex;
   align-items:center;
-  gap:6px;
-  margin-right:4px;
 }
 .connection-chip{
   display:inline-flex;
   align-items:center;
-  gap:6px;
-  min-height:32px;
-  padding:5px 9px;
   border:1px solid var(--line);
-  border-radius:999px;
-  background:#fff;
-  color:var(--muted);
   font:inherit;
-  font-size:10px;
   cursor:pointer;
 }
-.connection-chip:hover{background:#fafafa;border-color:#d1d5db}
 .connection-chip-dot{
   width:7px;
   height:7px;
@@ -30,14 +20,9 @@
   box-shadow:0 0 0 3px #f3f4f6;
   flex:0 0 auto;
 }
-.connection-chip.connected .connection-chip-dot{background:#16a34a;box-shadow:0 0 0 3px #dcfce7}
-.connection-chip.restoring .connection-chip-dot{background:#d97706;box-shadow:0 0 0 3px #fef3c7}
 .connection-chip-label{color:var(--muted)}
 .connection-chip-state{color:var(--text);font-size:10px}
-.connection-chip.connected .connection-chip-state{color:#166534}
-.connection-chip.restoring .connection-chip-state{color:#92400e}
 .connection-logout{color:#991b1b}
-.connection-logout:hover{background:#fff1f2!important;border-color:#fecdd3!important}
 
 .storyflow-recovery-dialog{
   width:min(520px,calc(100vw - 32px));
@@ -146,8 +131,6 @@
 .sidebar-connection-copy small{
   min-width:0;
   overflow:hidden;
-  color:#9ca3af;
-  font-size:8px;
   text-overflow:ellipsis;
   white-space:nowrap;
 }

@@ -6,11 +6,6 @@
   line-height:1.2;
 }
 .button{
-  min-height:36px!important;
-  padding:7px 12px!important;
-  border-radius:9px!important;
-  font-size:12px!important;
-  font-weight:750!important;
   letter-spacing:0!important;
 }
 .button.tiny{
@@ -20,11 +15,6 @@
   font-size:11px!important;
 }
 .icon-button{
-  width:34px;
-  height:34px;
-  min-height:34px;
-  border-radius:9px!important;
-  font-size:16px;
 }
 
 /* Shared field system. A select, textbox and number input should look like members of
@@ -68,11 +58,6 @@ input.text-input:focus{
   font-size:11.5px!important;
   font-weight:650!important;
   line-height:1.35;
-}
-.format-check{
-  gap:7px!important;
-  font-size:12px!important;
-  font-weight:500!important;
 }
 .format-check input[type="checkbox"]{
   width:16px!important;

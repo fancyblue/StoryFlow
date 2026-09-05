@@ -5,12 +5,6 @@
 .splitter-panel #suggestionEmpty.hidden { display: none !important; }
 .splitter-panel .suggestion:not(.hidden) { margin-top: 8px; }
 
-.chapter-group-label {
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: var(--primary-soft, #e8f6ff);
-  color: #36759d;
-}
 .chapter-group-label strong,
 .chapter-group-label small { display: block; }
 .chapter-group-label strong { font-size: 12px; }
@@ -59,10 +53,6 @@
   min-height: 30px;
   padding: 4px 7px;
   font-size: 12px;
-}
-.splitter-panel .suggestion-title-row {
-  margin: 4px 0 2px;
-  min-height: 30px;
 }
 .splitter-panel .boundary-control {
   margin: 2px 0 4px;
@@ -126,7 +116,6 @@
 .disabled-check span { margin: 0 !important; font-size: 10px !important; }
 
 .review-column { min-width: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
-.review-column.current { border-color: #8fc2df; background: #f9fdff; box-shadow: 0 0 0 2px #e8f6fd inset; }
 .review-column-head { padding: 12px 14px; border-bottom: 1px solid var(--line); }
 .review-column-head span,
 .review-column-head strong { display: block; }
@@ -159,12 +148,9 @@
   padding: 5px 8px;
   border-top: 3px solid var(--primary, #4f95c2);
   border-bottom: 3px solid var(--primary, #4f95c2);
-  color: #2f6e95;
   font-weight: 800;
   text-align: center;
-  background: var(--primary-soft, #e8f6ff);
 }
-.current-range-highlight { background: var(--primary-soft, #e8f6ff); box-shadow: 8px 0 0 var(--primary-soft, #e8f6ff), -8px 0 0 var(--primary-soft, #e8f6ff); }
 
 .platform-manager { margin: 14px 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft, #f8fcff); }
 .platform-manager-head { display:flex; align-items:end; justify-content:space-between; gap:12px; flex-wrap:wrap; }
@@ -177,7 +163,6 @@
 .portable-settings-note { margin-top:10px; font-size:11px; color:var(--muted); }
 
 .platform-preview-dialog-card { width: min(760px, calc(100vw - 28px)); max-width: 760px; }
-.platform-preview-content {background: #fbfeff;line-height: 1.85; }
 .platform-preview-actions {margin-top: 14px; }
 .reset-workspace-btn { color: var(--danger, #c86d76); }
 
