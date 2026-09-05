@@ -5,12 +5,9 @@
   border:0!important;
   background:transparent!important;
   box-shadow:none!important;
-  color:#d7d2ff!important;
 }
 .sidebar-settings-button:hover{
   border:0!important;
-  background:rgba(255,255,255,.075)!important;
-  color:#fff!important;
 }
 .sidebar-settings-button:focus-visible{
   border:0!important;
@@ -22,8 +19,6 @@
 }
 .sidebar-settings-button.active{
   border:0!important;
-  background:transparent!important;
-  color:#a78bfa!important;
   box-shadow:none!important;
 }
 

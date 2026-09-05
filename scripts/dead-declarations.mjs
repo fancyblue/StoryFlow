@@ -12,11 +12,14 @@
 //   * neither rule sits inside an at-rule, because a conditional rule and an
 //     unconditional one do not compete — removing the unconditional one would change
 //     what happens outside the condition;
-//   * neither stylesheet is one that JavaScript re-appends to <head> at runtime.
-//     Several modules move their own stylesheet to last so it wins, which means the
-//     document order in index.html is not the cascade order. Any pair involving one
-//     of those files has an order this script cannot know, so it is left alone unless
-//     both declarations live in the same file, where order is certain either way.
+//   * neither stylesheet's position is indeterminate. The cascade order is not the
+//     document order — `ensureThemeOrder()` re-appends seven stylesheets to <head> at
+//     startup — but that startup order is fixed, so it is captured in
+//     scripts/cascade-order.json and used here. What is genuinely undecidable is the
+//     tail: `ensureStyleLast()` in two modules re-appends its own stylesheet whenever
+//     its view renders, so those files and anything after them swap places during
+//     ordinary use. Measured: confirming a split moves chapter-management.css from
+//     last to third-last. Cross-file pairs involving that tail are left alone.
 //
 // Everything else is left alone. This finds the subset that can be removed without
 // changing a single resolved value; it does not attempt the larger question of which
@@ -33,46 +36,41 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-// Stylesheets that JavaScript moves to the end of <head> at runtime. Their position
-// in index.html says nothing about which one finally wins, so pairs involving them
-// are excluded rather than guessed at.
-function reorderedStylesheets() {
-  const html = readFileSync(join(root, 'index.html'), 'utf8');
+// The order the browser actually resolves in, captured from a loaded page and
+// asserted by tests/browser/cascade-contract.spec.js.
+function stylesheetsInLoadOrder() {
+  const data = JSON.parse(readFileSync(join(root, 'scripts/cascade-order.json'), 'utf8'));
+  return data.order;
+}
+
+// `ensureStyleLast()` re-appends its own stylesheet every time its view renders, so
+// each of those files — and everything positioned after them — can change places
+// while the app is used. Their relative order is not a fact this script can rely on.
+function indeterminateStylesheets(order) {
   const idToHref = new Map();
+  const html = readFileSync(join(root, 'index.html'), 'utf8');
   for (const match of html.matchAll(/<link[^>]*\bid="([^"]+)"[^>]*href="\.\/([^"?#]+)/g)) {
     idToHref.set(match[1], match[2]);
   }
-  const moved = new Set();
-  const sources = [
-    'src/settings/settings-page.js',
-    'src/source/project-source-sync.js',
-    'src/source/source-article-ux.js'
-  ];
-  for (const file of sources) {
+  const movers = [];
+  for (const file of ['src/source/project-source-sync.js', 'src/source/source-article-ux.js']) {
     let text = '';
     try {
       text = readFileSync(join(root, file), 'utf8');
     } catch (_) {
       continue;
     }
-    if (!/document\.head\.appendChild/.test(text)) continue;
+    if (!/function ensureStyleLast/.test(text)) continue;
     for (const match of text.matchAll(/getElementById\('([^']+)'\)/g)) {
       const href = idToHref.get(match[1]);
-      if (href) moved.add(href);
+      if (href) movers.push(href);
     }
   }
-  return moved;
-}
-
-// Load order is the cascade's tiebreaker, so read it from the document rather than
-// from the filesystem.
-function stylesheetsInLoadOrder() {
-  const html = readFileSync(join(root, 'index.html'), 'utf8');
-  const hrefs = [];
-  for (const match of html.matchAll(/<link[^>]+rel="stylesheet"[^>]*href="\.\/([^"?#]+)/g)) {
-    if (!hrefs.includes(match[1])) hrefs.push(match[1]);
-  }
-  return hrefs;
+  const earliest = movers
+    .map(href => order.indexOf(href))
+    .filter(index => index >= 0)
+    .sort((a, b) => a - b)[0];
+  return new Set(earliest === undefined ? [] : order.slice(earliest));
 }
 
 // Parse against the original text so every declaration keeps offsets that can be
@@ -201,15 +199,15 @@ for (const decl of declarations) {
   groups.get(key).push(decl);
 }
 
-const reordered = reorderedStylesheets();
+const indeterminate = indeterminateStylesheets(order);
 
 const dead = [];
 for (const list of groups.values()) {
   if (list.length < 2) continue;
-  // If a runtime-reordered stylesheet is involved and the declarations are spread
-  // across files, the winner is not decidable from source alone.
+  // A file whose position moves while the app is used cannot be ordered against
+  // another file. Same-file pairs stay decidable either way.
   const files = new Set(list.map(decl => decl.file));
-  if (files.size > 1 && [...files].some(file => reordered.has(file))) continue;
+  if (files.size > 1 && [...files].some(file => indeterminate.has(file))) continue;
   const ordered = [...list].sort((a, b) =>
     a.fileIndex - b.fileIndex || a.ruleIndex - b.ruleIndex || a.start - b.start);
   const importantOnes = ordered.filter(decl => decl.important);

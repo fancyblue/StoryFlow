@@ -16,23 +16,14 @@
 .projects-library{display:grid;}
 .project-library-card{
   display:grid;
-  gap:16px;
-  padding:16px 18px;
   border:1px solid var(--line);
 }
-.project-library-card.active{border-color:#c4b5fd;box-shadow:0 0 0 2px #f3f0ff inset}
 .project-library-title-row{display:flex;align-items:center;min-width:0;flex-wrap:wrap}
-.project-library-title-row strong{font-size:17px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.project-library-title-row strong{line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .project-current-badge{
   display:inline-flex;
-  padding:4px 7px;
-  background:var(--primary-soft);
-  color:#4c1d95;
-  font-size:9px;
-  font-weight:800;
 }
-.project-library-meta{display:block;margin-top:6px;color:var(--muted);font-size:11px}
-.project-library-actions{gap:7px;}
+.project-library-meta{display:block;}
 .project-library-delete{color:#b91c1c}
 .project-library-delete:hover{background:#fff1f2!important;border-color:#fecdd3!important}
 
@@ -44,7 +35,6 @@
 /* Workspace is for the active work. Creation/deletion belongs to the Works page,
    and manual input stays under the single "載入來源" entry point. */
 .source-panel .project-switcher-actions{display:none!important}
-.source-panel #addChapterBtn{display:none!important}
 .source-panel .project-switcher{}
 
 /* A chapter is a selectable item plus one secondary destructive affordance. */
@@ -57,10 +47,7 @@
 }
 .chapter-row .chapter-item{margin:0;min-width:0}
 .chapter-delete-button{
-  width:30px;
-  min-width:30px;
   border:1px solid transparent;
-  border-radius:9px;
   background:transparent;
   color:#9ca3af;
   font-size:18px;
@@ -110,18 +97,11 @@
   cursor:pointer;
   transform:translateY(8px);
   opacity:0;
-  padding:11px 13px;
   border:1px solid #d1d5db;
-  border-radius:11px;
-  background:#111827;
   color:#fff;
-  box-shadow:0 10px 30px rgba(17,24,39,.2);
-  font-size:12px;
-  line-height:1.55;
   transition:opacity .18s ease,transform .18s ease;
 }
 .storyflow-toast.show{transform:translateY(0);opacity:1}
-.storyflow-toast.error{background:#7f1d1d;border-color:#991b1b}
 
 @media(max-width:820px){
   .projects-page-head{flex-direction:column;align-items:stretch}

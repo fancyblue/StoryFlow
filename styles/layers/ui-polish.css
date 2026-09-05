@@ -20,12 +20,7 @@
 html{background:var(--bg)}
 body{
   background:var(--bg);
-  color:var(--text);
   -webkit-font-smoothing:antialiased;
-  text-rendering:optimizeLegibility;
-}
-.main{
-  padding:28px clamp(22px,3vw,44px) 44px;
 }
 .app-view{
   width:min(100%,1540px);
@@ -35,13 +30,6 @@ body{
 h1{font-size:30px;line-height:1.2;letter-spacing:-.025em}
 h2{font-size:18px;line-height:1.35;letter-spacing:-.012em}
 h3{letter-spacing:-.01em}
-.eyebrow{
-  margin-bottom:5px;
-  color:#838a99;
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:.11em;
-}
 .muted,.save-state{color:var(--muted)}
 
 /* One interaction language across the app. */
@@ -49,16 +37,10 @@ h3{letter-spacing:-.01em}
   transition:background-color .14s ease,border-color .14s ease,color .14s ease,box-shadow .14s ease;
 }
 .button,.icon-button{
-  border-color:var(--line-strong);
   border-radius:10px;
   box-shadow:none;
 }
-.button{min-height:40px;padding:9px 14px}
-.button.primary{
-  background:var(--primary);
-  border-color:var(--primary);
-  color:#fff;
-}
+.button{}
 .button.primary:hover{background:var(--primary-hover);border-color:var(--primary-hover)}
 .button.ghost:hover{background:#f6f7fa;border-color:#d7dae3}
 .button:focus-visible,.icon-button:focus-visible,.nav-item:focus-visible,.connection-chip:focus-visible,
@@ -67,7 +49,7 @@ h3{letter-spacing:-.01em}
   outline:none;
   box-shadow:var(--focus);
 }
-.icon-button{display:grid;place-items:center}
+.icon-button{}
 
 .text-input,.title-input,.range-grid input,select,textarea{
   border-color:var(--line-strong);
@@ -84,20 +66,17 @@ h3{letter-spacing:-.01em}
   border-radius:var(--radius-card);
   box-shadow:var(--shadow-card);
 }
-.panel{padding:20px}
+.panel{}
 
 /* Consistent page headers. */
 .topbar,.projects-page-head,.publishing-page-head,.settings-page-head{
   min-height:64px;
-  margin-bottom:20px;
   align-items:flex-start;
 }
 .topbar h1,.projects-page-head h1,.publishing-page-head h1,.settings-page-head h1{margin:0}
 .projects-page-subtitle,.publishing-page-subtitle,.settings-page-subtitle{
-  max-width:760px;
   margin-top:7px;
   color:var(--muted);
-  font-size:12px;
   line-height:1.65;
 }
 
@@ -112,27 +91,21 @@ h3{letter-spacing:-.01em}
   min-height:42px!important;
   padding:10px 12px;
   border-radius:10px;
-  color:#c8ced8;
   font-size:13px;
   font-weight:650;
 }
-.sidebar .nav-item.active{background:#2b2852;color:#fff}
-.sidebar .nav-item:hover{background:#232d3d;color:#fff}
 .sidebar-note{
   max-height:132px!important;
   padding:11px 12px!important;
   border:1px solid rgba(255,255,255,.06);
   border-radius:11px!important;
-  background:rgba(255,255,255,.045)!important;
-  color:#aeb7c5!important;
   font-size:10px!important;
   line-height:1.55!important;
 }
-.sidebar-note strong{color:#dbe1ea;font-size:10px}
+.sidebar-note strong{font-size:10px}
 .sidebar-connection-status{flex:0 0 auto}
 .sidebar-settings-button{
   border-color:rgba(255,255,255,.16)!important;
-  color:#fff!important;
 }
 .sidebar-settings-button:hover,.sidebar-settings-button.active{
   background:#3a326d!important;
@@ -146,14 +119,12 @@ h3{letter-spacing:-.01em}
 .stat-card strong{font-size:22px;letter-spacing:-.02em}
 .workspace-grid,.workspace-grid.imported-source-mode{grid-template-columns:270px minmax(0,1fr)!important;gap:18px}
 .source-panel{
-  position:sticky;
   top:20px;
   max-height:calc(100dvh - 40px);
   overflow:auto;
   scrollbar-gutter:stable;
   padding:16px!important;
 }
-.source-panel>.panel-head{margin-bottom:12px!important;padding-bottom:12px!important}
 .source-panel #loadSourceBtn{min-height:42px;border-radius:11px}
 .source-panel .project-switcher{margin-bottom:13px;padding-bottom:12px}
 .source-panel .project-switcher-field .text-input{min-height:42px}
@@ -161,17 +132,7 @@ h3{letter-spacing:-.01em}
 .chapter-list{margin-top:12px!important}
 .chapter-group-label{
   margin:13px 2px 5px!important;
-  padding:7px 9px!important;
-  background:#f6f4ff!important;
-  color:#5d3eb3!important;
 }
-.chapter-item{
-  min-height:42px;
-  padding:9px 10px;
-  background:#f8f9fc;
-}
-.chapter-item:hover{background:#f3f4f8}
-.chapter-item.active{background:var(--primary-soft);color:#4c2aa1}
 .chapter-delete-button{align-self:center}
 
 .splitter-panel,.editor-panel{padding:20px!important}
@@ -180,14 +141,8 @@ h3{letter-spacing:-.01em}
   margin-bottom:14px;
   border-color:var(--line);
 }
-.split-preview-shell .preview{
-  border-color:var(--line);
-  border-radius:14px;
-  box-shadow:inset 0 1px 0 rgba(17,24,39,.015);
-}
 .preview-boundary-controls{
   border-color:var(--line);
-  box-shadow:0 4px 14px rgba(17,24,39,.06);
 }
 .workspace-publishing-summary{
   margin-top:18px;
@@ -196,9 +151,7 @@ h3{letter-spacing:-.01em}
 }
 
 /* Works library: title first, actions second, destructive action stays visually quiet. */
-.project-library-card{padding:15px 17px}
-.project-library-card.active{border-color:#b9aaf7;box-shadow:0 0 0 2px #f2efff inset}
-.project-library-title-row strong{font-size:16px}
+.project-library-card{}
 .project-library-actions .button{min-height:36px}
 .project-library-delete{border-color:transparent!important;background:transparent!important}
 
@@ -206,19 +159,15 @@ h3{letter-spacing:-.01em}
 .publishing-stats{gap:9px;margin-bottom:14px}
 .publishing-stats article{padding:12px 14px;box-shadow:none}
 .publishing-stats strong{font-size:21px}
-.publishing-toolbar{margin-bottom:10px}
-.publishing-filter{min-height:32px;padding:6px 11px}
+.publishing-filter{}
 .publishing-dashboard-panel>.panel-head{padding:15px 17px 13px}
-.publish-list-item{margin-bottom:7px;border-color:var(--line)}
-.publish-list-item:hover{border-color:#d5d8e2}
-.publish-list-summary{min-height:64px;padding:10px 13px}
+.publish-list-item{margin-bottom:7px;}
 .publish-overall-status{min-height:26px}
 .publish-platform-details{background:#fafbfe}
 
 /* Settings: integration cards first, publishing section full-width, no giant nested box. */
-.settings-view .settings-page-form{gap:16px}
-.settings-view .settings-section{padding:21px 22px}
-.settings-view .settings-section>strong{font-size:16px;letter-spacing:-.01em}
+.settings-view .settings-section{}
+.settings-view .settings-section>strong{letter-spacing:-.01em}
 .settings-view .settings-section p{max-width:720px;color:var(--muted)}
 .settings-view .settings-section:has(#googleClientIdInput),
 .settings-view .settings-section:has(#settingsFolderBtn){min-height:190px}
@@ -240,10 +189,7 @@ h3{letter-spacing:-.01em}
   color:var(--muted);
 }
 .settings-view .platform-format-controls{max-width:980px}
-.settings-view .platform-setting-row{min-height:64px}
 .settings-view .security-note{
-  position:relative;
-  padding:14px 16px 14px 42px!important;
   background:#f8f9fc!important;
   border-color:var(--line)!important;
   color:#596170!important;
@@ -252,15 +198,9 @@ h3{letter-spacing:-.01em}
 .settings-view .security-note::before{
   content:'i';
   position:absolute;
-  left:15px;
-  top:14px;
   display:grid;
   place-items:center;
-  width:18px;
-  height:18px;
   border-radius:50%;
-  background:#ece9ff;
-  color:#5f43d5;
   font-size:11px;
   font-weight:800;
 }
@@ -274,11 +214,11 @@ h3{letter-spacing:-.01em}
   border-color:#dddfea;
   background:#fbfbfe;
 }
-.empty-icon{border-radius:15px;background:#f0edff;color:#6243d6}
+.empty-icon{border-radius:15px;}
 
 /* Dialogs: keep modal use for short, contextual decisions only. */
-dialog{border:1px solid rgba(216,220,230,.9);box-shadow:var(--shadow-pop)}
-dialog::backdrop{background:rgba(17,24,39,.36);backdrop-filter:blur(2px)}
+dialog{border:1px solid rgba(216,220,230,.9);}
+dialog::backdrop{backdrop-filter:blur(2px)}
 .sticky-dialog-head{padding-top:17px!important;padding-bottom:15px!important}
 
 @media(max-width:1100px){

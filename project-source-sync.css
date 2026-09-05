@@ -19,14 +19,6 @@
   min-height:42px;
 }
 .source-panel-actions #refreshSourceBtn{
-  border-color:#bfd8eb;
-  background:#f7fbff;
-  color:#2f6f9f;
-}
-.source-panel-actions #refreshSourceBtn:hover{
-  background:#eaf5fd;
-  border-color:#95c3e2;
-  color:#245f8d;
 }
 .source-panel-actions #refreshSourceBtn:focus-visible{
   border-color:#6aa7d1;
