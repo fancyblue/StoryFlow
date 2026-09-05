@@ -76,7 +76,7 @@
   min-width:0!important;
   margin:0!important;
   overflow:hidden!important;
-  color:#6b8294!important;
+  color:var(--sf-muted,#58748b)!important;
   font-size:11.5px!important;
   font-weight:720!important;
   line-height:1.25!important;
@@ -102,7 +102,7 @@
   height:auto!important;
   margin:0!important;
   padding:0!important;
-  color:#6b8294!important;
+  color:var(--sf-muted,#58748b)!important;
   font-size:11px!important;
   font-weight:700!important;
   line-height:1!important;

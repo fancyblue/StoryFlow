@@ -116,6 +116,8 @@
   pointer-events:none;
 }
 .storyflow-toast{
+  /* Tap/click anywhere on the toast dismisses it. */
+  cursor:pointer;
   transform:translateY(8px);
   opacity:0;
   padding:11px 13px;

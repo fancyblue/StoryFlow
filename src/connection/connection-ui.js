@@ -194,6 +194,12 @@
     return Boolean(String(state.projectTitle || '').trim() && state.projectTitle !== '未命名作品');
   }
 
+  // The connection layer above owns its own copy of this check in a separate
+  // closure, so the workspace layer reads the same authoritative dot itself.
+  function hasConnectedFolder() {
+    return Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
+  }
+
   function isImplicitBlankWorkspace() {
     const projectApi = window.StoryFlowProjects;
     if (typeof projectApi?.isActivePlaceholder === 'function') {
@@ -220,13 +226,22 @@
       empty.appendChild(actions);
     }
     actions.replaceChildren();
-    if (isImplicitBlankWorkspace()) {
-      const hint = document.createElement('span');
-      hint.className = 'workspace-empty-next-step';
-      hint.textContent = '請先在「作品與章節」選擇 Google Docs 或手動建立。';
-      actions.appendChild(hint);
+
+    // Connecting the folder is the first real step. StoryFlow can hold a new work
+    // in memory, but nothing reaches disk until a folder exists, so offering
+    // creation first invites the user to build a work that cannot be saved.
+    if (!hasConnectedFolder()) {
+      actions.innerHTML = `
+        <button id="workspaceConnectFolderBtn" class="button primary" type="button">連接 StoryFlow 資料夾</button>`;
+      actions.querySelector('#workspaceConnectFolderBtn')
+        .addEventListener('click', () => document.getElementById('folderBtn')?.click());
       return;
     }
+
+    // The creation chooser already sits beside this panel, so repeating its
+    // instruction here would state the same next step a third time.
+    if (isImplicitBlankWorkspace()) return;
+
     actions.innerHTML = `
       <button id="workspaceLoadSourceBtn" class="button primary" type="button">新增第一篇文章</button>
       <button id="workspaceChooseWorkBtn" class="button ghost" type="button">切換作品</button>`;
@@ -240,10 +255,17 @@
     const strong = empty.querySelector('strong');
     const text = empty.querySelector(':scope > span');
     const hasProject = !isImplicitBlankWorkspace();
-    if (strong) strong.textContent = hasProject ? '這個作品還沒有可切篇的章節' : '尚未載入作品內容';
-    if (text) text.textContent = hasProject
-      ? '新增第一篇文章後，StoryFlow 會在這裡顯示切篇建議。'
-      : '先選擇作品建立方式；建立完成後再進行切篇。';
+    let heading = '尚未載入作品內容';
+    let detail = '在左側「作品與章節」選擇 Google Docs 或手動建立。';
+    if (!hasConnectedFolder()) {
+      heading = '先連接 StoryFlow 資料夾';
+      detail = '作品、切篇結果與發布進度都會寫進你選擇的資料夾。連接後就可以建立作品。';
+    } else if (hasProject) {
+      heading = '這個作品還沒有可切篇的章節';
+      detail = '新增第一篇文章後，StoryFlow 會在這裡顯示切篇建議。';
+    }
+    if (strong) strong.textContent = heading;
+    if (text) text.textContent = detail;
     ensureEmptyActions();
   }
 
@@ -358,6 +380,10 @@
     syncWorkspaceEmptyState();
     window.StoryFlowRenderProjects?.();
   });
+
+  // The empty state now leads with folder connection, so it has to follow the
+  // connection itself and not only project changes.
+  window.addEventListener('storyflow:connection-changed', syncWorkspaceEmptyState);
 
   syncWorkspaceEmptyState();
   window.StoryFlowSyncEmptyWorkspace = syncWorkspaceEmptyState;

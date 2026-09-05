@@ -15,6 +15,7 @@ The Works page is the structural management hub. Managing chapters or visual ent
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
 | W-01 | Review, add, edit or remove a work's chapters or visual entries | 管理章節／管理圖文 | `⋯` for infrequent or destructive row actions | Consistent emphasized light-blue action on every card; expanded state uses a stronger soft selection |
+| W-08 | Judge which work to return to | — | Card metadata: item count, longform source type and last-edited time | Quiet meta line under the title; content type decides whether the count reads 章節 or 圖文 |
 | W-02 | Return to splitting and writing work | 工作台 | — | Tinted or outlined navigation action |
 | W-03 | Jump directly to this work's publishing queue | 管理發布 | — | Tinted secondary shortcut |
 | W-04 | Make another work current | 開啟 | Then manage its chapters or enter its workspace | Both longform and visual works use the same label; selection is shown by the card and badge |
@@ -30,6 +31,7 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
+| WS-00 | Give StoryFlow somewhere to save | 連接 StoryFlow 資料夾 | — | The single solid action while no folder is connected; creation guidance stays visible but unemphasized |
 | WS-01 | Start an empty work, chapter or visual entry | 從 Google Docs 建立／手動建立／新增第一篇文章／新增圖文 | 切換作品 | Emphasize the source-choice stage; keep alternative creation actions at the same level |
 | WS-02 | Select the work and chapter or visual entry to process | 切換作品／章節列／圖文列 | Add, edit or delete the matching content type | Selection and disclosure styling, never primary CTA styling |
 | WS-03 | Refresh a linked Google Docs chapter | 更新來源 | 復原來源更新 | Tinted action that opens comparison; only “套用所選變更” is solid after review |
@@ -41,6 +43,8 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-10 | Maintain a visual entry | 編輯即自動儲存 | 預覽圖文、`⋯ → 刪除圖文` | Preview opens in a separate dialog; use the same direct-edit plus persistent-overflow pattern and Recovery flow as manual chapters |
 
 The “切換作品” disclosure lives in the SOURCE card heading for both content modes and includes “＋ 新增作品”. The longform “作品與章節” rail and visual “作品與圖文” rail use the same outer width and breakpoint contract. “新增文章／新增圖文” sits below the corresponding chapter or entry list, never in the page header or list heading.
+
+A work created before a folder is connected exists only in memory, so the empty workspace leads with the folder connection and only then with the creation choice. The empty panel states that next step once: the heading and description carry it, and the creation chooser beside the panel is the control, so no third hint line repeats it.
 
 At any moment, the workspace should visually answer one question: “What can I safely do next?” It must not simultaneously emphasize source loading, split confirmation and publishing navigation.
 

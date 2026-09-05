@@ -38,7 +38,7 @@
       </div>
       <div id="backupCenterDisconnected" class="backup-center-disconnected" hidden>
         <div><strong>尚未連接 StoryFlow 資料夾</strong><span>連接後即可檢查 workspace.json、建立備份或匯入工作區。</span></div>
-        <button id="connectBackupFolderBtn" class="button primary" type="button">連接資料夾</button>
+        <button id="connectBackupFolderBtn" class="button ghost" type="button">連接資料夾</button>
       </div>
       <div id="backupCenterConnected" hidden>
         <div class="backup-center-folder-row">

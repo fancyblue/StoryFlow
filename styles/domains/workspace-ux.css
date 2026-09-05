@@ -27,7 +27,7 @@
 .workspace-project-quick-switch-item small{color:var(--denim-700,#3975a7);font-size:10px;font-weight:800}
 .workspace-project-quick-switch-empty{padding:10px;color:#58748b;font-size:12px}
 
-.source-panel-actions .manual-source-sync-hint{display:flex;align-items:center;min-height:42px;padding:0 4px;color:#6b8294;font-size:11px;font-weight:650;line-height:1.35}
+.source-panel-actions .manual-source-sync-hint{display:flex;align-items:center;min-height:42px;padding:0 4px;color:var(--sf-muted,#58748b);font-size:11px;font-weight:650;line-height:1.35}
 .source-panel-actions .manual-source-sync-hint::before{content:'i';display:grid;place-items:center;flex:0 0 auto;width:16px;height:16px;margin-right:6px;border:1px solid #b9ccda;border-radius:50%;color:#58748b;font-size:10px;font-weight:800}
 .source-panel-actions.has-linked-source .manual-source-sync-hint{display:none!important}
 
@@ -79,7 +79,7 @@
 /* Small metrics and status pills need to remain readable at a glance. */
 .splitter-panel #suggestionChars{font-size:15px!important;font-weight:800!important;line-height:1.2!important;color:var(--denim-700,#3975a7)!important}
 .splitter-panel .suggestion-title-row .pill{display:inline-flex!important;align-items:center!important;min-height:30px!important;padding:5px 10px!important;font-size:13px!important;font-weight:800!important;line-height:1!important}
-#reviewCurrentChars.review-current-chars{color:#6b8294!important;font-size:12.5px!important;font-weight:750!important;line-height:1.2!important;white-space:nowrap!important}
+#reviewCurrentChars.review-current-chars{color:var(--sf-muted,#58748b)!important;font-size:12.5px!important;font-weight:750!important;line-height:1.2!important;white-space:nowrap!important}
 .project-current-badge,.publish-overall-status,.publish-platform-status,.platform-badge{display:inline-flex!important;align-items:center!important;min-height:28px!important;padding:4px 9px!important;font-size:12px!important;font-weight:800!important;line-height:1!important}
 .publishing-filter{font-size:12px!important;font-weight:750!important}
 

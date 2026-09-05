@@ -161,6 +161,12 @@
     save.disabled = !canSave;
     save.classList.toggle('primary', canSave);
     save.classList.toggle('ghost', !canSave);
+
+    // With nothing stored there is nothing to clear. Leaving the destructive
+    // action as the only enabled control in an unconfigured state would make
+    // "清除" read as the recommended next step.
+    const clear = document.getElementById('clearPickerKeyBtn');
+    if (clear) clear.disabled = !hasConfig();
   }
 
   function syncView() {
