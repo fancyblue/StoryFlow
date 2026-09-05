@@ -130,6 +130,14 @@ if (!targets.length) {
   process.exit(0);
 }
 
+// Rewriting app-loader.js changes app-loader.js, and index.html references it as an
+// asset in its own right. Without this the first pass leaves the loader carrying a
+// stale query and only a second run notices.
+const rewritesLoader = targets.some(path => path.startsWith('src/'));
+if (rewritesLoader && assets.has('app-loader.js') && !targets.includes('app-loader.js')) {
+  targets.push('app-loader.js');
+}
+
 const version = nextVersion();
 for (const host of HOSTS) {
   const before = hostText(host);

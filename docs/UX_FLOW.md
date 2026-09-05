@@ -15,7 +15,7 @@ The Works page is the structural management hub. Managing chapters or visual ent
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
 | W-01 | Review, add, edit or remove a work's chapters or visual entries | 管理章節／管理圖文 | `⋯` for infrequent or destructive row actions | Consistent emphasized light-blue action on every card; expanded state uses a stronger soft selection |
-| W-08 | Judge which work to return to | — | Card metadata: item count, longform source type and last-edited time | Quiet meta line under the title; content type decides whether the count reads 章節 or 圖文 |
+| W-08 | Judge which work to return to | — | Card metadata: item count, longform source type, last-edited time, and publishing progress | Quiet meta line under the title, then a progress column between identity and actions. Content type decides whether the count reads 章節 or 圖文 and what is enumerated, but whether one item counts as finished is Publishing's rule, asked for rather than recomputed: 已完成 means every platform, matching the 已完成 filter. |
 | W-02 | Return to splitting and writing work | 工作台 | — | Tinted or outlined navigation action |
 | W-03 | Jump directly to this work's publishing queue | 管理發布 | — | Tinted secondary shortcut |
 | W-04 | Make another work current | 開啟 | Then manage its chapters or enter its workspace | Both longform and visual works use the same label; selection is shown by the card and badge |

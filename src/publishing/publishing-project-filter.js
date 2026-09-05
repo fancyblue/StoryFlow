@@ -592,6 +592,10 @@
   window.addEventListener('storyflow:workspace-persisted', () => scheduleSnapshotRefresh(40));
   window.addEventListener('storyflow:projects-changed', () => scheduleSnapshotRefresh(40));
 
+  // Publishing owns what "published" means. The Works page shows per-work progress
+  // and must ask rather than recompute it, or the two surfaces would drift.
+  window.StoryFlowPublishingStatus = { forPart: statusFor };
+
   ensureFilterUi();
   scheduleSnapshotRefresh(20);
 })();

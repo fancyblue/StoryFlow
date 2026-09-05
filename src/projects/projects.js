@@ -98,9 +98,30 @@
     store.activeProjectId = record.id;
   }
 
+  // How much of a work is finished, for the Works card. The two content types are
+  // enumerated differently — longform publishes split parts inside chapters, visual
+  // publishes entries directly — but whether one item counts as finished is Publishing's
+  // decision, asked for rather than reimplemented here.
+  function publishProgress(state) {
+    const decide = window.StoryFlowPublishingStatus?.forPart;
+    if (typeof decide !== 'function') return null;
+
+    const items = StoryFlowContentModel.normalizeContentMode(state?.contentMode) === 'visual'
+      ? (state?.visualEntries || [])
+      : (state?.chapters || []).flatMap(chapter => chapter?.parts || []);
+    if (!items.length) return { complete: 0, total: 0 };
+
+    let complete = 0;
+    for (const item of items) {
+      if (decide(item)?.key === 'complete') complete += 1;
+    }
+    return { complete, total: items.length };
+  }
+
   function summary(record) {
     return {
       id: record.id,
+      publishProgress: publishProgress(record.state),
       title: record.title || record.state?.projectTitle || '未命名作品',
       sourceDocId: record.sourceDocId || deriveSourceDocId(record.state),
       chapterCount: record.state?.chapters?.length || 0,

@@ -90,6 +90,30 @@
     return `${edited.getFullYear()}/${String(edited.getMonth() + 1).padStart(2, '0')}/${String(edited.getDate()).padStart(2, '0')} 編輯`;
   }
 
+  // The card used to put a title at one edge and its actions at the other with nothing
+  // between them. Progress is what makes the row worth scanning: it answers "how far
+  // did I get with this one" without opening it.
+  function progressMarkup(progress) {
+    if (!progress) return '';
+    const { complete, total } = progress;
+    if (!total) {
+      return `
+        <div class="project-progress is-empty">
+          <span class="project-progress-label">尚未有可發布內容</span>
+          <span class="project-progress-track"><span class="project-progress-fill" style="width:0%"></span></span>
+        </div>`;
+    }
+    const percent = Math.round((complete / total) * 100);
+    return `
+      <div class="project-progress${complete === total ? ' is-complete' : ''}"
+           role="img" aria-label="發布進度：已完成 ${complete} / ${total}，${percent}%">
+        <span class="project-progress-label" aria-hidden="true">
+          <b>已完成 ${complete} / ${total}</b><span>${percent}%</span>
+        </span>
+        <span class="project-progress-track" aria-hidden="true"><span class="project-progress-fill" style="width:${percent}%"></span></span>
+      </div>`;
+  }
+
   function renderProjectsView() {
     const api = projectApi();
     const view = ensureProjectsView();
@@ -127,6 +151,7 @@
             : `${Number(project.chapterCount || 0).toLocaleString()} 個章節 · ${sourceLabel}`}${
             editedLabel(project.updatedAt) ? ` · ${escapeHtml(editedLabel(project.updatedAt))}` : ''}</span>
         </div>
+        ${progressMarkup(project.publishProgress)}
         <div class="project-library-actions">
           <button class="button tiny ghost project-open-btn" type="button">${active ? '工作台' : '開啟'}</button>
           <button class="button tiny ghost project-publish-btn" type="button">管理發布</button>
