@@ -22,7 +22,7 @@
 .source-panel.project-source-google .project-source-origin-name{
   min-width:0!important;
   overflow:hidden!important;
-  color:#6b8294!important;
+  color:var(--sf-muted,#58748b)!important;
   font-size:12px!important;
   font-weight:650!important;
   white-space:nowrap!important;

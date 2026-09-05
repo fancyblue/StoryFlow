@@ -84,12 +84,15 @@
     text-overflow:clip!important;
   }
 
+  /* Connection state must not rest on hue alone: the sidebar row shows only the
+     service name, so the dot itself carries the second cue. Hollow ring = not
+     connected, solid disc = connected. */
   #sidebarConnectionStatus .sidebar-status-dot{
-    width:7px!important;
-    height:7px!important;
-    flex:0 0 7px!important;
-    background:var(--connection-off)!important;
-    box-shadow:0 0 0 2px rgba(239,135,145,.13)!important;
+    width:8px!important;
+    height:8px!important;
+    flex:0 0 8px!important;
+    background:transparent!important;
+    box-shadow:inset 0 0 0 2px var(--connection-off),0 0 0 2px rgba(239,135,145,.13)!important;
   }
   #sidebarConnectionStatus .sidebar-connection-row.connected .sidebar-status-dot{
     background:var(--connection-on)!important;
@@ -186,8 +189,8 @@
   width:8px!important;
   height:8px!important;
   flex:0 0 8px!important;
-  background:var(--connection-off)!important;
-  box-shadow:0 0 0 3px rgba(239,135,145,.13)!important;
+  background:transparent!important;
+  box-shadow:inset 0 0 0 2px var(--connection-off),0 0 0 3px rgba(239,135,145,.13)!important;
 }
 .topbar .top-connection-status .connection-chip.connected .connection-chip-dot{
   background:var(--connection-on)!important;
