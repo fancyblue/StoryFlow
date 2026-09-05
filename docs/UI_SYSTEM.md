@@ -4,6 +4,25 @@
 
 This is the small shared UI contract for StoryFlow's desktop-first interface. Prefer these patterns over page-specific variants.
 
+## Cascade order
+
+The order stylesheets appear in `index.html` is **not** the order they resolve in.
+`ensureThemeOrder()` in `src/settings/settings-page.js` re-appends theme, mobile-visual,
+workspace-ux, connection-status, ui-system, layout-integrity and desktop-responsive to
+`<head>` at startup, and `ensureStyleLast()` in `src/source/project-source-sync.js` and
+`src/source/source-article-ux.js` each move one more. A rule that looks last in the
+document can therefore lose, and a rule that looks early can win.
+
+Reason about a conflict from the runtime order, not from `index.html`. Two consequences
+worth stating plainly: adding a stylesheet late in the document does not make it
+authoritative, and the two `ensureStyleLast()` modules are in a standing race with each
+other that only settles because of the order they happen to run in.
+
+`node scripts/dead-declarations.mjs` reports declarations that cannot affect anything —
+same selector text, same property, both unconditional, one overriding the other. It
+excludes any cross-file pair involving a re-appended stylesheet, because their relative
+order is not decidable from source. `--apply` removes them.
+
 ## Hiding elements
 
 `[hidden]` is a global contract declared once in `styles/layers/foundation.css` as

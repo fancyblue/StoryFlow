@@ -46,6 +46,8 @@ npx playwright install chromium
 npm run test:browser
 ```
 
+When a change is meant to be visually inert — removing dead declarations, for example — prove it rather than trusting a pass. Capture every element's computed style on each surface before and after and diff them; the 171-declaration removal in this repository was verified that way across 13,726 elements and 45 properties on seven surfaces at two widths. An earlier attempt at 609 declarations looked equally safe and the same diff caught 184 real changes, because the cascade order is not the document order (see `docs/UI_SYSTEM.md`).
+
 `npm run test:assets` is a separate, fast check that every asset changed against the base branch also had its `?v=` cache query updated; GitHub Pages serves this repository directly, so a stale query means returning browsers keep the previous file. `npm run bump:assets` performs the update.
 
 `npm test` runs both the static checks and browser suite. Reserve it for the higher-risk or cross-flow cases described above. The Playwright web server starts the local static site automatically.

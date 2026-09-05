@@ -24,14 +24,10 @@
 /* Preferences are deliberately not part of the heading row. */
 .splitter-panel .smart-split-mini-settings {
   display:flex;
-  align-items:flex-end;
   gap:10px;
   width:100%;
   margin:0 0 12px;
   padding:10px 12px;
-  border:1px solid var(--line);
-  border-radius:11px;
-  background:#fbfbfd;
   flex-wrap:wrap;
 }
 .smart-split-settings-label {
@@ -46,29 +42,18 @@
 .splitter-panel .smart-split-mini-settings .range-grid {
   display:flex;
   align-items:flex-end;
-  gap:8px;
   margin:0;
 }
 .splitter-panel .smart-split-mini-settings .range-grid label,
 .splitter-panel .scene-marker-compact {
   display:flex;
   flex-direction:column;
-  gap:4px;
-  width:92px;
-  min-width:92px;
-  font-size:10px;
   line-height:1.2;
   white-space:nowrap;
-  color:var(--muted);
 }
 .splitter-panel .smart-split-mini-settings .range-grid input,
 .splitter-panel .scene-marker-compact #sceneMarker {
-  width:92px;
-  min-height:34px;
-  padding:6px 9px;
   margin:0;
-  font-size:12px;
-  border-radius:9px;
 }
 
 /* Preview format is a small utility row; the disabled duplicate settings are noise here. */
@@ -76,24 +61,16 @@
   display:flex;
   align-items:flex-end;
   gap:10px;
-  margin:0 0 12px;
   padding:0;
   border:0;
   background:transparent;
 }
-.splitter-panel .suggestion-platform-bar .platform-select-field {
-  width:min(260px,100%);
-}
 .splitter-panel .suggestion-platform-bar .platform-select-field > span {
   display:block;
   margin-bottom:5px;
-  color:var(--muted);
-  font-size:10px;
-  font-weight:700;
 }
 .splitter-panel .suggestion-platform-bar select.text-input {
   min-height:38px;
-  padding:7px 10px;
   font-size:12px;
 }
 .splitter-panel .suggestion-platform-settings { display:none !important; }

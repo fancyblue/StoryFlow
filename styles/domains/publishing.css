@@ -33,25 +33,19 @@
 .publishing-project-badge strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .publishing-stats{
-  display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:10px;
-  margin-bottom:12px;
 }
 .publishing-stats article{
-  padding:13px 14px;
   border:1px solid var(--line);
   border-radius:12px;
   background:#fff;
-  box-shadow:0 2px 7px rgba(17,24,39,.025);
 }
 .publishing-stats span,.publishing-stats strong{display:block}
 .publishing-stats span{font-size:10px;color:var(--muted);margin-bottom:5px}
-.publishing-stats strong{font-size:22px}
+.publishing-stats strong{}
 
 .publishing-toolbar{
   display:flex;
-  align-items:center;
   justify-content:space-between;
   gap:14px;
   margin-bottom:12px;
@@ -72,24 +66,21 @@
 .publishing-type-filter.active{background:#edf6fc;border-color:#9fc5df;color:#2f6f9f}
 .publishing-type-filter[data-content-type="visual"].active{background:#e8f4ef;border-color:#a7cfbe;color:#356b58}
 
-.publishing-dashboard-panel{margin-top:0!important;padding:0;overflow:hidden}
+.publishing-dashboard-panel{margin-top:0!important;}
 .publishing-dashboard-panel>.panel-head{
   display:block;
   margin:0;
-  padding:16px 18px 14px;
   border-bottom:1px solid var(--line);
 }
 .publishing-dashboard-panel>.panel-head .eyebrow{margin-bottom:4px}
 .publishing-dashboard-panel>.panel-head h2{line-height:1.3}
 .publishing-dashboard-panel>.panel-head .muted{display:block;margin-top:6px;line-height:1.5;max-width:760px}
-.publishing-dashboard-panel .parts-list{display:block;padding:10px 12px 14px}
 
 .publish-list-item{
   border:1px solid var(--line);
   border-radius:11px;
   background:#fff;
   overflow:hidden;
-  margin-bottom:8px;
   transition:border-color .15s ease,box-shadow .15s ease;
 }
 .publish-list-item:hover{border-color:#d8d4e8}
@@ -142,7 +133,6 @@
 .publish-overall-status{
   display:inline-flex;
   align-items:center;
-  min-height:27px;
   padding:4px 8px;
   border:1px solid var(--line);
   border-radius:999px;
@@ -176,7 +166,6 @@
 
 .publish-platform-details{
   border-top:1px solid var(--line);
-  background:#fbfbfd;
 }
 .publish-platform-details[hidden]{display:none!important}
 .publish-article-tools{
@@ -466,7 +455,6 @@
   margin:0;
   padding:22px 24px;
   overflow:visible!important;
-  white-space:pre-wrap;
   overflow-wrap:anywhere;
   word-break:break-word;
   background:#fbfbfd;
@@ -780,7 +768,7 @@
 
 /* --- publishing grouping --- */
 /* Publishing grouping — work > chapter > article. */
-.publishing-stats{display:none!important}
+.publishing-stats{}
 
 .publishing-project-group{
   display:grid;

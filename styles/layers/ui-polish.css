@@ -54,7 +54,6 @@ h3{letter-spacing:-.01em}
   box-shadow:none;
 }
 .button{min-height:40px;padding:9px 14px}
-.button.tiny{min-height:34px;padding:7px 10px}
 .button.primary{
   background:var(--primary);
   border-color:var(--primary);
@@ -132,12 +131,8 @@ h3{letter-spacing:-.01em}
 .sidebar-note strong{color:#dbe1ea;font-size:10px}
 .sidebar-connection-status{flex:0 0 auto}
 .sidebar-settings-button{
-  width:42px!important;
-  min-height:42px!important;
   border-color:rgba(255,255,255,.16)!important;
-  background:rgba(255,255,255,.09)!important;
   color:#fff!important;
-  font-size:20px!important;
 }
 .sidebar-settings-button:hover,.sidebar-settings-button.active{
   background:#3a326d!important;
@@ -183,7 +178,6 @@ h3{letter-spacing:-.01em}
 .splitter-panel>.panel-head{margin-bottom:12px!important}
 .splitter-panel .smart-split-mini-settings{
   margin-bottom:14px;
-  background:var(--surface-soft);
   border-color:var(--line);
 }
 .split-preview-shell .preview{
@@ -195,7 +189,6 @@ h3{letter-spacing:-.01em}
   border-color:var(--line);
   box-shadow:0 4px 14px rgba(17,24,39,.06);
 }
-#confirmBtn{min-height:48px;border-radius:12px;font-size:14px}
 .workspace-publishing-summary{
   margin-top:18px;
   padding:17px 19px;
@@ -203,9 +196,7 @@ h3{letter-spacing:-.01em}
 }
 
 /* Works library: title first, actions second, destructive action stays visually quiet. */
-.projects-library{gap:9px}
 .project-library-card{padding:15px 17px}
-.project-library-card:hover{border-color:#d5d8e2;box-shadow:0 8px 24px rgba(17,24,39,.05)}
 .project-library-card.active{border-color:#b9aaf7;box-shadow:0 0 0 2px #f2efff inset}
 .project-library-title-row strong{font-size:16px}
 .project-library-actions .button{min-height:36px}
@@ -217,9 +208,7 @@ h3{letter-spacing:-.01em}
 .publishing-stats strong{font-size:21px}
 .publishing-toolbar{margin-bottom:10px}
 .publishing-filter{min-height:32px;padding:6px 11px}
-.publishing-dashboard-panel{box-shadow:none}
 .publishing-dashboard-panel>.panel-head{padding:15px 17px 13px}
-.publishing-dashboard-panel .parts-list{padding:9px 10px 12px}
 .publish-list-item{margin-bottom:7px;border-color:var(--line)}
 .publish-list-item:hover{border-color:#d5d8e2}
 .publish-list-summary{min-height:64px;padding:10px 13px}
