@@ -190,6 +190,11 @@ test('workspace keeps a long chapter rail contained at desktop widths', async ({
       };
     });
     expect(columns).toEqual({ sourceInside: true, mainInside: true, separated: true });
+
+    // The workspace is the densest composition in the app and the one most likely to
+    // shift when a shared layer changes, so each width keeps an intentional baseline
+    // rather than geometry assertions alone.
+    await expect(page.locator('#workspaceView')).toHaveScreenshot(`workspace-long-${width}.png`);
   }
 });
 
