@@ -49,6 +49,8 @@ Repo **不包含任何人的 Google OAuth Client ID 或 Picker API Key**。每�
 4. 到「設定 → Google 整合」填入 OAuth Client ID 與 Picker API Key，按「保存 Google 整合設定」。
 5. 設定會寫入該資料夾的 `settings.json`，之後不需要把個人設定 commit 到 repo。
 
+第 3 步不能跳過：作品一建立就會寫進資料夾，所以在連接資料夾之前，建立作品的選項會顯示為停用並說明原因。無法連接資料夾的瀏覽器（Safari、Firefox）會直接說明要改用 Chrome 或 Edge，而不是給一個按不動的連接按鈕。閱讀既有作品不受此限制——匯入 `settings.json`、登入 Google、連接資料夾與讀取內容都是讀取操作。
+
 OAuth Client ID 對 Web 應用本身不是 client secret，但把它從 repo 設定移出去可以讓 fork / clone 的使用者更容易帶入自己的 Google Cloud 專案，也避免不同部署共用同一組 OAuth 設定。
 
 ## 手機 / 新裝置
