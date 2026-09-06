@@ -137,7 +137,7 @@
       if (connected) newWork.removeAttribute('title');
       else newWork.title = window.StoryFlowIntegrations?.supportsFolderAccess?.()
         ? '請先連接 StoryFlow 資料夾，再建立作品。'
-        : '這個瀏覽器無法連接資料夾。請改用電腦版 Chrome 或 Edge。';
+        : '這個瀏覽器無法連接資料夾。請改用 Chrome 或 Edge。';
     }
 
     list.innerHTML = '';

@@ -117,6 +117,11 @@ The phone is a reading device, and this is the whole route to reading:
 3. **連接資料夾** — where the manuscript actually lives.
 4. **讀既有作品** — chapters and split parts are read back from that folder.
 
+Confirmed working on Chrome for Android: settings imported, Google signed in, folder
+connected, existing manuscript read on the phone. Folder access is a browser capability,
+not a device class — do not assume a phone cannot reach one, and do not gate this route
+by screen size or user agent. Safari and Firefox genuinely cannot, on any device.
+
 Every step is a read. None of them creates a work, so the folder gate on work creation
 must not stand in this route's way, and read-only mode must not block any step in it
 either. Read-only exists to stop *writes* reaching a folder that a mobile file provider

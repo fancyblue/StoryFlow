@@ -270,11 +270,11 @@
     if (note) {
       if (connected) note.textContent = '建立後會固定使用這種來源模式，讓後續操作保持一致。';
       else if (canConnect) note.textContent = '作品一建立就會寫進資料夾，所以要先連接。連接後這兩個選項就會開啟。';
-      else note.textContent = '這個瀏覽器無法連接資料夾，作品會無處可存。請改用電腦版 Chrome 或 Edge。';
+      else note.textContent = '這個瀏覽器無法連接資料夾，作品會無處可存。請改用 Chrome 或 Edge。';
     }
     const reason = canConnect
       ? '請先連接 StoryFlow 資料夾，再建立作品。'
-      : '這個瀏覽器無法連接資料夾。請改用電腦版 Chrome 或 Edge。';
+      : '這個瀏覽器無法連接資料夾。請改用 Chrome 或 Edge。';
     chooser.querySelectorAll('.project-creation-option').forEach(option => {
       option.disabled = !connected;
       if (connected) {

@@ -2471,3 +2471,40 @@ test('a phone can import settings.json while staying read-only', async ({ page }
   expect(await page.evaluate(() => window.StoryFlowMobileSafeMode?.isReadOnly?.())).toBe(true);
   expect(pageErrors).toEqual([]);
 });
+
+test('a folder-capable phone keeps its connect entry and is never told to switch browser', async ({ page }) => {
+  // Chrome on Android does connect a folder — confirmed on a real device, and it is the
+  // third step of the phone reading route (UX_FLOW O-07). This test exists because that
+  // was assumed to be false once: folder access is a browser capability, never a device
+  // class, and gating it by screen size or user agent would close the route.
+  const pageErrors = await prepare(page, { connectedFolder: false });
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      get: () => 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36'
+    });
+  });
+  await page.setViewportSize({ width: 412, height: 915 });
+  await page.goto('/');
+
+  await expect.poll(() => page.evaluate(() =>
+    window.StoryFlowMobileSafeMode?.isReadOnly?.() ?? null)).toBe(true);
+  expect(await page.evaluate(() =>
+    window.StoryFlowIntegrations?.supportsFolderAccess?.())).toBe(true);
+
+  // The way in must be present and must not be a dead end.
+  const connect = page.locator('#workspaceConnectFolderBtn');
+  await expect(connect).toBeVisible();
+  await expect(page.locator('#suggestionEmpty strong')).toHaveText('先連接 StoryFlow 資料夾');
+  await expect(page.locator('#folderBtn')).toHaveText('選擇資料夾');
+
+  // Read-only exists to stop writes reaching the folder, not to stop connecting one.
+  expect(await page.evaluate(() =>
+    document.getElementById('folderBtn')?.dataset.mobileSafeWriteControl ?? null)).toBeNull();
+
+  // And it must never be told this browser cannot do it.
+  await expect(page.locator('#suggestionEmpty')).not.toContainText('無法連接資料夾');
+  await expect(page.locator('#projectCreationChooserNote')).not.toContainText('Chrome 或 Edge');
+
+  expect(pageErrors).toEqual([]);
+});
