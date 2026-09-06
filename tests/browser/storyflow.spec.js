@@ -540,6 +540,15 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   await page.mouse.move(0, 0);
   await expect.poll(() => activeCard.getByRole('button', { name: '管理章節', exact: true })
     .evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(220, 235, 245)');
+  // borderColor has its own transition, and the assertions below compare the inactive
+  // card's border against the active one's. Waiting only on the active background left
+  // the inactive border still animating, so the comparison read two different points of
+  // the same fade — rgb(111, 162, 207) against rgb(111, 163, 205).
+  await expect.poll(() => page.evaluate(() => {
+    const border = selector => getComputedStyle(document.querySelector(selector)).borderColor;
+    return border('.project-library-card.active .project-manage-chapters-btn')
+      === border('.project-library-card:not(.active) .project-manage-chapters-btn');
+  })).toBe(true);
   const managementStyles = await page.evaluate(() => {
     const values = element => {
       const style = getComputedStyle(element);
@@ -809,7 +818,9 @@ test('canceling a new manual work does not create an empty project', async ({ pa
 });
 
 test('workspace safety fixtures pass without a real folder', async ({ page }) => {
-  const pageErrors = await prepare(page);
+  // These are standalone fixture pages that assert their own behaviour with no folder,
+  // as the name says. Patching StoryFlowIntegrations under them changes what they test.
+  const pageErrors = await prepare(page, { connectedFolder: false });
   await page.goto('/tests/workspace-safety-core.html');
   await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
   await expect(page.getByText('ALL PASS')).toBeVisible();
