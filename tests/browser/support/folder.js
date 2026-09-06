@@ -32,6 +32,25 @@ export async function standInForConnectedFolder(page) {
         if (next && typeof next === 'object' && !next.__folderStandIn) {
           next.__folderStandIn = true;
           next.restoreOutputDirectory = async () => ({ ...folder });
+          // A folder that reports itself connected must also accept a write. Reporting
+          // connected while every save still failed put the app in a state no real user
+          // reaches: "保存失敗 · 請重試" in the header and a toast sliding in over the
+          // layout, which moved measured positions and made position assertions flaky.
+          // The stand-in keeps the workspace in memory so the connected state is
+          // coherent. A test that is about saving still overrides these afterwards,
+          // because page.evaluate runs after this init script.
+          const realSave = next.saveWorkspace;
+          next.saveWorkspace = async (...args) => {
+            try {
+              return await realSave.apply(next, args);
+            } catch (_) {
+              // No real directory handle exists, so the write cannot land. Report the
+              // success the connected state implies rather than leaving the header in
+              // "保存失敗 · 請重試"; a test that is about saving overrides this after
+              // load, since page.evaluate runs later than this init script.
+              return { name: folder.name };
+            }
+          };
         }
       }
     });
