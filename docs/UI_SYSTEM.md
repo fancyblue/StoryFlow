@@ -95,6 +95,28 @@ repositions, which stays correct whichever module decorates it first; waiting a 
 would only bet on the usual order. Any menu assembled by more than one module needs the
 same treatment.
 
+Two sibling menus are knowingly unaudited, deferred on 2026-09-06 pending real use.
+`positionEntryMenu()` in `visual-workspace.js` is a near-line-for-line copy of the
+chapter version and has not been given the observer. Its entries are built in one
+template with nothing prepended later, so the path that broke the chapter menu is
+confirmed absent — but the menu carries the class `chapter-row-action-menu`, and the
+rules setting its size (`min-width`, `padding`, item `min-height`) live in
+`chapter-management.css`, which sits in the `ensureStyleLast()` racing tail. Whether the
+size can therefore be read too early is unverified, and reasoning about it was twice
+proved unreliable this round; only measurement settles it. The symptom to watch for is
+the one the chapter menu had: scroll a visual series to the bottom, open `⋯`, and the
+menu lands partly below the viewport. To check it, repeat the open 12–20 times and
+record menu top/bottom/height — a height smaller than the settled one is the tell.
+
+The works-page menus (`project-visual-entry-action-menu`, built in
+`chapter-management.js`) have no positioning logic at all: pure CSS `top:calc(100% + 6px)`
+opens them downwards with no boundary check. That is deterministic rather than a race,
+and equally unverified.
+
+Three menus, two of them line-for-line duplicates and the third with no logic, is the
+actual finding. If any of this is taken up, give them one shared positioner rather than
+patching the second copy and leaving the third unowned.
+
 A control that is allowed to start an action must be allowed to finish it. Mobile read-only mode lists the buttons that stay usable in `SAFE_READ_CONTROL_SELECTOR`, but a file picker's real work happens in the `change` event that follows, so the inputs those buttons open are listed in `SAFE_READ_INPUT_SELECTOR` too. Allowing only the button left the settings import openable and uncompletable, answering a chosen file with nothing but the read-only notice.
 
 A disabled control states why it is unavailable. The split scene controls carry the reason in `title` and in an `aria-label` suffix rather than repeating only what the action would have done. When several controls share one reason, that reason is written once and pointed at: the work-creation options carry `title` for a pointer and `aria-describedby` to the note above them, so a screen reader keeps each option's own name and hears the reason after it, instead of an `aria-label` replacing the name with a copy of the explanation.
