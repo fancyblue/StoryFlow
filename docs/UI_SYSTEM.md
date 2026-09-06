@@ -86,6 +86,15 @@ A destructive action must never be the only enabled control in an empty state. W
 
 One action carries one label and one weight wherever it appears. Connecting the StoryFlow folder is reached from the Settings folder card and from the backup centre, so both read "連接資料夾" and both stay outlined; the backup control only proxies the owning card and must not out-emphasize it. Sidebar chrome ranks below navigation: the collapse toggle rests on a translucent fill, never on the `--denim-800` used by an active nav item, so a utility control cannot read as the current destination.
 
+A menu that decides where to open must react to its own size changing, not measure once.
+`.chapter-row-action-menu` chooses up or down from its height, and `manual-chapter-edit.js`
+prepends an 編輯章節 item to that same menu after render — 73px before, 87px after. A menu
+positioned from the smaller reading opened downwards and landed below the viewport on
+roughly one open in twelve. `chapter-management.js` observes the open menu's size and
+repositions, which stays correct whichever module decorates it first; waiting a frame
+would only bet on the usual order. Any menu assembled by more than one module needs the
+same treatment.
+
 A control that is allowed to start an action must be allowed to finish it. Mobile read-only mode lists the buttons that stay usable in `SAFE_READ_CONTROL_SELECTOR`, but a file picker's real work happens in the `change` event that follows, so the inputs those buttons open are listed in `SAFE_READ_INPUT_SELECTOR` too. Allowing only the button left the settings import openable and uncompletable, answering a chosen file with nothing but the read-only notice.
 
 A disabled control states why it is unavailable. The split scene controls carry the reason in `title` and in an `aria-label` suffix rather than repeating only what the action would have done. When several controls share one reason, that reason is written once and pointed at: the work-creation options carry `title` for a pointer and `aria-describedby` to the note above them, so a screen reader keeps each option's own name and hears the reason after it, instead of an `aria-label` replacing the name with a copy of the explanation.
