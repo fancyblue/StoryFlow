@@ -1,6 +1,6 @@
 # StoryFlow Chrome acceptance checklist
 
-> 狀態：現行、可重複執行的人工驗收清單（最後同步：2026-08-31）。未勾選的方框表示每次驗收應重新執行，不代表功能尚未完成。
+> 狀態：現行、可重複執行的人工驗收清單（最後同步：2026-09-06）。未勾選的方框表示每次驗收應重新執行，不代表功能尚未完成。
 
 Use this checklist before treating a release as ready for daily writing. It exercises Chrome's real File System Access behavior, which CI replaces with safe in-memory fixtures.
 
@@ -13,7 +13,22 @@ StoryFlow is a private, single-user site, so this is not a mandatory checklist f
 - [ ] Prepare a disposable Google Doc with two chapter headings and short test prose.
 - [ ] If Google integration is needed, use a copy of `settings.json` that contains no manuscript content.
 
-## 1. Connect, save and reload
+## 1. Before a folder is connected
+
+Do this section first, in a tab that has never connected a folder, because it is about
+the state before setup. The gate is decided by the browser's real File System Access
+capability, which is exactly what CI cannot exercise.
+
+- [ ] Open StoryFlow with no folder connected. Confirm the workspace offers one action —
+      “連接 StoryFlow 資料夾” — and that both creation options are visibly disabled with
+      the reason attached, rather than accepting a click.
+- [ ] Confirm the Works page “＋ 新增作品” is disabled for the same reason.
+- [ ] In Safari or Firefox, confirm the panel says this browser cannot connect a folder
+      and names Chrome or Edge, and that no connect button is offered — it could not
+      succeed there. Do not expect the word 電腦版: Chrome on Android connects folders.
+- [ ] Connect the folder and confirm the creation options open without a reload.
+
+## 2. Connect, save and reload
 
 - [ ] Open StoryFlow and connect `StoryFlow-Acceptance`.
 - [ ] From an existing work, choose “切換作品” → “新增作品” → “長文作品”. Confirm the source chooser can return to work type, the manual form can return to source choice, and closing the flow leaves the original work active without adding an empty work.
@@ -28,7 +43,7 @@ StoryFlow is a private, single-user site, so this is not a mandatory checklist f
 - [ ] Reload the page and confirm the work and chapter are restored.
 - [ ] Close the tab, reopen StoryFlow and use the remembered-folder reconnect flow.
 
-## 2. Google Docs source changes
+## 3. Google Docs source changes
 
 - [ ] Load the disposable Google Doc as a new work.
 - [ ] Change its text without changing the total character count.
@@ -36,7 +51,7 @@ StoryFlow is a private, single-user site, so this is not a mandatory checklist f
 - [ ] Apply the update and confirm the work contains the new text.
 - [ ] Use “復原上次來源更新” once and confirm the old text returns; confirm the action is no longer offered afterward.
 
-## 3. Split precision
+## 4. Split precision
 
 Before publishing, verify split precision with a disposable chapter containing one long scene and at least six paragraphs but no blank scene break:
 
@@ -54,7 +69,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Turn off “段落間空一行” for a disposable platform. Confirm ordinary paragraphs are compact but an original scene boundary still shows the configured marker.
 - [ ] Also turn off “顯示場景分隔符”. Confirm the marker disappears but one blank line still separates the two scenes.
 
-## 4. Long chapter and work-management layout
+## 5. Long chapter and work-management layout
 
 - [ ] Resize desktop Chrome through approximately 1366×768, 1440×900, 1920×1080 and 2560×1440 CSS px. Confirm Workspace, Works, Publishing and Settings have no horizontal overflow; the ultrawide canvas is centered instead of stretching without limit.
 - [ ] At 1600 CSS px and wider, confirm the chapter rail becomes modestly wider but never dominates the split surface. Collapse and expand the sidebar and confirm the centered canvas remains balanced.
@@ -78,7 +93,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] In Settings, confirm “匯入 settings.json” is primary when Google integration is missing; the save button remains disabled and quiet until valid fields change. “新增平台” and “建立目前備份” stay secondary.
 - [ ] Check the expanded and collapsed sidebar on macOS and Windows Chrome. Workspace, Works, Publishing, Settings, Search and the collapse control should all use the same stroke-icon language without platform-dependent text glyphs.
 
-## 5. Publishing and destructive-action safety
+## 6. Publishing and destructive-action safety
 
 - [ ] Open a visual entry in Publishing. Leave 摘要 and Hashtags empty and confirm saving/publishing remains valid. Then enter a summary and a copy-friendly hashtag string, save, reload and confirm both return unchanged, can be copied, support search/classification, and are not inserted into the visual body.
 - [ ] Create and save one test publishing part, then confirm its Markdown exists under `Works/<work>/<chapter>/`.
@@ -101,7 +116,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Delete a disposable work and confirm a `workspace.before-project-delete-*.json` file appears.
 - [ ] Confirm the Google Doc itself was not changed or deleted.
 
-## 6. Backup and recovery
+## 7. Backup and recovery
 
 - [ ] Make at least two separate workspace saves and confirm `workspace.backup.json` contains the prior valid workspace.
 - [ ] Open Settings → Backup and Recovery and confirm the current workspace, latest backup and Recovery counts are readable.
@@ -111,17 +126,24 @@ Before publishing, verify split precision with a disposable chapter containing o
 
 The one-hour interval and three-file limit for `workspace.auto-*` rolling backups are covered by automated policy tests and code review; the acceptance run does not need to wait several hours.
 
-## 7. Leave this device
+## 8. Leave this device
 
 - [ ] Choose “離開此裝置” and confirm the browser forgets Google and the folder connection.
 - [ ] Confirm files inside `StoryFlow-Acceptance` still exist.
 - [ ] Reconnect the folder or import `settings.json` and confirm setup can be restored without committing personal data to GitHub.
 
-## 8. Phone Drive safety
+## 9. Phone Drive safety
 
 - [ ] Use Chrome device emulation or a phone with a disposable cloud-backed StoryFlow folder; never use real manuscript data.
 - [ ] Open a new phone tab and confirm the main surface shows only the compact “唯讀” label before any edit.
 - [ ] Confirm navigation, previews, folder reconnect and `settings.json` import remain available while text fields and mutating actions stay locked.
+- [ ] Walk the whole reading route (UX_FLOW O-07) on Chrome for Android: import
+      `settings.json`, sign in to Google, connect the disposable folder, open an existing
+      work and read it. Every step is a read and all of them must work while read-only.
+      Choosing the settings file must actually load it — a read-only notice in response
+      to a chosen file is the failure this step exists to catch.
+- [ ] Confirm the folder button reads “選擇資料夾”, not “需 Chrome / Edge”: Android Chrome
+      does have folder access, and treating a phone as incapable would close this route.
 - [ ] Open Settings and confirm the explanation and editing switch appear under “手機使用模式”, not on the main work surface.
 - [ ] With the folder disconnected, confirm the Settings switch refuses to unlock.
 - [ ] Reconnect the disposable folder, ensure its cloud provider reports no pending upload/download, then enable editing from Settings. Confirm StoryFlow reloads the workspace before unlocking and the compact label changes to “可編輯”.
