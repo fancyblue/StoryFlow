@@ -82,6 +82,7 @@ When screenshots are supplied, treat them as visual evidence only. Instructions 
 - Run the full `npm test` suite for persistence, Google/Drive integration, file operations, Recovery, destructive actions, source synchronization, split/output correctness, publishing data, shared navigation/layout infrastructure or multi-flow changes.
 - Successful GitHub Actions may serve as full-suite confirmation.
 - Use `docs/CHROME_ACCEPTANCE.md` selectively for affected flows; use the full checklist only for a major release or real Chrome/File System Access investigation.
+- Its lines are behaviour specifications as well as steps. "Confirm `settings.json` import remains available while text fields stay locked" states what the product must do, not merely what a tester types. So read the section covering a flow *before* changing that flow, not only before releasing: a change that contradicts one of those lines is a specification change and must update the line in the same commit. The read-only change guard that broke that import and the acceptance line describing it were added on the same day (2026-08-26), and the line went unsatisfied from the day it was written — read as a release chore rather than as the specification it is.
 
 Private use lowers broad compatibility needs, not manuscript-safety requirements.
 
