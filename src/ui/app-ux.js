@@ -128,7 +128,16 @@
     });
 
     const newWork = view.querySelector('#projectsNewWorkBtn');
-    if (newWork) newWork.hidden = projects.length === 0;
+    if (newWork) {
+      newWork.hidden = projects.length === 0;
+      // Same rule as the workspace chooser: a work cannot be created before there is a
+      // folder to write it into, and the control says why rather than failing on click.
+      const connected = !('showDirectoryPicker' in window)
+        || Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
+      newWork.disabled = !connected;
+      if (connected) newWork.removeAttribute('title');
+      else newWork.title = '請先連接 StoryFlow 資料夾，再建立作品。';
+    }
 
     list.innerHTML = '';
     projects.forEach(project => {
@@ -344,6 +353,9 @@
     renderProjectsView();
     syncSourceActionState();
   });
+  // Connecting a folder opens work creation, so the page has to re-render rather than
+  // leave a stale disabled button behind.
+  window.addEventListener('storyflow:connection-changed', () => renderProjectsView());
   window.StoryFlowRenderProjects = renderProjectsView;
   window.StoryFlowChapterManagement = {
     deleteChapter: removeChapter

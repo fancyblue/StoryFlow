@@ -1,9 +1,14 @@
 import { expect, test } from '@playwright/test';
+import { standInForConnectedFolder } from './support/folder.js';
 
-async function prepare(page) {
+// Most tests need a connected folder to get as far as their own subject. The ones that
+// are *about* the unconnected or reconnecting state opt out, so the assumption each
+// test makes about the folder is visible in the test itself.
+async function prepare(page, { connectedFolder = true } = {}) {
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  if (connectedFolder) await standInForConnectedFolder(page);
   return pageErrors;
 }
 
@@ -112,7 +117,9 @@ test('visual metadata stores afterword and its platform-output preference', asyn
 });
 
 test('primary action scale and navigation icon language stay consistent', async ({ page }) => {
-  const pageErrors = await prepare(page);
+  // Advanced settings appear once a folder is connected, so this test keeps the
+  // unconfigured state it is describing.
+  const pageErrors = await prepare(page, { connectedFolder: false });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
 
@@ -399,7 +406,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
   await page.locator('#sidebarSettingsBtn').click();
   await expect(page.getByRole('heading', { name: '設定', exact: true })).toBeVisible();
   await expect(page.getByText('備份與復原')).toBeVisible();
-  await expect(page.getByRole('button', { name: '離開此裝置', exact: true })).toBeVisible();
+  await expect(page.locator('#settingsLeaveDeviceBtn')).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 
@@ -1633,7 +1640,8 @@ test('global search and five-item navigation fit a narrow Chrome viewport', asyn
 });
 
 test('remembered folder supports fast reconnect and explicit leave suppression', async ({ page }) => {
-  const pageErrors = await prepare(page);
+  // The subject is reconnecting an expired session, so the folder must not start connected.
+  const pageErrors = await prepare(page, { connectedFolder: false });
   await page.goto('/tests/quick-start-ui.html');
 
   const dialog = page.getByRole('dialog');
@@ -2342,6 +2350,81 @@ test('works cards report publishing progress per content type using publishing r
   const visualCard = page.locator('.project-library-card', { hasText: '圖文進度' });
   await expect(visualCard.locator('.project-library-meta')).toContainText('則圖文');
   await expect(visualCard.locator('.project-progress')).toContainText('已完成 0 / 1');
+
+  expect(pageErrors).toEqual([]);
+});
+
+test('work creation waits for a connected folder and opens once there is one', async ({ page }) => {
+  // No folder stand-in: this test is about the state before one exists.
+  const pageErrors = await prepare(page, { connectedFolder: false });
+  await page.goto('/?visual-regression=1');
+
+  const manual = page.locator('#createProjectManually');
+  const google = page.locator('#createProjectFromGoogle');
+  await expect(manual).toBeVisible();
+  await expect(manual).toBeDisabled();
+  await expect(google).toBeDisabled();
+
+  // A disabled control has to say why, and the reason is the note the options point at
+  // rather than a second copy inside each button.
+  await expect(manual).toHaveAttribute('title', /先連接 StoryFlow 資料夾/);
+  await expect(manual).toHaveAttribute('aria-describedby', 'projectCreationChooserNote');
+  await expect(page.locator('#projectCreationChooserNote')).toContainText('要先連接');
+
+  // Forcing the click past the disabled attribute must still not start a creation flow.
+  await manual.click({ force: true });
+  await expect(page.locator('#visualTypeDialog')).toBeHidden();
+  expect(await page.evaluate(() => window.StoryFlowProjects?.list?.().length ?? 0)).toBe(0);
+
+  // The guard is on the flow, not only on the button, so the programmatic entry point
+  // every other control funnels through refuses too.
+  expect(await page.evaluate(() => window.StoryFlowStartNewWork())).toBe(false);
+  expect(await page.evaluate(() => window.StoryFlowProjects?.list?.().length ?? 0)).toBe(0);
+
+  // Connecting the folder opens the options without a reload.
+  await page.evaluate(() => {
+    StoryFlowIntegrations.restoreOutputDirectory = async () => ({
+      supported: true, connected: true, name: 'StoryFlow 測試資料夾', remembered: true
+    });
+    return refreshFolderStatus();
+  });
+  await expect(manual).toBeEnabled();
+  await expect(google).toBeEnabled();
+  await expect(page.locator('#projectCreationChooserNote')).toContainText('建立後會固定使用');
+
+  expect(pageErrors).toEqual([]);
+});
+
+test('first run on a phone keeps its only action clear of the bottom navigation', async ({ page }) => {
+  // The folder gate makes connecting the one thing a new user can do here, so that
+  // button has to be reachable without scrolling and without the nav sitting on it.
+  const pageErrors = await prepare(page, { connectedFolder: false });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?visual-regression=1');
+
+  const connect = page.locator('#workspaceConnectFolderBtn');
+  await expect(connect).toBeVisible();
+
+  const layout = await page.evaluate(() => {
+    const button = document.getElementById('workspaceConnectFolderBtn').getBoundingClientRect();
+    // On a phone the sidebar becomes the fixed bottom navigation bar.
+    const bar = document.querySelector('.sidebar');
+    const barBox = bar?.getBoundingClientRect();
+    return {
+      buttonTop: button.top,
+      buttonBottom: button.bottom,
+      barTop: barBox?.top ?? null,
+      barIsBottomBar: Boolean(bar && getComputedStyle(bar).position === 'fixed'
+        && barBox.bottom >= window.innerHeight - 4)
+    };
+  });
+
+  // Guard the guard: if the bar stops being the fixed bottom bar this assertion would
+  // silently stop meaning anything, so assert the premise too.
+  expect(layout.barIsBottomBar).toBe(true);
+  expect(layout.buttonTop).toBeGreaterThanOrEqual(0);
+  // Fully above the bottom navigation, not merely inside the viewport behind it.
+  expect(layout.buttonBottom).toBeLessThanOrEqual(layout.barTop);
 
   expect(pageErrors).toEqual([]);
 });

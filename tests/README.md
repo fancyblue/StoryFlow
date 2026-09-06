@@ -58,3 +58,22 @@ When an intentional visual change is approved, refresh the committed Chrome base
 ```sh
 npm run test:browser -- --update-snapshots=all tests/browser/visual-regression.spec.js
 ```
+
+## The connected-folder stand-in
+
+Creating a work requires a connected StoryFlow folder, which a headless browser cannot
+provide: the File System Access picker needs a real user gesture and a real directory.
+`tests/browser/support/folder.js` stands in for one by setting the session hint that
+`folder-session.js` checks and by reporting a connected folder from
+`restoreOutputDirectory()`. `prepare()` applies it by default.
+
+Tests whose subject *is* the unconnected or reconnecting state opt out with
+`prepare(page, { connectedFolder: false })` — the unconfigured settings page, the
+reconnect dialog, the non-colour connection cue, the folder gate itself and the phone
+first-run layout. The cascade-order contract also loads the app plainly, because
+`scripts/cascade-order.json` records the startup baseline and a connected folder
+re-renders the source panel, moving the `ensureStyleLast()` tail.
+
+That tail is why the cascade-order test asserts the order *before* the tail plus the
+full set of stylesheets, never the tail's internal order: which of those files lands
+last is a race, and asserting it only produces flakes.

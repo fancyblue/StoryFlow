@@ -576,7 +576,23 @@ async function loginGoogleStatusOnly() {
   }
 }
 
+// The folder is resolved from IndexedDB after the first render, and a remembered one
+// only becomes known then. Surfaces that gate on a connected folder — work creation
+// above all — have no other way to learn the answer arrived, so resolving it is itself
+// a connection change. Announcing it here covers startup restore as well as an
+// explicit reconnect, which is why chooseFolder no longer announces it separately.
 async function refreshFolderStatus() {
+  await applyFolderStatus();
+  window.dispatchEvent(new CustomEvent('storyflow:connection-changed', {
+    detail: {
+      kind: 'folder',
+      connected: Boolean(outputFolderState.connected),
+      name: outputFolderState.name
+    }
+  }));
+}
+
+async function applyFolderStatus() {
   outputFolderState = await StoryFlowIntegrations.restoreOutputDirectory();
   els.folderDot.classList.toggle('connected', Boolean(outputFolderState.connected));
   if (!outputFolderState.supported) {
@@ -601,9 +617,6 @@ async function chooseFolder(options = {}) {
     const result = await StoryFlowIntegrations.chooseOutputDirectory(options);
     notify(`已連接 ${result.name}`);
     await refreshFolderStatus();
-    window.dispatchEvent(new CustomEvent('storyflow:connection-changed', {
-      detail: { kind: 'folder', connected: true, name: result.name, restored: Boolean(result.restored) }
-    }));
     return result;
   } catch (error) {
     if (error.name !== 'AbortError') notify(error.message, true);

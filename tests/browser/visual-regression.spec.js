@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { standInForConnectedFolder } from './support/folder.js';
 
 const visualCss = `
   *, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }
@@ -89,6 +90,7 @@ async function expectDialogContained(dialog) {
 
 async function openVisualWork(page) {
   await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  await standInForConnectedFolder(page);
   await page.goto('/?layout-regression=1');
   await page.addStyleTag({ content: visualCss });
   await page.evaluate(() => {
@@ -117,6 +119,7 @@ async function openVisualWork(page) {
 
 async function openManualWork(page) {
   await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  await standInForConnectedFolder(page);
   await page.goto('/?visual-regression=1');
   await page.addStyleTag({ content: visualCss });
   await page.locator('#createProjectManually').click();
