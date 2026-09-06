@@ -131,9 +131,11 @@ const StoryFlowIntegrations = (() => {
   // Whether this browser can connect a StoryFlow folder at all. Everything a work is
   // made of — the workspace, split parts, publishing progress — is written into that
   // folder, so a browser without a directory picker cannot hold a work past the current
-  // page. Mobile browsers have none, and neither do Safari or Firefox on the desktop.
-  // That makes this a product-level capability the UI has to gate on, not just a guard
-  // inside each call, so it is published rather than re-tested by every caller.
+  // page. This is a capability question, not a device one: Chrome on Android connects a
+  // folder and reads a manuscript back (UX_FLOW O-07), while Safari and Firefox cannot
+  // on any device. Answering it by asking the browser, rather than by sniffing for a
+  // phone, is what keeps that route working. It is published rather than re-tested by
+  // each caller so the UI gates on one answer.
   function supportsFolderAccess() {
     return 'showDirectoryPicker' in window;
   }

@@ -271,7 +271,7 @@
       // written. Saying "connect a folder" would be asking for something this browser
       // cannot do, so the panel names the real requirement instead.
       heading = '這個瀏覽器無法連接資料夾';
-      detail = '作品、切篇結果與發布進度都要寫進本機資料夾，而這個瀏覽器不支援。請改用電腦版 Chrome 或 Edge 開啟 StoryFlow。';
+      detail = '作品、切篇結果與發布進度都要寫進本機資料夾，而這個瀏覽器不支援。請改用 Chrome 或 Edge 開啟 StoryFlow。';
     } else if (!hasConnectedFolder()) {
       heading = '先連接 StoryFlow 資料夾';
       detail = '作品、切篇結果與發布進度都會寫進你選擇的資料夾。連接後就可以建立作品。';

@@ -227,7 +227,7 @@
     if (!hasConnectedFolder()) {
       window.notify?.(canReachAFolder()
         ? '請先連接 StoryFlow 資料夾，再建立作品。'
-        : '這個瀏覽器無法連接資料夾，作品會無處可存。請改用電腦版 Chrome 或 Edge。', true);
+        : '這個瀏覽器無法連接資料夾，作品會無處可存。請改用 Chrome 或 Edge。', true);
       return false;
     }
     if (!source && !contentMode && window.StoryFlowVisualWorkspace?.openTypeChooser) {
