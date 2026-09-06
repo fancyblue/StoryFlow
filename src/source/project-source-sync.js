@@ -193,7 +193,7 @@
       chooser.innerHTML = `
         <div class="project-creation-copy">
           <strong id="projectCreationChooserTitle">選擇作品建立方式</strong>
-          <span>建立後會固定使用這種來源模式，讓後續操作保持一致。</span>
+          <span id="projectCreationChooserNote">建立後會固定使用這種來源模式，讓後續操作保持一致。</span>
         </div>
         <div class="project-creation-options">
           <button id="createProjectFromGoogle" class="project-creation-option" type="button">
@@ -251,6 +251,38 @@
     list.innerHTML = '<div class="project-source-empty-articles">尚未新增文章</div>';
   }
 
+  // Creating a work writes into the connected folder immediately, so the chooser must
+  // not accept a click before there is one. A disabled control has to say why it is
+  // unavailable, and the note beside it already carries the reason, so the options
+  // point at that note rather than restating it in an aria-label that would replace
+  // their own name.
+  function syncCreationAvailability() {
+    const chooser = document.getElementById('projectCreationChooser');
+    if (!chooser) return;
+    // Browsers without folder access can never satisfy the requirement, so they keep
+    // the options open rather than being locked out of the app.
+    const connected = !('showDirectoryPicker' in window)
+      || Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
+    const note = document.getElementById('projectCreationChooserNote');
+
+    chooser.classList.toggle('awaiting-folder', !connected);
+    if (note) {
+      note.textContent = connected
+        ? '建立後會固定使用這種來源模式，讓後續操作保持一致。'
+        : '作品一建立就會寫進資料夾，所以要先連接。連接後這兩個選項就會開啟。';
+    }
+    chooser.querySelectorAll('.project-creation-option').forEach(option => {
+      option.disabled = !connected;
+      if (connected) {
+        option.removeAttribute('title');
+        option.removeAttribute('aria-describedby');
+        return;
+      }
+      option.title = '請先連接 StoryFlow 資料夾，再建立作品。';
+      if (note) option.setAttribute('aria-describedby', 'projectCreationChooserNote');
+    });
+  }
+
   function syncUi() {
     const panel = ensureModeUi();
     if (!panel) return;
@@ -268,6 +300,7 @@
     if (add) add.hidden = mode === null;
     if (originName && mode === 'google') originName.textContent = projectSourceName();
 
+    syncCreationAvailability();
     syncBlankChapterPresentation(mode);
     syncUndoUi();
     ensureStyleLast();
@@ -833,6 +866,7 @@
     window.renderAll = wrapped;
   }
 
+  window.addEventListener('storyflow:connection-changed', () => queueMicrotask(syncUi));
   window.addEventListener('storyflow:projects-changed', () => queueMicrotask(syncUi));
   window.addEventListener('storyflow:view-changed', () => queueMicrotask(syncUi));
   window.addEventListener('storyflow:source-sync-undo-changed', () => queueMicrotask(syncUi));

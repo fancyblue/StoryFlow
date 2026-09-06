@@ -7,7 +7,8 @@
     "still matches the running page; scripts/dead-declarations.mjs uses it to decide",
     "which of two competing declarations wins.",
     "The tail entries moved by ensureStyleLast() are treated as indeterminate — see",
-    "the script for why."
+    "the script for why.",
+    "indeterminateTail lists the stylesheets whose relative order is a race, not a fact: ensureStyleLast() re-appends them on render. The contract test asserts the order before the tail and the full set, never the tail's internal order."
   ],
   "order": [
     "styles/layers/foundation.css",
@@ -45,8 +46,13 @@
     "styles/layers/ui-system.css",
     "styles/layers/layout-integrity.css",
     "styles/layers/desktop-responsive.css",
-    "styles/domains/project-source-mode.css",
     "styles/domains/source-article-ux.css",
+    "styles/domains/project-source-mode.css",
+    "styles/domains/chapter-management.css"
+  ],
+  "indeterminateTail": [
+    "styles/domains/source-article-ux.css",
+    "styles/domains/project-source-mode.css",
     "styles/domains/chapter-management.css"
   ]
 }

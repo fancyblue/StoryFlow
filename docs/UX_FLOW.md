@@ -31,7 +31,7 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
-| WS-00 | Give StoryFlow somewhere to save | 連接 StoryFlow 資料夾 | — | The single solid action while no folder is connected; creation guidance stays visible but unemphasized |
+| WS-00 | Give StoryFlow somewhere to save | 連接 StoryFlow 資料夾 | — | The single enabled action while no folder is connected; the creation options stay visible but disabled, so the page offers one next step rather than two competing ones |
 | WS-01 | Start an empty work, chapter or visual entry | 從 Google Docs 建立／手動建立／新增第一篇文章／新增圖文 | 切換作品 | Emphasize the source-choice stage; keep alternative creation actions at the same level |
 | WS-02 | Select the work and chapter or visual entry to process | 切換作品／章節列／圖文列 | Add, edit or delete the matching content type | Selection and disclosure styling, never primary CTA styling |
 | WS-03 | Refresh a linked Google Docs chapter | 更新來源 | 復原來源更新 | Tinted action that opens comparison; only “套用所選變更” is solid after review |
@@ -44,7 +44,11 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 
 The “切換作品” disclosure lives in the SOURCE card heading for both content modes and includes “＋ 新增作品”. The longform “作品與章節” rail and visual “作品與圖文” rail use the same outer width and breakpoint contract. “新增文章／新增圖文” sits below the corresponding chapter or entry list, never in the page header or list heading.
 
-A work created before a folder is connected exists only in memory, so the empty workspace leads with the folder connection and only then with the creation choice. The empty panel states that next step once: the heading and description carry it, and the creation chooser beside the panel is the control, so no third hint line repeats it.
+A work is written into the connected folder from the moment it is created, so creating one before a folder exists is not offered at all: every entry point runs through `startNewWorkFlow()`, which refuses without a folder, and the creation options render as disabled with the reason attached. Previously the panel asked for a folder while the chooser beside it accepted clicks, which stated two different first steps on the same screen.
+
+The requirement applies only where a folder is reachable. Browsers without the File System Access API can never satisfy it, so they keep creation open rather than being locked out of the app.
+
+The empty panel states that next step once: the heading and description carry it, and the folder button is the control, so no third hint line repeats it. On a phone that button is the only thing a new user can do, so the empty state drops its decorative icon and the disabled options compact, keeping the action clear of the bottom navigation instead of behind it.
 
 At any moment, the workspace should visually answer one question: “What can I safely do next?” It must not simultaneously emphasize source loading, split confirmation and publishing navigation.
 

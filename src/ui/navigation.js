@@ -201,8 +201,31 @@
     return project;
   }
 
+  // The connection dot is the one place the folder state is already resolved; the
+  // other surfaces that gate on it read it the same way.
+  function hasConnectedFolder() {
+    return Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
+  }
+
+  // Safari and Firefox cannot connect a folder at all, so requiring one there would
+  // lock those browsers out of creating anything. The requirement applies only where a
+  // folder is reachable — the same capability test the persistence layer uses.
+  function folderRequiredBeforeCreating() {
+    return 'showDirectoryPicker' in window;
+  }
+
   function startNewWorkFlow({ source = null, contentMode = null } = {}) {
     closeProjectQuickSwitch();
+    // A work is written into the connected folder from the moment it is created, so
+    // there is no useful half-created state to offer before one is chosen. Every
+    // entry point funnels through here, so the guard belongs here rather than on each
+    // button. The folder picker is not opened for the user: the workspace already
+    // shows one primary "連接 StoryFlow 資料夾" action, and opening a system dialog
+    // from an unrelated click would be the surprise, not the help.
+    if (folderRequiredBeforeCreating() && !hasConnectedFolder()) {
+      window.notify?.('請先連接 StoryFlow 資料夾，再建立作品。', true);
+      return false;
+    }
     if (!source && !contentMode && window.StoryFlowVisualWorkspace?.openTypeChooser) {
       return window.StoryFlowVisualWorkspace.openTypeChooser();
     }

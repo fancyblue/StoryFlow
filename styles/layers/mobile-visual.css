@@ -208,6 +208,15 @@
   }
 }
 
+/* An empty state on a phone was 301px tall, most of it a 54px decorative icon and
+   30px of padding, which pushed its own primary action behind the bottom navigation —
+   on first run that action is "連接 StoryFlow 資料夾", the only thing there is to do.
+   The words carry the meaning; the icon does not need to be above the fold. */
+@media (max-width:820px) {
+  .empty-state { min-height:0 !important; padding:18px 16px !important; }
+  .empty-state .empty-icon { display:none !important; }
+}
+
 @media (max-width:390px) {
   .sidebar-connection-copy b { display:none !important; }
   .sidebar-utility-actions {

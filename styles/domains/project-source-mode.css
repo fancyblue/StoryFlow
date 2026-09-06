@@ -45,8 +45,8 @@
   text-align:left;
   cursor:pointer;
 }
-.project-creation-option:hover,
-.project-creation-option:focus-visible{
+.project-creation-option:hover:not(:disabled),
+.project-creation-option:focus-visible:not(:disabled){
   border-color:#91b8d9;
   background:#eef7fc;
   outline:none;
@@ -67,6 +67,22 @@
 .project-creation-option-copy strong{font-size:13px;font-weight:800;line-height:1.25;text-wrap:pretty}
 .project-creation-option-copy small{color:var(--sf-muted,#58748b);font-size:11.5px;font-weight:600;line-height:1.35}
 .project-creation-option-arrow{color:#7aa4c3;font-size:18px;font-weight:700;text-align:right}
+
+/* Until a folder is connected there is nothing to create a work into, so the options
+   render as unavailable instead of accepting a click that cannot be honoured. The icon,
+   description and arrow dim with the frame; leaving them lit would read as an enabled
+   option in a grey box. The reason lives in the note above, which the options point at. */
+.project-creation-option:disabled{
+  border-color:#dde8ef;
+  background:#f4f8fb;
+  color:#8aa0af;
+  cursor:not-allowed;
+}
+.project-creation-option:disabled .project-creation-option-icon{background:#eaf1f6;color:#9db1c0}
+.project-creation-option:disabled .project-creation-option-copy small{color:#93a8b8}
+.project-creation-option:disabled .project-creation-option-arrow{color:#b6c7d4}
+/* The note stops being a footnote and becomes the reason the options are closed. */
+.project-creation-chooser.awaiting-folder .project-creation-copy span{color:var(--sf-text,#23486b)}
 
 /* An unset source mode is not the same as “no work”. Keep the current work name
    visible so an explicitly created empty work still has identity in Workspace.
@@ -217,6 +233,22 @@
 }
 .project-source-diff-row.manual-row .project-source-diff-copy strong{
   color:#49677d;
+}
+
+/* On a phone the unavailable options were pushing the one thing that can be done —
+   connecting the folder — past the bottom of the screen. They stay as a preview of what
+   comes next, but give the space back until they can actually be used. */
+@media(max-width:820px){
+  .project-creation-chooser.awaiting-folder .project-creation-option{
+    min-height:0;
+    padding:8px 10px;
+  }
+  .project-creation-chooser.awaiting-folder .project-creation-option-icon{
+    width:26px;
+    height:26px;
+    font-size:13px;
+  }
+  .project-creation-chooser.awaiting-folder .project-creation-option-copy small{display:none}
 }
 
 @media(max-width:560px){

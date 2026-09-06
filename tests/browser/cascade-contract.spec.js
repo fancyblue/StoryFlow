@@ -12,6 +12,7 @@
 
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { standInForConnectedFolder } from './support/folder.js';
 
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };
@@ -37,6 +38,7 @@ async function expectStyle(page, selector, expected) {
 
 async function longformWorkspace(page) {
   await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  await standInForConnectedFolder(page);
   await page.goto('/?visual-regression=1');
   await page.locator('#createProjectManually').click();
   await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
@@ -57,14 +59,26 @@ async function stylesheetOrder(page) {
 test('the cascade order matches the list the tooling reasons from', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  // cascade-order.json is the startup baseline, so this loads the app plainly: a
+  // connected folder re-renders the source panel and moves the ensureStyleLast tail.
   await page.goto('/');
   await expect(page.locator('.sidebar .nav')).toBeVisible();
 
   // `ensureThemeOrder()` re-appends seven stylesheets at startup, so this is not the
   // order in index.html. scripts/dead-declarations.mjs decides which of two competing
   // declarations wins from the committed list, so the list has to stay true.
-  const committed = JSON.parse(readFileSync('scripts/cascade-order.json', 'utf8')).order;
-  expect(await stylesheetOrder(page)).toEqual(committed);
+  const manifest = JSON.parse(readFileSync('scripts/cascade-order.json', 'utf8'));
+  const live = await stylesheetOrder(page);
+
+  // The tail is re-appended by ensureStyleLast() on render, so which of those files
+  // lands last is a race rather than a fact — the tooling ignores their relative order
+  // for that reason, and asserting it here would only produce flakes. What must hold
+  // is the fixed order everything else resolves in, and that no stylesheet appeared or
+  // went missing.
+  const tail = new Set(manifest.indeterminateTail);
+  const fixed = list => list.filter(href => !tail.has(href));
+  expect(fixed(live)).toEqual(fixed(manifest.order));
+  expect([...live].sort()).toEqual([...manifest.order].sort());
 });
 
 test('only the ensureStyleLast tail changes order while the app is used', async ({ page }) => {
@@ -130,6 +144,7 @@ test('shared controls keep their resolved appearance', async ({ page }) => {
 test('connection state carries a non-colour cue', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  // The disconnected dot is half of what this test compares, so no folder stand-in here.
   await page.goto('/');
   await expect(page.locator('#sidebarConnectionStatus')).toBeVisible();
 
@@ -195,6 +210,7 @@ test('overlays resolve to their own surface rather than inheriting a page rule',
 test('a disabled destructive action renders disabled', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  await standInForConnectedFolder(page);
   await page.goto('/');
   await page.locator('#sidebarSettingsBtn').click();
   await expect(page.locator('#settingsView')).toBeVisible();
@@ -217,6 +233,7 @@ test('a disabled destructive action renders disabled', async ({ page }) => {
 
 test('breakpoint visibility is owned by stylesheets, not the hidden attribute', async ({ page }) => {
   await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  await standInForConnectedFolder(page);
   await page.goto('/');
   await expect(page.locator('.sidebar .nav')).toBeVisible();
 
@@ -253,6 +270,7 @@ test('the chapter rail trades row height for density only on desktop', async ({ 
 test('the hidden attribute always wins over a component display rule', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  await standInForConnectedFolder(page);
   await page.goto('/');
 
   // `.field-label{display:block}` used to outrank the user-agent rule, so hiding a
