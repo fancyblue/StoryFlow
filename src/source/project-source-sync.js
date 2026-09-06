@@ -259,18 +259,22 @@
   function syncCreationAvailability() {
     const chooser = document.getElementById('projectCreationChooser');
     if (!chooser) return;
-    // Browsers without folder access can never satisfy the requirement, so they keep
-    // the options open rather than being locked out of the app.
-    const connected = !('showDirectoryPicker' in window)
-      || Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
+    const connected = Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
+    // Two ways to have no folder, with different ways out. A desktop Chromium user can
+    // connect one; a phone, tablet, Safari or Firefox user cannot, and telling them to
+    // connect would point at a button that can never succeed.
+    const canConnect = window.StoryFlowIntegrations?.supportsFolderAccess?.() ?? false;
     const note = document.getElementById('projectCreationChooserNote');
 
     chooser.classList.toggle('awaiting-folder', !connected);
     if (note) {
-      note.textContent = connected
-        ? '建立後會固定使用這種來源模式，讓後續操作保持一致。'
-        : '作品一建立就會寫進資料夾，所以要先連接。連接後這兩個選項就會開啟。';
+      if (connected) note.textContent = '建立後會固定使用這種來源模式，讓後續操作保持一致。';
+      else if (canConnect) note.textContent = '作品一建立就會寫進資料夾，所以要先連接。連接後這兩個選項就會開啟。';
+      else note.textContent = '這個瀏覽器無法連接資料夾，作品會無處可存。請改用電腦版 Chrome 或 Edge。';
     }
+    const reason = canConnect
+      ? '請先連接 StoryFlow 資料夾，再建立作品。'
+      : '這個瀏覽器無法連接資料夾。請改用電腦版 Chrome 或 Edge。';
     chooser.querySelectorAll('.project-creation-option').forEach(option => {
       option.disabled = !connected;
       if (connected) {
@@ -278,7 +282,7 @@
         option.removeAttribute('aria-describedby');
         return;
       }
-      option.title = '請先連接 StoryFlow 資料夾，再建立作品。';
+      option.title = reason;
       if (note) option.setAttribute('aria-describedby', 'projectCreationChooserNote');
     });
   }

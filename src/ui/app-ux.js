@@ -132,11 +132,12 @@
       newWork.hidden = projects.length === 0;
       // Same rule as the workspace chooser: a work cannot be created before there is a
       // folder to write it into, and the control says why rather than failing on click.
-      const connected = !('showDirectoryPicker' in window)
-        || Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
+      const connected = Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
       newWork.disabled = !connected;
       if (connected) newWork.removeAttribute('title');
-      else newWork.title = '請先連接 StoryFlow 資料夾，再建立作品。';
+      else newWork.title = window.StoryFlowIntegrations?.supportsFolderAccess?.()
+        ? '請先連接 StoryFlow 資料夾，再建立作品。'
+        : '這個瀏覽器無法連接資料夾。請改用電腦版 Chrome 或 Edge。';
     }
 
     list.innerHTML = '';

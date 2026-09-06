@@ -2428,3 +2428,46 @@ test('first run on a phone keeps its only action clear of the bottom navigation'
 
   expect(pageErrors).toEqual([]);
 });
+
+test('a phone can import settings.json while staying read-only', async ({ page }) => {
+  // Reading on a phone starts here: settings.json carries the Google integration, and
+  // without it there is no way in. The import button was already treated as a safe read,
+  // but the capture-phase change guard cancelled the event the picker produced, so the
+  // file was chosen and the only response was the read-only notice. Nothing about this
+  // writes to the folder, so read-only must not block it.
+  const pageErrors = await prepare(page, { connectedFolder: false });
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      get: () => 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36'
+    });
+  });
+  await page.setViewportSize({ width: 412, height: 915 });
+  await page.goto('/');
+
+  await expect.poll(() => page.evaluate(() =>
+    window.StoryFlowMobileSafeMode?.isReadOnly?.() ?? null)).toBe(true);
+
+  await page.evaluate(() => window.openSettings?.());
+  await expect(page.locator('#settingsBootstrapFileInput')).toHaveCount(1);
+
+  // Disposable credentials — never a real client id or key.
+  await page.setInputFiles('#settingsBootstrapFileInput', {
+    name: 'settings.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify({
+      googleClientId: '123456789012-storyflowtest.apps.googleusercontent.com',
+      pickerApiKey: 'TEST-PICKER-KEY-NOT-REAL'
+    }))
+  });
+
+  await expect.poll(() => page.evaluate(() =>
+    window.STORYFLOW_CONFIG?.googleClientId || null))
+    .toBe('123456789012-storyflowtest.apps.googleusercontent.com');
+  expect(await page.evaluate(() => window.StoryFlowIntegrations?.pickerApiKey?.()))
+    .toBe('TEST-PICKER-KEY-NOT-REAL');
+
+  // The import must not have unlocked writing as a side effect.
+  expect(await page.evaluate(() => window.StoryFlowMobileSafeMode?.isReadOnly?.())).toBe(true);
+  expect(pageErrors).toEqual([]);
+});

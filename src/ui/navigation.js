@@ -207,11 +207,13 @@
     return Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
   }
 
-  // Safari and Firefox cannot connect a folder at all, so requiring one there would
-  // lock those browsers out of creating anything. The requirement applies only where a
-  // folder is reachable — the same capability test the persistence layer uses.
-  function folderRequiredBeforeCreating() {
-    return 'showDirectoryPicker' in window;
+  // A browser with no directory picker was previously allowed to create anyway, on the
+  // reasoning that requiring a folder would lock it out. Measurement showed that was
+  // backwards: a work created there lives only in memory and is gone on reload, with no
+  // warning. The exception did not preserve a working app, it just made the failure
+  // late and silent. Both cases are refused now; only the wording differs.
+  function canReachAFolder() {
+    return window.StoryFlowIntegrations?.supportsFolderAccess?.() ?? false;
   }
 
   function startNewWorkFlow({ source = null, contentMode = null } = {}) {
@@ -222,8 +224,10 @@
     // button. The folder picker is not opened for the user: the workspace already
     // shows one primary "連接 StoryFlow 資料夾" action, and opening a system dialog
     // from an unrelated click would be the surprise, not the help.
-    if (folderRequiredBeforeCreating() && !hasConnectedFolder()) {
-      window.notify?.('請先連接 StoryFlow 資料夾，再建立作品。', true);
+    if (!hasConnectedFolder()) {
+      window.notify?.(canReachAFolder()
+        ? '請先連接 StoryFlow 資料夾，再建立作品。'
+        : '這個瀏覽器無法連接資料夾，作品會無處可存。請改用電腦版 Chrome 或 Edge。', true);
       return false;
     }
     if (!source && !contentMode && window.StoryFlowVisualWorkspace?.openTypeChooser) {
