@@ -200,6 +200,10 @@
     return Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
   }
 
+  function canReachAFolder() {
+    return window.StoryFlowIntegrations?.supportsFolderAccess?.() ?? false;
+  }
+
   function isImplicitBlankWorkspace() {
     const projectApi = window.StoryFlowProjects;
     if (typeof projectApi?.isActivePlaceholder === 'function') {
@@ -231,10 +235,15 @@
     // in memory, but nothing reaches disk until a folder exists, so offering
     // creation first invites the user to build a work that cannot be saved.
     if (!hasConnectedFolder()) {
-      actions.innerHTML = `
-        <button id="workspaceConnectFolderBtn" class="button primary" type="button">連接 StoryFlow 資料夾</button>`;
-      actions.querySelector('#workspaceConnectFolderBtn')
-        .addEventListener('click', () => document.getElementById('folderBtn')?.click());
+      // Where no folder can be reached, there is no action to offer. Rendering the
+      // connect button anyway made the panel's one primary control a button that
+      // cannot succeed — the copy above carries the real answer instead.
+      if (canReachAFolder()) {
+        actions.innerHTML = `
+          <button id="workspaceConnectFolderBtn" class="button primary" type="button">連接 StoryFlow 資料夾</button>`;
+        actions.querySelector('#workspaceConnectFolderBtn')
+          .addEventListener('click', () => document.getElementById('folderBtn')?.click());
+      }
       return;
     }
 
@@ -257,7 +266,13 @@
     const hasProject = !isImplicitBlankWorkspace();
     let heading = '尚未載入作品內容';
     let detail = '在左側「作品與章節」選擇 Google Docs 或手動建立。';
-    if (!hasConnectedFolder()) {
+    if (!hasConnectedFolder() && !canReachAFolder()) {
+      // Measured: a work created here is gone on reload, because nothing can be
+      // written. Saying "connect a folder" would be asking for something this browser
+      // cannot do, so the panel names the real requirement instead.
+      heading = '這個瀏覽器無法連接資料夾';
+      detail = '作品、切篇結果與發布進度都要寫進本機資料夾，而這個瀏覽器不支援。請改用電腦版 Chrome 或 Edge 開啟 StoryFlow。';
+    } else if (!hasConnectedFolder()) {
       heading = '先連接 StoryFlow 資料夾';
       detail = '作品、切篇結果與發布進度都會寫進你選擇的資料夾。連接後就可以建立作品。';
     } else if (hasProject) {

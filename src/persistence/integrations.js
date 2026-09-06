@@ -128,8 +128,18 @@ const StoryFlowIntegrations = (() => {
     return Boolean(request && (await handle.requestPermission(opts)) === 'granted');
   }
 
+  // Whether this browser can connect a StoryFlow folder at all. Everything a work is
+  // made of — the workspace, split parts, publishing progress — is written into that
+  // folder, so a browser without a directory picker cannot hold a work past the current
+  // page. Mobile browsers have none, and neither do Safari or Firefox on the desktop.
+  // That makes this a product-level capability the UI has to gate on, not just a guard
+  // inside each call, so it is published rather than re-tested by every caller.
+  function supportsFolderAccess() {
+    return 'showDirectoryPicker' in window;
+  }
+
   async function restoreOutputDirectory() {
-    if (!('showDirectoryPicker' in window)) return { supported: false };
+    if (!supportsFolderAccess()) return { supported: false };
     await hydrateOutputDirectoryHandle();
     if (!outputDirectoryHandle) return { supported: true, connected: false };
     const connected = await verifyPermission(outputDirectoryHandle, false);
@@ -137,7 +147,7 @@ const StoryFlowIntegrations = (() => {
   }
 
   async function inspectRememberedOutputDirectory() {
-    if (!('showDirectoryPicker' in window)) return { supported: false };
+    if (!supportsFolderAccess()) return { supported: false };
     await hydrateOutputDirectoryHandle();
     if (!outputDirectoryHandle) return { supported: true, remembered: false };
     let permission = 'prompt';
@@ -1429,7 +1439,7 @@ const StoryFlowIntegrations = (() => {
 
   // Browser startup is intentionally non-destructive. Legacy data remains available
   // until a future explicit, Recovery-backed migration is designed.
-  const api = { restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, cleanupWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, importPartImages, getPartImageFile, removePartImage, saveVisualEntry, importVisualImages, getVisualImageFile, removeVisualImage, removeVisualEntryFiles, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, inspectLegacyBrowserStorage, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken), LARGE_IMAGE_BYTES, STORAGE_CLEANUP_DEFAULT_DAYS };
+  const api = { supportsFolderAccess, restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, cleanupWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, importPartImages, getPartImageFile, removePartImage, saveVisualEntry, importVisualImages, getVisualImageFile, removeVisualImage, removeVisualEntryFiles, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, inspectLegacyBrowserStorage, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken), LARGE_IMAGE_BYTES, STORAGE_CLEANUP_DEFAULT_DAYS };
   window.StoryFlowIntegrations = api;
   return api;
 })();
