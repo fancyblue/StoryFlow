@@ -108,6 +108,29 @@ Global controls help the user move or locate content; they do not compete with t
 
 The active sidebar item may use a dark selected background because it communicates location inside persistent navigation. That treatment is separate from a solid page CTA and does not imply that clicking it is the recommended next task.
 
+### Reading existing work on a phone (O-07)
+
+The phone is a reading device, and this is the whole route to reading:
+
+1. **匯入 settings.json** — a file input, not a folder. It carries the Google integration only; nothing is written anywhere.
+2. **登入 Google** — a session token, held in memory.
+3. **連接資料夾** — where the manuscript actually lives.
+4. **讀既有作品** — chapters and split parts are read back from that folder.
+
+Every step is a read. None of them creates a work, so the folder gate on work creation
+must not stand in this route's way, and read-only mode must not block any step in it
+either. Read-only exists to stop *writes* reaching a folder that a mobile file provider
+may have left stale — it is not a reason to refuse an import that only configures this
+tab.
+
+That distinction was lost once: `#importSettingsJsonBtn` was listed as a safe read, but
+the capture-phase `change` guard cancelled the event the file picker produced before the
+bootstrap's own handler saw it. The button opened, the file was chosen, and the only
+response was “手機目前是唯讀模式”. A control that is allowed to start an action must be
+allowed to finish it — the inputs those buttons open are named in
+`SAFE_READ_INPUT_SELECTOR` for exactly this reason, and inputs that do write (image
+import, workspace recovery, backup restore) are deliberately not.
+
 ### First use, reconnect and recovery
 
 Connection and recovery surfaces are global states that may interrupt any page. They use progressive disclosure so only the action that resolves the current blocker is primary.
@@ -120,6 +143,7 @@ Connection and recovery surfaces are global states that may interrupt any page. 
 | O-04 | Resolve a newer file on disk | 載入較新版本 | 保留目前版本並覆蓋、稍後處理 | The safest recommended resolution is solid; overwrite is secondary and requires explicit confirmation |
 | O-05 | Recover an unreadable workspace | 從備份恢復 | 匯入工作區檔案、稍後處理 | One recoverable path is solid; file import becomes solid only after a candidate passes validation |
 | O-06 | Use StoryFlow on a phone | Read and preview in “唯讀” mode | Reconnect folder, open Settings | “唯讀” is a status label, not a button; editing remains an explicit Settings decision |
+| O-07 | Read existing manuscript on a phone | 匯入 settings.json → 登入 Google → 連接資料夾 → 讀既有作品 | — | Every step is a read; none of them creates a work. Read-only must not block any of them |
 
 Recovery is the exception where a solid button may appear outside the normal page task. It should still present only one recommended safe action at a time; potentially destructive overwrite paths stay visually secondary until their confirmation step.
 

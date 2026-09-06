@@ -30,6 +30,19 @@
     '#reimportStoryFlowSettingsBtn',
     '#quickImportSettingsBtn'
   ].join(',');
+  // The file inputs those import buttons open. Allowing the button but intercepting the
+  // change event that follows it let the user start an import that could never finish:
+  // the capture-phase guard called stopImmediatePropagation before the bootstrap's own
+  // handler ran, so the picker opened, a file was chosen, and the only response was
+  // "手機目前是唯讀模式". Importing settings writes nothing to the folder — it only tells
+  // this tab which Google project to use, which is what makes reading on a phone
+  // possible at all. Inputs that do write (image import, workspace recovery, backup
+  // restore) are deliberately absent.
+  const SAFE_READ_INPUT_SELECTOR = [
+    '#settingsBootstrapFileInput',
+    '#quickStartSettingsInput',
+    '#storyflowRecoveryFileInput'
+  ].join(',');
   const WRITE_METHODS = [
     'saveWorkspace',
     'saveStoryFlowSettings',
@@ -86,6 +99,10 @@
     ));
   }
 
+  function isSafeReadInput(control) {
+    return Boolean(control?.matches?.(SAFE_READ_INPUT_SELECTOR));
+  }
+
   function isWriteButton(button) {
     if (!button || button.id === 'mobileSafeModeToggle') return false;
     if (button.matches(SAFE_READ_CONTROL_SELECTOR)) return false;
@@ -101,6 +118,7 @@
     });
     root.querySelectorAll?.('input, textarea, select, [contenteditable="true"]').forEach(control => {
       if (control.dataset.mobileSafeLocked === 'true' || isUiOnlyControl(control)) return;
+      if (isSafeReadInput(control)) return;
       control.dataset.mobileSafeLocked = 'true';
       control.setAttribute('aria-readonly', 'true');
       if (control.matches('input:not([type="checkbox"]):not([type="radio"]), textarea')) {
@@ -306,7 +324,7 @@
     notifyBlocked();
   }, true);
   document.addEventListener('change', event => {
-    if (!readOnly || isUiOnlyControl(event.target)) return;
+    if (!readOnly || isUiOnlyControl(event.target) || isSafeReadInput(event.target)) return;
     if (!event.target.matches?.('input, textarea, select')) return;
     event.preventDefault();
     event.stopImmediatePropagation();
