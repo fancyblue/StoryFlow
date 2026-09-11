@@ -354,7 +354,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(53);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(54);
 
   await page.locator('#createProjectManually').click();
   await page.getByRole('dialog', { name: '選擇作品類型' }).getByRole('button', { name: /長文作品/ }).click();
@@ -2519,6 +2519,50 @@ test('a folder-capable phone keeps its connect entry and is never told to switch
   // And it must never be told this browser cannot do it.
   await expect(page.locator('#suggestionEmpty')).not.toContainText('無法連接資料夾');
   await expect(page.locator('#projectCreationChooserNote')).not.toContainText('Chrome 或 Edge');
+
+  expect(pageErrors).toEqual([]);
+});
+
+test('row menus flip up rather than opening past the bottom of the window', async ({ page }) => {
+  // One shared positioner now serves the chapter rail, the visual list and the works
+  // page. The works-page rows previously had no positioning at all, and the other two
+  // measured against their scroll panel only — a panel can extend past the window, so a
+  // menu could sit inside its panel and still be off screen.
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 700 });
+  await page.goto('/');
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '選單版面測試' }, { quiet: true });
+    state.chapters = Array.from({ length: 12 }, (_, i) => ({
+      id: `menu-chapter-${i + 1}`,
+      title: `${String(i + 1).padStart(2, '0')}、章節`,
+      draft: `第 ${i + 1} 章。`, confirmedBlockCount: 0, parts: []
+    }));
+    state.activeChapterId = state.chapters[0].id;
+    renderAll();
+  });
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  const card = page.locator('.project-library-card', { hasText: '選單版面測試' });
+  await card.getByRole('button', { name: '管理章節', exact: true }).click();
+  const lastRow = page.locator('.project-chapter-manager-row').last();
+  // Put the row hard against the bottom of the window, which is the case that needs the
+  // flip. Merely scrolling it into view leaves room below and tests nothing.
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const rowBottomGap = await lastRow.evaluate(element =>
+    window.innerHeight - element.getBoundingClientRect().bottom);
+  expect(rowBottomGap).toBeLessThan(80);
+
+  await lastRow.getByRole('button', { name: /更多/ }).click();
+  const menu = lastRow.locator('.chapter-row-action-menu:not([hidden])');
+  await expect(menu).toBeVisible();
+  await expect(menu).toHaveClass(/opens-up/);
+  const fits = await menu.evaluate(element => {
+    const box = element.getBoundingClientRect();
+    return { top: box.top, bottom: box.bottom, viewport: window.innerHeight };
+  });
+  expect(fits.top).toBeGreaterThanOrEqual(0);
+  expect(fits.bottom).toBeLessThanOrEqual(fits.viewport);
 
   expect(pageErrors).toEqual([]);
 });

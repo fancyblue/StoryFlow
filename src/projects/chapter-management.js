@@ -28,47 +28,9 @@
     document.querySelectorAll('.chapter-row-action-menu').forEach(menu => {
       if (menu === except) return;
       menu.hidden = true;
-      unwatchChapterMenuSize(menu);
+      window.StoryFlowAnchoredMenu?.close?.(menu);
       menu.closest('.chapter-row, .project-chapter-manager-row, .visual-entry-row')?.querySelector('.chapter-more-button')?.setAttribute('aria-expanded', 'false');
     });
-  }
-
-  function positionChapterMenu(menu) {
-    const row = menu?.closest('.chapter-row');
-    const panel = menu?.closest('.source-panel');
-    if (!row || !panel || menu.hidden) return;
-    menu.classList.remove('opens-up');
-    const panelRect = panel.getBoundingClientRect();
-    const rowRect = row.getBoundingClientRect();
-    const menuHeight = menu.getBoundingClientRect().height;
-    const spaceBelow = panelRect.bottom - (rowRect.top + rowRect.height / 2 + 20);
-    const spaceAbove = rowRect.top + rowRect.height / 2 - 20 - panelRect.top;
-    if (spaceBelow < menuHeight + 8 && spaceAbove >= menuHeight + 8) {
-      menu.classList.add('opens-up');
-    }
-  }
-
-  // Whether this menu opens up or down is decided from its height, but its height is
-  // not final when it opens: manual-chapter-edit.js prepends an 編輯章節 item to the
-  // same menu after render, taking it from 73px to 87px. A menu positioned from the
-  // smaller number opened downwards and landed 73px below the viewport — measured on
-  // roughly one open in twelve. Reacting to the size actually changing is what makes
-  // this correct regardless of which module gets there first; waiting a frame would
-  // only be a bet on the usual order.
-  const chapterMenuSizeWatchers = new WeakMap();
-
-  function watchChapterMenuSize(menu) {
-    if (typeof ResizeObserver !== 'function' || chapterMenuSizeWatchers.has(menu)) return;
-    const observer = new ResizeObserver(() => positionChapterMenu(menu));
-    observer.observe(menu);
-    chapterMenuSizeWatchers.set(menu, observer);
-  }
-
-  function unwatchChapterMenuSize(menu) {
-    const observer = chapterMenuSizeWatchers.get(menu);
-    if (!observer) return;
-    observer.disconnect();
-    chapterMenuSizeWatchers.delete(menu);
   }
 
   function restoreChapterRailScroll(panel, scrollTop) {
@@ -120,11 +82,10 @@
         menu.hidden = !opening;
         legacyDelete.setAttribute('aria-expanded', opening ? 'true' : 'false');
         if (opening) {
-          positionChapterMenu(menu);
-          watchChapterMenuSize(menu);
+          window.StoryFlowAnchoredMenu?.open?.(menu);
           menu.querySelector('button')?.focus({ preventScroll: true });
         } else {
-          unwatchChapterMenuSize(menu);
+          window.StoryFlowAnchoredMenu?.close?.(menu);
         }
       });
     });
@@ -359,7 +320,12 @@
           closeChapterMenus(opening ? menu : null);
           menu.hidden = !opening;
           more.setAttribute('aria-expanded', opening ? 'true' : 'false');
-          if (opening) menu.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+          if (opening) {
+            window.StoryFlowAnchoredMenu?.open?.(menu);
+            menu.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+          } else {
+            window.StoryFlowAnchoredMenu?.close?.(menu);
+          }
         });
         actions.append(edit, more, menu);
 
@@ -457,7 +423,12 @@
           closeChapterMenus(opening ? menu : null);
           menu.hidden = !opening;
           more.setAttribute('aria-expanded', opening ? 'true' : 'false');
-          if (opening) menu.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+          if (opening) {
+            window.StoryFlowAnchoredMenu?.open?.(menu);
+            menu.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+          } else {
+            window.StoryFlowAnchoredMenu?.close?.(menu);
+          }
         });
         actions.classList.add('project-visual-entry-actions');
         actions.append(edit, more, menu);
