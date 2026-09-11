@@ -1200,7 +1200,7 @@ test('published articles keep an independent afterword and can exclude it from o
   expect(deleteMessage).toContain('1 篇有後記');
   expect(deleteMessage).toContain('後記也會一併刪除');
   expect(deleteMessage).toContain('共附有 1 張圖片');
-  expect(deleteMessage).toContain('私人 assets 圖檔會保留');
+  expect(deleteMessage).toContain('會一併移除；檔案先備份到 Recovery/Assets');
   expect(pageErrors).toEqual([]);
 });
 
@@ -1541,22 +1541,25 @@ test('article images import private copies, preview, reorder, describe, and remo
   await expect(toolDialog.locator('.article-image-thumb.missing')).toContainText('找不到檔案');
   await page.evaluate(() => window.__imageFiles.set('插圖.png', window.__allImageFiles.get('插圖.png')));
 
+  // Removing an image deletes the file, backed up first. There is no "detach only"
+  // branch any more: choosing between keeping and deleting StoryFlow's own copy was a
+  // decision about its filing, not about the manuscript.
   await toolDialog.locator('.article-image-row').first().getByRole('button', { name: '移除', exact: true }).click();
   const removeDialog = page.locator('#articleImageRemoveDialog');
   await expect(removeDialog).toBeVisible();
-  await removeDialog.getByRole('button', { name: '只從文章移除', exact: true }).click();
+  await expect(removeDialog.getByRole('button', { name: '只從文章移除' })).toHaveCount(0);
+  await removeDialog.getByRole('button', { name: '移除圖片', exact: true }).click();
   await expect(toolDialog.locator('.article-image-row')).toHaveCount(1);
-  expect(await page.evaluate(() => window.__imageFiles.has('插圖-2.png'))).toBe(true);
 
   await toolDialog.locator('.article-image-row').first().getByRole('button', { name: '移除', exact: true }).click();
-  await removeDialog.getByRole('button', { name: '備份後刪除檔案', exact: true }).click();
+  await removeDialog.getByRole('button', { name: '移除圖片', exact: true }).click();
   await expect(toolDialog.locator('.article-image-row')).toHaveCount(0);
   const removed = await page.evaluate(() => ({
     deleted: window.__deletedImageFiles,
     remainingState: state.chapters.find(chapter => chapter.title === '圖片章節').parts[0].images.length,
     finalMarkdown: window.__savedArticleMarkdown
   }));
-  expect(removed.deleted).toEqual(['插圖.png']);
+  expect(removed.deleted.sort()).toEqual(['插圖-2.png', '插圖.png']);
   expect(removed.remainingState).toBe(0);
   expect(removed.finalMarkdown).toBe('圖片文章正文。');
   expect(pageErrors).toEqual([]);

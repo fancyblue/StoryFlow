@@ -345,6 +345,68 @@ const StoryFlowIntegrations = (() => {
     return `${outputDirectoryHandle.name}/${RECOVERY_DIRECTORY}/Assets/${recoveryName}`;
   }
 
+  // Deleting a work, an entry or an article takes its images with it. Keeping them was a
+  // deliberate guard against a text operation wiping an original, but it meant the folder
+  // grew with every deletion and nothing pointed at the files any more. The copy into
+  // Recovery/Assets is what makes removal safe, and it happens without asking: choosing
+  // between "keep the file" and "delete the file" asked the user to decide how StoryFlow
+  // files its own copies, which is not their decision to make.
+  //
+  // Only the images StoryFlow recorded are touched. Walking the directory would also
+  // sweep up anything the user put in that folder themselves. Every backup is written
+  // before anything is removed, so a failure part-way leaves the files in place.
+  async function archiveRecordedAssets(directory, images, label) {
+    const names = (images || [])
+      .map(image => image?.storedName || image?.fileName)
+      .filter(Boolean);
+    if (!directory || !names.length) return [];
+
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const recovery = await getDirectory(await getDirectory(outputDirectoryHandle, RECOVERY_DIRECTORY), 'Assets');
+    const archived = [];
+    const present = [];
+    for (const name of names) {
+      let file;
+      try {
+        file = await (await directory.getFileHandle(safeName(name))).getFile();
+      } catch (error) {
+        if (error?.name === 'NotFoundError') continue;
+        throw error;
+      }
+      const recoveryName = `${stamp}-${safeName(label)}-${imageFilename(name)}`;
+      await writeBinaryFile(recovery, recoveryName, file);
+      archived.push(recoveryName);
+      present.push(name);
+    }
+    for (const name of present) {
+      try { await directory.removeEntry(safeName(name)); }
+      catch (error) { if (error?.name !== 'NotFoundError') throw error; }
+    }
+    return archived;
+  }
+
+  async function removeVisualEntryAssets({ projectTitle, entryId, images }) {
+    let directory;
+    try {
+      directory = await visualAssetsDirectory({ projectTitle, entryId }, false);
+    } catch (error) {
+      if (error?.name === 'NotFoundError') return [];
+      throw error;
+    }
+    return archiveRecordedAssets(directory, images, entryId);
+  }
+
+  async function removePartAssets({ projectTitle, chapterTitle, partId, images }) {
+    let directory;
+    try {
+      directory = await partAssetsDirectory({ projectTitle, chapterTitle, partId }, false);
+    } catch (error) {
+      if (error?.name === 'NotFoundError') return [];
+      throw error;
+    }
+    return archiveRecordedAssets(directory, images, partId);
+  }
+
   async function saveVisualEntry({ projectTitle, entry }) {
     if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
     const normalized = window.StoryFlowContentModel.normalizeVisualEntry(entry);
@@ -394,6 +456,7 @@ const StoryFlowIntegrations = (() => {
       content,
       metadata
     }, null, 2));
+    await removeVisualEntryAssets({ projectTitle, entryId, images: entry?.images });
     for (const filename of ['content.md', 'metadata.json']) {
       try { await directory.removeEntry(filename); }
       catch (error) { if (error?.name !== 'NotFoundError') throw error; }
@@ -1441,7 +1504,7 @@ const StoryFlowIntegrations = (() => {
 
   // Browser startup is intentionally non-destructive. Legacy data remains available
   // until a future explicit, Recovery-backed migration is designed.
-  const api = { supportsFolderAccess, restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, cleanupWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, importPartImages, getPartImageFile, removePartImage, saveVisualEntry, importVisualImages, getVisualImageFile, removeVisualImage, removeVisualEntryFiles, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, inspectLegacyBrowserStorage, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken), LARGE_IMAGE_BYTES, STORAGE_CLEANUP_DEFAULT_DAYS };
+  const api = { supportsFolderAccess, removeVisualEntryAssets, removePartAssets, restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, cleanupWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, importPartImages, getPartImageFile, removePartImage, saveVisualEntry, importVisualImages, getVisualImageFile, removeVisualImage, removeVisualEntryFiles, requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource, pickerApiKey, setPickerApiKey, inspectLegacyBrowserStorage, purgeLegacyBrowserStorage, hasGoogleToken: () => Boolean(accessToken), LARGE_IMAGE_BYTES, STORAGE_CLEANUP_DEFAULT_DAYS };
   window.StoryFlowIntegrations = api;
   return api;
 })();

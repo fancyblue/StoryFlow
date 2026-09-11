@@ -125,13 +125,23 @@
           '刪除圖文文字輸出前建立獨立 Recovery artifact');
         assert(!visualDirectory.files.has('content.md') && !visualDirectory.files.has('metadata.json'),
           'Recovery 完成後移除圖文文字與 metadata');
-        assert(visualDirectory.directories.get('assets')?.files.has('圖文封面.webp'),
-          '刪除圖文時預設保留私人 assets');
-
-        const visualImageRecovery = await StoryFlowIntegrations.removeVisualImage({ ...visualContext, storedName: visualImage.storedName });
-        assert(visualImageRecovery.includes('/Recovery/Assets/'), '明確刪除圖文圖片時先備份到 Recovery/Assets');
         assert(!visualDirectory.directories.get('assets')?.files.has('圖文封面.webp'),
-          '圖文圖片 Recovery 完成後才刪除原檔');
+          '刪除圖文時一併移除私人 assets 圖檔');
+        assert([...(mockRoot.directories.get('Recovery')?.directories.get('Assets')?.files.keys() || [])]
+          .some(name => name.includes('圖文封面')),
+          '圖文圖檔在移除前已備份到 Recovery/Assets');
+
+        // Only what StoryFlow recorded is removed; anything else in that folder stays.
+        const strayEntry = { ...visualEntry, id: 'visual-stray-id', images: [] };
+        await StoryFlowIntegrations.saveVisualEntry({ projectTitle: visualContext.projectTitle, entry: strayEntry });
+        const strayDirectory = mockRoot.directories.get('Works')?.directories.get('圖文系列')
+          ?.directories.get('Visual')?.directories.get('visual-stray-id');
+        strayDirectory.directories.set('assets', { files: new Map([['使用者自己放的.webp', new Blob(['keep'])]]), directories: new Map() });
+        await StoryFlowIntegrations.removeVisualEntryFiles({
+          ...visualContext, entryId: 'visual-stray-id', entry: strayEntry
+        });
+        assert(strayDirectory.directories.get('assets')?.files.has('使用者自己放的.webp'),
+          '未被記錄的檔案不會被刪除');
 
         result.textContent = `${checks.join('\n')}\n\nALL PASS`;
         document.body.dataset.testStatus = 'pass';

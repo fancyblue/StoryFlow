@@ -280,10 +280,10 @@
     const visualCount = target.state?.visualEntries?.length || 0;
     const extra = hasParts
       ? '\n\n這個作品仍有已確認文章；若連輸出的 Markdown 也不要，請先到「發布」逐篇刪除。'
-      : visualCount ? `\n\n這個圖文系列仍有 ${visualCount} 則圖文；私人 assets 圖檔會保留。` : '';
+      : visualCount ? `\n\n這個圖文系列仍有 ${visualCount} 則圖文，圖片會一併移除。` : '';
     const scope = target.state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL
       ? '圖文與編輯進度' : '章節、切篇與發布進度';
-    if (!confirm(`刪除作品「${title}」？\n\n會從 StoryFlow 工作區移除這個作品的${scope}。Google Docs 原稿與私人圖片檔不會刪除。${extra}`)) return false;
+    if (!confirm(`刪除作品「${title}」？\n\n會從 StoryFlow 工作區移除這個作品的${scope}，圖片檔一併移除並備份到 Recovery/Assets。Google Docs 原稿不會刪除。${extra}`)) return false;
 
     try {
       const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
@@ -291,6 +291,28 @@
       await prepare('before-project-delete');
     } catch (error) {
       notify(`尚未刪除作品：無法建立 Recovery 安全副本（${error.message}）`, true);
+      return false;
+    }
+
+    // The images go with the work, backed up first. This runs before the record is
+    // removed so a failure leaves everything intact rather than stranding files whose
+    // only reference has just been deleted.
+    try {
+      const projectTitle = target.state?.projectTitle || title;
+      for (const entry of target.state?.visualEntries || []) {
+        await StoryFlowIntegrations.removeVisualEntryAssets?.({
+          projectTitle, entryId: entry.id, images: entry.images
+        });
+      }
+      for (const chapter of target.state?.chapters || []) {
+        for (const part of chapter.parts || []) {
+          await StoryFlowIntegrations.removePartAssets?.({
+            projectTitle, chapterTitle: chapter.title, partId: part.id, images: part.images
+          });
+        }
+      }
+    } catch (error) {
+      notify(`尚未刪除作品：無法備份圖片檔（${error.message}）`, true);
       return false;
     }
 

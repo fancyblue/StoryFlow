@@ -211,6 +211,8 @@ Deletion, replacement and source refresh follow the safety rules in [ARCHITECTUR
 
 Workspace does not provide a direct publishing shortcut for either content type; publication is entered from the primary navigation or the Works-page “管理發布” action. Longform and visual workspaces reuse the same page header and connection controls; visual mode changes only the title and hides longform-only save/generate actions. Longform progress remains visible as one compact inline strip above Smart Split instead of four competing dashboard cards. The Publishing page filters content type separately from publication status and repeats the type badge beside each work name. “全部類型／長文／圖文” count works after the current work selection, while status counts continue to count individual publishable entries.
 
+Deleting anything that owns images takes the images with it — an article, a visual entry, or a whole work — after copying them into `Recovery/Assets`. Images were previously kept behind, as a guard against a text operation wiping an original; the cost was that the folder grew with every deletion and nothing referenced those files any more. The backup replaces that guard, and it is not offered as a choice: whether to keep StoryFlow's own copy of a file is a question about its filing, not about the manuscript. Only recorded images are touched, so anything the user placed in an assets folder themselves is left alone.
+
 “離開此裝置” clears browser-held connection and settings state but does not delete files in the selected folder.
 
 ## Article afterwords
