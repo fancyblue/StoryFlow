@@ -57,7 +57,13 @@ function changedSinceBase() {
     const staged = execFileSync('git', ['diff', '--name-only', 'HEAD'], {
       cwd: root, encoding: 'utf8'
     });
-    return new Set([...out.split('\n'), ...staged.split('\n')].filter(Boolean));
+    // A brand-new module is untracked until it is committed, and git diff does not list
+    // it. Without this a new asset is added to app-loader.js with no cache query, the
+    // local check passes, and CI is the first thing to notice.
+    const untracked = execFileSync('git', ['ls-files', '--others', '--exclude-standard'], {
+      cwd: root, encoding: 'utf8'
+    });
+    return new Set([...out.split('\n'), ...staged.split('\n'), ...untracked.split('\n')].filter(Boolean));
   } catch (error) {
     throw new Error(`Cannot compare against ${base}: ${error.message}`);
   }

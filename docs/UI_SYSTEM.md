@@ -86,36 +86,30 @@ A destructive action must never be the only enabled control in an empty state. W
 
 One action carries one label and one weight wherever it appears. Connecting the StoryFlow folder is reached from the Settings folder card and from the backup centre, so both read "連接資料夾" and both stay outlined; the backup control only proxies the owning card and must not out-emphasize it. Sidebar chrome ranks below navigation: the collapse toggle rests on a translucent fill, never on the `--denim-800` used by an active nav item, so a utility control cannot read as the current destination.
 
-A menu that decides where to open must react to its own size changing, not measure once.
-`.chapter-row-action-menu` chooses up or down from its height, and `manual-chapter-edit.js`
-prepends an 編輯章節 item to that same menu after render — 73px before, 87px after. A menu
-positioned from the smaller reading opened downwards and landed below the viewport on
-roughly one open in twelve. `chapter-management.js` observes the open menu's size and
-repositions, which stays correct whichever module decorates it first; waiting a frame
-would only bet on the usual order. Any menu assembled by more than one module needs the
-same treatment.
+Menus that open against a row are positioned by one shared module,
+`src/ui/anchored-menu.js`. The chapter rail, the visual entry list and the works-page rows
+all use it; previously the first two carried near-identical copies of the logic and the
+third had none, opening downwards unconditionally. Two separate faults came out of that
+split, and both are answered in the shared version:
 
-Two sibling menus are knowingly unaudited, deferred on 2026-09-06 pending real use.
-`positionEntryMenu()` in `visual-workspace.js` is a near-line-for-line copy of the
-chapter version and has not been given the observer. Its entries are built in one
-template with nothing prepended later, so the path that broke the chapter menu is
-confirmed absent — but the menu carries the class `chapter-row-action-menu`, and the
-rules setting its size (`min-width`, `padding`, item `min-height`) live in
-`chapter-management.css`, which sits in the `ensureStyleLast()` racing tail. Whether the
-size can therefore be read too early is unverified, and reasoning about it was twice
-proved unreliable this round; only measurement settles it. The symptom to watch for is
-the one the chapter menu had: scroll a visual series to the bottom, open `⋯`, and the
-menu lands partly below the viewport. To check it, repeat the open 12–20 times and
-record menu top/bottom/height — a height smaller than the settled one is the tell.
+- **Size is not settled when a menu is unhidden.** `manual-chapter-edit.js` prepends an
+  item to the chapter menu after render — 73px before, 87px after — so a decision made
+  from that first reading opened the menu downwards off the screen about once in twelve.
+  The module observes the open menu's own size, which stays correct whichever code
+  decorates it first; waiting a frame only bets on the usual order.
+- **Room is the panel and the window, not the panel alone.** A scroll panel can extend
+  past the bottom of the window, so a menu could sit inside its 972px panel and still end
+  73px below a 900px viewport. Space is the intersection of the two, and where a row has
+  no scroll panel — the works page — the window is the only limit.
 
-The works-page menus (`project-visual-entry-action-menu`, built in
-`chapter-management.js`) have no positioning logic at all: pure CSS `top:calc(100% + 6px)`
-opens them downwards with no boundary check. That is deterministic rather than a race,
-and equally unverified.
+Any new menu of this shape uses the module rather than a fourth copy. A test pins the last
+works-page row against the bottom of the window and asserts the menu both flips and stays
+on screen; it fails if either fault returns.
 
-Three menus, two of them line-for-line duplicates and the third with no logic, is the
-actual finding. If any of this is taken up, give them one shared positioner rather than
-patching the second copy and leaving the third unowned.
+Verify this kind of fix with full-suite runs, not with a single test repeated. The first
+attempt at the size fault was checked by running its own test 20 times in isolation and
+looked settled; the failure only appears in the ordering of a whole suite run, so that
+method confirmed nothing.
 
 A control that is allowed to start an action must be allowed to finish it. Mobile read-only mode lists the buttons that stay usable in `SAFE_READ_CONTROL_SELECTOR`, but a file picker's real work happens in the `change` event that follows, so the inputs those buttons open are listed in `SAFE_READ_INPUT_SELECTOR` too. Allowing only the button left the settings import openable and uncompletable, answering a chosen file with nothing but the read-only notice.
 

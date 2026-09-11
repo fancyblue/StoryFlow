@@ -18,28 +18,9 @@
       if (menu === except) return;
       menu.hidden = true;
       menu.classList.remove('opens-up');
+      window.StoryFlowAnchoredMenu?.close?.(menu);
       menu.closest('.visual-entry-row')?.querySelector('.visual-entry-more')?.setAttribute('aria-expanded', 'false');
     });
-  }
-
-  // Unaudited sibling of positionChapterMenu(), deliberately left as-is on 2026-09-06
-  // pending real use. That one measured a height that changed after render and opened
-  // downwards off-screen once in twelve; it now observes its own size instead. The path
-  // that caused it is absent here — these entries are built in one template — but this
-  // menu carries `chapter-row-action-menu`, whose size rules live in a stylesheet inside
-  // the ensureStyleLast() racing tail, so an early reading is not ruled out. See
-  // docs/UI_SYSTEM.md for the symptom and how to measure it.
-  function positionEntryMenu(menu) {
-    const row = menu?.closest('.visual-entry-row');
-    const panel = menu?.closest('.visual-entry-list-panel');
-    if (!row || !panel || menu.hidden) return;
-    menu.classList.remove('opens-up');
-    const panelRect = panel.getBoundingClientRect();
-    const rowRect = row.getBoundingClientRect();
-    const menuHeight = menu.getBoundingClientRect().height;
-    const spaceBelow = panelRect.bottom - (rowRect.top + rowRect.height / 2 + 20);
-    const spaceAbove = rowRect.top + rowRect.height / 2 - 20 - panelRect.top;
-    if (spaceBelow < menuHeight + 8 && spaceAbove >= menuHeight + 8) menu.classList.add('opens-up');
   }
 
   const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
@@ -492,8 +473,10 @@
         menu.hidden = !opening;
         more.setAttribute('aria-expanded', opening ? 'true' : 'false');
         if (opening) {
-          positionEntryMenu(menu);
+          window.StoryFlowAnchoredMenu?.open?.(menu);
           menu.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+        } else {
+          window.StoryFlowAnchoredMenu?.close?.(menu);
         }
         return;
       }
