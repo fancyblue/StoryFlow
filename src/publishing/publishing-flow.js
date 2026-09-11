@@ -1108,6 +1108,11 @@
     const work = await openExistingDirectory(works, state.projectTitle);
     const chapterDir = await openExistingDirectory(work, chapter.title);
     for (const part of parts) {
+      // Images go with the article, backed up to Recovery/Assets first. Kept in step with
+      // the same loop in publishing-delete.js, which is a second copy of this function.
+      await StoryFlowIntegrations.removePartAssets?.({
+        projectTitle: state.projectTitle, chapterTitle: chapter.title, partId: part.id, images: part.images
+      });
       try { await chapterDir.removeEntry(safeName(`${part.title}.md`)); }
       catch (error) { if (error?.name !== 'NotFoundError') throw error; }
     }
@@ -1128,7 +1133,7 @@
       : '';
     const protectedImages = affected.reduce((total, item) => total + (item.images?.length || 0), 0);
     const imageWarning = protectedImages
-      ? `\n\n這些文章共附有 ${protectedImages} 張圖片；文章記錄會移除，但私人 assets 圖檔會保留，避免誤刪原圖。`
+      ? `\n\n這些文章共附有 ${protectedImages} 張圖片，會一併移除；檔案先備份到 Recovery/Assets，保留 30 天。`
       : '';
     const message = `${laterCount
       ? `刪除「${part.title}」會使後續切點失去連續性。\n\n因此會一起移除這篇之後的 ${laterCount} 篇，並退回到「${part.title}」開始的位置重新切篇。`

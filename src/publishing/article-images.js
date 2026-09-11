@@ -207,22 +207,15 @@
           <button class="icon-button" type="button" data-image-remove-cancel aria-label="關閉">×</button>
         </div>
         <p id="articleImageRemoveMessage"></p>
-        <div class="article-image-remove-note">只從文章移除會保留私人資料夾中的檔案；刪除檔案則會先備份到 <code>Recovery/Assets</code>。</div>
+        <div class="article-image-remove-note">檔案會先備份到 <code>Recovery/Assets</code>，保留 30 天。</div>
         <div class="article-image-remove-actions">
           <button class="button ghost" type="button" data-image-remove-cancel>取消</button>
-          <button class="button ghost" type="button" id="detachArticleImage">只從文章移除</button>
-          <button class="button danger" type="button" id="deleteArticleImageFile">備份後刪除檔案</button>
+          <button class="button danger" type="button" id="deleteArticleImageFile">移除圖片</button>
         </div>
       </div>`;
     document.body.appendChild(dialog);
     dialog.querySelectorAll('[data-image-remove-cancel]').forEach(button => {
       button.addEventListener('click', () => dialog.close());
-    });
-    dialog.querySelector('#detachArticleImage').addEventListener('click', () => {
-      if (!removeTarget) return;
-      const { chapter, part, image, onChange } = removeTarget;
-      dialog.close();
-      removeFromState(chapter, part, image, '圖片已從文章移除；原始檔仍保留在私人 assets 資料夾', onChange);
     });
     dialog.querySelector('#deleteArticleImageFile').addEventListener('click', async event => {
       if (!removeTarget) return;
@@ -232,7 +225,7 @@
       try {
         const recoveryPath = await StoryFlowIntegrations.removePartImage(imageContext(chapter, part, image));
         dialog.close();
-        removeFromState(chapter, part, image, `圖片檔案已移至安全備份：${recoveryPath}`, onChange);
+        removeFromState(chapter, part, image, `圖片已移除；備份在 ${recoveryPath}`, onChange);
       } catch (error) {
         notify(`尚未刪除圖片：${error.message}`, true);
       } finally {

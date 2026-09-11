@@ -706,7 +706,7 @@
     }
     const list = entries();
     const entry = list.find(item => item.id === entryId);
-    if (!entry || !confirm(`刪除圖文「${entry.title}」？\n\n工作區關聯與文字輸出會移除；私人 assets 圖檔預設保留。`)) return false;
+    if (!entry || !confirm(`刪除圖文「${entry.title}」？\n\n文字與圖片都會移除；檔案先備份到 Recovery/Assets，保留 30 天。`)) return false;
     try {
       await window.StoryFlowProjectPersistence?.prepareRecovery?.('before-visual-entry-delete');
       await StoryFlowIntegrations.removeVisualEntryFiles({ projectTitle: state.projectTitle, entryId: entry.id, entry });
@@ -722,7 +722,7 @@
         detail: { projectId: window.StoryFlowProjects?.activeId?.(), entryId: entry.id, deleted: true }
       }));
       render();
-      notify(`已刪除圖文：${entry.title}；圖片檔仍保留`);
+      notify(`已刪除圖文：${entry.title}`);
       return true;
     } catch (error) {
       notify(`尚未刪除圖文：${error.message}`, true);
