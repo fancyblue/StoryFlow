@@ -3,6 +3,7 @@
 // can refresh the whole source, and may also contain manual articles that are never
 // removed or overwritten by source refresh.
 (function () {
+  const { normalizeTitle } = window.StoryFlowShared;
   const TOKEN_KEY = 'storyflow.google.access-token.v1';
   let syncing = false;
   let pendingDiff = null;
@@ -12,9 +13,6 @@
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
   }[char]));
 
-  function normalizeTitle(value) {
-    return String(value || '').trim().replace(/\s+/g, ' ');
-  }
 
   function normalizeDraft(value) {
     return String(value || '').replace(/\r\n/g, '\n').trimEnd();

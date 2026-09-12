@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm test)",
+      "Bash(npm run test:static)",
+      "Bash(npm run test:assets)",
+      "Bash(npm run test:browser)",
+      "Bash(npm run bump:assets)",
+      "Bash(node scripts/check-static.mjs)",
+      "Bash(node scripts/bump-assets.mjs:*)",
+      "Bash(node scripts/dead-declarations.mjs:*)",
+      "Bash(node --check:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git rev-list:*)",
+      "Bash(git fetch:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(awk:*)",
+      "Bash(sed -n:*)",
+      "Bash(diff:*)",
+      "Bash(md5sum:*)"
+    ],
+    "deny": [
+      "Read(./settings.json)",
+      "Read(./workspace.json)",
+      "Read(./workspace.backup.json)",
+      "Read(./Works/**)",
+      "Read(./Recovery/**)",
+      "Read(./**/*.token)",
+      "Read(./**/.env*)"
+    ]
+  }
+}

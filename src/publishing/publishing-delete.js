@@ -2,19 +2,13 @@
 // The legacy publishing flow used its own showDirectoryPicker(), which forced users
 // to select the same folder again just to remove a Markdown file.
 (function () {
+  const { safeName, partKey } = window.StoryFlowShared;
   const DB_NAME = 'storyflow-connections-v1';
   const STORE_NAME = 'handles';
   const HANDLE_KEY = 'storyflow-output-directory';
   let rememberedHandle = null;
 
-  function safeName(value, fallback = 'untitled') {
-    const cleaned = String(value || '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
-    return cleaned || fallback;
-  }
 
-  function partKey(part) {
-    return part?.id || `${part?.title || 'part'}:${part?.startBlock ?? ''}:${part?.endBlock ?? ''}`;
-  }
 
   function openDb() {
     return new Promise((resolve, reject) => {
