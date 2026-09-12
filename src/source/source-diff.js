@@ -1,6 +1,7 @@
 // Pure source comparison used by both project-source sync implementations.
 // Kept independent from application state so it can be regression-tested alone.
 (function () {
+  const { normalizeTitle } = window.StoryFlowShared;
   const MAX_HUNKS = 5;
   const INLINE_CONTEXT = 42;
   const MAX_CHANGED_TEXT = 140;
@@ -12,9 +13,6 @@
     }[char]));
   }
 
-  function normalizeTitle(value) {
-    return String(value || '').trim().replace(/\s+/g, ' ');
-  }
 
   function normalizeDraft(value) {
     return String(value || '').replace(/\r\n?/g, '\n').trimEnd();

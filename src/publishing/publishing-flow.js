@@ -1,19 +1,18 @@
 // Dedicated publishing dashboard: compact newest-first list, expandable platform details.
 (function () {
+  const { safeName } = window.StoryFlowShared;
   let deleteFolderHandle = null;
   let currentFilter = 'all';
   let selectedPartKey = null;
   let articleToolContext = null;
   let visualPreviewUrls = [];
 
-  function safeName(value, fallback = 'untitled') {
-    const cleaned = String(value || '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
-    return cleaned || fallback;
-  }
 
+  // The publishing list is the one place longform parts and visual entries share a
+  // surface, so it namespaces visual keys on top of the shared identity.
   function partKey(part) {
     if (isVisualPart(part)) return `visual:${window.StoryFlowProjects?.activeId?.() || state.projectTitle}:${part.id}`;
-    return part?.id || `${part?.title || 'part'}:${part?.startBlock ?? ''}:${part?.endBlock ?? ''}`;
+    return window.StoryFlowShared.partKey(part);
   }
 
   function isVisualPart(part) {

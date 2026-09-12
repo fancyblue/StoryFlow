@@ -1,5 +1,6 @@
 // Primary navigation: workspace, works, publishing, and settings are separate app views.
 (function () {
+  const { hasConnectedFolder } = window.StoryFlowShared;
   if (!document.querySelector('link[data-storyflow-sidebar-layout]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -203,9 +204,6 @@
 
   // The connection dot is the one place the folder state is already resolved; the
   // other surfaces that gate on it read it the same way.
-  function hasConnectedFolder() {
-    return Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
-  }
 
   // A browser with no directory picker was previously allowed to create anyway, on the
   // reasoning that requiring a folder would lock it out. Measurement showed that was

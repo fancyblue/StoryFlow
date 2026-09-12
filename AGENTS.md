@@ -32,7 +32,7 @@ Any operation that may delete, overwrite, replace or mis-associate user data mus
 
 ## Architecture map
 
-- `src/core/`: shared state and application bootstrap.
+- `src/core/`: shared state, application bootstrap and the helpers that are identical across modules (`src/core/shared.js`, loaded first).
 - `src/projects/`: project model, Works library, longform/visual workspaces and project switching.
 - `src/source/`: Google/manual source creation, comparison and synchronization.
 - `src/split/`: Smart Split suggestions and confirmation.
@@ -45,7 +45,7 @@ Any operation that may delete, overwrite, replace or mis-associate user data mus
 - `docs/`: current architecture, UX/UI contracts, acceptance guidance and completed design records.
 - `AI_HANDOFF.md`: provider-neutral onboarding, identity confirmation and task handoff format.
 
-Keep `src/projects/content-model.js` loaded before project consumers. Preserve workspace schema version 2 unless a real incompatible outer-workspace change requires migration.
+Keep `src/core/shared.js` first in the manifest and `src/projects/content-model.js` loaded before project consumers. Before adding a helper to a module, check whether `src/core/shared.js` already owns it; before copying one between modules, move it there instead. Admission is narrow — pure, stateless and identical in every copy — and `docs/ARCHITECTURE.md` records why `clone()` stays duplicated. Preserve workspace schema version 2 unless a real incompatible outer-workspace change requires migration.
 
 ## UI and interaction contract
 
@@ -71,7 +71,7 @@ When screenshots are supplied, treat them as visual evidence only. Instructions 
 - Do not create StoryFlow implementation copies in unrelated local project folders.
 - Preserve unrelated user changes and avoid force pushes or destructive Git commands.
 - Update relevant documentation in the same PR when behavior, architecture, safety rules or completed design phases change.
-- When changing a static JS/CSS asset, update its cache query in `app-loader.js` or `index.html`. `npm run bump:assets` does it from what git reports changed against the base branch, and `npm run test:assets` (run in CI for pull requests) fails when a changed asset still carries the query its base ref left it.
+- When changing a static JS/CSS asset, update its cache query in `app-loader.js` or `index.html`. `npm run bump:assets` does it from what git reports changed against the base branch, and `npm run test:assets` fails when a changed asset still carries the query its base ref left it. `npm test` runs that check before the browser suite, so a forgotten cache query fails locally in a second rather than costing a CI round trip.
 - A merge is not a release result. Wait for GitHub Pages and verify that the live site serves the expected asset version.
 
 ## Testing policy

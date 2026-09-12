@@ -2,6 +2,7 @@
 // on Workspace / Works / Publishing; settings lives with the persistent connection
 // utilities in the lower-left sidebar.
 (function () {
+  const { hasConnectedFolder } = window.StoryFlowShared;
   // Keep the final theme layers deterministic after settings creates its app view.
   function ensureThemeOrder() {
     const theme = document.getElementById('storyflowBlueThemeCss');
@@ -111,9 +112,6 @@
     }
   }
 
-  function hasConnectedFolder() {
-    return Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
-  }
 
   function syncSettingsAvailability() {
     const publishingSection = document.getElementById('defaultIndent')?.closest('.settings-section')

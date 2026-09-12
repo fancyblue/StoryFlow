@@ -1,5 +1,6 @@
 // Local-only command search across loaded works, chapters, and publishing articles.
 (function () {
+  const { partKey } = window.StoryFlowShared;
   const trigger = document.getElementById('globalSearchBtn');
   if (!trigger || document.getElementById('globalSearchDialog')) return;
 
@@ -22,9 +23,6 @@
     return String(value || '').normalize('NFKC').toLocaleLowerCase('zh-Hant').trim();
   }
 
-  function partKey(part) {
-    return part?.id || `${part?.title || 'part'}:${part?.startBlock ?? ''}:${part?.endBlock ?? ''}`;
-  }
 
   function visualKey(project, entry) {
     return `visual:${project.id || project.title}:${entry.id}`;

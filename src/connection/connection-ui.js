@@ -180,6 +180,7 @@
 // Empty workspace UX. The core keeps one blank in-memory chapter as a compatibility
 // sentinel, but it is not a real work/chapter and must not appear as one in the UI.
 (function () {
+  const { hasConnectedFolder } = window.StoryFlowShared;
   function chaptersWithContent() {
     return (state.chapters || []).filter(chapter => Boolean(
       chapter?.draft || chapter?.source || (chapter?.parts || []).length
@@ -196,9 +197,6 @@
 
   // The connection layer above owns its own copy of this check in a separate
   // closure, so the workspace layer reads the same authoritative dot itself.
-  function hasConnectedFolder() {
-    return Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
-  }
 
   function canReachAFolder() {
     return window.StoryFlowIntegrations?.supportsFolderAccess?.() ?? false;

@@ -73,6 +73,7 @@
     try { delete window.indexedDB; } catch (_) {}
     window.showDirectoryPicker = async () => { pickerCalls += 1; return mockRoot; };
   </script>
+  <script src="../src/core/shared.js"></script>
   <script src="../src/persistence/integrations.js"></script>
   <script>
     (async () => {

@@ -2,14 +2,12 @@
 // A detached chapter keeps its text and can later be linked back to the same
 // Google Docs heading without creating a duplicate chapter or hitting a dead-end error.
 (function () {
+  const { normalizeTitle } = window.StoryFlowShared;
   const baseImportSelectedTab = window.importSelectedTab;
   if (typeof baseImportSelectedTab !== 'function') return;
 
   let pendingRelink = null;
 
-  function normalizeTitle(value) {
-    return String(value || '').trim().replace(/\s+/g, ' ');
-  }
 
   function clone(value) {
     try { return structuredClone(value); }

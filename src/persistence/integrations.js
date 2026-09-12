@@ -1,4 +1,5 @@
 const StoryFlowIntegrations = (() => {
+  const { safeName } = window.StoryFlowShared;
   const SETTINGS_FILENAME = 'settings.json';
   const WORKSPACE_FILENAME = 'workspace.json';
   const WORKSPACE_BACKUP_FILENAME = 'workspace.backup.json';
@@ -195,10 +196,6 @@ const StoryFlowIntegrations = (() => {
     return outputDirectoryHandle ? verifyPermission(outputDirectoryHandle, true) : false;
   }
 
-  function safeName(value, fallback = 'untitled') {
-    const cleaned = String(value || '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
-    return cleaned || fallback;
-  }
 
   async function getDirectory(parent, name) {
     return parent.getDirectoryHandle(safeName(name), { create: true });
