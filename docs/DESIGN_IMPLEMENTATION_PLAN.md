@@ -8,9 +8,9 @@
 
 順序不是照影響力排的，是照**相依性與風險**排的：
 
-1. **顏色改不動，除非先 token 化。** 8,642 行 CSS 裡有 2,905 個 `!important`、1,110 處硬寫色碼、
-   422 種不重複顏色，而 `var()` 只用了 450 次。顏色不是從 token 讀的，是 `theme.css` 一條一條蓋掉
-   `foundation.css`。直接改色會有一半不生效。
+1. **顏色改不動，除非先 token 化。** 8,642 行 CSS 裡有 1,110 處硬寫色碼、422 種不重複顏色，
+   而 `var()` 只用了 450 次。顏色不是從 token 讀的，所以直接改 token 會有一大半不生效。
+   （另外那 2,905 個 `!important` 是**不同**的問題，不擋換色——見下方「插曲」。）
 2. **cascade 不可靠。** `ensureThemeOrder()`（`src/settings/settings-page.js`）與兩個 `ensureStyleLast()`
    在 runtime 重排 stylesheet，所以「看起來在最後」的規則可能會輸。動任何 stylesheet 順序都要同步更新
    `scripts/cascade-order.json`，否則 `tests/browser/cascade-contract.spec.js` 會失敗。
@@ -51,13 +51,64 @@
 
 所有視覺變更的前置作業。**此階段的目標是像素完全不變。**
 
-- **做法**：把 422 種硬寫顏色對應回 `--sf-*`；能移除的 `!important` 一併移除，但不改變計算結果。
-- **工具**：`node scripts/dead-declarations.mjs` 先找出「同選擇器同屬性、被順序蓋掉」的死宣告，
-  `--apply` 可自動移除。注意它**排除了那段順序不確定的 tail**（`project-source-mode.css`、
-  `source-article-ux.css`、`chapter-management.css` 會在使用中互換位置），那三個檔案要人工處理。
+- **做法**：把 422 種硬寫顏色對應回 `--sf-*`。**`!important` 原封不動保留**——
+  `color:#bd6873!important` 改成 `color:var(--sf-danger)!important` 一樣生效，token 化的目的就達到了。
+- **不要做**：不要在這個階段順手清 `!important`。那是另一個問題，不在換色的關鍵路徑上，
+  混在一起會讓「像素零差異」這個驗證條件失去意義——分不出差異是換值造成的還是移除造成的。
+- **工具**：`node scripts/dead-declarations.mjs` 目前回報 **0 個可移除宣告**（已經清過了），
+  所以這一階段沒有自動化捷徑，是人工對照。
 - **建議切法**：一個 PR 一個 domain 檔，不要一次全改。`styles/domains/publishing.css`（170 處硬寫色碼）
   最大，單獨一個 PR。
 - **驗證**：`npm test` 全跑，視覺回歸必須零差異。有差異就是改錯了，不要更新基準。
+
+---
+
+## 插曲 · `!important` 為什麼不是一個階段
+
+2,905 個 `!important` 是這份 CSS 最刺眼的數字，但它**不擋任何一件事**，所以它不在上面的順序裡。
+原因是它和「顏色硬寫」是兩個不同的問題，只是住在同一批檔案裡：
+
+| 問題 | 數量 | 修法 | 是換色的前置嗎 |
+| --- | --- | --- | --- |
+| 硬寫色碼 | 1,110 處 / 422 種 | 值換成 `var(--sf-*)` | **是**。不做就換不了色 |
+| `!important` | 2,905 個 | 移除宣告且不改變計算結果 | **否**。帶著 `!important` 的 `var()` 一樣生效 |
+
+分布（實際出現次數，非行數）：
+
+| 檔案 | 數量 | 佔比 |
+| --- | --- | --- |
+| `styles/layers/ui-system.css` | 493 | 17% |
+| `styles/domains/workspace-ux.css` | 283 | 10% |
+| `styles/layers/layout-integrity.css` | 231 | 8% |
+| `styles/domains/publishing.css` | 181 | 6% |
+| `styles/layers/theme.css` | 162 | 6% |
+| 其餘 | ~1,555 | 53% |
+
+分成三類處理，都不排進主線：
+
+### A. 換色後會自然消失的（`theme.css`，162 個）
+
+`theme.css` 現在的角色是「用 `!important` 一條一條蓋掉 `foundation.css` 的紫色底稿」
+（`--primary:#6d4aff` 那層還在）。階段 3 把正確的值寫進 token 之後，這些覆蓋就失去存在理由，
+整層可以大幅縮減。**當成階段 3 的收尾，不另外排。**
+
+### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，724 個，25%）
+
+這兩個檔案由 `ensureThemeOrder()` 在 runtime 重新附加到很後面，所以它們的 `!important`
+**多數可能是多餘的——它本來就贏**。這是可驗證的假設，不是推測：
+
+> 移除一批 `!important` → 跑視覺回歸 → 零差異就代表原本就贏，可以刪。
+
+但 `ui-system.css` 並非真正最後：兩個 `ensureStyleLast()` 會把
+`project-source-mode.css` 與 `source-article-ux.css` 移到它後面，而且那兩者的先後**在使用中會互換**
+（見 `docs/UI_SYSTEM.md`）。所以逐批實驗、逐批驗證，不要整檔一次移除。
+
+**可以排在階段 1 完成後的任何時候，與視覺工作平行。**
+
+### C. 其餘約 1,900 個
+
+不排期。改到哪個檔案，順手清那個檔案的。硬排一個「清完 `!important`」的大 PR
+沒有使用者可見價值，而且風險與工作量都不成比例。
 
 ---
 
