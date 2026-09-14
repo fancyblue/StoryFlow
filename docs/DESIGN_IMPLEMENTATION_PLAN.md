@@ -8,8 +8,7 @@
 
 順序不是照影響力排的，是照**相依性與風險**排的：
 
-1. **顏色改不動，除非先 token 化。** 8,642 行 CSS 裡有 1,110 處硬寫色碼、422 種不重複顏色，
-   而 `var()` 只用了 450 次。顏色不是從 token 讀的，所以直接改 token 會有一大半不生效。
+1. **顏色改不動，除非先 token 化。** 但規模跟原本估的差很多，見階段 1 的實測。
    （另外那 2,905 個 `!important` 是**不同**的問題，不擋換色——見下方「插曲」。）
 2. **cascade 不可靠。** `ensureThemeOrder()`（`src/settings/settings-page.js`）與兩個 `ensureStyleLast()`
    在 runtime 重排 stylesheet，所以「看起來在最後」的規則可能會輸。動任何 stylesheet 順序都要同步更新
@@ -66,14 +65,60 @@
 
 所有視覺變更的前置作業。**此階段的目標是像素完全不變。**
 
-- **做法**：把 422 種硬寫顏色對應回 `--sf-*`。**`!important` 原封不動保留**——
+### 實測的規模（動工後修正）
+
+原本寫「把 422 種硬寫顏色對應回 `--sf-*`」，把它當成機械作業。實際數字不是這樣：
+
+| | 數量 |
+| --- | --- |
+| 色碼總數 | 1,099 |
+| 其中在 `var(--x, #hex)` fallback 裡（**已經 token 化**） | 92 |
+| 真正裸寫的 | 1,007 |
+| 裸寫、且**對應得到現有生效 token** | **111** |
+| 裸寫、**沒有 token 可對應** | ~564（其餘為 token 定義本身） |
+
+所以機械替換只能處理約 **16%**。剩下那 ~564 個不是重構，是**設計決策**——
+要先決定它們各自代表什麼，才能給它們 token。**那才是階段 3 換色真正的阻礙**，
+因為沒有 token 的顏色不會跟著 token 變。
+
+> 這一點改變了階段 3 的前提：換色不是「token 就位後改幾十行」，
+> 而是「先替 564 個顏色決定語意」。要不要全部給 token、還是接受一部分保持硬寫，
+> 是需要你決定的範圍問題。
+
+### 兩個查證出來的陷阱
+
+1. **token 的定義值不等於生效值。** `layout-integrity.css:6` 在 `:root` 重新定義了三個
+   `--sf-*`，而它由 `ensureThemeOrder()` 排在 `ui-system.css` **之後**：
+
+   | token | `ui-system.css` 寫的 | 實際生效 |
+   | --- | --- | --- |
+   | `--sf-primary` | `#4d8cc2` | **`#3975a7`** |
+   | `--sf-primary-hover` | `#3975a7` | **`#2d5d85`** |
+   | `--sf-danger` | `#bd6873` | **`#a14f5b`** |
+
+   照定義值做對照會讓顏色真的改變。**唯一可信的來源是跑起來的瀏覽器**——
+   用 `getComputedStyle(document.documentElement)` 讀出 44 個生效色彩 token 再對照。
+
+2. **`var()` 的 fallback 不是硬寫色碼。** `color:var(--denim-800,#2d5d85)` 已經是 token 化的，
+   統計時要扣掉，否則會高估工作量（這裡是 92 處）。
+
+### 做法
+
+- **做法**：把裸寫色碼換成**生效值相同**的 `--sf-*`。**`!important` 原封不動保留**——
   `color:#bd6873!important` 改成 `color:var(--sf-danger)!important` 一樣生效，token 化的目的就達到了。
 - **不要做**：不要在這個階段順手清 `!important`。那是另一個問題，不在換色的關鍵路徑上，
   混在一起會讓「像素零差異」這個驗證條件失去意義——分不出差異是換值造成的還是移除造成的。
 - **工具**：`node scripts/dead-declarations.mjs` 目前回報 **0 個可移除宣告**（已經清過了），
   所以這一階段沒有自動化捷徑，是人工對照。
-- **建議切法**：一個 PR 一個 domain 檔，不要一次全改。`styles/domains/publishing.css`（170 處硬寫色碼）
-  最大，單獨一個 PR。
+- **切法**：原本建議「一個 PR 一個 domain 檔」是為 1,110 處設想的。實際只有 111 處，
+  拆成 15 個 PR 的成本遠高於效益——改為依**基準截圖是否涵蓋**來分批：
+  有截圖保護的一批一起做（零像素差異就是證明），沒有截圖保護的另外處理。
+- **已完成**：有基準保護的 55 處（`theme` 21、`publishing` 14、`workspace-ux` 8、`ui-system` 7、
+  `publishing-refinements` 3、`layout-integrity` 1、`works-library` 1）。
+- **未做**：`mobile-visual`（19）、`global-search`（13）、`article-images`（9）、
+  `project-source-mode`（4）、`chapter-management`（4）、`connection-status`（3）、
+  `source-article-ux`（3）、`manual-chapter-edit`（1）——這些畫面**沒有基準截圖**，
+  做的話只能靠人工驗收。
 - **驗證**：`npm test` 全跑，視覺回歸必須零差異。有差異就是改錯了，不要更新基準。
 - **注意**：0-3 之後這個保證涵蓋七張基準，但仍不是全部畫面——見「排序原則」第 3 點列出的缺口。
 

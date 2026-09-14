@@ -118,7 +118,7 @@ h3{font-size:18px;font-weight:820;line-height:1.3}
 .button:active:not(:disabled){transform:translateY(1px)}
 .icon-button{display:grid!important;place-items:center!important;width:var(--sf-control)!important;min-width:var(--sf-control)!important;height:var(--sf-control)!important;min-height:var(--sf-control)!important;padding:0!important;border-radius:10px!important;font-size:18px!important}
 .button.danger,.button.ghost.project-delete-btn,.button.project-delete-btn,.project-library-delete,.publish-delete-btn,.settings-view .platform-row-delete,.chapter-delete-button{color:var(--sf-danger)!important}
-.button.danger:hover:not(:disabled),.project-library-delete:hover,.publish-delete-btn:hover,.settings-view .platform-row-delete:hover,.chapter-delete-button:hover{background:var(--sf-danger-soft)!important;border-color:#efc8ce!important;color:#a14f5b!important}
+.button.danger:hover:not(:disabled),.project-library-delete:hover,.publish-delete-btn:hover,.settings-view .platform-row-delete:hover,.chapter-delete-button:hover{background:var(--sf-danger-soft)!important;border-color:#efc8ce!important;color:var(--sf-danger)!important}
 
 /* Field system */
 .field-label,.project-switcher-field>span,.platform-select-field>span{
@@ -167,7 +167,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 #sidebarConnectionStatus .sidebar-settings-button,#sidebarConnectionStatus .sidebar-logout{width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;border-radius:9px!important}
 #sidebarConnectionStatus .sidebar-settings-button>.sidebar-utility-icon,#sidebarConnectionStatus .sidebar-logout>.sidebar-utility-icon,#sidebarConnectionStatus .sidebar-settings-button svg,#sidebarConnectionStatus .sidebar-logout svg{width:19px!important;height:19px!important}
 .topbar .top-connection-status .connection-chip,.topbar #storyflowLogoutBtn.connection-logout{height:36px!important;min-height:36px!important;border-radius:10px!important;font-size:13px!important}
-.topbar .top-connection-status .connection-chip{background:#f7fbfd!important;border-color:#c9ddea!important;color:var(--sf-text)!important}
+.topbar .top-connection-status .connection-chip{background:var(--sf-surface-soft)!important;border-color:#c9ddea!important;color:var(--sf-text)!important}
 .topbar .top-connection-status .connection-chip-label,.topbar .top-connection-status .connection-chip-state{font-size:13px!important}
 .topbar .save-state{font-size:13px!important}
 
@@ -235,11 +235,11 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .publishing-toolbar{gap:12px!important;margin-bottom:14px!important}
 .publishing-filters{gap:7px!important}
 .publishing-filter{min-height:34px!important;padding:0 11px!important;border:1px solid var(--sf-border)!important;border-radius:999px!important;background:#fff!important;color:var(--sf-muted)!important;font-size:13px!important;font-weight:750!important}
-.publishing-filter:hover{border-color:#91b8d9!important;background:#f7fbfd!important}
+.publishing-filter:hover{border-color:#91b8d9!important;background:var(--sf-surface-soft)!important}
 .publishing-filter.active{background:var(--sf-primary-soft)!important;border-color:#91b8d9!important;color:var(--denim-800,#2d5d85)!important}
 .publish-list-item{border-color:var(--sf-border)!important;border-radius:12px!important}
-.publish-list-item:hover{border-color:#b4cee5!important}
-.publish-list-item.expanded{border-color:#91b8d9!important;box-shadow:0 0 0 2px #eaf3f9 inset!important}
+.publish-list-item:hover{border-color:var(--sf-border-strong)!important}
+.publish-list-item.expanded{border-color:#91b8d9!important;box-shadow:0 0 0 2px var(--sf-surface-active) inset!important}
 .publish-list-summary{min-height:70px!important;padding:12px 14px!important}
 .publish-chapter-name{font-size:12px!important;font-weight:750!important}
 .publish-list-title-row strong{font-size:16px!important;font-weight:820!important}
@@ -256,7 +256,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .settings-view .settings-section>strong{font-size:16px!important;font-weight:820!important;margin-bottom:5px!important}
 .settings-view .settings-section p{font-size:13.5px!important;line-height:1.65!important}
 .settings-view .platform-editor-hint{font-size:13px!important;line-height:1.5!important}
-.settings-view .platform-add-button{height:36px!important;min-height:36px!important;padding:0 11px!important;background:#eef5fa!important;border-color:#b4cee5!important;color:var(--denim-700,#3975a7)!important;font-size:13px!important;font-weight:780!important}
+.settings-view .platform-add-button{height:36px!important;min-height:36px!important;padding:0 11px!important;background:#eef5fa!important;border-color:var(--sf-border-strong)!important;color:var(--denim-700,#3975a7)!important;font-size:13px!important;font-weight:780!important}
 .settings-view .platform-add-button:hover{background:#e5f0f7!important;border-color:#91b8d9!important}
 .settings-view .platform-setting-row{min-height:62px!important;gap:14px!important}
 .settings-view .platform-default-name{font-size:14px!important;font-weight:800!important}
@@ -294,7 +294,7 @@ dialog::backdrop{background:rgba(24,52,79,.38)!important}
   .button.tiny,.project-library-actions .button,.publish-list-actions .button,.publish-platform-actions .button,.source-linked-actions .button{height:40px!important;min-height:40px!important;font-size:13px!important}
   .text-input,.range-grid input,.compact-select,select.text-input,input.text-input{height:44px!important;min-height:44px!important;font-size:14px!important}
   .field-label{font-size:13px!important}
-  .sidebar{grid-template-rows:50px 34px!important;gap:4px!important;padding:5px max(8px,env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;background:#234463!important}
+  .sidebar{grid-template-rows:50px 34px!important;gap:4px!important;padding:5px max(8px,env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;background:var(--sf-text)!important}
   .sidebar .nav{gap:5px!important}
   .sidebar .nav-item{min-height:50px!important;padding:5px 4px!important;border-radius:11px!important;font-size:18px!important}
   .sidebar .nav-item span{font-size:13.5px!important;font-weight:800!important}

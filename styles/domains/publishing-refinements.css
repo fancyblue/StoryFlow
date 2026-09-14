@@ -61,7 +61,7 @@
   padding:3px 7px;
   border-radius:999px;
   background:#dfeef8;
-  color:#3975a7;
+  color:var(--sf-primary);
   font-size:9.5px;
   font-weight:850;
   line-height:1;
@@ -70,7 +70,7 @@
 #publishingView .publishing-project-group-head strong{
   min-width:0;
   overflow:hidden;
-  color:#234463!important;
+  color:var(--sf-text)!important;
   font-size:16px!important;
   font-weight:850!important;
   line-height:1.3!important;
@@ -96,7 +96,7 @@
   padding:3px 7px!important;
   border:0!important;
   background:#fff!important;
-  color:#3975a7!important;
+  color:var(--sf-primary)!important;
   font-size:10px!important;
   font-weight:850!important;
 }

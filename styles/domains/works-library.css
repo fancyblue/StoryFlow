@@ -48,7 +48,7 @@
 .project-library-main{min-width:0!important}
 .project-library-title-row{gap:7px!important}
 .project-library-title-row strong{
-  color:#234463!important;
+  color:var(--sf-text)!important;
 }
 .project-current-badge{
   border-radius:999px!important;
