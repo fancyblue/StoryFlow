@@ -14,9 +14,10 @@
 2. **cascade 不可靠。** `ensureThemeOrder()`（`src/settings/settings-page.js`）與兩個 `ensureStyleLast()`
    在 runtime 重排 stylesheet，所以「看起來在最後」的規則可能會輸。動任何 stylesheet 順序都要同步更新
    `scripts/cascade-order.json`，否則 `tests/browser/cascade-contract.spec.js` 會失敗。
-3. **視覺回歸只保護四個畫面。** `tests/browser/visual-regression.spec.js` 只有
-   `workspace-long`（1280/1440/1920）、`works-library-1440`、`publishing-queue-1440`、`settings-1440`。
-   **圖文工作台、管理發布、平台預覽、所有對話框都沒有基準截圖**，在那些地方「像素不變」無法自動證明。
+3. **視覺回歸的涵蓋範圍**（0-3 完成後）：`workspace-long`（1280/1440/1920）、`works-library-1440`、
+   `publishing-queue-1440`、`settings-1440`、`publishing-detail-1440`、`platform-preview-1440`、
+   `visual-workspace-1440`。**仍未涵蓋**：手動章節編輯、來源比對、備份中心與其餘對話框，
+   那些地方「像素不變」還是只能人工驗收（`docs/CHROME_ACCEPTANCE.md`）。
 4. **每個改到靜態資產的 PR 都要更新 cache query**，否則 `npm run test:assets` 失敗。
    用 `npm run bump:assets` 依 git diff 自動處理。
 
@@ -38,11 +39,26 @@
 而且各自的文案都正確。詳見 GAPS 第 4 項的更正。**這一項移除，不要照原本的描述去改文案**
 ——把長文改成「最近更新」反而會變成錯的，長文的順序完全不受 `updatedAt` 影響。
 
-### 0-3　補上缺的基準截圖
-- **理由**：階段 1 的「零風險」保證靠的是視覺回歸，但目前只涵蓋四個畫面。
-- **做法**：為圖文工作台、管理發布、平台預覽對話框加上 `toHaveScreenshot`。
-- **風險**：低，但會拉長 CI 時間。**這一項若不做，階段 1 在那些畫面上就只能人工驗收**
-  （`docs/CHROME_ACCEPTANCE.md`）。
+### 0-3　補上缺的基準截圖　✅ 已完成
+
+三張新基準加在既有測試已經走過的路徑上，沒有新增流程：
+
+| 基準 | 涵蓋 |
+| --- | --- |
+| `publishing-detail-1440.png` | 「管理發布」展開後的平台面板——發布補充內容、各平台列與其動作 |
+| `platform-preview-1440.png` | 桌面寬度的 `#platformPreviewDialog` |
+| `visual-workspace-1440.png` | 圖文工作台（清單 + 編輯器） |
+
+一併修掉一個潛在的間歇失敗：`.visual-autosave-status` 會印出時鐘（「已儲存 10:57」），
+基準裡帶著當下時間，下一次執行就會跟自己差異。它現在和 `.save-state` 一起被隱藏。
+
+圖文工作台只在 1440 取一張，不是三個寬度各一張——迴圈本來就已經在每個桌面寬度驗過版面，
+多兩張只是拉長執行時間，證據並沒有變多。
+
+> **待確認**：這三張是用容器內的 Chromium **1194** 產生的，而專案釘的
+> `@playwright/test@1.62.1` 在 CI 會抓 **1234**。既有四張基準在 1194 下通過，
+> 顯示 `maxDiffPixelRatio: 0.025` 的容差吸收得掉版本差異，但「1194 產生、1234 驗證」
+> 這個組合尚未實測。CI 第一次跑到時要確認。
 
 ---
 
@@ -59,6 +75,7 @@
 - **建議切法**：一個 PR 一個 domain 檔，不要一次全改。`styles/domains/publishing.css`（170 處硬寫色碼）
   最大，單獨一個 PR。
 - **驗證**：`npm test` 全跑，視覺回歸必須零差異。有差異就是改錯了，不要更新基準。
+- **注意**：0-3 之後這個保證涵蓋七張基準，但仍不是全部畫面——見「排序原則」第 3 點列出的缺口。
 
 ---
 
