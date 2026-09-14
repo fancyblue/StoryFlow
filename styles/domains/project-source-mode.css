@@ -9,20 +9,20 @@
   gap:12px;
   margin:0 0 20px;
   padding:14px;
-  border:1px solid #d8e6f0;
+  border:1px solid #ded9cc;
   border-radius:14px;
-  background:#f8fbfe;
+  background:#fbfaf6;
 }
 .project-creation-chooser[hidden]{display:none!important}
 .project-creation-copy{display:grid;gap:3px}
 .project-creation-copy strong{
-  color:var(--denim-900,#234463);
+  color:var(--denim-900,#221f1a);
   font-size:14px;
   font-weight:700;
   line-height:1.3;
 }
 .project-creation-copy span{
-  color:var(--sf-muted,#58748b);
+  color:var(--sf-muted,#6a6357);
   font-size:12px;
   font-weight:500;
   line-height:1.45;
@@ -38,19 +38,19 @@
   width:100%;
   min-height:64px;
   padding:10px 12px;
-  border:1px solid #cbddea;
+  border:1px solid #c8c1b0;
   border-radius:12px;
-  background:#fff;
-  color:var(--denim-900,#234463);
+  background:#fbfaf6;
+  color:var(--denim-900,#221f1a);
   text-align:left;
   cursor:pointer;
 }
 .project-creation-option:hover:not(:disabled),
 .project-creation-option:focus-visible:not(:disabled){
-  border-color:#91b8d9;
-  background:#eef7fc;
+  border-color:#c8c1b0;
+  background:#fbfaf6;
   outline:none;
-  box-shadow:0 0 0 3px rgba(54,118,173,.10);
+  box-shadow:0 0 0 3px rgba(34,31,26,.10);
 }
 .project-creation-option-icon{
   display:grid;
@@ -58,31 +58,31 @@
   width:36px;
   height:36px;
   border-radius:10px;
-  background:#e8f4fc;
-  color:#2f6f9f;
+  background:#f4f1e9;
+  color:#4b4557;
   font-size:16px;
   font-weight:700;
 }
 .project-creation-option-copy{display:grid;gap:2px;min-width:0}
 .project-creation-option-copy strong{font-size:13px;font-weight:700;line-height:1.25;text-wrap:pretty}
-.project-creation-option-copy small{color:var(--sf-muted,#58748b);font-size:11.5px;font-weight:500;line-height:1.35}
-.project-creation-option-arrow{color:#7aa4c3;font-size:18px;font-weight:700;text-align:right}
+.project-creation-option-copy small{color:var(--sf-muted,#6a6357);font-size:11.5px;font-weight:500;line-height:1.35}
+.project-creation-option-arrow{color:#5e5769;font-size:18px;font-weight:700;text-align:right}
 
 /* Until a folder is connected there is nothing to create a work into, so the options
    render as unavailable instead of accepting a click that cannot be honoured. The icon,
    description and arrow dim with the frame; leaving them lit would read as an enabled
    option in a grey box. The reason lives in the note above, which the options point at. */
 .project-creation-option:disabled{
-  border-color:#dde8ef;
-  background:#f4f8fb;
-  color:#8aa0af;
+  border-color:#ded9cc;
+  background:#fbfaf6;
+  color:#968f80;
   cursor:not-allowed;
 }
-.project-creation-option:disabled .project-creation-option-icon{background:#eaf1f6;color:#9db1c0}
-.project-creation-option:disabled .project-creation-option-copy small{color:#93a8b8}
-.project-creation-option:disabled .project-creation-option-arrow{color:#b6c7d4}
+.project-creation-option:disabled .project-creation-option-icon{background:#f4f1e9;color:#968f80}
+.project-creation-option:disabled .project-creation-option-copy small{color:#968f80}
+.project-creation-option:disabled .project-creation-option-arrow{color:#c8c1b0}
 /* The note stops being a footnote and becomes the reason the options are closed. */
-.project-creation-chooser.awaiting-folder .project-creation-copy span{color:var(--sf-text,#23486b)}
+.project-creation-chooser.awaiting-folder .project-creation-copy span{color:var(--sf-text,#221f1a)}
 
 /* An unset source mode is not the same as “no work”. Keep the current work name
    visible so an explicitly created empty work still has identity in Workspace.
@@ -99,7 +99,7 @@
   gap:10px;
   margin:14px 0 16px;
   padding:10px 0 14px;
-  border-bottom:1px solid var(--line,#dce8f2);
+  border-bottom:1px solid var(--line,#ded9cc);
 }
 .project-source-origin[hidden]{display:none!important}
 .project-source-origin-copy{display:grid;gap:3px;min-width:0}
@@ -108,7 +108,7 @@
   align-items:center;
   gap:6px;
   width:max-content;
-  color:#2f6f9f;
+  color:#4b4557;
   font-size:11px;
   font-weight:700;
   line-height:1;
@@ -119,12 +119,12 @@
   width:7px;
   height:7px;
   border-radius:50%;
-  background:#67dca0;
-  box-shadow:0 0 0 2px rgba(103,220,160,.13);
+  background:#59703f;
+  box-shadow:0 0 0 2px rgba(89,112,63,.13);
 }
 .project-source-origin-name{
   overflow:hidden;
-  color:#58748b;
+  color:#6a6357;
   font-size:12px;
   font-weight:500;
   line-height:1.35;
@@ -134,10 +134,10 @@
 .project-source-refresh{
   min-height:38px!important;
   padding:0 12px!important;
-  border:1px solid #bfd8eb!important;
+  border:1px solid #c8c1b0!important;
   border-radius:10px!important;
-  background:#f7fbff!important;
-  color:#2f6f9f!important;
+  background:#fbfaf6!important;
+  color:#4b4557!important;
   font-size:12.5px!important;
   font-weight:700!important;
   line-height:1!important;
@@ -145,11 +145,11 @@
 }
 .project-source-refresh:hover,
 .project-source-refresh:focus-visible{
-  border-color:#95c3e2!important;
-  background:#eaf5fd!important;
-  color:#245f8d!important;
+  border-color:#c8c1b0!important;
+  background:#f4f1e9!important;
+  color:#4b4557!important;
   outline:none!important;
-  box-shadow:0 0 0 3px rgba(54,118,173,.10)!important;
+  box-shadow:0 0 0 3px rgba(34,31,26,.10)!important;
 }
 .source-sync-undo-bar{
   display:flex;
@@ -158,10 +158,10 @@
   gap:10px;
   margin:8px 0 12px;
   padding:9px 10px 9px 12px;
-  border:1px solid #bfd9eb;
+  border:1px solid #c8c1b0;
   border-radius:11px;
-  background:#f1f8fd;
-  color:#315f80;
+  background:#fbfaf6;
+  color:#4b4557;
 }
 .source-sync-undo-bar[hidden]{display:none!important}
 .source-sync-undo-bar>span{
@@ -194,18 +194,18 @@
   width:100%!important;
   min-height:42px!important;
   margin-top:14px!important;
-  border:1px solid #c9ddea!important;
+  border:1px solid #c8c1b0!important;
   border-radius:10px!important;
-  background:#f7fbfd!important;
-  color:#2f6f9f!important;
+  background:#fbfaf6!important;
+  color:#4b4557!important;
   font-size:13px!important;
   font-weight:700!important;
 }
 .source-panel.project-source-mode #addChapterBtn:hover,
 .source-panel.project-source-mode #addChapterBtn:focus-visible{
-  border-color:#91b8d9!important;
-  background:#eaf4fa!important;
-  color:#234463!important;
+  border-color:#c8c1b0!important;
+  background:#f4f1e9!important;
+  color:#221f1a!important;
   outline:none!important;
 }
 .source-panel.project-source-unset #addChapterBtn{display:none!important}
@@ -213,10 +213,10 @@
 .project-source-empty-articles{
   margin:14px 0 0;
   padding:16px 12px;
-  border:1px dashed #d4e3ee;
+  border:1px dashed #ded9cc;
   border-radius:12px;
-  color:#7690a4;
-  background:#fbfdff;
+  color:#6a6357;
+  background:#fbfaf6;
   font-size:12px;
   font-weight:500;
   line-height:1.45;
@@ -224,15 +224,15 @@
 }
 
 .project-source-diff-badge.manual{
-  background:#eef4f8!important;
-  color:#58748b!important;
+  background:#f4f1e9!important;
+  color:#6a6357!important;
 }
 .project-source-diff-row.manual-row{
   cursor:default!important;
-  background:#fbfdff;
+  background:#fbfaf6;
 }
 .project-source-diff-row.manual-row .project-source-diff-copy strong{
-  color:#49677d;
+  color:#3f3930;
 }
 
 /* On a phone the unavailable options were pushing the one thing that can be done —

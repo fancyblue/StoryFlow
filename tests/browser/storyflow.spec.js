@@ -145,8 +145,8 @@ test('primary action scale and navigation icon language stay consistent', async 
   expect(emptyWork).toMatchObject({
     height: 40,
     fontSize: 14,
-    backgroundColor: 'rgb(57, 117, 167)',
-    color: 'rgb(255, 255, 255)'
+    backgroundColor: 'rgb(75, 69, 87)',
+    color: 'rgb(251, 250, 246)'
   });
 
   await page.locator('.nav-item[data-view="publishing"]').click();
@@ -157,8 +157,8 @@ test('primary action scale and navigation icon language stay consistent', async 
   expect(await controlStyle(page.locator('.publishing-empty .button'))).toMatchObject({
     height: 40,
     fontSize: 14,
-    backgroundColor: 'rgb(57, 117, 167)',
-    color: 'rgb(255, 255, 255)'
+    backgroundColor: 'rgb(75, 69, 87)',
+    color: 'rgb(251, 250, 246)'
   });
 
   await page.evaluate(() => {
@@ -190,17 +190,17 @@ test('primary action scale and navigation icon language stay consistent', async 
   expect(manageStyle).toMatchObject({
     height: 40,
     fontSize: 14,
-    backgroundColor: 'rgb(234, 243, 249)',
-    color: 'rgb(45, 93, 133)'
+    backgroundColor: 'rgb(232, 229, 235)',
+    color: 'rgb(58, 53, 68)'
   });
   expect(manageStyle.height).toBe(previewStyle.height);
   expect(manageStyle.fontSize).toBe(previewStyle.fontSize);
-  expect(previewStyle.backgroundColor).toBe('rgb(255, 255, 255)');
+  expect(previewStyle.backgroundColor).toBe('rgb(251, 250, 246)');
   await rowManage.click();
   await expect(publishingRow.getByRole('button', { name: /收合.*發布平台/ })).toBeVisible();
   expect(await controlStyle(publishingRow.locator('.publish-manage-btn'))).toMatchObject({
-    backgroundColor: 'rgb(220, 235, 245)',
-    color: 'rgb(35, 68, 99)'
+    backgroundColor: 'rgb(232, 229, 235)',
+    color: 'rgb(34, 31, 26)'
   });
 
   await page.locator('#sidebarSettingsBtn').click();
@@ -539,7 +539,7 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   await page.evaluate(() => document.activeElement?.blur());
   await page.mouse.move(0, 0);
   await expect.poll(() => activeCard.getByRole('button', { name: '管理章節', exact: true })
-    .evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(220, 235, 245)');
+    .evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(232, 229, 235)');
   // borderColor has its own transition, and the assertions below compare the inactive
   // card's border against the active one's. Waiting only on the active background left
   // the inactive border still animating, so the comparison read two different points of
@@ -571,17 +571,17 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   });
   expect(managementStyles.chapters.height).toBe('40px');
   expect(managementStyles.chapters.fontSize).toBe('14px');
-  expect(managementStyles.chapters.backgroundColor).toBe('rgb(220, 235, 245)');
-  expect(managementStyles.chapters.color).toBe('rgb(35, 68, 99)');
+  expect(managementStyles.chapters.backgroundColor).toBe('rgb(232, 229, 235)');
+  expect(managementStyles.chapters.color).toBe('rgb(34, 31, 26)');
   expect(managementStyles.inactiveChapters.backgroundColor).toBe(managementStyles.chapters.backgroundColor);
   expect(managementStyles.inactiveChapters.borderColor).toBe(managementStyles.chapters.borderColor);
   expect(managementStyles.inactiveChapters.color).toBe(managementStyles.chapters.color);
-  expect(managementStyles.publishing.backgroundColor).toBe('rgb(245, 249, 252)');
-  expect(managementStyles.publishing.color).toBe('rgb(45, 93, 133)');
+  expect(managementStyles.publishing.backgroundColor).toBe('rgb(251, 250, 246)');
+  expect(managementStyles.publishing.color).toBe('rgb(58, 53, 68)');
   expect(managementStyles.open.height).toBe(managementStyles.chapters.height);
   expect(managementStyles.open.fontSize).toBe(managementStyles.chapters.fontSize);
   expect(managementStyles.open.fontWeight).toBe(managementStyles.chapters.fontWeight);
-  expect(managementStyles.open.backgroundColor).toBe('rgb(255, 255, 255)');
+  expect(managementStyles.open.backgroundColor).toBe('rgb(251, 250, 246)');
 
   const newWorkStyle = await page.locator('#projectsNewWorkBtn').evaluate(button => {
     const rect = button.getBoundingClientRect();
@@ -591,7 +591,7 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   expect(newWorkStyle.height).toBeLessThanOrEqual(42);
   expect(newWorkStyle.fontSize).toBeGreaterThanOrEqual(14);
   expect(newWorkStyle.width / newWorkStyle.height).toBeLessThan(3.2);
-  expect(await page.locator('#projectsNewWorkBtn').evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(255, 255, 255)');
+  expect(await page.locator('#projectsNewWorkBtn').evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(251, 250, 246)');
   expect(pageErrors).toEqual([]);
 });
 

@@ -16,13 +16,13 @@
   width:7px;
   height:7px;
   border-radius:50%;
-  background:#d1d5db;
-  box-shadow:0 0 0 3px #f3f4f6;
+  background:#ded9cc;
+  box-shadow:0 0 0 3px #221f1a;
   flex:0 0 auto;
 }
 .connection-chip-label{color:var(--muted)}
 .connection-chip-state{color:var(--text);font-size:10px}
-.connection-logout{color:#991b1b}
+.connection-logout{color:#a8443a}
 
 .storyflow-recovery-dialog{
   width:min(520px,calc(100vw - 32px));
@@ -31,16 +31,16 @@
   border:0;
   border-radius:22px;
   background:transparent;
-  box-shadow:0 28px 80px rgba(16,38,60,.28);
+  box-shadow:0 28px 80px rgba(34,31,26,.28);
 }
-.storyflow-recovery-dialog::backdrop{background:rgba(19,40,61,.68);backdrop-filter:blur(6px)}
+.storyflow-recovery-dialog::backdrop{background:rgba(43,40,34,.68);backdrop-filter:blur(6px)}
 .storyflow-recovery-card{
   display:grid;
   justify-items:center;
   padding:38px;
   border:1px solid rgba(255,255,255,.65);
   border-radius:22px;
-  background:#fff;
+  background:#fbfaf6;
   color:var(--text);
   text-align:center;
 }
@@ -51,8 +51,8 @@
   height:56px;
   margin-bottom:18px;
   border-radius:16px;
-  background:linear-gradient(145deg,#6da4d3,#356f9f);
-  color:#fff;
+  background:linear-gradient(145deg,#5e5769,#4b4557);
+  color:#fbfaf6;
   font-size:22px;
   font-weight:700;
 }
@@ -71,7 +71,7 @@
   padding:12px 14px;
   border:1px solid var(--line);
   border-radius:12px;
-  background:#f8fafc;
+  background:#fbfaf6;
   text-align:left;
 }
 .storyflow-quick-start-folder span{color:var(--muted);font-size:11px;font-weight:700}
@@ -85,7 +85,7 @@
   padding:22px;
   border:1px solid var(--line);
   border-radius:16px;
-  background:#fff;
+  background:#fbfaf6;
 }
 .settings-device-privacy strong{font-size:16px}
 .settings-device-privacy p{max-width:720px;margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.65}
@@ -100,7 +100,7 @@
 }
 .sidebar-connection-row{
   min-width:0;
-  color:#e5e7eb;
+  color:#c8c1b0;
   text-align:left;
   cursor:pointer;
   transition:background .14s ease,border-color .14s ease;
@@ -112,10 +112,10 @@
 }
 .sidebar-status-dot{
   border-radius:50%;
-  background:#6b7280;
+  background:#5e5769;
 }
-.sidebar-connection-row.connected .sidebar-status-dot{background:#4ade80;box-shadow:0 0 0 2px rgba(74,222,128,.12)}
-.sidebar-connection-row.restoring .sidebar-status-dot{background:#fbbf24;box-shadow:0 0 0 2px rgba(251,191,36,.12)}
+.sidebar-connection-row.connected .sidebar-status-dot{background:#59703f;box-shadow:0 0 0 2px rgba(89,112,63,.12)}
+.sidebar-connection-row.restoring .sidebar-status-dot{background:#8a6526;box-shadow:0 0 0 2px rgba(138,101,38,.12)}
 .sidebar-connection-copy{
   align-items:baseline;
   gap:4px;
@@ -124,7 +124,7 @@
 }
 .sidebar-connection-copy b{
   flex:0 0 auto;
-  color:#e5e7eb;
+  color:#c8c1b0;
   font-size:9px;
   font-weight:700;
 }
@@ -134,8 +134,8 @@
   text-overflow:ellipsis;
   white-space:nowrap;
 }
-.sidebar-connection-row.connected .sidebar-connection-copy small{color:#86efac}
-.sidebar-connection-row.restoring .sidebar-connection-copy small{color:#fde68a}
+.sidebar-connection-row.connected .sidebar-connection-copy small{color:#8fa876}
+.sidebar-connection-row.restoring .sidebar-connection-copy small{color:#c9a45f}
 .sidebar-logout{
   display:grid;
   place-items:center;
@@ -147,8 +147,8 @@
 .sidebar-logout-label{display:none}
 .sidebar-logout:hover,
 .sidebar-logout:focus-visible{
-  background:rgba(127,29,29,.22);
-  border-color:rgba(252,165,165,.14);
+  background:rgba(168,68,58,.22);
+  border-color:rgba(168,68,58,.14);
   outline:none;
 }
 .sidebar-logout[hidden]{display:none!important}
@@ -170,9 +170,9 @@
   min-height:330px;
   margin-top:10px;
   padding:42px 32px;
-  border:1px dashed #d8d5e8;
+  border:1px dashed #c8c1b0;
   border-radius:14px;
-  background:#fcfbff;
+  background:#fbfaf6;
 }
 .workspace-grid.workspace-empty-mode #suggestionEmpty>strong{margin-top:12px;font-size:17px}
 .workspace-grid.workspace-empty-mode #suggestionEmpty>span{
@@ -208,7 +208,7 @@
   padding:36px;
   border:1px dashed var(--line);
   border-radius:14px;
-  background:#fbfbfd;
+  background:#fbfaf6;
   text-align:center;
 }
 .projects-empty-state strong{font-size:17px}

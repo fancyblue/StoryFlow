@@ -4,9 +4,9 @@
 
 /* Accessibility contract: interactive colors must keep AA contrast at normal control sizes. */
 :root{
-  --sf-primary:#3975a7;
-  --sf-primary-hover:#2d5d85;
-  --sf-danger:#a14f5b;
+  --sf-primary:var(--dai-700);
+  --sf-primary-hover:var(--dai-800);
+  --sf-danger:var(--vermilion);
 }
 
 /* The safety/storage explanation is available in Settings; persistent navigation stays task-focused. */
@@ -19,17 +19,17 @@
   grid-template-columns:minmax(180px,1.35fr) repeat(3,minmax(110px,.8fr))!important;
   gap:0!important;
   overflow:hidden!important;
-  border:1px solid var(--sf-border,#dce8f1)!important;
+  border:1px solid var(--sf-border,#ded9cc)!important;
   border-radius:14px!important;
-  background:#fff!important;
-  box-shadow:var(--sf-shadow-card,0 8px 24px rgba(35,68,99,.035))!important;
+  background:#fbfaf6!important;
+  box-shadow:var(--sf-shadow-card,0 8px 24px rgba(34,31,26,.035))!important;
 }
 .workspace-view > .stats-grid > .stat-card,
 .workspace-grid > .stats-grid > .stat-card{
   min-width:0!important;
   padding:12px 14px!important;
   border:0!important;
-  border-right:1px solid var(--sf-border,#dce8f1)!important;
+  border-right:1px solid var(--sf-border,#ded9cc)!important;
   border-radius:0!important;
   background:transparent!important;
   box-shadow:none!important;
@@ -38,15 +38,15 @@
 .workspace-grid > .stats-grid > .stat-card:last-child{border-right:0!important}
 .workspace-view > .stats-grid > .stat-card-primary,
 .workspace-grid > .stats-grid > .stat-card-primary{
-  background:#f5faff!important;
+  background:#fbfaf6!important;
 }
 .workspace-view > .stats-grid > .stat-card-primary > span,
 .workspace-grid > .stats-grid > .stat-card-primary > span{
-  color:var(--sf-primary,#3975a7)!important;
+  color:var(--sf-primary,#4b4557)!important;
 }
 .workspace-view > .stats-grid > .stat-card-primary > strong,
 .workspace-grid > .stats-grid > .stat-card-primary > strong{
-  color:var(--sf-text,#234463)!important;
+  color:var(--sf-text,#221f1a)!important;
 }
 
 /* PRIMARY NAV: icon and label get fixed columns so every item starts on the same axis. */
@@ -166,18 +166,18 @@
   width:100%!important;
   min-height:40px!important;
   margin-top:12px!important;
-  border:1px solid #c9ddea!important;
+  border:1px solid #c8c1b0!important;
   border-radius:10px!important;
   background:var(--sf-surface-soft)!important;
-  color:var(--denim-700,#3975a7)!important;
+  color:var(--denim-700,#4b4557)!important;
   font-size:13px!important;
   font-weight:700!important;
 }
 .source-panel #addChapterBtn:hover,
 .source-panel #addChapterBtn:focus-visible{
-  border-color:#91b8d9!important;
-  background:#eaf4fa!important;
-  color:var(--denim-900,#234463)!important;
+  border-color:#c8c1b0!important;
+  background:#f4f1e9!important;
+  color:var(--denim-900,#221f1a)!important;
 }
 
 /* SMART SPLIT: use the exact same title/action alignment contract. */
@@ -217,19 +217,19 @@
   gap:6px!important;
   min-height:34px!important;
   padding:0 11px!important;
-  border:1px solid #c9ddea!important;
+  border:1px solid #c8c1b0!important;
   border-radius:9px!important;
-  background:#fff!important;
-  color:var(--sf-muted,#58748b)!important;
+  background:#fbfaf6!important;
+  color:var(--sf-muted,#6a6357)!important;
   font-size:13px!important;
   font-weight:700!important;
 }
 .splitter-panel #splitPreferencesToggle:hover,
 .splitter-panel #splitPreferencesToggle:focus-visible,
 .splitter-panel #splitPreferencesToggle[aria-expanded="true"]{
-  border-color:#91b8d9!important;
-  background:#eef6fa!important;
-  color:var(--sf-primary,#3975a7)!important;
+  border-color:#c8c1b0!important;
+  background:#f4f1e9!important;
+  color:var(--sf-primary,#4b4557)!important;
 }
 .splitter-panel .smart-split-mini-settings{
   width:100%!important;
@@ -274,7 +274,7 @@
     min-width:0!important;
     margin:0!important;
     padding:10px 0 0!important;
-    border-top:1px solid rgba(180,206,229,.20)!important;
+    border-top:1px solid rgba(200,193,176,.20)!important;
   }
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-connection-row,
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-connection-row.connected,
@@ -378,8 +378,8 @@
   }
   .workspace-view > .stats-grid > .stat-card,
   .workspace-grid > .stats-grid > .stat-card{
-    border-right:1px solid var(--sf-border,#dce8f1)!important;
-    border-bottom:1px solid var(--sf-border,#dce8f1)!important;
+    border-right:1px solid var(--sf-border,#ded9cc)!important;
+    border-bottom:1px solid var(--sf-border,#ded9cc)!important;
   }
   .workspace-view > .stats-grid > .stat-card:nth-child(2n),
   .workspace-grid > .stats-grid > .stat-card:nth-child(2n){border-right:0!important}

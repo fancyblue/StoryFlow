@@ -58,8 +58,8 @@
   margin:0!important;
   border:1px solid var(--line);
   border-radius:16px;
-  background:#fff;
-  box-shadow:0 2px 8px rgba(17,24,39,.03);
+  background:#fbfaf6;
+  box-shadow:0 2px 8px rgba(34,31,26,.03);
 }
 .settings-view .settings-section{}
 .settings-view .settings-section>strong{
@@ -206,9 +206,9 @@
 .sidebar-settings-button:hover,
 .sidebar-settings-button:focus-visible,
 .sidebar-settings-button.active{
-  background:#312e55!important;
-  border-color:rgba(167,139,250,.55)!important;
-  color:#fff;
+  background:#2b2822!important;
+  border-color:rgba(200,193,176,.55)!important;
+  color:#fbfaf6;
   outline:none;
 }
 .sidebar-logout{
@@ -216,12 +216,12 @@
   min-height:30px!important;
   border:0;
   background:transparent!important;
-  color:#fca5a5!important;
+  color:#f6e9e6!important;
   font-size:13px!important;
 }
 .sidebar-settings-label,
 .sidebar-logout-label{display:none!important}
-.sidebar-logout:hover,.sidebar-logout:focus-visible{background:rgba(127,29,29,.25)!important;outline:none}
+.sidebar-logout:hover,.sidebar-logout:focus-visible{background:rgba(168,68,58,.25)!important;outline:none}
 
 @media(min-width:821px){
   /* When the safety note disappears on collapse, the utility strip itself owns the bottom anchor. */
@@ -269,9 +269,9 @@
     padding:7px 10px;
     border:1px solid rgba(255,255,255,.12);
     border-radius:9px;
-    background:#111827;
-    color:#fff;
-    box-shadow:0 8px 24px rgba(17,24,39,.2);
+    background:#2b2822;
+    color:#fbfaf6;
+    box-shadow:0 8px 24px rgba(34,31,26,.2);
     font-size:12px;
     font-weight:700;
     line-height:1;
@@ -315,8 +315,8 @@
   padding:22px 24px;
   border:1px solid var(--line);
   border-radius:16px;
-  background:#fff;
-  box-shadow:0 2px 8px rgba(17,24,39,.03);
+  background:#fbfaf6;
+  box-shadow:0 2px 8px rgba(34,31,26,.03);
 }
 .settings-backup-head{
   display:flex;
@@ -333,9 +333,9 @@
   gap:18px;
   margin-top:18px;
   padding:16px;
-  border:1px dashed #b7c7d6;
+  border:1px dashed #c8c1b0;
   border-radius:12px;
-  background:#f8fafc;
+  background:#fbfaf6;
 }
 .backup-center-disconnected[hidden],#backupCenterConnected[hidden],.backup-import-preview[hidden]{display:none!important}
 .backup-center-disconnected div{display:grid;gap:4px}
@@ -343,13 +343,13 @@
 .backup-center-folder-row{display:flex;align-items:center;gap:8px;margin-top:18px;color:var(--muted);font-size:13px}
 .backup-center-folder-row strong{color:var(--ink)}
 .backup-center-status-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
-.backup-status-card{display:grid;align-content:start;gap:6px;min-height:128px;padding:16px;border:1px solid var(--line);border-radius:12px;background:#fbfcfd}
+.backup-status-card{display:grid;align-content:start;gap:6px;min-height:128px;padding:16px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6}
 .backup-status-card>span{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
 .backup-status-card>strong{font-size:15px;line-height:1.4}
 .backup-status-card>small{color:var(--muted);line-height:1.6;overflow-wrap:anywhere}
-.backup-status-card.is-warning{border-color:#e0a252;background:#fff8ea}
+.backup-status-card.is-warning{border-color:#8a6526;background:#f5eddc}
 .backup-center-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
-.backup-import-preview{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-top:16px;padding:16px;border:1px solid #9cb8d0;border-radius:12px;background:#f0f7fc}
+.backup-import-preview{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-top:16px;padding:16px;border:1px solid #c8c1b0;border-radius:12px;background:#fbfaf6}
 .backup-import-preview p{margin:5px 0!important;color:var(--ink)!important}
 .backup-import-preview small{color:var(--muted);line-height:1.6}
 .backup-import-actions{display:flex;gap:8px;flex:0 0 auto}
@@ -359,19 +359,19 @@
 .backup-storage-head h3{margin:0 0 5px;font-size:16px}
 .backup-storage-head p{max-width:760px;margin:0;color:var(--muted);font-size:13px;line-height:1.6}
 .backup-storage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
-.backup-storage-card{display:grid;gap:4px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fbfcfd}
+.backup-storage-card{display:grid;gap:4px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6}
 .backup-storage-card>span{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.03em}
 .backup-storage-card>strong{font-size:18px;line-height:1.35}
 .backup-storage-card>small{color:var(--muted);line-height:1.5}
 .backup-cleanup-controls{display:flex;align-items:center;gap:8px;margin-top:14px}
 .backup-cleanup-controls label{color:var(--muted);font-size:13px;font-weight:500}
 .backup-cleanup-controls .compact-select{width:auto;min-width:96px;min-height:36px;padding:0 32px 0 10px}
-.backup-cleanup-preview{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-top:12px;padding:14px 16px;border:1px solid #e4c28a;border-radius:12px;background:#fffaf0}
+.backup-cleanup-preview{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-top:12px;padding:14px 16px;border:1px solid #8a6526;border-radius:12px;background:#f5eddc}
 .backup-cleanup-preview[hidden]{display:none!important}
 .backup-cleanup-preview p{margin:5px 0!important;color:var(--ink)!important;font-size:13px;line-height:1.5}
 .backup-cleanup-preview small{color:var(--muted);line-height:1.55}
-.button.backup-cleanup-confirm{flex:0 0 auto;border-color:#c95249;background:#fff;color:#a42e27}
-.button.backup-cleanup-confirm:hover{border-color:#a42e27;background:#fff1ef;color:#86201a}
+.button.backup-cleanup-confirm{flex:0 0 auto;border-color:#a8443a;background:#fbfaf6;color:#a8443a}
+.button.backup-cleanup-confirm:hover{border-color:#a8443a;background:#f6e9e6;color:#a8443a}
 .settings-device-privacy{margin-top:14px}
 @media(max-width:860px){
   .backup-center-status-grid,.backup-storage-grid{grid-template-columns:1fr}
@@ -428,7 +428,7 @@
   border-top:1px solid var(--line)!important;
 }
 .settings-view .platform-default-row{
-  background:#fbfbfe;
+  background:#fbfaf6;
   margin-inline:-10px;
   padding-inline:10px!important;
   border-radius:10px;
@@ -458,12 +458,12 @@
   min-width:auto!important;
   border-color:transparent!important;
   background:transparent!important;
-  color:#a23a32!important;
+  color:#a8443a!important;
 }
 .settings-view .platform-row-delete:hover{
-  background:#fff4f2!important;
-  border-color:#f5d2ce!important;
-  color:#8e2119!important;
+  background:#f6e9e6!important;
+  border-color:#e6cdc7!important;
+  color:#a8443a!important;
 }
 .settings-view .platform-settings-empty{
   display:flex;
@@ -472,9 +472,9 @@
   gap:3px;
   margin-top:8px;
   padding:12px 14px;
-  border:1px dashed #d9dce5;
+  border:1px dashed #c8c1b0;
   border-radius:10px;
-  background:#fbfbfd;
+  background:#fbfaf6;
   color:var(--muted);
 }
 .settings-view .platform-settings-empty strong{
@@ -541,15 +541,15 @@
   gap:14px;
   margin:12px 0 16px;
   padding:12px 13px;
-  border:1px solid #e7e4f8;
+  border:1px solid #ded9cc;
   border-radius:12px;
 }
 .settings-bootstrap-panel.configured{
-  border-color:#dfe4ea;
+  border-color:#ded9cc;
 }
 .settings-bootstrap-panel.authenticated{
-  border-color:#ccebd9;
-  background:#f8fcfa;
+  border-color:#d7dec6;
+  background:#eef0e4;
 }
 .settings-bootstrap-copy{
   min-width:0;
@@ -565,11 +565,11 @@
   line-height:1.55;
 }
 .settings-bootstrap-copy small{
-  color:#8b6b2d;
+  color:#8a6526;
   font-size:10.5px;
   font-weight:700;
 }
-.settings-bootstrap-copy small.ready{color:#18794e}
+.settings-bootstrap-copy small.ready{color:#59703f}
 .settings-bootstrap-actions{
   display:flex;
   align-items:center;
@@ -587,16 +587,16 @@
   gap:6px;
   min-height:32px;
   padding:0 10px;
-  border:1px solid #ccebd9;
+  border:1px solid #d7dec6;
   border-radius:999px;
-  background:#f3fbf6;
-  color:#18794e;
+  background:#eef0e4;
+  color:#59703f;
   font-size:11px;
   font-weight:700;
   white-space:nowrap;
 }
 .settings-google-status span{
-  color:#20a665;
+  color:#59703f;
   font-size:9px;
 }
 

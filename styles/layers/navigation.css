@@ -12,8 +12,8 @@
 .sidebar-settings-button:focus-visible{
   border:0!important;
   background:rgba(255,255,255,.075)!important;
-  color:#fff!important;
-  outline:2px solid rgba(167,139,250,.55)!important;
+  color:#fbfaf6!important;
+  outline:2px solid rgba(200,193,176,.55)!important;
   outline-offset:2px;
   box-shadow:none!important;
 }

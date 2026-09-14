@@ -8,7 +8,7 @@
 .chapter-group-label strong,
 .chapter-group-label small { display: block; }
 .chapter-group-label strong { font-size: 12px; }
-.chapter-group-label small { margin-top: 3px; color: #67869b; font-size: 10px; }
+.chapter-group-label small { margin-top: 3px; color: #6a6357; font-size: 10px; }
 
 .workspace-grid.imported-source-mode { grid-template-columns: 250px minmax(0, 1fr); }
 .workspace-grid.imported-source-mode .source-panel { grid-column: 1; }
@@ -27,7 +27,7 @@
   max-width: 100%;
   border: 1px solid var(--line);
   border-radius: 9px;
-  background: var(--surface-soft, #f8fcff);
+  background: var(--surface-soft, #fbfaf6);
 }
 .smart-split-mini-settings .range-grid {
   display: flex;
@@ -74,7 +74,7 @@
   font-size: 17px;
   line-height: 2;
   padding: 26px 30px;
-  background: #fff;
+  background: #fbfaf6;
 }
 
 .suggestion-platform-bar,
@@ -87,7 +87,7 @@
   margin: 5px 0 8px;
   border: 1px solid var(--line);
   border-radius: 9px;
-  background: var(--surface-soft, #f8fcff);
+  background: var(--surface-soft, #fbfaf6);
 }
 .suggestion-platform-bar .platform-select-field { width: 180px; flex: 0 0 auto; }
 .platform-select-field > span,
@@ -108,14 +108,14 @@
   border-radius: 7px;
   padding: 4px 7px;
   min-height: 28px;
-  background: #f1f8fc;
-  color: #607f95;
+  background: #fbfaf6;
+  color: #6a6357;
   font-size: 11px;
 }
 .disabled-check { display: flex !important; align-items: center; gap: 5px; min-width: auto !important; }
 .disabled-check span { margin: 0 !important; font-size: 10px !important; }
 
-.review-column { min-width: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
+.review-column { min-width: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fbfaf6; }
 .review-column-head { padding: 12px 14px; border-bottom: 1px solid var(--line); }
 .review-column-head span,
 .review-column-head strong { display: block; }
@@ -146,25 +146,25 @@
   display: block;
   margin: 10px 0;
   padding: 5px 8px;
-  border-top: 3px solid var(--primary, #4f95c2);
-  border-bottom: 3px solid var(--primary, #4f95c2);
+  border-top: 3px solid var(--primary, #968f80);
+  border-bottom: 3px solid var(--primary, #968f80);
   font-weight: 700;
   text-align: center;
 }
 
-.platform-manager { margin: 14px 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft, #f8fcff); }
+.platform-manager { margin: 14px 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft, #fbfaf6); }
 .platform-manager-head { display:flex; align-items:end; justify-content:space-between; gap:12px; flex-wrap:wrap; }
 .platform-manager-head p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
 .platform-add-row { display:flex; gap:7px; align-items:center; }
 .platform-add-row .text-input { min-width:180px; }
 .managed-platform-list { display:flex; gap:7px; flex-wrap:wrap; margin-top:10px; }
-.managed-platform-chip { display:inline-flex; align-items:center; gap:6px; padding:5px 7px 5px 10px; border:1px solid var(--line); border-radius:999px; background:#fff; font-size:12px; }
+.managed-platform-chip { display:inline-flex; align-items:center; gap:6px; padding:5px 7px 5px 10px; border:1px solid var(--line); border-radius:999px; background:#fbfaf6; font-size:12px; }
 .platform-remove-btn { width:24px; height:24px; min-width:24px; }
 .portable-settings-note { margin-top:10px; font-size:11px; color:var(--muted); }
 
 .platform-preview-dialog-card { width: min(760px, calc(100vw - 28px)); max-width: 760px; }
 .platform-preview-actions {margin-top: 14px; }
-.reset-workspace-btn { color: var(--danger, #c86d76); }
+.reset-workspace-btn { color: var(--danger, #a8443a); }
 
 @media (max-width: 1050px) {
   .workspace-grid.imported-source-mode { grid-template-columns: 220px minmax(0, 1fr); }
@@ -188,8 +188,8 @@
     bottom: 0;
     z-index: 1000;
     padding: 7px max(8px, env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
-    background: var(--sidebar, #4f7895);
-    box-shadow: 0 -8px 28px rgba(39,84,112,.14);
+    background: var(--sidebar, #4b4557);
+    box-shadow: 0 -8px 28px rgba(34,31,26,.14);
   }
   .sidebar .brand,
   .sidebar .sidebar-note { display: none; }

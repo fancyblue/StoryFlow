@@ -86,6 +86,57 @@ A destructive action must never be the only enabled control in an empty state. W
 
 One action carries one label and one weight wherever it appears. Connecting the StoryFlow folder is reached from the Settings folder card and from the backup centre, so both read "連接資料夾" and both stay outlined; the backup control only proxies the owning card and must not out-emphasize it. Sidebar chrome ranks below navigation: the collapse toggle rests on a translucent fill, never on the `--denim-800` used by an active nav item, so a utility control cannot read as the current destination.
 
+## Palette
+
+The interface is warm paper, warm ink, and one restrained accent. Colour values are defined
+once in `styles/layers/theme.css`; `--sf-*` in `ui-system.css` and the legacy `--denim-*`
+names are aliases onto them, not a second set of values.
+
+| Family | Values | What it is for |
+| --- | --- | --- |
+| Paper | `--paper-0` ground · `--paper-1` raised · `--paper-2` recessed | Surfaces. Warm white, not `#fff` |
+| Ink | `--ink-1` body · `--ink-1-soft` strong label · `--ink-2` secondary · `--ink-3` metadata · `--ink-faint` | Text |
+| Rules | `--rule-1` hairline · `--rule-2` emphasis | Lines |
+| Accent (黛) | `--dai-700` the accent · `--dai-800` hover · `--dai-soft` active fill | Primary and active |
+| Pigments | `--vermilion` destructive · `--ochre` warning · `--moss` published | Semantic states |
+
+Three rules hold this together.
+
+**The accent is the only thing that is not paper or ink.** It is what makes a 12%-saturation
+purple-grey read as meaningful: nothing else competes with it. The palette it replaced was a
+seven-step blue ramp doing three jobs at once — the dark end was body text, the middle was the
+primary action, the light end was borders — which is why every screen read as uniformly blue
+regardless of what it was trying to say.
+
+**One value per role.** Before this palette the loaded stylesheets held 408 distinct colours,
+most of them a few percent of lightness apart: fifteen pale blues for "a surface", a dozen for
+"a line". They are now 33, and `npm run test:palette` fails on the thirty-fourth. Adding one is
+a deliberate act — put it in `PALETTE` in `scripts/palette-contract.mjs` with the role it
+serves, and the diff records the decision.
+
+**Every text pair clears AA.** This is the constraint that shaped the ink ramp, and it is why
+the ramp does not match the design sketch exactly. The sketch's third ink step, `#968f80`, is
+3.1:1 on paper — below 4.5:1 at reading size — so the step is split: `--ink-3` (`#6f6759`) is
+the readable one for units, timestamps and placeholders, and `--ink-faint` keeps `#968f80` for
+the two places where the requirement does not apply, inactive controls and hairline borders.
+The same rule forces the dark rail to carry its own destructive colour: `--vermilion` clears
+5.7:1 on paper but 2.5:1 on the rail, so `.sidebar-logout` uses a lightened pigment rather than
+the rail being made lighter.
+
+### Colour is not covered by the visual baselines
+
+Playwright compares screenshots with pixelmatch, whose `threshold` defaults to 0.2 of the
+maximum perceptual distance. This palette was built to preserve the lightness of what it
+replaced, so repainting every surface in the app changed 97% of the pixels in a baseline and
+the suite still passed at that threshold. That is useful evidence — the swap was purely
+chromatic, and nothing structural moved — and it is useless as a guard.
+
+So colour is checked statically by `scripts/palette-contract.mjs`, and the pixel baselines are
+left to do what they are good at: geometry. When changing colour, run `npm run test:palette`.
+Do not lower `threshold` in `playwright.config.mjs` to compensate: the baselines are generated
+on one Chromium build and verified on another, and the tolerance that absorbs that difference
+is the same one a tightened threshold would consume.
+
 ## Type weight
 
 The interface uses exactly three weights: **400**, **500**, **700**. No other numeric value

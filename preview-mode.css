@@ -26,13 +26,13 @@
 }
 .sf-preview-mode-segment button:hover{color:var(--text)}
 .sf-preview-mode-segment button.active{
-  background:#fff;
-  color:#5234c6;
-  box-shadow:0 1px 4px rgba(17,24,39,.10);
+  background:#fbfaf6;
+  color:#4b4557;
+  box-shadow:0 1px 4px rgba(34,31,26,.10);
 }
 .sf-preview-mode-segment button:focus-visible{
   outline:none;
-  box-shadow:0 0 0 3px rgba(104,71,239,.16);
+  box-shadow:0 0 0 3px rgba(34,31,26,.16);
 }
 
 /* Main Smart Split: the format selector and display mode form one compact utility row. */
@@ -101,8 +101,8 @@
 .sf-md-heading-4,.sf-md-heading-5,.sf-md-heading-6{font-size:1.02em}
 .sf-md-quote{
   padding-left:12px;
-  border-left:3px solid #d8d1fb;
-  color:#596170;
+  border-left:3px solid #ded9cc;
+  color:#3f3930;
 }
 .sf-md-list-line{
   display:grid;
@@ -112,7 +112,7 @@
 .sf-md-list-marker{color:var(--muted)}
 .sf-md-scene-separator{
   padding:7px 0;
-  color:#6f6784;
+  color:#6a6357;
   font-size:.88em;
   letter-spacing:.15em;
   text-align:center;
@@ -120,7 +120,7 @@
 .sf-md-code-block{
   padding:10px 12px;
   border-radius:9px;
-  background:#f4f5f8;
+  background:#fbfaf6;
   font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
   font-size:.88em;
   white-space:pre-wrap;
@@ -128,7 +128,7 @@
 .sf-preview-rendered-root code{
   padding:.12em .32em;
   border-radius:5px;
-  background:#f1f2f5;
+  background:#f4f1e9;
   font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
   font-size:.88em;
 }
@@ -136,7 +136,7 @@
   text-decoration:underline;
   text-underline-offset:2px;
 }
-.sf-preview-rendered-root del{color:#747b89}
+.sf-preview-rendered-root del{color:#6a6357}
 .sf-md-image{
   display:inline-flex;
   align-items:center;
@@ -144,7 +144,7 @@
   padding:2px 7px;
   border:1px solid var(--line);
   border-radius:7px;
-  background:#f8f9fc;
+  background:#fbfaf6;
   color:var(--muted);
   font-size:.9em;
 }
@@ -161,7 +161,7 @@
   font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
   font-size:14px;
   line-height:1.8;
-  color:#343943;
+  color:#221f1a;
 }
 
 /* Existing preview boxes already provide borders/padding; only remove browser pre defaults. */

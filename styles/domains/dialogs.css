@@ -3,6 +3,12 @@ dialog {
   box-sizing: border-box;
   overflow: hidden !important;
   padding: 0 !important;
+  /* Without this the element keeps the user-agent's `canvas` background — pure white — and
+     leaks it wherever the card inside does not cover it, such as the corners left by the
+     card's border-radius. Every other surface in the app is warm paper, so a white rim
+     reads as a rendering fault. The card paints the same colour over it; this is only
+     here so nothing underneath is the wrong white. */
+  background: var(--panel);
 }
 
 dialog > .dialog-card,
@@ -33,7 +39,7 @@ dialog form.dialog-card > .panel-head:first-child .icon-button,
 .sticky-dialog-head .icon-button {
   flex: 0 0 auto;
   z-index: 101;
-  background: #fff;
+  background: #fbfaf6;
 }
 
 #settingsDialog {
@@ -66,16 +72,16 @@ dialog form.dialog-card > .panel-head:first-child .icon-button,
   padding: 7px 10px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: #f9fafb;
+  background: #fbfaf6;
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
 }
 body:has(#folderDot.connected) #settingsDialog .settings-section:has(#settingsFolderBtn)::after {
   content: '● StoryFlow 資料夾已連接';
-  border-color: #bbf7d0;
-  background: #f0fdf4;
-  color: #166534;
+  border-color: #d7dec6;
+  background: #eef0e4;
+  color: #59703f;
 }
 
 @media (max-width: 700px) {

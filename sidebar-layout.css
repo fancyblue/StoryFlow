@@ -66,9 +66,9 @@
     padding: 0;
     border: 1px solid rgba(255,255,255,.16);
     border-radius: 9px;
-    background: #1f2937;
-    color: #e5e7eb;
-    box-shadow: 0 5px 16px rgba(0,0,0,.18);
+    background: #2b2822;
+    color: #c8c1b0;
+    box-shadow: 0 5px 16px rgba(34,31,26,.18);
     font-size: 18px;
     line-height: 1;
     cursor: pointer;
@@ -77,8 +77,8 @@
 
   .sidebar-toggle:hover,
   .sidebar-toggle:focus-visible {
-    background: #312e55;
-    color: #fff;
+    background: #2b2822;
+    color: #fbfaf6;
     outline: 2px solid rgba(255,255,255,.35);
     outline-offset: 2px;
   }
@@ -122,9 +122,9 @@
     padding: 7px 10px;
     border: 1px solid rgba(255,255,255,.12);
     border-radius: 9px;
-    background: #111827;
-    color: #fff;
-    box-shadow: 0 8px 24px rgba(17,24,39,.2);
+    background: #2b2822;
+    color: #fbfaf6;
+    box-shadow: 0 8px 24px rgba(34,31,26,.2);
     font-size: 12px;
     font-weight: 700;
     line-height: 1;
