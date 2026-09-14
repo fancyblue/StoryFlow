@@ -189,8 +189,20 @@
   `.format-summary-text`、`.manual-boundary-hint`、`.connection-chip-label`、
   `.field-label`、`.format-check`），把 11.5px 的灰色中文加粗正是這一階段要消除的糊。
   `styles/archive/` 未納入（`index.html` 沒有載入它）。
-- **2-3　正文排版**：切篇預覽與發布預覽是最常看的畫面，但 `.sf-preview-rendered-root` 只寫了
-  `font-family:inherit`。給它自己的字級、行高與行寬（16px / 1.8 / 36em）。
+- **2-3　正文排版　✅ 已完成**：切篇預覽與發布預覽是最常看的畫面。已在
+  `.sf-preview-rendered-root` 上一次寫定 **16px / 1.8 / 36em**，規則寫進
+  `docs/UI_SYSTEM.md` 的「Reading measure」一節。
+  **計畫原本寫「只有 `font-family:inherit`」，這句不精確**：三個介面各自在
+  `preview-mode.css` 重複寫了 `15px/1.9`，真正缺的是**行寬**。量過才知道：
+  1440px 下平台預覽一行 **53 個中文字**（中文舒適區約 30–40），而且會隨對話框變寬而變長。
+  另外發現一個矛盾：`ui-system.css:251` 把容器設成 `16px!important`，
+  但 `preview-mode.css` 更內層的規則把文字設成 `15px`——宣告 16 實際render 15。
+  現在字級與行高只寫在真正承載文字的那個元素上，矛盾消失。
+  行寬**靠左**不置中：預覽面板的標題、外框與對話框控制項共用同一條左邊界，
+  置中會斷掉那條線，短段落還會看起來被推到右邊。原始 MD 模式刻意不套，
+  它要呈現的就是實際會貼出去的那串字。
+- **驗證（2-3 實際結果）**：4 張基準有差——`platform-preview-1440`（行寬收到 576px）與
+  `workspace-long-1280/1440/1920`（行高 1.95 → 1.8）。逐張看過，已更新。
 - **驗證（2-2 實際結果）**：容器內只有 Regular/Bold 兩種字面，所以 `550`–`650` → `500`
   （粗 → 常規）是**唯一**會改變畫面的一段；`700` 以上本來就全部落在 Bold，改了也不動。
   零容差比對後只有 4 張基準有差：`workspace-long-1280/1440/1920`（連線膠囊的標籤）與

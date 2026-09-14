@@ -113,6 +113,29 @@ Do not raise a weight to separate two adjacent items. Size, colour and spacing c
 distinction — a statistic's label and its number are 12.5 px muted against 26 px ink, and both
 are 700 because the separation is already unmistakable.
 
+## Reading measure
+
+Rendered prose — the split preview, the platform preview, the source preview — is the only
+content in the app that is read rather than scanned, and it is capped at **36em** with one
+declaration on `.sf-preview-rendered-root`. At its 16px that is a 576px column, about 36
+Chinese characters to the line, whatever width the surrounding panel happens to have. Before
+the cap, the platform preview ran 53 characters to the line at 1440px and grew from there;
+Chinese sets comfortably at roughly 30-40, and past that the return sweep starts landing on
+the wrong line.
+
+The column is aligned to the start, not centred. The preview panel's heading, its border and
+the dialog's controls share one left edge, and centring the text breaks that edge while
+leaving a short paragraph looking pushed to the right. The width left over is right-hand
+margin, which is the point.
+
+Size and leading (16px / 1.8) live on that same element rather than on each surface. The three
+surfaces used to repeat `15px/1.9` while `ui-system.css` set their containers to 16px, so the
+container declared one size and the text rendered another.
+
+Raw mode is deliberately exempt from all of this. `.sf-preview-raw-root` stays monospace and
+uncapped because it exists to show the exact Markdown that will be pasted; re-wrapping it at a
+reading measure would misrepresent the output.
+
 ## Which collapses are remembered
 
 Two collapse controls exist and they persist differently on purpose; do not make them agree.

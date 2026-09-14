@@ -61,8 +61,27 @@
   display:block;
   width:100%;
 }
+/* Rendered prose is the one place in the app that is read rather than scanned, so it gets a
+   reading measure instead of filling whatever width its container happens to have. At 1440px
+   the platform preview ran 53 Chinese characters to the line; Chinese typesetting is
+   comfortable at roughly 30-40, and past that the eye loses the line it is returning to.
+   `36em` resolves against this element's own 16px, so the column is 576px wide however wide
+   the dialog grows. It is aligned to the start rather than centred: the preview panel's own
+   heading, its border and the dialog's controls all share one left edge, and a centred column
+   breaks that edge while leaving a short paragraph looking pushed off to the right. The
+   leftover width becomes right-hand margin, which is what a measure is for.
+
+   Size and leading live here rather than on each surface. The three surfaces used to repeat
+   `15px/1.9` in two selector blocks while `ui-system.css` set their *containers* to 16px, so
+   the containers declared one size and the text rendered another. One declaration on the
+   element that actually holds the text removes that contradiction. Raw mode is deliberately
+   excluded: it exists to show the exact Markdown that will be pasted, and re-wrapping it at a
+   reading measure would misrepresent the output. */
 .sf-preview-rendered-root{
+  max-width:36em;
   font-family:inherit;
+  font-size:16px;
+  line-height:1.8;
 }
 .sf-md-block{
   display:block;
@@ -150,15 +169,6 @@
 .review-content.sf-preview-surface,
 .platform-preview-content.sf-preview-surface{
   font-family:inherit;
-}
-.review-content.sf-preview-rendered .sf-preview-rendered-root{
-  font-size:15px;
-  line-height:1.9;
-}
-.platform-preview-content.sf-preview-rendered .sf-preview-rendered-root,
-.source-preview-content.sf-preview-rendered .sf-preview-rendered-root{
-  font-size:15px;
-  line-height:1.9;
 }
 
 /* The full-chapter column is reading context, not a selection highlight. */
