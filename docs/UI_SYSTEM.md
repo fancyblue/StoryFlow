@@ -86,6 +86,27 @@ A destructive action must never be the only enabled control in an empty state. W
 
 One action carries one label and one weight wherever it appears. Connecting the StoryFlow folder is reached from the Settings folder card and from the backup centre, so both read "連接資料夾" and both stay outlined; the backup control only proxies the owning card and must not out-emphasize it. Sidebar chrome ranks below navigation: the collapse toggle rests on a translucent fill, never on the `--denim-800` used by an active nav item, so a utility control cannot read as the current destination.
 
+## Which collapses are remembered
+
+Two collapse controls exist and they persist differently on purpose; do not make them agree.
+
+The **sidebar collapse** is remembered across reloads in `localStorage` under
+`storyflow.ui.sidebarCollapsed`. It is a statement about how much width the navigation should
+take on this screen, so re-asking every reload made the control worthless. It is deliberately
+*not* kept in `state.ui` beside `lastView`: `state` belongs to the active work and
+`switchProject()` replaces it wholesale, so a work switch would expand the sidebar again.
+Reading or writing may fail (private windows, blocked site data); both are wrapped and fall
+back to the previous session-only behaviour rather than breaking the toggle. Every
+`.sidebar-collapsed` rule lives inside `sidebar-layout.css`'s `@media (min-width: 821px)`
+block, so restoring the class is inert on narrow layouts.
+
+The **Publishing work-group collapse** (UX_FLOW P-13) stays session-only. It hides one work's
+body in a long queue for the task at hand; remembering it would leave a work you collapsed
+weeks ago still hidden, which reads as missing data rather than as a view preference.
+
+The distinction is scope, not inconsistency: window chrome is remembered, content filtering
+is not.
+
 Menus that open against a row are positioned by one shared module,
 `src/ui/anchored-menu.js`. The chapter rail, the visual entry list and the works-page rows
 all use it; previously the first two carried near-identical copies of the logic and the
