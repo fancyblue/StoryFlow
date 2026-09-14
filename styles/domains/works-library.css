@@ -14,7 +14,7 @@
   padding:0 14px!important;
   border-radius:10px!important;
   font-size:14px!important;
-  font-weight:850!important;
+  font-weight:700!important;
   border-color:#bfd7e7!important;
   background:#fff!important;
   color:var(--denim-800,#2d5d85)!important;
@@ -86,7 +86,7 @@
   padding:0 12px!important;
   border-radius:9px!important;
   font-size:14px!important;
-  font-weight:850!important;
+  font-weight:700!important;
   white-space:nowrap!important;
 }
 .project-library-card .project-library-actions > .project-open-btn{
@@ -95,7 +95,7 @@
   padding:0 12px!important;
   border-radius:9px!important;
   font-size:14px!important;
-  font-weight:850!important;
+  font-weight:700!important;
 }
 .project-library-actions .project-open-btn:not(.primary){
   border-color:#bfd7e7!important;
@@ -113,7 +113,7 @@
   background:#dcebf5!important;
   color:var(--denim-900,#234463)!important;
   font-size:14px!important;
-  font-weight:850!important;
+  font-weight:700!important;
   box-shadow:none!important;
 }
 .project-library-card .project-library-actions > .project-publish-btn,
@@ -125,7 +125,7 @@
   background:#f5f9fc!important;
   color:var(--denim-800,#2d5d85)!important;
   font-size:14px!important;
-  font-weight:850!important;
+  font-weight:700!important;
   box-shadow:none!important;
 }
 .project-library-card .project-publish-btn[hidden]{
@@ -180,7 +180,7 @@
   border-radius:999px!important;
   font-size:10.5px!important;
   line-height:1!important;
-  font-weight:800!important;
+  font-weight:700!important;
 }
 .project-publishing-cluster .project-progress-badge.published{
   order:-1;
@@ -241,7 +241,7 @@
   background:transparent;
   color:#b44f59;
   font-size:12px;
-  font-weight:800;
+  font-weight:700;
   text-align:left;
 }
 .project-library-overflow-menu button:hover,
@@ -270,10 +270,10 @@
   gap:10px;
   color:var(--sf-muted,#58748b);
   font-size:11.5px;
-  font-weight:750;
+  font-weight:700;
   line-height:1.2;
 }
-.project-progress-label b{color:var(--denim-800,#2d5d85);font-weight:800}
+.project-progress-label b{color:var(--denim-800,#2d5d85);font-weight:700}
 .project-progress-track{
   display:block;
   height:6px;

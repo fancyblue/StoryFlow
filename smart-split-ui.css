@@ -25,7 +25,7 @@
   margin-right:4px;
   color:var(--muted);
   font-size:10px;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:.04em;
   white-space:nowrap;
 }
@@ -71,7 +71,7 @@
   background:transparent;
   padding:3px 0 5px;
   font-size:20px;
-  font-weight:800;
+  font-weight:700;
   color:var(--text);
   outline:none;
 }
@@ -168,7 +168,7 @@
   gap:5px !important;
   color:#7b8290 !important;
   font-size:10.5px !important;
-  font-weight:600 !important;
+  font-weight:500 !important;
 }
 .splitter-panel .smart-split-mini-settings .range-grid input,
 .splitter-panel .scene-marker-compact #sceneMarker {
@@ -183,7 +183,7 @@
   box-shadow:none !important;
   color:#20242c !important;
   font-size:12.5px !important;
-  font-weight:550 !important;
+  font-weight:500 !important;
 }
 .splitter-panel .smart-split-mini-settings .range-grid input:hover,
 .splitter-panel .scene-marker-compact #sceneMarker:hover { background:#f1f2f6 !important; }
@@ -208,7 +208,7 @@
   margin:0 !important;
   color:#7b8290 !important;
   font-size:10.5px !important;
-  font-weight:650 !important;
+  font-weight:500 !important;
   white-space:nowrap !important;
 }
 .splitter-panel .suggestion-platform-bar select.text-input {
@@ -216,7 +216,7 @@
   min-width:150px !important;
   padding:0 30px 0 10px !important;
   box-shadow:none !important;
-  font-weight:550 !important;
+  font-weight:500 !important;
 }
 .splitter-panel .suggestion-platform-bar select.text-input:hover { background:#f1f2f6 !important; }
 .splitter-panel .suggestion-platform-bar select.text-input:focus {

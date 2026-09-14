@@ -19,12 +19,12 @@
     padding:12px 14px!important;
     gap:12px!important;
     font-size:17px!important;
-    font-weight:800!important;
+    font-weight:700!important;
     line-height:1!important;
   }
   .sidebar .nav-item span{
     font-size:17px!important;
-    font-weight:800!important;
+    font-weight:700!important;
     line-height:1!important;
   }
 
@@ -78,7 +78,7 @@
     overflow:visible!important;
     color:#dceaf4!important;
     font-size:12px!important;
-    font-weight:750!important;
+    font-weight:700!important;
     line-height:1!important;
     white-space:nowrap!important;
     text-overflow:clip!important;
@@ -174,7 +174,7 @@
 .topbar .top-connection-status .connection-chip-label{
   color:#58748b!important;
   font-size:13px!important;
-  font-weight:650!important;
+  font-weight:500!important;
   line-height:1!important;
 }
 .topbar .top-connection-status .connection-chip-state,
@@ -182,7 +182,7 @@
 .topbar .top-connection-status .connection-chip.restoring .connection-chip-state{
   color:var(--denim-900,#234463)!important;
   font-size:13px!important;
-  font-weight:800!important;
+  font-weight:700!important;
   line-height:1!important;
 }
 .topbar .top-connection-status .connection-chip .connection-chip-dot{
@@ -209,7 +209,7 @@
   background:#fff!important;
   color:var(--danger,#bd6873)!important;
   font-size:13px!important;
-  font-weight:800!important;
+  font-weight:700!important;
   line-height:1!important;
 }
 .topbar #storyflowLogoutBtn.connection-logout[hidden],

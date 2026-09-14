@@ -17,14 +17,14 @@
 .source-panel.project-source-google .project-source-origin-label{
   flex:0 0 auto!important;
   font-size:12.5px!important;
-  font-weight:800!important;
+  font-weight:700!important;
 }
 .source-panel.project-source-google .project-source-origin-name{
   min-width:0!important;
   overflow:hidden!important;
   color:var(--sf-muted,#58748b)!important;
   font-size:12px!important;
-  font-weight:650!important;
+  font-weight:500!important;
   white-space:nowrap!important;
   text-overflow:ellipsis!important;
 }
@@ -66,7 +66,7 @@
   margin-bottom:7px!important;
   color:#58748b!important;
   font-size:12.5px!important;
-  font-weight:750!important;
+  font-weight:700!important;
 }
 #manualSourceDialog.manual-source-dialog #manualSourceTitle{
   min-height:44px!important;
@@ -95,7 +95,7 @@
   min-height:40px!important;
   padding:0 15px!important;
   font-size:13px!important;
-  font-weight:800!important;
+  font-weight:700!important;
 }
 
 /* Manual preview is a one-article review. No chapter tabs or aggregate statistics. */
@@ -138,7 +138,7 @@
   background:#f7fbfd;
   color:#2f6f9f;
   font-size:13px;
-  font-weight:800;
+  font-weight:700;
   text-align:left;
   cursor:pointer;
 }

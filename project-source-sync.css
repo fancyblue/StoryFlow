@@ -4,7 +4,7 @@
   margin-top:14px;
   color:var(--muted);
   font-size:10px;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:.04em;
 }
 .source-panel #projectTitle{
@@ -45,7 +45,7 @@
   padding:0 2px 2px!important;
   color:var(--sf-muted,#58748b)!important;
   font-size:12.5px!important;
-  font-weight:650!important;
+  font-weight:500!important;
   line-height:1.4!important;
   white-space:nowrap!important;
 }
@@ -147,7 +147,7 @@
   padding:3px 7px;
   border-radius:999px;
   font-size:9px;
-  font-weight:800;
+  font-weight:700;
   white-space:nowrap;
 }
 .project-source-diff-badge.missing{background:#eaf5fd;color:#2f6f9f}
@@ -178,7 +178,7 @@
   padding:9px 12px;
   color:#2f638d;
   font-size:11px;
-  font-weight:800;
+  font-weight:700;
   cursor:pointer;
   list-style-position:inside;
 }
@@ -195,7 +195,7 @@
   padding:2px 7px;
   border-radius:999px;
   font-size:9px;
-  font-weight:800;
+  font-weight:700;
 }
 .source-diff-tag.content{background:#fff1e6;color:#9a4d16}
 .source-diff-tag.formatting{background:#eef2f6;color:#5f6f7d}
@@ -212,7 +212,7 @@
   background:#fff7ed;
   color:#9a4d16;
   font-size:11px;
-  font-weight:750;
+  font-weight:700;
 }
 .source-diff-title-change{
   display:flex;
@@ -241,7 +241,7 @@
   left:0;
   color:var(--muted);
   font-size:9px;
-  font-weight:800;
+  font-weight:700;
 }
 .source-diff-before,
 .source-diff-after{
@@ -271,7 +271,7 @@
 .source-diff-change{
   padding:1px 3px;
   border-radius:4px;
-  font-weight:800;
+  font-weight:700;
   text-decoration:none;
 }
 .source-diff-before .source-diff-change{background:#ffe4e4;color:#8e2f36}

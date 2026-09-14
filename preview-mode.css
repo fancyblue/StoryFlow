@@ -21,7 +21,7 @@
   color:var(--muted);
   font:inherit;
   font-size:10px;
-  font-weight:800;
+  font-weight:700;
   cursor:pointer;
 }
 .sf-preview-mode-segment button:hover{color:var(--text)}
@@ -73,7 +73,7 @@
 .sf-md-block.sf-md-tight{margin-top:.35em}
 .sf-md-block.sf-md-spaced{margin-top:1.15em}
 .sf-md-heading{
-  font-weight:800;
+  font-weight:700;
   letter-spacing:-.01em;
 }
 .sf-md-heading-1{font-size:1.35em}

@@ -67,7 +67,7 @@
   background:#eef6fa;
   color:#3975a7;
   font-size:9px;
-  font-weight:800;
+  font-weight:700;
   white-space:nowrap;
 }
 
@@ -119,7 +119,7 @@
 .platform-preview-image figcaption{color:#58748b;font-size:10px;line-height:1.5;text-align:center}
 
 .article-image-remove-card{width:min(600px,calc(100vw - 24px));max-width:600px!important}
-.article-image-remove-card>p{margin:18px 0 10px;color:#234463;font-weight:750}
+.article-image-remove-card>p{margin:18px 0 10px;color:#234463;font-weight:700}
 .article-image-remove-note{padding:12px;border-radius:10px;background:#f7fafc;color:#58748b;font-size:11px;line-height:1.55}
 .article-image-remove-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 

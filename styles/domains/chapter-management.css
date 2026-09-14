@@ -29,7 +29,7 @@
   background:transparent!important;
   color:#6f8293!important;
   font-size:20px!important;
-  font-weight:800!important;
+  font-weight:700!important;
   line-height:1!important;
   opacity:1!important;
   box-shadow:none!important;
@@ -72,7 +72,7 @@
   background:transparent;
   color:#b44f59;
   font-size:12.5px;
-  font-weight:800;
+  font-weight:700;
   text-align:left;
 }
 .chapter-row-delete-menu-item:hover,
@@ -128,7 +128,7 @@
 .project-chapter-manager-head strong{
   color:#234463;
   font-size:13.5px;
-  font-weight:850;
+  font-weight:700;
 }
 .project-chapter-manager-head span{
   color:#6f8293;
@@ -161,7 +161,7 @@
   overflow:hidden;
   color:#234463;
   font-size:13.5px;
-  font-weight:800;
+  font-weight:700;
   line-height:1.35;
   text-overflow:ellipsis;
   white-space:nowrap;
@@ -180,7 +180,7 @@
   padding:4px 8px;
   border-radius:999px;
   font-size:10.5px;
-  font-weight:800;
+  font-weight:700;
   line-height:1;
   white-space:nowrap;
 }
@@ -246,7 +246,7 @@
   padding:0 10px!important;
   border-radius:8px!important;
   font-size:13px!important;
-  font-weight:750!important;
+  font-weight:700!important;
 }
 .project-chapter-manager-empty{
   padding:14px;

@@ -56,12 +56,12 @@
   .sidebar .nav-item {
     color:#b4cee5 !important;
     font-size:18px !important;
-    font-weight:800 !important;
+    font-weight:700 !important;
   }
   .sidebar .nav-item span {
     color:inherit !important;
     font-size:13px !important;
-    font-weight:800 !important;
+    font-weight:700 !important;
     line-height:1.2 !important;
   }
   .sidebar .nav-item:hover,
@@ -127,7 +127,7 @@
     overflow:hidden !important;
     color:#ffffff !important;
     font-size:14px !important;
-    font-weight:800 !important;
+    font-weight:700 !important;
     line-height:1.15 !important;
     text-overflow:ellipsis !important;
     white-space:nowrap !important;

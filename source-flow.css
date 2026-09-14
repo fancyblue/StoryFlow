@@ -26,7 +26,7 @@
 .source-preview-content { white-space:pre-wrap; word-break:break-word; min-height:46vh; max-height:58vh; overflow:auto; margin-top:0; margin-bottom:0; padding:20px; border:1px solid var(--line); border-radius:12px; background:#fbfbfd; font:inherit; font-size:15px; line-height:1.9; }
 .source-refresh-compare { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:14px !important; margin-bottom:0 !important; }
 .source-refresh-compare section { min-width:0; }
-.source-compare-head { margin-bottom:7px; color:var(--muted); font-size:11px; font-weight:800; letter-spacing:.04em; }
+.source-compare-head { margin-bottom:7px; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.04em; }
 .source-refresh-compare .source-preview-content { min-height:52vh; max-height:58vh; }
 
 /* Source panel: title owns its own row; actions get a dedicated row instead of squeezing beside it. */

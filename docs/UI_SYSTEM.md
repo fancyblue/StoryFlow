@@ -86,6 +86,33 @@ A destructive action must never be the only enabled control in an empty state. W
 
 One action carries one label and one weight wherever it appears. Connecting the StoryFlow folder is reached from the Settings folder card and from the backup centre, so both read "連接資料夾" and both stay outlined; the backup control only proxies the owning card and must not out-emphasize it. Sidebar chrome ranks below navigation: the collapse toggle rests on a translucent fill, never on the `--denim-800` used by an active nav item, so a utility control cannot read as the current destination.
 
+## Type weight
+
+The interface uses exactly three weights: **400**, **500**, **700**. No other numeric value
+may enter a stylesheet.
+
+The reason is the font stack, not taste. StoryFlow renders Traditional Chinese in system
+families (PingFang TC, Noto Sans TC, Microsoft JhengHei); no webfont is loaded, because a CJK
+face is measured in megabytes and the app is expected to open offline. Those families ship
+Regular and Bold, and at most a Medium. A declared `800` or `850` therefore has no matching
+face: the browser either resolves it to the same Bold that `700` gets — making the distinction
+imaginary — or synthesises a faux bold that thickens strokes uniformly and fills in the
+counters of dense glyphs at small sizes. The stylesheets used to name thirteen weights, `800`
+alone in 83 places; none of them bought a rendered difference worth the ambiguity.
+
+- **700** — headings, statistic numbers, primary action labels, the state half of a status chip.
+- **500** — small secondary text: field labels, hints, checkbox labels, chip labels, format
+  summaries, the unit that trails a statistic.
+- **400** — article body, textarea and input content.
+
+Small muted text takes 500 rather than 700. Bolding 11.5 px grey Chinese is the specific
+failure this scale exists to prevent: the glyph is already dense, the contrast is already low,
+and weight adds noise instead of rank.
+
+Do not raise a weight to separate two adjacent items. Size, colour and spacing carry that
+distinction — a statistic's label and its number are 12.5 px muted against 26 px ink, and both
+are 700 because the separation is already unmistakable.
+
 ## Which collapses are remembered
 
 Two collapse controls exist and they persist differently on purpose; do not make them agree.

@@ -12,7 +12,7 @@
   background:#fff8e8;
   color:#76531b;
   font-size:11px;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:.03em;
 }
 .mobile-safe-mode-indicator.editing-enabled{
@@ -52,7 +52,7 @@
   color:var(--ink);
   font:inherit;
   font-size:13px;
-  font-weight:750;
+  font-weight:700;
   cursor:pointer;
 }
 .mobile-safe-mode-switch:hover,

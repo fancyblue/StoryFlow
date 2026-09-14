@@ -11,7 +11,7 @@
 .project-switcher-field{display:grid;gap:6px;min-width:0}
 .project-switcher-field>span{
   font-size:10px;
-  font-weight:800;
+  font-weight:700;
   color:var(--muted);
   letter-spacing:.04em;
 }
@@ -45,7 +45,7 @@
   background:#f5f3ff;
 }
 .project-switcher-actions #newProjectBtn{
-  font-weight:800;
+  font-weight:700;
 }
 .project-delete-btn{
   margin-left:auto;

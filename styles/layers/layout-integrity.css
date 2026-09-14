@@ -94,7 +94,7 @@
   min-width:0!important;
   margin:0!important;
   font-size:17px!important;
-  font-weight:800!important;
+  font-weight:700!important;
   line-height:1!important;
   color:inherit!important;
   white-space:nowrap!important;
@@ -171,7 +171,7 @@
   background:var(--sf-surface-soft)!important;
   color:var(--denim-700,#3975a7)!important;
   font-size:13px!important;
-  font-weight:780!important;
+  font-weight:700!important;
 }
 .source-panel #addChapterBtn:hover,
 .source-panel #addChapterBtn:focus-visible{
@@ -222,7 +222,7 @@
   background:#fff!important;
   color:var(--sf-muted,#58748b)!important;
   font-size:13px!important;
-  font-weight:780!important;
+  font-weight:700!important;
 }
 .splitter-panel #splitPreferencesToggle:hover,
 .splitter-panel #splitPreferencesToggle:focus-visible,
