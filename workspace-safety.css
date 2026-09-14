@@ -1,8 +1,8 @@
 .workspace-recovery-alert {
-  border: 1px solid #e0a252;
+  border: 1px solid #8a6526;
   border-radius: 999px;
-  background: #fff4dc;
-  color: #7c4a08;
+  background: #f5eddc;
+  color: #8a6526;
   min-height: 38px;
   padding: 0 14px;
   font: inherit;
@@ -11,9 +11,9 @@
 }
 
 .workspace-recovery-alert.is-conflict {
-  border-color: #d98282;
-  background: #fff0f0;
-  color: #8d3131;
+  border-color: #a8443a;
+  background: #f6e9e6;
+  color: #a8443a;
 }
 
 .workspace-recovery-dialog {
@@ -28,16 +28,16 @@
 }
 
 .workspace-recovery-message {
-  color: var(--ink, #24364b);
+  color: var(--ink, #221f1a);
   line-height: 1.75;
 }
 
 .workspace-recovery-details {
   white-space: pre-wrap;
-  border: 1px solid var(--line, #dbe4ec);
+  border: 1px solid var(--line, #ded9cc);
   border-radius: 12px;
-  background: var(--surface-soft, #f6f8fa);
-  color: var(--muted, #65758a);
+  background: var(--surface-soft, #fbfaf6);
+  color: var(--muted, #6a6357);
   padding: 12px 14px;
   font-size: 13px;
   line-height: 1.65;

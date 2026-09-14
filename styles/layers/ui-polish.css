@@ -1,20 +1,23 @@
 /* StoryFlow UI polish: one final visual layer for consistent hierarchy, spacing and interaction. */
+/* theme.css redefines every colour below and loads after this file, so these values never
+   render. They are kept in step with the palette anyway: a base layer holding a different
+   colour scheme is a trap for whoever next changes the load order. */
 :root{
-  --bg:#f7f8fc;
-  --panel:#fff;
-  --text:#17181d;
-  --muted:#747b89;
-  --line:#e7e9f0;
-  --line-strong:#d8dce6;
-  --primary:#6847ef;
-  --primary-hover:#5b3ddd;
-  --primary-soft:#f1edff;
-  --surface-soft:#fafbfe;
-  --danger:#b42318;
-  --shadow-card:0 1px 2px rgba(17,24,39,.025),0 8px 28px rgba(17,24,39,.035);
-  --shadow-pop:0 18px 50px rgba(17,24,39,.16);
+  --bg:#ece9e0;
+  --panel:#fbfaf6;
+  --text:#221f1a;
+  --muted:#6a6357;
+  --line:#ded9cc;
+  --line-strong:#c8c1b0;
+  --primary:#4b4557;
+  --primary-hover:#3a3544;
+  --primary-soft:#e8e5eb;
+  --surface-soft:#f4f1e9;
+  --danger:#a8443a;
+  --shadow-card:0 1px 2px rgba(34,31,26,.03),0 8px 28px rgba(34,31,26,.04);
+  --shadow-pop:0 18px 50px rgba(34,31,26,.16);
   --radius-card:16px;
-  --focus:0 0 0 3px rgba(104,71,239,.16);
+  --focus:0 0 0 3px rgba(75,69,87,.18);
 }
 
 html{background:var(--bg)}
@@ -42,7 +45,7 @@ h3{letter-spacing:-.01em}
 }
 .button{}
 .button.primary:hover{background:var(--primary-hover);border-color:var(--primary-hover)}
-.button.ghost:hover{background:#f6f7fa;border-color:#d7dae3}
+.button.ghost:hover{background:#fbfaf6;border-color:#c8c1b0}
 .button:focus-visible,.icon-button:focus-visible,.nav-item:focus-visible,.connection-chip:focus-visible,
 .publishing-filter:focus-visible,.source-choice:focus-visible,.tab-choice:focus-visible,
 .chapter-main-button:focus-visible,.project-library-card button:focus-visible{
@@ -55,7 +58,7 @@ h3{letter-spacing:-.01em}
   border-color:var(--line-strong);
 }
 .text-input:focus,.title-input:focus,.range-grid input:focus,textarea:focus,select:focus{
-  border-color:#9f8af5;
+  border-color:#c8c1b0;
   box-shadow:var(--focus);
 }
 
@@ -92,7 +95,7 @@ h3{letter-spacing:-.01em}
   padding:10px 12px;
   border-radius:10px;
   font-size:13px;
-  font-weight:650;
+  font-weight:500;
 }
 .sidebar-note{
   max-height:132px!important;
@@ -108,8 +111,8 @@ h3{letter-spacing:-.01em}
   border-color:rgba(255,255,255,.16)!important;
 }
 .sidebar-settings-button:hover,.sidebar-settings-button.active{
-  background:#3a326d!important;
-  border-color:rgba(167,139,250,.65)!important;
+  background:#4b4557!important;
+  border-color:rgba(200,193,176,.65)!important;
 }
 
 /* Workspace: keep navigation useful during long reading/splitting sessions. */
@@ -163,7 +166,7 @@ h3{letter-spacing:-.01em}
 .publishing-dashboard-panel>.panel-head{padding:15px 17px 13px}
 .publish-list-item{margin-bottom:7px;}
 .publish-overall-status{min-height:26px}
-.publish-platform-details{background:#fafbfe}
+.publish-platform-details{background:#fbfaf6}
 
 /* Settings: integration cards first, publishing section full-width, no giant nested box. */
 .settings-view .settings-section{}
@@ -182,17 +185,17 @@ h3{letter-spacing:-.01em}
 }
 .settings-view .platform-add-row{width:min(100%,500px)!important;grid-template-columns:minmax(220px,1fr) auto!important}
 .settings-view .platform-add-row .button{min-width:92px!important}
-.settings-view .managed-platform-chip{background:#fafbfe;border-color:var(--line)}
+.settings-view .managed-platform-chip{background:#fbfaf6;border-color:var(--line)}
 .settings-view .portable-settings-note{
   max-width:760px;
-  background:#f7f8fb!important;
+  background:#fbfaf6!important;
   color:var(--muted);
 }
 .settings-view .platform-format-controls{max-width:980px}
 .settings-view .security-note{
-  background:#f8f9fc!important;
+  background:#fbfaf6!important;
   border-color:var(--line)!important;
-  color:#596170!important;
+  color:#3f3930!important;
   box-shadow:none!important;
 }
 .settings-view .security-note::before{
@@ -202,7 +205,7 @@ h3{letter-spacing:-.01em}
   place-items:center;
   border-radius:50%;
   font-size:11px;
-  font-weight:800;
+  font-weight:700;
 }
 
 /* Empty states should explain the next action without looking like an error. */
@@ -211,13 +214,13 @@ h3{letter-spacing:-.01em}
 }
 .workspace-grid.workspace-empty-mode #suggestionEmpty,
 .projects-empty-state{
-  border-color:#dddfea;
-  background:#fbfbfe;
+  border-color:#ded9cc;
+  background:#fbfaf6;
 }
 .empty-icon{border-radius:15px;}
 
 /* Dialogs: keep modal use for short, contextual decisions only. */
-dialog{border:1px solid rgba(216,220,230,.9);}
+dialog{border:1px solid rgba(200,193,176,.9);}
 dialog::backdrop{backdrop-filter:blur(2px)}
 .sticky-dialog-head{padding-top:17px!important;padding-bottom:15px!important}
 

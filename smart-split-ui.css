@@ -25,7 +25,7 @@
   margin-right:4px;
   color:var(--muted);
   font-size:10px;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:.04em;
   white-space:nowrap;
 }
@@ -71,12 +71,12 @@
   background:transparent;
   padding:3px 0 5px;
   font-size:20px;
-  font-weight:800;
+  font-weight:700;
   color:var(--text);
   outline:none;
 }
 .suggestion-title-input:hover,
-.suggestion-title-input:focus { border-bottom-color:#c4b5fd; }
+.suggestion-title-input:focus { border-bottom-color:#c8c1b0; }
 .splitter-panel #suggestionChars {
   display:inline-block;
   margin-top:3px;
@@ -155,7 +155,7 @@
 .splitter-panel .smart-split-settings-label {
   align-self:center !important;
   margin:0 5px 0 0 !important;
-  color:#6f7786 !important;
+  color:#6a6357 !important;
   font-size:11px !important;
   font-weight:700 !important;
   letter-spacing:0 !important;
@@ -166,9 +166,9 @@
   width:86px !important;
   min-width:86px !important;
   gap:5px !important;
-  color:#7b8290 !important;
+  color:#6a6357 !important;
   font-size:10.5px !important;
-  font-weight:600 !important;
+  font-weight:500 !important;
 }
 .splitter-panel .smart-split-mini-settings .range-grid input,
 .splitter-panel .scene-marker-compact #sceneMarker {
@@ -179,19 +179,19 @@
   padding:0 9px !important;
   border:1px solid transparent !important;
   border-radius:8px !important;
-  background:#f6f7fa !important;
+  background:#fbfaf6 !important;
   box-shadow:none !important;
-  color:#20242c !important;
+  color:#221f1a !important;
   font-size:12.5px !important;
-  font-weight:550 !important;
+  font-weight:500 !important;
 }
 .splitter-panel .smart-split-mini-settings .range-grid input:hover,
-.splitter-panel .scene-marker-compact #sceneMarker:hover { background:#f1f2f6 !important; }
+.splitter-panel .scene-marker-compact #sceneMarker:hover { background:#f4f1e9 !important; }
 .splitter-panel .smart-split-mini-settings .range-grid input:focus,
 .splitter-panel .scene-marker-compact #sceneMarker:focus {
-  border-color:#9f8af5 !important;
-  background:#fff !important;
-  box-shadow:0 0 0 3px rgba(104,71,239,.12) !important;
+  border-color:#c8c1b0 !important;
+  background:#fbfaf6 !important;
+  box-shadow:0 0 0 3px rgba(34,31,26,.12) !important;
 }
 
 .splitter-panel .suggestion-platform-bar {
@@ -206,9 +206,9 @@
 }
 .splitter-panel .suggestion-platform-bar .platform-select-field > span {
   margin:0 !important;
-  color:#7b8290 !important;
+  color:#6a6357 !important;
   font-size:10.5px !important;
-  font-weight:650 !important;
+  font-weight:500 !important;
   white-space:nowrap !important;
 }
 .splitter-panel .suggestion-platform-bar select.text-input {
@@ -216,13 +216,13 @@
   min-width:150px !important;
   padding:0 30px 0 10px !important;
   box-shadow:none !important;
-  font-weight:550 !important;
+  font-weight:500 !important;
 }
-.splitter-panel .suggestion-platform-bar select.text-input:hover { background:#f1f2f6 !important; }
+.splitter-panel .suggestion-platform-bar select.text-input:hover { background:#f4f1e9 !important; }
 .splitter-panel .suggestion-platform-bar select.text-input:focus {
-  border-color:#9f8af5 !important;
-  background:#fff !important;
-  box-shadow:0 0 0 3px rgba(104,71,239,.12) !important;
+  border-color:#c8c1b0 !important;
+  background:#fbfaf6 !important;
+  box-shadow:0 0 0 3px rgba(34,31,26,.12) !important;
 }
 #splitPlatformBar .sf-preview-mode-control {
   margin-left:auto !important;
@@ -235,7 +235,7 @@
   padding:2px !important;
   border:0 !important;
   border-radius:8px !important;
-  background:#f6f7fa !important;
+  background:#fbfaf6 !important;
 }
 #splitPlatformBar .sf-preview-mode-segment button {
   min-height:30px !important;
@@ -245,15 +245,15 @@
   font-weight:700 !important;
 }
 #splitPlatformBar .sf-preview-mode-segment button.active {
-  background:#fff !important;
-  color:#5538cb !important;
-  box-shadow:0 1px 3px rgba(17,24,39,.08) !important;
+  background:#fbfaf6 !important;
+  color:#5e5769 !important;
+  box-shadow:0 1px 3px rgba(34,31,26,.08) !important;
 }
 
 .splitter-panel .suggestion-title-row {
 }
 .split-preview-shell .preview {
-  border:1px solid #e5e7ed !important;
+  border:1px solid #ded9cc !important;
 }
 .preview-boundary-controls {
 }

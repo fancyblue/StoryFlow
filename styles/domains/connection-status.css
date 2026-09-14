@@ -4,9 +4,11 @@
    Desktop header: light status chips align optically with Logout and use the same semantic dots. */
 
 :root{
-  --connection-off:#ef8791;
-  --connection-on:#67dca0;
-  --connection-restoring:#d8b783;
+  /* Status dots sit on the dark rail, so these are the semantic pigments lightened until a
+     9px dot reads against it — not a second, brighter palette. */
+  --connection-off:#d4796d;
+  --connection-on:#8fa876;
+  --connection-restoring:#c9a45f;
 }
 
 @media (min-width:821px){
@@ -19,12 +21,12 @@
     padding:12px 14px!important;
     gap:12px!important;
     font-size:17px!important;
-    font-weight:800!important;
+    font-weight:700!important;
     line-height:1!important;
   }
   .sidebar .nav-item span{
     font-size:17px!important;
-    font-weight:800!important;
+    font-weight:700!important;
     line-height:1!important;
   }
 
@@ -76,9 +78,9 @@
     display:block!important;
     max-width:none!important;
     overflow:visible!important;
-    color:#dceaf4!important;
+    color:#c8c1b0!important;
     font-size:12px!important;
-    font-weight:750!important;
+    font-weight:700!important;
     line-height:1!important;
     white-space:nowrap!important;
     text-overflow:clip!important;
@@ -92,15 +94,15 @@
     height:8px!important;
     flex:0 0 8px!important;
     background:transparent!important;
-    box-shadow:inset 0 0 0 2px var(--connection-off),0 0 0 2px rgba(239,135,145,.13)!important;
+    box-shadow:inset 0 0 0 2px var(--connection-off),0 0 0 2px rgba(168,68,58,.13)!important;
   }
   #sidebarConnectionStatus .sidebar-connection-row.connected .sidebar-status-dot{
     background:var(--connection-on)!important;
-    box-shadow:0 0 0 2px rgba(103,220,160,.13)!important;
+    box-shadow:0 0 0 2px rgba(89,112,63,.13)!important;
   }
   #sidebarConnectionStatus .sidebar-connection-row.restoring .sidebar-status-dot{
     background:var(--connection-restoring)!important;
-    box-shadow:0 0 0 2px rgba(216,183,131,.13)!important;
+    box-shadow:0 0 0 2px rgba(138,101,38,.13)!important;
   }
 
   #sidebarConnectionStatus .sidebar-utility-actions{
@@ -154,10 +156,10 @@
   height:36px!important;
   padding:0 10px!important;
   gap:7px!important;
-  border:1px solid #c9ddea!important;
+  border:1px solid #c8c1b0!important;
   border-radius:10px!important;
-  background:#f7fbfd!important;
-  color:var(--denim-800,#2d5d85)!important;
+  background:#fbfaf6!important;
+  color:var(--denim-800,#4b4557)!important;
   box-shadow:none!important;
   font-size:13px!important;
   line-height:1!important;
@@ -166,23 +168,23 @@
 .topbar .top-connection-status .connection-chip:focus-visible,
 .topbar .top-connection-status .connection-chip.connected:hover,
 .topbar .top-connection-status .connection-chip.connected:focus-visible{
-  border-color:#9fc5de!important;
-  background:#eef6fa!important;
-  color:var(--denim-900,#234463)!important;
+  border-color:#c8c1b0!important;
+  background:#f4f1e9!important;
+  color:var(--denim-900,#221f1a)!important;
   outline:none!important;
 }
 .topbar .top-connection-status .connection-chip-label{
-  color:#58748b!important;
+  color:#6a6357!important;
   font-size:13px!important;
-  font-weight:650!important;
+  font-weight:500!important;
   line-height:1!important;
 }
 .topbar .top-connection-status .connection-chip-state,
 .topbar .top-connection-status .connection-chip.connected .connection-chip-state,
 .topbar .top-connection-status .connection-chip.restoring .connection-chip-state{
-  color:var(--denim-900,#234463)!important;
+  color:var(--denim-900,#221f1a)!important;
   font-size:13px!important;
-  font-weight:800!important;
+  font-weight:700!important;
   line-height:1!important;
 }
 .topbar .top-connection-status .connection-chip .connection-chip-dot{
@@ -190,26 +192,26 @@
   height:8px!important;
   flex:0 0 8px!important;
   background:transparent!important;
-  box-shadow:inset 0 0 0 2px var(--connection-off),0 0 0 3px rgba(239,135,145,.13)!important;
+  box-shadow:inset 0 0 0 2px var(--connection-off),0 0 0 3px rgba(168,68,58,.13)!important;
 }
 .topbar .top-connection-status .connection-chip.connected .connection-chip-dot{
   background:var(--connection-on)!important;
-  box-shadow:0 0 0 3px rgba(103,220,160,.13)!important;
+  box-shadow:0 0 0 3px rgba(89,112,63,.13)!important;
 }
 .topbar .top-connection-status .connection-chip.restoring .connection-chip-dot{
   background:var(--connection-restoring)!important;
-  box-shadow:0 0 0 3px rgba(216,183,131,.13)!important;
+  box-shadow:0 0 0 3px rgba(138,101,38,.13)!important;
 }
 .topbar #storyflowLogoutBtn.connection-logout{
   min-height:36px!important;
   height:36px!important;
   padding:0 11px!important;
-  border:1px solid #d4e2ec!important;
+  border:1px solid #c8c1b0!important;
   border-radius:10px!important;
-  background:#fff!important;
-  color:var(--danger,#bd6873)!important;
+  background:#fbfaf6!important;
+  color:var(--danger,#a8443a)!important;
   font-size:13px!important;
-  font-weight:800!important;
+  font-weight:700!important;
   line-height:1!important;
 }
 .topbar #storyflowLogoutBtn.connection-logout[hidden],
@@ -218,9 +220,9 @@
 }
 .topbar #storyflowLogoutBtn.connection-logout:hover,
 .topbar #storyflowLogoutBtn.connection-logout:focus-visible{
-  border-color:#efc8ce!important;
-  background:var(--danger-soft,#fff0f2)!important;
-  color:#a14f5b!important;
+  border-color:#e6cdc7!important;
+  background:var(--danger-soft,#f6e9e6)!important;
+  color:#a8443a!important;
   outline:none!important;
 }
 .topbar .save-state{

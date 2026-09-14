@@ -110,8 +110,8 @@ test('shared controls keep their resolved appearance', async ({ page }) => {
   // Navigation: the active item owns the strong fill; nothing else in the sidebar
   // may claim it, which is what made the collapse toggle read as a destination.
   await expectStyle(page, '.sidebar .nav-item.active', {
-    backgroundColor: 'rgb(45, 93, 133)',
-    color: 'rgb(255, 255, 255)',
+    backgroundColor: 'rgb(58, 53, 68)',
+    color: 'rgb(251, 250, 246)',
     minHeight: '48px'
   });
   await expectStyle(page, '.sidebar .nav-item:not(.active)', {
@@ -123,21 +123,21 @@ test('shared controls keep their resolved appearance', async ({ page }) => {
 
   // The single solid action of the split review stage.
   await expectStyle(page, '#confirmBtn', {
-    backgroundColor: 'rgb(57, 117, 167)',
-    color: 'rgb(255, 255, 255)',
+    backgroundColor: 'rgb(75, 69, 87)',
+    color: 'rgb(251, 250, 246)',
     minHeight: '46px'
   });
 
   // Statistics labels sit on the design token that clears 4.5:1, not the hardcoded
   // value that measured 4.0:1.
   await expectStyle(page, '.stat-card > span', {
-    color: 'rgb(88, 116, 139)',
+    color: 'rgb(106, 99, 87)',
     fontSize: '11.5px'
   });
 
   // Muted text on a tinted segment needs the stronger token to clear the same bar.
   await expectStyle(page, '.sf-preview-mode-segment button:not(.active)', {
-    color: 'rgb(78, 101, 119)'
+    color: 'rgb(63, 57, 48)'
   });
 });
 
@@ -173,7 +173,7 @@ test('overlays resolve to their own surface rather than inheriting a page rule',
   await expect(page.locator('#globalSearchDialog')).toBeVisible();
   await expectStyle(page, '#globalSearchDialog', {
     position: 'fixed',
-    backgroundColor: 'rgb(255, 255, 255)'
+    backgroundColor: 'rgb(251, 250, 246)'
   });
   await page.keyboard.press('Escape');
   await expect(page.locator('#globalSearchDialog')).toBeHidden();
@@ -185,11 +185,11 @@ test('overlays resolve to their own surface rather than inheriting a page rule',
   // The publishing row's action vocabulary: management is tinted, preview stays
   // white and outlined, and both share one control height.
   await expectStyle(page, '.publish-list-actions .publish-manage-btn', {
-    backgroundColor: 'rgb(234, 243, 249)',
+    backgroundColor: 'rgb(232, 229, 235)',
     minHeight: '40px'
   });
   await expectStyle(page, '.publish-list-actions .default-preview-btn', {
-    backgroundColor: 'rgb(255, 255, 255)',
+    backgroundColor: 'rgb(251, 250, 246)',
     minHeight: '40px'
   });
 
@@ -199,10 +199,10 @@ test('overlays resolve to their own surface rather than inheriting a page rule',
   await expect(page.locator('.publish-row-overflow-menu').first()).toBeVisible();
   await expectStyle(page, '.publish-row-overflow-menu', {
     position: 'absolute',
-    backgroundColor: 'rgb(255, 255, 255)'
+    backgroundColor: 'rgb(251, 250, 246)'
   });
   await expectStyle(page, '.publish-row-overflow-menu button', {
-    color: 'rgb(180, 79, 89)',
+    color: 'rgb(168, 68, 58)',
     minHeight: '36px'
   });
 });
@@ -220,14 +220,14 @@ test('a disabled destructive action renders disabled', async ({ page }) => {
   // must not still render in danger red.
   await expect(page.locator('#clearPickerKeyBtn')).toBeDisabled();
   await expectStyle(page, '#clearPickerKeyBtn', {
-    color: 'rgb(138, 160, 175)',
-    backgroundColor: 'rgb(245, 248, 250)'
+    color: 'rgb(150, 143, 128)',
+    backgroundColor: 'rgb(251, 250, 246)'
   });
 
   // One action, one label, one weight: both folder controls stay outlined.
   await expect(page.locator('#settingsFolderBtn')).toHaveText('連接資料夾');
   await expectStyle(page, '#settingsFolderBtn', {
-    backgroundColor: 'rgb(255, 255, 255)'
+    backgroundColor: 'rgb(251, 250, 246)'
   });
 });
 

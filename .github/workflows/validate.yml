@@ -21,6 +21,10 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/check-static.mjs
+      # The browser suite cannot see colour: it compares screenshots through pixelmatch,
+      # whose default threshold ignores a hue change that keeps the same lightness. This
+      # is the only job that checks the palette, so it runs on every push and PR.
+      - run: node scripts/palette-contract.mjs
       # GitHub Pages serves these files directly, so a changed asset that keeps its
       # old ?v= query reaches returning browsers as the previous version.
       - name: Cache queries match changed assets

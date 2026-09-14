@@ -11,7 +11,7 @@
 .project-switcher-field{display:grid;gap:6px;min-width:0}
 .project-switcher-field>span{
   font-size:10px;
-  font-weight:800;
+  font-weight:700;
   color:var(--muted);
   letter-spacing:.04em;
 }
@@ -21,7 +21,7 @@
   min-height:40px;
   padding:8px 34px 8px 11px;
   border-radius:10px;
-  background:#fff;
+  background:#fbfaf6;
   font-size:13px;
   font-weight:700;
   color:var(--text);
@@ -42,18 +42,18 @@
   font-size:11px;
 }
 .project-switcher-actions .button:hover{
-  background:#f5f3ff;
+  background:#fbfaf6;
 }
 .project-switcher-actions #newProjectBtn{
-  font-weight:800;
+  font-weight:700;
 }
 .project-delete-btn{
   margin-left:auto;
-  color:#b91c1c!important;
+  color:#a8443a!important;
   font-weight:700;
 }
 .project-delete-btn:hover{
-  background:#fff1f2!important;
+  background:#f6e9e6!important;
 }
 
 @media(max-width:700px){

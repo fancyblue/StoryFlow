@@ -153,6 +153,28 @@
     if (remember) rememberView(currentView);
   }
 
+  // The collapse belongs to this browser, not to a work. `state.ui` rides along with
+  // the active project — switchProject() replaces `state` wholesale — so remembering it
+  // there would expand the sidebar again on every project switch. Storage can also be
+  // unavailable (private windows, blocked site data); failing to read or write only
+  // costs the memory, so the control keeps working session-only as it did before.
+  const SIDEBAR_COLLAPSED_KEY = 'storyflow.ui.sidebarCollapsed';
+
+  function readSidebarCollapsed() {
+    try { return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1'; } catch (_) { return false; }
+  }
+
+  function rememberSidebarCollapsed(collapsed) {
+    try { localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? '1' : '0'); } catch (_) {}
+  }
+
+  function syncSidebarToggle(toggle, collapsed) {
+    toggle.classList.toggle('points-right', collapsed);
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.setAttribute('aria-label', collapsed ? '展開左側選單' : '收合左側選單');
+    toggle.title = collapsed ? '展開選單' : '收合選單';
+  }
+
   function ensureSidebarToggle() {
     let toggle = document.getElementById('sidebarToggle');
     if (toggle) return toggle;
@@ -161,18 +183,20 @@
     toggle.id = 'sidebarToggle';
     toggle.className = 'sidebar-toggle';
     toggle.type = 'button';
-    toggle.setAttribute('aria-label', '收合左側選單');
-    toggle.setAttribute('aria-expanded', 'true');
-    toggle.title = '收合選單';
     toggle.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"></path></svg>';
     sidebar.appendChild(toggle);
 
+    // Every `.sidebar-collapsed` rule sits inside sidebar-layout.css's
+    // `@media (min-width: 821px)` block, so restoring the class is inert on narrow
+    // layouts rather than something to guard against here.
+    const collapsed = readSidebarCollapsed();
+    shell.classList.toggle('sidebar-collapsed', collapsed);
+    syncSidebarToggle(toggle, collapsed);
+
     toggle.addEventListener('click', () => {
-      const collapsed = shell.classList.toggle('sidebar-collapsed');
-      toggle.classList.toggle('points-right', collapsed);
-      toggle.setAttribute('aria-expanded', String(!collapsed));
-      toggle.setAttribute('aria-label', collapsed ? '展開左側選單' : '收合左側選單');
-      toggle.title = collapsed ? '展開選單' : '收合選單';
+      const nowCollapsed = shell.classList.toggle('sidebar-collapsed');
+      syncSidebarToggle(toggle, nowCollapsed);
+      rememberSidebarCollapsed(nowCollapsed);
     });
 
     return toggle;

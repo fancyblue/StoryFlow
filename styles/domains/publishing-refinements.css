@@ -16,17 +16,17 @@
   min-width:0;
   margin:0 0 16px!important;
   padding:0 12px 12px!important;
-  border:1px solid #cfdfea!important;
+  border:1px solid #c8c1b0!important;
   border-radius:18px!important;
-  background:#fff!important;
-  box-shadow:0 3px 12px rgba(35,68,99,.035)!important;
+  background:#fbfaf6!important;
+  box-shadow:0 3px 12px rgba(34,31,26,.035)!important;
   overflow:visible!important;
 }
 #publishingView .publishing-project-group:last-child{margin-bottom:0!important}
 #publishingView .publishing-project-group-current,
 #publishingView .publishing-project-group:has(.publishing-project-current){
-  border-color:#a9cde5!important;
-  box-shadow:0 4px 16px rgba(47,111,159,.07)!important;
+  border-color:#c8c1b0!important;
+  box-shadow:0 4px 16px rgba(34,31,26,.07)!important;
 }
 
 #publishingView .publishing-project-group-head{
@@ -37,14 +37,14 @@
   min-height:54px;
   margin:0 -12px 0!important;
   padding:10px 14px!important;
-  border-bottom:1px solid #dce8f0;
+  border-bottom:1px solid #ded9cc;
   border-radius:17px 17px 0 0;
-  background:#f4f8fb;
+  background:#fbfaf6;
 }
 #publishingView .publishing-project-group-current>.publishing-project-group-head,
 #publishingView .publishing-project-group:has(.publishing-project-current)>.publishing-project-group-head{
-  background:#eef7fd;
-  border-bottom-color:#d3e6f2;
+  background:#fbfaf6;
+  border-bottom-color:#ded9cc;
 }
 #publishingView .publishing-project-group-title{
   display:flex;
@@ -60,19 +60,19 @@
   min-height:22px;
   padding:3px 7px;
   border-radius:999px;
-  background:#dfeef8;
-  color:#3975a7;
+  background:#f4f1e9;
+  color:var(--sf-primary);
   font-size:9.5px;
-  font-weight:850;
+  font-weight:700;
   line-height:1;
   letter-spacing:.04em;
 }
 #publishingView .publishing-project-group-head strong{
   min-width:0;
   overflow:hidden;
-  color:#234463!important;
+  color:var(--sf-text)!important;
   font-size:16px!important;
-  font-weight:850!important;
+  font-weight:700!important;
   line-height:1.3!important;
   text-overflow:ellipsis;
   white-space:nowrap;
@@ -83,22 +83,22 @@
   flex:0 0 auto;
   min-height:26px;
   padding:4px 8px;
-  border:1px solid #d7e5ee;
+  border:1px solid #ded9cc;
   border-radius:999px;
-  background:#fff;
-  color:#6c8599!important;
+  background:#fbfaf6;
+  color:#6a6357!important;
   font-size:10.5px!important;
-  font-weight:800!important;
+  font-weight:700!important;
   line-height:1;
 }
 #publishingView .publishing-project-current{
   min-height:22px!important;
   padding:3px 7px!important;
   border:0!important;
-  background:#fff!important;
-  color:#3975a7!important;
+  background:#fbfaf6!important;
+  color:var(--sf-primary)!important;
   font-size:10px!important;
-  font-weight:850!important;
+  font-weight:700!important;
 }
 
 /* Publishing rows stay scannable: management is tinted at rest and uses a stronger
@@ -119,34 +119,34 @@
   min-width:40px!important;
 }
 #publishingView .publish-list-actions>.publish-manage-btn{
-  border-color:#91b8d9!important;
-  background:var(--sf-primary-soft,#eaf3f9)!important;
-  color:var(--denim-800,#2d5d85)!important;
+  border-color:#c8c1b0!important;
+  background:var(--sf-primary-soft,#f4f1e9)!important;
+  color:var(--denim-800,#4b4557)!important;
   box-shadow:none!important;
 }
 #publishingView .publish-list-actions>.publish-manage-btn:hover:not(:disabled),
 #publishingView .publish-list-actions>.publish-manage-btn:focus-visible{
-  border-color:#6fa2cf!important;
-  background:#dcebf5!important;
-  color:var(--denim-900,#234463)!important;
+  border-color:#968f80!important;
+  background:#e8e5eb!important;
+  color:var(--denim-900,#221f1a)!important;
 }
 #publishingView .publish-list-actions>.publish-manage-btn:focus-visible{
-  box-shadow:0 0 0 3px rgba(57,117,167,.2)!important;
+  box-shadow:0 0 0 3px rgba(34,31,26,.2)!important;
   outline:none!important;
 }
 #publishingView .publish-list-actions>.publish-manage-btn[aria-expanded="true"]{
-  border-color:#6fa2cf!important;
-  background:#dcebf5!important;
-  color:var(--denim-900,#234463)!important;
-  box-shadow:inset 3px 0 0 var(--denim-700,#3975a7)!important;
+  border-color:#968f80!important;
+  background:#e8e5eb!important;
+  color:var(--denim-900,#221f1a)!important;
+  box-shadow:inset 3px 0 0 var(--denim-700,#221f1a)!important;
 }
 
 /* Chapters are a second-level container: lighter and inset under the work header. */
 #publishingView .publishing-project-group>.publishing-chapter-group{
   margin:0!important;
-  border:1px solid #dce7ef!important;
+  border:1px solid #ded9cc!important;
   border-radius:13px!important;
-  background:#fff!important;
+  background:#fbfaf6!important;
   box-shadow:none!important;
   overflow:visible!important;
 }
@@ -156,19 +156,19 @@
 #publishingView .publishing-chapter-group-head{
   min-height:40px!important;
   padding:8px 12px!important;
-  border-bottom:1px solid #e5edf3!important;
+  border-bottom:1px solid #ded9cc!important;
   border-radius:12px 12px 0 0!important;
-  background:#fafcfe!important;
+  background:#fbfaf6!important;
 }
 #publishingView .publishing-chapter-group-head strong{
-  color:#446986!important;
+  color:#4b4557!important;
   font-size:12px!important;
-  font-weight:850!important;
+  font-weight:700!important;
 }
 #publishingView .publishing-chapter-group-head span{
-  color:#7890a3!important;
+  color:#6a6357!important;
   font-size:10.5px!important;
-  font-weight:750!important;
+  font-weight:700!important;
 }
 
 /* Destructive delete exists only behind the final overflow action. Keep the legacy
@@ -194,26 +194,26 @@ html body #publishingView .publish-delete-btn[hidden]{
 /* Platform status actions use color as a quick semantic cue.
    Marking as published is a positive action; undoing a published state is a reversible warning action. */
 #publishingView .publish-platform-actions .platform-status-btn:not(.is-published){
-  border-color:#bfe5d1!important;
-  background:#f0faf5!important;
-  color:#277153!important;
+  border-color:#59703f!important;
+  background:#eef0e4!important;
+  color:#59703f!important;
 }
 #publishingView .publish-platform-actions .platform-status-btn:not(.is-published):hover,
 #publishingView .publish-platform-actions .platform-status-btn:not(.is-published):focus-visible{
-  border-color:#99d2b4!important;
-  background:#e4f6ed!important;
-  color:#1f6046!important;
+  border-color:#59703f!important;
+  background:#dde3cc!important;
+  color:#59703f!important;
 }
 #publishingView .publish-platform-actions .platform-status-btn.is-published{
-  border-color:#efd7a4!important;
-  background:#fff8e8!important;
-  color:#9a661a!important;
+  border-color:#8a6526!important;
+  background:#f5eddc!important;
+  color:#8a6526!important;
 }
 #publishingView .publish-platform-actions .platform-status-btn.is-published:hover,
 #publishingView .publish-platform-actions .platform-status-btn.is-published:focus-visible{
-  border-color:#e4c277!important;
-  background:#fff1cf!important;
-  color:#825313!important;
+  border-color:#8a6526!important;
+  background:#ecdfc4!important;
+  color:#8a6526!important;
 }
 
 @media(max-width:680px){

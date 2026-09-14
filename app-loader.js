@@ -39,7 +39,7 @@
     { id: 'storyflowSettingsFileImportJs', src: './src/settings/settings-file-import.js?v=20260825-p2b', owner: 'settings' },
     { id: 'storyflowBackupCenterJs', src: './src/settings/backup-center.js?v=20260905-p51a', owner: 'settings' },
     { id: 'storyflowQuickStartJs', src: './src/connection/quick-start.js?v=20260825-p1e', owner: 'connection' },
-    { src: './src/ui/navigation.js?v=20260912-a1', owner: 'ui' },
+    { src: './src/ui/navigation.js?v=20260914-a2', owner: 'ui' },
     { src: './src/split/confirm-continuation.js', owner: 'split' },
     { src: './src/ui/preview-mode.js?v=20260830-p41a', owner: 'ui' },
     { src: './src/connection/google-auth.js?v=20260825-p2b', owner: 'connection' },

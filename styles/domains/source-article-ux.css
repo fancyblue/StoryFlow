@@ -17,14 +17,14 @@
 .source-panel.project-source-google .project-source-origin-label{
   flex:0 0 auto!important;
   font-size:12.5px!important;
-  font-weight:800!important;
+  font-weight:700!important;
 }
 .source-panel.project-source-google .project-source-origin-name{
   min-width:0!important;
   overflow:hidden!important;
-  color:var(--sf-muted,#58748b)!important;
+  color:var(--sf-muted,#6a6357)!important;
   font-size:12px!important;
-  font-weight:650!important;
+  font-weight:500!important;
   white-space:nowrap!important;
   text-overflow:ellipsis!important;
 }
@@ -64,9 +64,9 @@
 #manualSourceDialog.manual-source-dialog .source-editor-card > .field-label{
   margin-top:16px!important;
   margin-bottom:7px!important;
-  color:#58748b!important;
+  color:#6a6357!important;
   font-size:12.5px!important;
-  font-weight:750!important;
+  font-weight:700!important;
 }
 #manualSourceDialog.manual-source-dialog #manualSourceTitle{
   min-height:44px!important;
@@ -95,7 +95,7 @@
   min-height:40px!important;
   padding:0 15px!important;
   font-size:13px!important;
-  font-weight:800!important;
+  font-weight:700!important;
 }
 
 /* Manual preview is a one-article review. No chapter tabs or aggregate statistics. */
@@ -115,7 +115,7 @@
   min-height:340px!important;
   max-height:55dvh!important;
   margin-top:18px!important;
-  background:#fff!important;
+  background:#fbfaf6!important;
   font-size:15px!important;
   line-height:1.85!important;
 }
@@ -133,20 +133,20 @@
   min-height:40px;
   margin:0 0 5px;
   padding:8px 10px;
-  border:1px solid #c9ddea;
+  border:1px solid #c8c1b0;
   border-radius:9px;
-  background:#f7fbfd;
-  color:#2f6f9f;
+  background:#fbfaf6;
+  color:#4b4557;
   font-size:13px;
-  font-weight:800;
+  font-weight:700;
   text-align:left;
   cursor:pointer;
 }
 .workspace-project-quick-switch-new:hover,
 .workspace-project-quick-switch-new:focus-visible{
-  border-color:#91b8d9;
-  background:#eaf4fa;
-  color:#234463;
+  border-color:#c8c1b0;
+  background:#f4f1e9;
+  color:#221f1a;
   outline:none;
 }
 .workspace-project-quick-switch-new > span{

@@ -21,18 +21,18 @@
   color:var(--muted);
   font:inherit;
   font-size:10px;
-  font-weight:800;
+  font-weight:700;
   cursor:pointer;
 }
 .sf-preview-mode-segment button:hover{color:var(--text)}
 .sf-preview-mode-segment button.active{
-  background:#fff;
-  color:#5234c6;
-  box-shadow:0 1px 4px rgba(17,24,39,.10);
+  background:#fbfaf6;
+  color:#4b4557;
+  box-shadow:0 1px 4px rgba(34,31,26,.10);
 }
 .sf-preview-mode-segment button:focus-visible{
   outline:none;
-  box-shadow:0 0 0 3px rgba(104,71,239,.16);
+  box-shadow:0 0 0 3px rgba(34,31,26,.16);
 }
 
 /* Main Smart Split: the format selector and display mode form one compact utility row. */
@@ -61,8 +61,27 @@
   display:block;
   width:100%;
 }
+/* Rendered prose is the one place in the app that is read rather than scanned, so it gets a
+   reading measure instead of filling whatever width its container happens to have. At 1440px
+   the platform preview ran 53 Chinese characters to the line; Chinese typesetting is
+   comfortable at roughly 30-40, and past that the eye loses the line it is returning to.
+   `36em` resolves against this element's own 16px, so the column is 576px wide however wide
+   the dialog grows. It is aligned to the start rather than centred: the preview panel's own
+   heading, its border and the dialog's controls all share one left edge, and a centred column
+   breaks that edge while leaving a short paragraph looking pushed off to the right. The
+   leftover width becomes right-hand margin, which is what a measure is for.
+
+   Size and leading live here rather than on each surface. The three surfaces used to repeat
+   `15px/1.9` in two selector blocks while `ui-system.css` set their *containers* to 16px, so
+   the containers declared one size and the text rendered another. One declaration on the
+   element that actually holds the text removes that contradiction. Raw mode is deliberately
+   excluded: it exists to show the exact Markdown that will be pasted, and re-wrapping it at a
+   reading measure would misrepresent the output. */
 .sf-preview-rendered-root{
+  max-width:36em;
   font-family:inherit;
+  font-size:16px;
+  line-height:1.8;
 }
 .sf-md-block{
   display:block;
@@ -73,7 +92,7 @@
 .sf-md-block.sf-md-tight{margin-top:.35em}
 .sf-md-block.sf-md-spaced{margin-top:1.15em}
 .sf-md-heading{
-  font-weight:800;
+  font-weight:700;
   letter-spacing:-.01em;
 }
 .sf-md-heading-1{font-size:1.35em}
@@ -82,8 +101,8 @@
 .sf-md-heading-4,.sf-md-heading-5,.sf-md-heading-6{font-size:1.02em}
 .sf-md-quote{
   padding-left:12px;
-  border-left:3px solid #d8d1fb;
-  color:#596170;
+  border-left:3px solid #ded9cc;
+  color:#3f3930;
 }
 .sf-md-list-line{
   display:grid;
@@ -93,7 +112,7 @@
 .sf-md-list-marker{color:var(--muted)}
 .sf-md-scene-separator{
   padding:7px 0;
-  color:#6f6784;
+  color:#6a6357;
   font-size:.88em;
   letter-spacing:.15em;
   text-align:center;
@@ -101,7 +120,7 @@
 .sf-md-code-block{
   padding:10px 12px;
   border-radius:9px;
-  background:#f4f5f8;
+  background:#fbfaf6;
   font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
   font-size:.88em;
   white-space:pre-wrap;
@@ -109,7 +128,7 @@
 .sf-preview-rendered-root code{
   padding:.12em .32em;
   border-radius:5px;
-  background:#f1f2f5;
+  background:#f4f1e9;
   font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
   font-size:.88em;
 }
@@ -117,7 +136,7 @@
   text-decoration:underline;
   text-underline-offset:2px;
 }
-.sf-preview-rendered-root del{color:#747b89}
+.sf-preview-rendered-root del{color:#6a6357}
 .sf-md-image{
   display:inline-flex;
   align-items:center;
@@ -125,7 +144,7 @@
   padding:2px 7px;
   border:1px solid var(--line);
   border-radius:7px;
-  background:#f8f9fc;
+  background:#fbfaf6;
   color:var(--muted);
   font-size:.9em;
 }
@@ -142,7 +161,7 @@
   font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
   font-size:14px;
   line-height:1.8;
-  color:#343943;
+  color:#221f1a;
 }
 
 /* Existing preview boxes already provide borders/padding; only remove browser pre defaults. */
@@ -150,15 +169,6 @@
 .review-content.sf-preview-surface,
 .platform-preview-content.sf-preview-surface{
   font-family:inherit;
-}
-.review-content.sf-preview-rendered .sf-preview-rendered-root{
-  font-size:15px;
-  line-height:1.9;
-}
-.platform-preview-content.sf-preview-rendered .sf-preview-rendered-root,
-.source-preview-content.sf-preview-rendered .sf-preview-rendered-root{
-  font-size:15px;
-  line-height:1.9;
 }
 
 /* The full-chapter column is reading context, not a selection highlight. */

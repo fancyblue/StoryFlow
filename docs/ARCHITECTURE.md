@@ -100,6 +100,6 @@ Run:
 npm test
 ```
 
-This runs the static architecture check and the desktop Chromium smoke suite. The browser suite starts its own local server and uses fixture data only; setup and individual test pages are documented in `tests/README.md`.
+This runs the static architecture check, the palette contract (`scripts/palette-contract.mjs`, which is what actually guards colour — the pixel baselines cannot, see `docs/UI_SYSTEM.md`), the cache-query check, and the desktop Chromium smoke suite. The browser suite starts its own local server and uses fixture data only; setup and individual test pages are documented in `tests/README.md`.
 
 `src/split/boundary-engine.js` is the canonical boundary owner. Automatic suggestions and coarse adjustments resolve to source-scene ends; manual confirmation may set the same `suggestion.end` to any complete source paragraph end. Both paths rebuild the suggestion through `buildSuggestion()`, so confirmation, Markdown generation and continuation share one range contract. Manual movement must never mutate `chapter.draft`, move `suggestion.start`, or rewrite confirmed parts.

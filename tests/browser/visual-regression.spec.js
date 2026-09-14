@@ -3,7 +3,10 @@ import { standInForConnectedFolder } from './support/folder.js';
 
 const visualCss = `
   *, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }
-  .storyflow-toast-stack, .save-state { visibility: hidden !important; }
+  /* .visual-autosave-status prints a wall clock ("已儲存 10:57"). A baseline that carries the
+     time of day diffs against itself on the next run, so it is hidden for the same reason
+     .save-state already is. */
+  .storyflow-toast-stack, .save-state, .visual-autosave-status { visibility: hidden !important; }
 `;
 
 const layoutViewports = [
@@ -219,6 +222,24 @@ test('works, publishing, and settings retain their desktop composition', async (
   await expectVisibleChildrenSeparated(page.locator('.publish-list-actions'));
   await expect(page.locator('#publishingView')).toHaveScreenshot('publishing-queue-1440.png');
 
+  // The queue only shows a row's collapsed summary. The platform panel behind 管理發布 and the
+  // preview dialog are where most publishing CSS actually renders, so they need baselines of
+  // their own before any stylesheet refactor can claim "the pixels did not move".
+  const publishRow = page.locator('.publish-list-item').first();
+  await publishRow.getByRole('button', { name: /展開.*發布平台/ }).click();
+  await expect(publishRow.locator('.publish-platform-row').first()).toBeVisible();
+  await expectDocumentBounded(page);
+  await expectHorizontallyBounded(publishRow.locator('.publish-platform-details'));
+  await expect(page.locator('#publishingView')).toHaveScreenshot('publishing-detail-1440.png');
+
+  await publishRow.locator('.default-preview-btn').click();
+  const desktopPreview = page.locator('#platformPreviewDialog');
+  await expect(desktopPreview).toBeVisible();
+  await expectDialogContained(desktopPreview);
+  await expect(desktopPreview).toHaveScreenshot('platform-preview-1440.png');
+  await desktopPreview.getByRole('button', { name: '關閉', exact: true }).last().click();
+  await expect(desktopPreview).toBeHidden();
+
   await page.locator('#sidebarSettingsBtn').click();
   await expectDocumentBounded(page);
   await expectHorizontallyBounded(page.locator('#settingsDialog'));
@@ -249,6 +270,12 @@ test('visual workspace, works actions, publishing actions, and previews stay con
       };
     });
     expect(layout).toEqual({ railInside: true, editorInside: true, separated: true });
+
+    // One baseline, not three: the loop already proves the layout holds at every desktop width,
+    // so a second and third screenshot would only lengthen the run for the same evidence.
+    if (size.width === 1440) {
+      await expect(page.locator('#visualWorkspace')).toHaveScreenshot('visual-workspace-1440.png');
+    }
 
     await page.locator('.nav-item[data-view="projects"]').click();
     await expectDocumentBounded(page);

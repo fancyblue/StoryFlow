@@ -27,9 +27,9 @@ input.text-input{
   min-height:38px!important;
   height:38px;
   padding:0 10px!important;
-  border:1px solid var(--line-strong, #d8dce6)!important;
+  border:1px solid var(--line-strong, #c8c1b0)!important;
   border-radius:9px!important;
-  background:#fff;
+  background:#fbfaf6;
   color:var(--text);
   font-size:13px!important;
   font-weight:500!important;
@@ -38,8 +38,8 @@ input.text-input{
 }
 .text-input::placeholder,
 .range-grid input::placeholder{
-  color:#9aa1ad;
-  font-weight:450;
+  color:#968f80;
+  font-weight:400;
 }
 select.text-input,
 .compact-select{
@@ -50,13 +50,13 @@ select.text-input,
 .compact-select:focus,
 select.text-input:focus,
 input.text-input:focus{
-  border-color:#9f8af5!important;
-  box-shadow:var(--focus, 0 0 0 3px rgba(104,71,239,.16))!important;
+  border-color:#c8c1b0!important;
+  box-shadow:var(--focus, 0 0 0 3px rgba(34,31,26,.16))!important;
   outline:none!important;
 }
 .field-label{
   font-size:11.5px!important;
-  font-weight:650!important;
+  font-weight:500!important;
   line-height:1.35;
 }
 .format-check input[type="checkbox"]{

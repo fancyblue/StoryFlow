@@ -7,18 +7,18 @@
   min-height:24px;
   margin:0 0 8px auto;
   padding:3px 9px;
-  border:1px solid #dfc38d;
+  border:1px solid #8a6526;
   border-radius:999px;
-  background:#fff8e8;
-  color:#76531b;
+  background:#f5eddc;
+  color:#8a6526;
   font-size:11px;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:.03em;
 }
 .mobile-safe-mode-indicator.editing-enabled{
-  border-color:#a9cbe0;
-  background:#eef7fd;
-  color:#315d7d;
+  border-color:#c8c1b0;
+  background:#fbfaf6;
+  color:#4b4557;
 }
 
 .settings-view .mobile-safe-mode-settings{
@@ -48,15 +48,15 @@
   padding:7px 12px;
   border:1px solid var(--line);
   border-radius:12px;
-  background:#fff;
+  background:#fbfaf6;
   color:var(--ink);
   font:inherit;
   font-size:13px;
-  font-weight:750;
+  font-weight:700;
   cursor:pointer;
 }
 .mobile-safe-mode-switch:hover,
-.mobile-safe-mode-switch:focus-visible{border-color:#8bb8d6;background:#f6fbff;outline:none}
+.mobile-safe-mode-switch:focus-visible{border-color:#c8c1b0;background:#fbfaf6;outline:none}
 .mobile-safe-mode-switch:disabled{cursor:wait;opacity:.65}
 .mobile-safe-mode-switch-track{
   position:relative;
@@ -64,7 +64,7 @@
   height:20px;
   flex:0 0 auto;
   border-radius:999px;
-  background:#aebdca;
+  background:#ded9cc;
   transition:background .16s ease;
 }
 .mobile-safe-mode-switch-track span{
@@ -74,11 +74,11 @@
   width:14px;
   height:14px;
   border-radius:50%;
-  background:#fff;
-  box-shadow:0 1px 3px rgba(20,42,60,.24);
+  background:#fbfaf6;
+  box-shadow:0 1px 3px rgba(34,31,26,.24);
   transition:transform .16s ease;
 }
-.mobile-safe-mode-switch[aria-checked="true"] .mobile-safe-mode-switch-track{background:#3d7eaa}
+.mobile-safe-mode-switch[aria-checked="true"] .mobile-safe-mode-switch-track{background:#5e5769}
 .mobile-safe-mode-switch[aria-checked="true"] .mobile-safe-mode-switch-track span{transform:translateX(16px)}
 .mobile-safe-mode-settings-status{
   display:flex;
@@ -87,20 +87,20 @@
   margin-top:14px;
   padding:10px 12px;
   border-radius:10px;
-  background:#fff8e8;
-  color:#76531b;
+  background:#f5eddc;
+  color:#8a6526;
 }
 .mobile-safe-mode-settings-status strong{font-size:13px}
 .mobile-safe-mode-settings-status span{font-size:12px;line-height:1.55}
-.mobile-safe-mode-settings-status.editing-enabled{background:#eef7fd;color:#315d7d}
+.mobile-safe-mode-settings-status.editing-enabled{background:#fbfaf6;color:#4b4557}
 
 body[data-storyflow-mobile-safe-mode="readonly"] [data-mobile-safe-write-control="true"]{
   opacity:.48!important;
   cursor:not-allowed!important;
 }
 body[data-storyflow-mobile-safe-mode="readonly"] [data-mobile-safe-locked="true"]{
-  background:#f3f6f8!important;
-  color:#6f8291!important;
+  background:#fbfaf6!important;
+  color:#6a6357!important;
   cursor:not-allowed!important;
 }
 body[data-storyflow-mobile-safe-mode="readonly"] .topbar .save-state{display:none!important}
