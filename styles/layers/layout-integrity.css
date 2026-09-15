@@ -35,10 +35,6 @@
 }
 .workspace-view > .stats-grid > .stat-card:last-child,
 .workspace-grid > .stats-grid > .stat-card:last-child{border-right:0!important}
-.workspace-view > .stats-grid > .stat-card-primary,
-.workspace-grid > .stats-grid > .stat-card-primary{
-  background:#fbfaf6!important;
-}
 .workspace-view > .stats-grid > .stat-card-primary > span,
 .workspace-grid > .stats-grid > .stat-card-primary > span{
   color:var(--sf-primary,#4b4557)!important;

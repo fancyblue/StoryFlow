@@ -10,6 +10,23 @@
   align-items:center!important;
   gap:6px!important;
   overflow:visible!important;
+  /* The row, not the button, owns the separator and the state: a fill on the button alone
+     stopped short of the ⋯ at the other end, which read as the row being half-selected.
+     The 2px left gutter is reserved on every row so marking one active does not shift the
+     text of all the others. */
+  padding-left:10px!important;
+  border-bottom:1px solid var(--rule-1,#ded9cc)!important;
+  border-left:2px solid transparent!important;
+}
+#chapterList .chapter-row:hover{
+  background:var(--paper-2,#f4f1e9)!important;
+}
+#chapterList .chapter-row.active{
+  border-left-color:var(--dai-700,#4b4557)!important;
+  background:var(--dai-soft,#e8e5eb)!important;
+}
+#chapterList .chapter-row:last-child{
+  border-bottom:0!important;
 }
 #chapterList .chapter-row > .chapter-main-button{
   width:100%!important;

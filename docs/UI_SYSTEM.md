@@ -169,6 +169,44 @@ Do not lower `threshold` in `playwright.config.mjs` to compensate: the baselines
 on one Chromium build and verified on another, and the tolerance that absorbs that difference
 is the same one a tightened threshold would consume.
 
+## Lists are rows, not cards
+
+Chapters, works and the statistics strip are lists. Each row carries a `border-bottom`
+hairline and nothing else: no fill of its own, no radius, no border around it, and the list
+closes up to `gap: 0` so the hairlines are what separate one row from the next. The panel a
+list sits inside keeps its frame; the rows inside it do not get one each.
+
+Two rules make this work.
+
+**The row owns the state, not the control inside it.** A chapter row is a title button plus
+a `⋯` button. Filling only the button left the state stopping short of the `⋯`, which read
+as the row being half-selected. The row carries the fill and the marker, so both reach the
+full width.
+
+**The active marker's gutter is reserved on every row.** Each row has
+`border-left: 2px solid transparent`, so marking one active colours a border that is already
+there instead of adding 2px and pushing every other row's text sideways.
+
+Active is two signals, not one: the accent left marker plus `--dai-soft`. Where a row also
+carries a badge naming the state — "目前作品" — the badge lifts to `--paper-1` so the tint it
+sits on does not swallow it. The badge is the half of that signal which does not depend on
+seeing colour.
+
+### Which hairline
+
+`--rule-1` is for lines drawn **on paper**. `--rule-2` is for lines drawn **on the page
+ground**, which is six lightness steps darker: `--rule-1` against it is 1.1:1, which is not a
+line anyone can see. The chapter list lives inside a `--paper-1` panel and uses `--rule-1`;
+the works list and the statistics strip sit on the ground and use `--rule-2`.
+
+### The statistics strip
+
+Four numbers do not need a card. The strip has one `--rule-2` line underneath and `--rule-2`
+dividers between the cells, and no fill. The primary cell used to lift itself with a paper
+fill, which was how it stood out when every sibling was also paper — with the cells flat it
+was the only thing left in the strip shaped like a card, so it now leads with what it already
+had: an accent label and a full-ink number.
+
 ## Type weight
 
 The interface uses exactly three weights: **400**, **500**, **700**. No other numeric value

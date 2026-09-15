@@ -152,6 +152,12 @@ async function addVisualChapters(page, total = 18) {
     if (!list || !row) return;
     for (let index = 1; index < count; index += 1) {
       const clone = row.cloneNode(true);
+      // The row being cloned is the active one. Carrying `active` onto every clone used to
+      // cost nothing, because the state was a slightly different fill; now it is an accent
+      // marker down the left edge, and a rail where all eighteen chapters are selected is
+      // not a state the app can reach — so the baseline would no longer be a reference.
+      clone.classList.remove('active');
+      clone.querySelector('.chapter-main-button')?.classList.remove('active');
       const title = clone.querySelector('.chapter-main-button span');
       const chars = clone.querySelector('.chapter-main-button small');
       if (title) title.textContent = `${String(index + 1).padStart(2, '0')}、測試章節`;

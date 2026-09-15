@@ -16,7 +16,6 @@
 .projects-library{display:grid;}
 .project-library-card{
   display:grid;
-  border:1px solid var(--line);
 }
 .project-library-title-row{display:flex;align-items:center;min-width:0;flex-wrap:wrap}
 .project-library-title-row strong{line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -38,7 +37,7 @@
 .source-panel .project-switcher{}
 
 /* A chapter is a selectable item plus one secondary destructive affordance. */
-.chapter-list{gap:7px!important}
+.chapter-list{gap:0!important}
 .chapter-row{
   display:grid;
   grid-template-columns:minmax(0,1fr) 30px;
