@@ -17,7 +17,7 @@
   height:7px;
   border-radius:50%;
   background:#ded9cc;
-  box-shadow:0 0 0 3px #221f1a;
+  box-shadow:0 0 0 3px #fbfaf6;
   flex:0 0 auto;
 }
 .connection-chip-label{color:var(--muted)}

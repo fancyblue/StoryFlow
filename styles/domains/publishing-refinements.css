@@ -138,7 +138,7 @@
   border-color:#968f80!important;
   background:#e8e5eb!important;
   color:var(--denim-900,#221f1a)!important;
-  box-shadow:inset 3px 0 0 var(--denim-700,#221f1a)!important;
+  box-shadow:inset 3px 0 0 var(--denim-700,#4b4557)!important;
 }
 
 /* Chapters are a second-level container: lighter and inset under the work header. */

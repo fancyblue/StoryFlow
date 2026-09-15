@@ -158,7 +158,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
   .sidebar .nav{gap:10px!important}
   .sidebar .nav-item{min-height:48px!important;padding:0 14px!important;gap:12px!important;border-radius:12px!important;font-size:18px!important;font-weight:700!important;line-height:1!important}
   .sidebar .nav-item span{font-size:17px!important;font-weight:700!important;line-height:1!important}
-  .sidebar .nav-item.active{background:var(--denim-800,#4b4557)!important;box-shadow:inset 3px 0 0 #221f1a!important}
+  .sidebar .nav-item.active{background:var(--denim-800,#4b4557)!important;box-shadow:inset 3px 0 0 #c8c1b0!important}
   .sidebar .nav-item:hover{background:rgba(222,217,204,.12)!important}
   .sidebar-note{font-size:12.5px!important;line-height:1.6!important}
   .sidebar-toggle{width:34px!important;height:34px!important;border-radius:10px!important;background:rgba(255,255,255,.06)!important;border-color:rgba(200,193,176,.22)!important;box-shadow:none!important}

@@ -73,7 +73,7 @@
   .sidebar .nav-item.active {
     background:#4b4557 !important;
     color:#fbfaf6 !important;
-    box-shadow:inset 0 2px 0 #221f1a !important;
+    box-shadow:inset 0 2px 0 #c8c1b0 !important;
   }
 
   /* Connection row: equal status columns and a real utility block on the right.

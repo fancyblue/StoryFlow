@@ -123,6 +123,24 @@ The same rule forces the dark rail to carry its own destructive colour: `--vermi
 5.7:1 on paper but 2.5:1 on the rail, so `.sidebar-logout` uses a lightened pigment rather than
 the rail being made lighter.
 
+### An opaque box-shadow is a ring, not a shadow
+
+Elevation in this palette is always translucent ink. So a `box-shadow` carrying an *opaque*
+colour is not elevation at all — it is a ring, a halo, or an edge marker, which is to say a
+border drawn by another name, and it takes the line and surface steps by lightness like any
+other border.
+
+Missing that distinction is not hypothetical. The repalette classified `box-shadow` as one
+thing and mapped every colour in it to ink, which turned a pale lavender focus glow into a
+solid near-black ring, a 4px pale-blue halo around a 9px status dot into a 4px near-black
+one, and a light marker bar on the active rail item into ink on ink — invisible. Eight of
+them shipped. `scripts/palette-contract.mjs` now fails on any opaque `box-shadow` using
+`--ink-1`, which is the signature of exactly that mistake.
+
+Focus indicators are the exception within the exception: they carry their own 3:1
+requirement, so they do not take the line steps either. They use `--focus` / `--sf-focus`,
+or the accent where a token does not reach.
+
 ### Colour is not covered by the visual baselines
 
 Playwright compares screenshots with pixelmatch, whose `threshold` defaults to 0.2 of the

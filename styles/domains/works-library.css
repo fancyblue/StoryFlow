@@ -151,7 +151,7 @@
   border-color:#968f80!important;
   background:#e8e5eb!important;
   color:var(--denim-900,#221f1a)!important;
-  box-shadow:inset 3px 0 0 var(--denim-700,#221f1a)!important;
+  box-shadow:inset 3px 0 0 var(--denim-700,#4b4557)!important;
 }
 
 /* Publishing progress + its management action live together inside the metadata row.
