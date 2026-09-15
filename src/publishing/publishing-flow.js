@@ -1286,7 +1286,7 @@
     const key = partKey(part);
     const expanded = selectedPartKey === key;
     const card = document.createElement('article');
-    card.className = `publish-list-item ${expanded ? 'expanded' : ''}`;
+    card.className = `publish-list-item sf-hier-row ${expanded ? 'expanded' : ''}`;
     card.dataset.partKey = key;
     card.dataset.contentMode = visual ? 'visual' : 'longform';
 

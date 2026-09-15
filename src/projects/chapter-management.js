@@ -236,7 +236,7 @@
 
     if (visual) {
       const head = document.createElement('div');
-      head.className = 'project-chapter-manager-head';
+      head.className = 'project-chapter-manager-head sf-hier-head';
       head.innerHTML = '<div><strong>圖文</strong><span>查看系列中的圖文標題、狀態、字數與圖片數；需要修改時可直接進入圖文工作台。</span></div>';
       manager.appendChild(head);
 
@@ -250,10 +250,10 @@
       }
 
       const list = document.createElement('div');
-      list.className = 'project-chapter-manager-list';
+      list.className = 'project-chapter-manager-list sf-hier-nest';
       entries.forEach(entry => {
         const row = document.createElement('div');
-        row.className = 'project-chapter-manager-row project-visual-entry-row';
+        row.className = 'project-chapter-manager-row project-visual-entry-row sf-hier-row';
         row.dataset.entryId = entry.id;
 
         const title = document.createElement('div');
@@ -337,7 +337,7 @@
     }
 
     const head = document.createElement('div');
-    head.className = 'project-chapter-manager-head';
+    head.className = 'project-chapter-manager-head sf-hier-head';
     head.innerHTML = '<div><strong>章節</strong><span>手動文章可以編輯章節標題與內容；Google Docs 章節由來源同步維護。</span></div>';
     manager.appendChild(head);
 
@@ -351,10 +351,10 @@
     }
 
     const list = document.createElement('div');
-    list.className = 'project-chapter-manager-list';
+    list.className = 'project-chapter-manager-list sf-hier-nest';
     chapters.forEach(chapter => {
       const row = document.createElement('div');
-      row.className = 'project-chapter-manager-row';
+      row.className = 'project-chapter-manager-row sf-hier-row';
       row.dataset.chapterId = chapter.id;
 
       const title = document.createElement('div');

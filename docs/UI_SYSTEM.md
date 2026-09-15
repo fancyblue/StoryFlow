@@ -211,6 +211,46 @@ read; the figures carry the exact values, including the two a bar cannot show �
 left, and how many parts exist. An empty chapter has no ratio, so the bar shows none rather
 than full.
 
+## One hierarchy, two pages
+
+Works and Publishing both show 作品 › 章節 (› 篇). Works expands to chapters; Publishing
+expands to parts, and then to platforms inside a part. They are built by different renderers
+from different data, and that is fine — what is not fine is each of them deciding separately
+how deep a level sits and what separates one row from the next. Works indented a chapter row
+21px and drew hairlines under each; Publishing indented nothing at all and drew them as a
+`border-top` on every row after the first. Same hierarchy, two readings of it.
+
+`styles/domains/list-hierarchy.css` owns the part that should not differ:
+
+| Class | What it fixes |
+| --- | --- |
+| `.sf-hier-nest` | One `--sf-hier-step` (16px) of indent. Two levels down is two steps, and nothing is ever half a step |
+| `.sf-hier-row` | The hairline under a row, none under the last, and the 2px left gutter the current marker lives in |
+| `.sf-hier-head` | A level's header line: what the level is, then its count or controls at the far end |
+| `.sf-disclosure-chevron` | The chevron, pointing the same way for the same state |
+
+What a row *contains* stays each page's business. A chapter row on Works carries 編輯章節; a
+part row on Publishing carries 預覽與複製; neither belongs in the shared file.
+
+The disclosure is shared in behaviour, not in appearance: both expanders carry
+`aria-expanded` and rotate the same chevron, but a work row's expander is also a named action
+("管理章節" / "收合章節") while a chapter group's is a bare control. Giving the work row a bare
+chevron would drop an action label that [action hierarchy](#action-hierarchy) requires.
+
+`cascade-contract.spec.js` pins it: both pages' nested level, row separator and marker gutter
+must come back identical, and the step must be exactly 16px. A page that drifts to "about the
+same depth" fails there rather than being noticed a year later.
+
+### Owning a property means owning all of it
+
+`publishing.css` had `.publishing-chapter-group .publish-list-item{border:0!important}` from
+when the group drew its own separators. Two classes beat one, so the shared contract lost
+regardless of load order, and the contract's border never rendered. That rule now zeroes only
+the top and right — the card edges a row inside a group should not have — and leaves bottom
+and left to the contract. When a shared rule and a local one both claim a property, the local
+one has to give back the part it no longer owns; lowering the shared rule's specificity is not
+available, because specificity is what made the local rule win in the first place.
+
 ## Type weight
 
 The interface uses exactly three weights: **400**, **500**, **700**. No other numeric value

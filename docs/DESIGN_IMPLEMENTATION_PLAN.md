@@ -306,9 +306,29 @@ token 就位後，這一步是改幾十行的事。
 | 4-1 ✅ | 導覽順序改「作品 · 工作台 · 發布」，作品為預設落地頁 | `index.html`、`src/ui/navigation.js`、`connection-ui.js` | 已完成。順序改了之後**首次使用流程會斷**——原本扛著資料夾關卡的是工作台的空狀態，作品頁的空狀態只寫死「建立第一個作品」，而且冷啟動時根本不會 render。所以一併補了作品頁的空狀態（三種情況比照工作台），這是 4-6 的一小塊，被 4-1 逼出來的。UX_FLOW 的 G-01 與 Works 章節已同步 |
 | 4-2 ✅ | 連線狀態移進導覽底部；搜尋與設定移出目的地清單 | `connection-ui.js`、`global-search.js`、`connection-status.css`、`layout-integrity.css` | 已完成。**設定的三個入口早就收斂過了**——`#settingsNav` 與 `#openSettingsBtn` 在桌機已被 CSS 隱藏，只有手機底部列還留著 `#settingsNav`（刻意的，手機沒有常駐工具列）。真正還沒做的是兩件：① 工作台頁首那兩個連線膠囊是側欄底部狀態的**第二份**，已移除（連同只為它們存在的 `ensureTopStatus()`、`setChip()`、`syncConnectionLabels()`）；② 搜尋還在目的地清單裡，已移到側欄工具列，手機維持底部列。側欄底部改成兩行，收合狀態下五個控制項以 `display:contents` 走兩欄流排 |
 | 4-3 ✅ | 統計從橫跨右欄移進切篇預覽，改成一條進度線 | `index.html`、`workspace.css`、`core/app.js`、`source-article-ux.js` | 已完成。四個數字合成一行：一條進度條（已確認／總字數）加上三個數字，四個值一個都沒少。`.stats-grid` / `.stat-card` 的 **46 條 CSS 規則**隨之失效——注意其中 8 條是**跟別的元素共用選擇器**的（`.panel,.stat-card,...`），所以是逐一從選擇器清單裡拿掉，不是整條刪。`reframeWorkspaceHierarchy()` 原本會把統計條搬到欄位頂端，那個搬移現在是錯的，已移除，只留顯示與否的判斷 |
-| 4-4 | 作品頁與發布頁共用「作品 › 章節 › 篇」清單元件 | `chapter-management.js`、`publishing-grouping.js`、`works-library-ux.js` | 本階段最大的一項，建議單獨排 |
+| 4-4 ✅ | 作品頁與發布頁共用「作品 › 章節 › 篇」清單元件 | 新增 `styles/domains/list-hierarchy.css`；`chapter-management.js`、`publishing-project-filter.js`、`publishing-flow.js` | 已完成，但**共用的是層級契約不是 renderer**——見下方說明。另外**刪掉了 `publishing-grouping.js`**（76 行，完全失效） |
 | 4-5 | 發布篩選依語意分組；排序控制 | `publishing-flow.js` | 排序偏好要保存 → 見 GAPS 第 5 項 |
 | 4-6 | 空狀態與首次使用關卡 | `connection-ui.css`、`quick-start.js` | 必須守 UX_FLOW W-06：空狀態只有一個實心動作 |
+
+### 4-4 的範圍：共用契約，不是共用 renderer
+
+計畫寫「兩頁共用同一組清單元件」。實作時我把它讀成**共用層級契約**，而不是把兩個 renderer 合成一個：
+
+- **共用的**（`styles/domains/list-hierarchy.css`）：縮排一階 `16px`、列與列之間的髮絲線、
+  最後一列不畫線、每一列預留 2px 的目前標記槽、層級標題行的排版、展開箭頭的方向。
+  `cascade-contract.spec.js` 有一條測試把兩頁的量測值對起來比，不一致就紅。
+- **沒有共用的**：兩頁的資料來源不同（作品頁走 `StoryFlowProjects.list()`，
+  發布頁走 `renderParts()` 掃 `chapter.parts`），列裡面顯示什麼、有哪些動作也不同。
+  合併成一個 renderer 是另一件大得多的事，而且計畫那一行要求的是
+  「結構、縮排、分隔線、展開控制一致，只有顯示欄位與動作依頁面任務不同」——那正是契約做到的。
+- **展開控制共用的是行為不是外觀**：兩邊都有 `aria-expanded`、都轉同一個箭頭，
+  但作品列的展開鈕同時是一個具名動作（管理章節／收合章節），發布頁的章節群組不是。
+  把作品列改成裸箭頭會違反 UI_SYSTEM 的「一個動作一個標籤」。
+
+**順手刪掉 `publishing-grouping.js`**（76 行）。它用**抓畫面文字**的方式分章節群組
+（同名章節會被併在一起），而且 `publishing-project-filter.js` 在它之後跑、
+會把整個清單重建一次——它的產出從頭到尾都被丟掉。刪掉之後整套測試只有「模組數量 55 → 54」
+這一條斷言變紅，那就是它已經死掉的證明。
 
 ---
 

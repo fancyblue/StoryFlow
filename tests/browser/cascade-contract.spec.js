@@ -304,3 +304,71 @@ test('the hidden attribute always wins over a component display rule', async ({ 
   });
   expect(forced).toBe('none');
 });
+
+test('works and publishing draw the same hierarchy', async ({ page }) => {
+  // Both pages show 作品 › 章節 (› 篇), and each used to draw it its own way: Works indented a
+  // chapter 21px and separated rows with hairlines, Publishing indented nothing at all. What
+  // a row *contains* is each page's business; how deep it sits, what separates it from its
+  // sibling, and where the current marker goes are not, and that is what this pins.
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+  await page.evaluate(() => { window.StoryFlowIntegrations.savePart = async () => 'x.md'; });
+  await page.locator('#confirmBtn').click();
+
+  // A second chapter, cloned from the first so the fixture carries whatever shape the
+  // publishing renderer expects rather than a hand-built guess at it.
+  await page.evaluate(() => {
+    const first = state.chapters[0];
+    const clone = JSON.parse(JSON.stringify(first.parts[0]));
+    clone.id = 'contract-part-2';
+    clone.name = `${clone.name || ''}（二）`;
+    const second = JSON.parse(JSON.stringify(clone));
+    second.id = 'contract-part-3';
+    second.name = `${first.parts[0].name || ''}（三）`;
+    state.chapters.push({
+      ...JSON.parse(JSON.stringify(first)), id: 'contract-chapter-2', title: '09、第二章', parts: [clone, second]
+    });
+    window.renderAll?.();
+  });
+
+  const hierarchy = async (nest, row) => page.evaluate(([nestSelector, rowSelector]) => {
+    const nested = document.querySelector(nestSelector);
+    const first = document.querySelector(rowSelector);
+    if (!nested || !first) return null;
+    const nestedStyle = getComputedStyle(nested);
+    const rowStyle = getComputedStyle(first);
+    return {
+      indent: nestedStyle.paddingLeft,
+      separator: rowStyle.borderBottomColor,
+      separatorWidth: rowStyle.borderBottomWidth,
+      markerGutter: rowStyle.borderLeftWidth
+    };
+  }, [nest, row]);
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await page.getByRole('button', { name: '管理章節', exact: true }).click();
+  await expect(page.locator('.project-chapter-manager-row').first()).toBeVisible();
+  // Not the last row: the last one deliberately has no separator, because the level's own
+  // edge already ends it.
+  const works = await hierarchy('.project-chapter-manager-list', '.project-chapter-manager-row:not(:last-child)');
+  const worksDisclosure = await page.getByRole('button', { name: '收合章節', exact: true })
+    .getAttribute('aria-expanded');
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('.publishing-chapter-group').first()).toBeVisible();
+  const publishing = await hierarchy('.publishing-chapter-group-rows', '.publishing-chapter-group-rows > .publish-list-item:not(:last-child)');
+  const publishingDisclosure = await page.locator('.publishing-project-collapse-btn').first()
+    .getAttribute('aria-expanded');
+
+  expect(works, 'works hierarchy is missing').not.toBeNull();
+  expect(publishing, 'publishing hierarchy is missing').not.toBeNull();
+  expect(works).toEqual(publishing);
+  // One step, stated once, so a level cannot drift to "about the same depth".
+  expect(works.indent).toBe('16px');
+  expect(works.markerGutter).toBe('2px');
+
+  // Both expanders say what they are; only whether they also carry a label differs, because
+  // a work row's expander is a named action and a chapter group's is not.
+  expect(worksDisclosure).toBe('true');
+  expect(publishingDisclosure).not.toBeNull();
+});

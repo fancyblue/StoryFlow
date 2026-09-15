@@ -859,13 +859,14 @@
 }
 .publishing-chapter-group .publish-list-item{
   margin:0!important;
-  border:0!important;
+  /* Bottom and left belong to the shared hierarchy contract (`.sf-hier-row`): the separator
+     between siblings and the gutter the current marker lives in. This rule only takes away
+     the card edges a row inside a group should not have. */
+  border-top:0!important;
+  border-right:0!important;
   border-radius:0!important;
   box-shadow:none!important;
   background:transparent!important;
-}
-.publishing-chapter-group .publish-list-item + .publish-list-item{
-  border-top:1px solid #ded9cc!important;
 }
 .publishing-chapter-group .publish-list-item:last-child{
   border-radius:0 0 13px 13px!important;

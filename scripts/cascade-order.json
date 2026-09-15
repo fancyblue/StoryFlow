@@ -39,6 +39,7 @@
     "styles/domains/global-search.css",
     "styles/domains/article-images.css",
     "styles/domains/visual-workspace.css",
+    "styles/domains/list-hierarchy.css",
     "styles/layers/theme.css",
     "styles/layers/mobile-visual.css",
     "styles/domains/workspace-ux.css",
