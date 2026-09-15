@@ -269,7 +269,7 @@
   function syncWorkspaceEmptyState() {
     const noContent = !hasChapterContent();
     const grid = document.querySelector('.workspace-grid');
-    const stats = document.querySelector('.stats-grid');
+    const stats = document.querySelector('.chapter-progress');
     const miniSettings = document.getElementById('smartSplitMiniSettings');
     const editor = document.querySelector('.editor-panel');
     const splitter = document.querySelector('.splitter-panel');

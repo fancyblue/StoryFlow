@@ -199,13 +199,17 @@ ground**, which is six lightness steps darker: `--rule-1` against it is 1.1:1, w
 line anyone can see. The chapter list lives inside a `--paper-1` panel and uses `--rule-1`;
 the works list and the statistics strip sit on the ground and use `--rule-2`.
 
-### The statistics strip
+### Chapter progress
 
-Four numbers do not need a card. The strip has one `--rule-2` line underneath and `--rule-2`
-dividers between the cells, and no fill. The primary cell used to lift itself with a paper
-fill, which was how it stood out when every sibling was also paper — with the cells flat it
-was the only thing left in the strip shaped like a card, so it now leads with what it already
-had: an accent label and a full-ink number.
+The four chapter figures used to be a strip of cards across the top of the main column. They
+are one line inside the split panel now, because that is what they are about: every one of
+them describes the chapter being split, and a strip above the panel put them above the work
+rather than inside it.
+
+The line is a bar and three figures. The bar states the confirmed/total ratio without being
+read; the figures carry the exact values, including the two a bar cannot show — how much is
+left, and how many parts exist. An empty chapter has no ratio, so the bar shows none rather
+than full.
 
 ## Type weight
 

@@ -1,10 +1,11 @@
-/* Workspace readability: clearer stats, simpler review controls, and faster work switching. */
+/* Workspace readability: clearer stats,
+simpler review controls,
+and faster work switching. */
 
-/* Stats: label is readable, number/unit share one visual baseline and vertical center. */
-.stat-card{display:grid!important;grid-template-columns:max-content max-content!important;grid-template-rows:auto auto!important;align-items:center!important;justify-content:start!important;column-gap:7px!important;row-gap:0!important}
-.stat-card>span{grid-column:1 / -1!important;margin:0 0 7px!important;font-size:12.5px!important;font-weight:700!important;line-height:1.25!important}
-.stat-card>strong{grid-column:1!important;grid-row:2!important;margin:0!important;font-size:28px!important;line-height:1!important}
-.stat-card>small{grid-column:2!important;grid-row:2!important;display:inline-flex!important;align-items:center!important;align-self:center!important;height:28px!important;margin:0!important;padding-top:2px!important;color:var(--sf-muted)!important;font-size:13px!important;font-weight:500!important;line-height:1!important}
+/* Stats: label is readable{display:grid!important;grid-template-columns:max-content max-content!important;grid-template-rows:auto auto!important;align-items:center!important;justify-content:start!important;column-gap:7px!important;row-gap:0!important}
+
+
+
 
 .source-panel{position:sticky}
 .source-panel>.panel-head{flex-wrap:wrap!important;align-items:center!important}
@@ -175,7 +176,7 @@
   #reviewDialog>.review-dialog-card{grid-template-rows:auto auto auto minmax(0,1fr) calc(51px + env(safe-area-inset-bottom))!important;padding:16px!important}
   #reviewDialog .review-dialog-grid .review-content{height:auto!important}
   #reviewDialog .platform-preview-actions{height:calc(51px + env(safe-area-inset-bottom))!important;min-height:calc(51px + env(safe-area-inset-bottom))!important;margin:10px 0 0!important;padding:10px 0 env(safe-area-inset-bottom)!important}
-  .stat-card>strong{font-size:25px!important}.stat-card>small{height:25px!important;font-size:13px!important}.source-panel{position:relative!important}.workspace-project-quick-switch{top:56px;left:12px;right:12px}.review-format-bar{grid-template-columns:1fr!important;gap:9px!important}.review-format-bar #reviewPlatformSettings.suggestion-platform-settings{min-height:0!important}.review-format-bar .sf-preview-mode-control{grid-column:1!important;width:100%!important}.review-column.current .review-boundary-controls{flex:1 1 100%;justify-content:flex-start!important;margin-top:5px!important}.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:38px!important;font-size:13.5px!important}
+  .source-panel{position:relative!important}.workspace-project-quick-switch{top:56px;left:12px;right:12px}.review-format-bar{grid-template-columns:1fr!important;gap:9px!important}.review-format-bar #reviewPlatformSettings.suggestion-platform-settings{min-height:0!important}.review-format-bar .sf-preview-mode-control{grid-column:1!important;width:100%!important}.review-column.current .review-boundary-controls{flex:1 1 100%;justify-content:flex-start!important;margin-top:5px!important}.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:38px!important;font-size:13.5px!important}
   .sidebar-connection-status{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 96px!important;gap:8px!important}
   .sidebar-connection-row{height:44px!important;min-height:44px!important;padding:0 10px!important;border-radius:12px!important}
   .sidebar-connection-copy{gap:7px!important}

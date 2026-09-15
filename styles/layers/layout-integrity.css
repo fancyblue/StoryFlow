@@ -12,37 +12,11 @@
 /* The safety/storage explanation is available in Settings; persistent navigation stays task-focused. */
 .sidebar-note{display:none!important}
 
-/* WORKSPACE CONTEXT: one compact progress surface instead of four equally loud KPI cards. */
-.workspace-view > .stats-grid,
-.workspace-grid > .stats-grid{
-  display:grid!important;
-  grid-template-columns:minmax(180px,1.35fr) repeat(3,minmax(110px,.8fr))!important;
-  gap:0!important;
-  overflow:hidden!important;
-  border:1px solid var(--sf-border,#ded9cc)!important;
-  border-radius:14px!important;
-  background:#fbfaf6!important;
-}
-.workspace-view > .stats-grid > .stat-card,
-.workspace-grid > .stats-grid > .stat-card{
-  min-width:0!important;
-  padding:12px 14px!important;
-  border:0!important;
-  border-right:1px solid var(--sf-border,#ded9cc)!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-.workspace-view > .stats-grid > .stat-card:last-child,
-.workspace-grid > .stats-grid > .stat-card:last-child{border-right:0!important}
-.workspace-view > .stats-grid > .stat-card-primary > span,
-.workspace-grid > .stats-grid > .stat-card-primary > span{
-  color:var(--sf-primary,#4b4557)!important;
-}
-.workspace-view > .stats-grid > .stat-card-primary > strong,
-.workspace-grid > .stats-grid > .stat-card-primary > strong{
-  color:var(--sf-text,#221f1a)!important;
-}
+
+
+
+
+
 
 /* PRIMARY NAV: icon and label get fixed columns so every item starts on the same axis. */
 .sidebar .nav-item{
@@ -365,19 +339,10 @@
     bottom:calc(var(--storyflow-mobile-nav-height) + 8px + env(safe-area-inset-bottom))!important;
   }
 
-  .workspace-view > .stats-grid,
-  .workspace-grid > .stats-grid{
-    grid-template-columns:1fr 1fr!important;
-  }
-  .workspace-view > .stats-grid > .stat-card,
-  .workspace-grid > .stats-grid > .stat-card{
-    border-right:1px solid var(--sf-border,#ded9cc)!important;
-    border-bottom:1px solid var(--sf-border,#ded9cc)!important;
-  }
-  .workspace-view > .stats-grid > .stat-card:nth-child(2n),
-  .workspace-grid > .stats-grid > .stat-card:nth-child(2n){border-right:0!important}
-  .workspace-view > .stats-grid > .stat-card:nth-last-child(-n+2),
-  .workspace-grid > .stats-grid > .stat-card:nth-last-child(-n+2){border-bottom:0!important}
+  
+  
+  
+  
 
   .source-heading-title-row,
   .splitter-panel > .panel-head{

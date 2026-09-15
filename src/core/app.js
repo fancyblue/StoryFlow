@@ -422,6 +422,11 @@ function renderStats() {
   els.publishedChars.textContent = confirmed.toLocaleString();
   els.remainingChars.textContent = remaining.toLocaleString();
   els.partCount.textContent = chapter.parts.length.toLocaleString();
+  // The bar states the same ratio the two figures beside it do; it is the part that can be
+  // read without reading. An empty chapter has no ratio, so it shows none rather than full.
+  const total = confirmed + remaining;
+  const fill = document.getElementById('chapterProgressFill');
+  if (fill) fill.style.width = total ? `${Math.round((confirmed / total) * 100)}%` : '0%';
   const strong = blocks.filter(block => block.strongBoundaryAfter).length;
   els.draftMeta.textContent = `${charCount(chapter.draft).toLocaleString()} 字 · ${blocks.length} 段 · ${strong} 個空白切點`;
 }

@@ -317,16 +317,19 @@ test('desktop pages stay bounded from laptop through extended-monitor widths', a
         contentWidth: main.clientWidth - parseFloat(mainStyle.paddingLeft) - parseFloat(mainStyle.paddingRight),
         sourceWidth: source?.getBoundingClientRect().width || 0,
         hasRightColumn: Boolean(document.querySelector('.workspace-main-column')),
-        statsHeight: document.querySelector('.workspace-main-column > .stats-grid')?.getBoundingClientRect().height || 0,
-        statsBottom: document.querySelector('.workspace-main-column > .stats-grid')?.getBoundingClientRect().bottom || 0,
+        // The chapter figures moved inside the split panel, so what is checked is that
+        // they are there and that nothing sits above the panel in the column any more.
+        progressInsideSplitter: Boolean(document.querySelector('.workspace-main-column > .splitter-panel .chapter-progress')),
+        progressHeight: document.querySelector('.chapter-progress')?.getBoundingClientRect().height || 0,
+        columnTop: document.querySelector('.workspace-main-column')?.getBoundingClientRect().top || 0,
         splitterTop: document.querySelector('.workspace-main-column > .splitter-panel')?.getBoundingClientRect().top || 0
       };
     });
     expect(workspaceLayout.documentWidth).toBeLessThanOrEqual(workspaceLayout.viewportWidth);
     expect(workspaceLayout.hasRightColumn).toBe(true);
-    expect(workspaceLayout.statsHeight).toBeLessThanOrEqual(50);
-    expect(workspaceLayout.splitterTop - workspaceLayout.statsBottom).toBeGreaterThanOrEqual(15);
-    expect(workspaceLayout.splitterTop - workspaceLayout.statsBottom).toBeLessThanOrEqual(21);
+    expect(workspaceLayout.progressInsideSplitter).toBe(true);
+    expect(workspaceLayout.progressHeight).toBeLessThanOrEqual(50);
+    expect(workspaceLayout.splitterTop - workspaceLayout.columnTop).toBeLessThanOrEqual(1);
     expect(workspaceLayout.contentWidth).toBeLessThanOrEqual(1801);
     if (size.width >= 1600) {
       expect(workspaceLayout.sourceWidth).toBeGreaterThanOrEqual(319);

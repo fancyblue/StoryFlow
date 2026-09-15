@@ -248,10 +248,10 @@
 
   function reframeWorkspaceHierarchy() {
     const grid = document.querySelector('.workspace-grid');
-    const stats = document.querySelector('.stats-grid');
+    const progress = document.querySelector('.chapter-progress');
     const source = grid?.querySelector(':scope > .source-panel');
     const splitter = grid?.querySelector(':scope > .splitter-panel, :scope > .workspace-main-column > .splitter-panel');
-    if (!grid || !stats || !source || !splitter) return;
+    if (!grid || !progress || !source || !splitter) return;
 
     grid.classList.add('workspace-hierarchy');
     let mainColumn = grid.querySelector(':scope > .workspace-main-column');
@@ -260,12 +260,11 @@
       mainColumn.className = 'workspace-main-column';
       source.insertAdjacentElement('afterend', mainColumn);
     }
-    if (stats.parentElement !== mainColumn) mainColumn.prepend(stats);
+    // The chapter figures used to be a strip that this function lifted into the column above
+    // the split panel. They live inside that panel now, so moving them is exactly wrong —
+    // only whether they are shown is still this function's business.
     if (splitter.parentElement !== mainColumn) mainColumn.appendChild(splitter);
-
-    const showStats = hasSelectedArticle();
-    stats.hidden = !showStats;
-    grid.classList.toggle('workspace-hierarchy-no-stats', !showStats);
+    progress.hidden = !hasSelectedArticle();
   }
 
   function ensureStyleLast() {

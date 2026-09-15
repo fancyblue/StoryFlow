@@ -223,7 +223,7 @@
       workspaceView.className = 'app-view workspace-view';
       const first = main.firstElementChild;
       main.insertBefore(workspaceView, first || null);
-      ['.topbar', '.connection-bar', '.stats-grid', '.workspace-grid'].forEach(selector => {
+      ['.topbar', '.workspace-grid'].forEach(selector => {
         const node = main.querySelector(`:scope > ${selector}`);
         if (node) workspaceView.appendChild(node);
       });
