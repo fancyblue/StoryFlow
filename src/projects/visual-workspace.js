@@ -809,7 +809,7 @@
     revokeObjectUrls();
     root.hidden = false;
     syncSharedWorkspaceHeader(true);
-    document.querySelectorAll('#workspaceView > .stats-grid, #workspaceView > .workspace-grid')
+    document.querySelectorAll('#workspaceView > .workspace-grid')
       .forEach(node => {
         node.hidden = true;
         node.classList.add('visual-workspace-suppressed');
@@ -834,7 +834,7 @@
     const root = document.getElementById('visualWorkspace');
     if (root) root.hidden = true;
     syncSharedWorkspaceHeader(false);
-    document.querySelectorAll('#workspaceView > .stats-grid, #workspaceView > .workspace-grid')
+    document.querySelectorAll('#workspaceView > .workspace-grid')
       .forEach(node => {
         node.hidden = false;
         node.classList.remove('visual-workspace-suppressed');

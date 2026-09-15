@@ -13,6 +13,18 @@ async function prepare(page, { connectedFolder = true } = {}) {
 }
 
 
+// Works is the landing page, so a test whose subject is the workbench has to say so. It
+// used to arrive there for free.
+async function gotoWorkbench(page, url = '/') {
+  await page.goto(url);
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
+  // Changing view starts a smooth window.scrollTo. A test that measures window.scrollY
+  // straight afterwards reads a frame of that animation, not the page at rest.
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+}
+
+
 test('startup and legacy compatibility API preserve browser data', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.addInitScript(() => {
@@ -305,16 +317,19 @@ test('desktop pages stay bounded from laptop through extended-monitor widths', a
         contentWidth: main.clientWidth - parseFloat(mainStyle.paddingLeft) - parseFloat(mainStyle.paddingRight),
         sourceWidth: source?.getBoundingClientRect().width || 0,
         hasRightColumn: Boolean(document.querySelector('.workspace-main-column')),
-        statsHeight: document.querySelector('.workspace-main-column > .stats-grid')?.getBoundingClientRect().height || 0,
-        statsBottom: document.querySelector('.workspace-main-column > .stats-grid')?.getBoundingClientRect().bottom || 0,
+        // The chapter figures moved inside the split panel, so what is checked is that
+        // they are there and that nothing sits above the panel in the column any more.
+        progressInsideSplitter: Boolean(document.querySelector('.workspace-main-column > .splitter-panel .chapter-progress')),
+        progressHeight: document.querySelector('.chapter-progress')?.getBoundingClientRect().height || 0,
+        columnTop: document.querySelector('.workspace-main-column')?.getBoundingClientRect().top || 0,
         splitterTop: document.querySelector('.workspace-main-column > .splitter-panel')?.getBoundingClientRect().top || 0
       };
     });
     expect(workspaceLayout.documentWidth).toBeLessThanOrEqual(workspaceLayout.viewportWidth);
     expect(workspaceLayout.hasRightColumn).toBe(true);
-    expect(workspaceLayout.statsHeight).toBeLessThanOrEqual(50);
-    expect(workspaceLayout.splitterTop - workspaceLayout.statsBottom).toBeGreaterThanOrEqual(15);
-    expect(workspaceLayout.splitterTop - workspaceLayout.statsBottom).toBeLessThanOrEqual(21);
+    expect(workspaceLayout.progressInsideSplitter).toBe(true);
+    expect(workspaceLayout.progressHeight).toBeLessThanOrEqual(50);
+    expect(workspaceLayout.splitterTop - workspaceLayout.columnTop).toBeLessThanOrEqual(1);
     expect(workspaceLayout.contentWidth).toBeLessThanOrEqual(1801);
     if (size.width >= 1600) {
       expect(workspaceLayout.sourceWidth).toBeGreaterThanOrEqual(319);
@@ -350,7 +365,7 @@ test('desktop pages stay bounded from laptop through extended-monitor widths', a
 
 test('manual project can reach workspace, works, publishing, and settings', async ({ page }) => {
   const pageErrors = await prepare(page);
-  await page.goto('/');
+  await gotoWorkbench(page);
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
@@ -413,7 +428,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 test('long chapter rail stays stable and manual add/edit share a large filled editor', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/');
+  await gotoWorkbench(page);
   await page.evaluate(() => {
     StoryFlowProjects.createProject({ title: '其他樣式測試作品' }, { quiet: true });
     StoryFlowProjects.createProject({ title: '長章節清單測試' }, { quiet: true });
@@ -618,7 +633,7 @@ test('compact paragraph output preserves original scene boundaries', async ({ pa
 test('split confirmation can move an unconfirmed ending between paragraphs without changing the source', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 760 });
-  await page.goto('/');
+  await gotoWorkbench(page);
   const originalDraft = Array.from({ length: 18 }, (_, index) =>
     `第 ${index + 1} 段，這是一個沒有空白場景分隔的長場景內容，用來確認大量段落仍能快速瀏覽。`
   ).join('\n');
@@ -738,7 +753,7 @@ test('split confirmation can move an unconfirmed ending between paragraphs witho
 
 test('canceling a new manual work does not create an empty project', async ({ page }) => {
   const pageErrors = await prepare(page);
-  await page.goto('/');
+  await gotoWorkbench(page);
 
   await page.locator('#createProjectManually').click();
   await page.getByRole('dialog', { name: '選擇作品類型' }).getByRole('button', { name: /長文作品/ }).click();
@@ -1374,7 +1389,7 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await expect(preview.locator('#platformPreviewContent strong')).toHaveText('給讀者看的正式標題');
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('**給讀者看的正式標題**\n\n只應出現在內容區的正文。');
-  await page.locator('#globalSearchBtn').click();
+  await page.locator('#sidebarSearchBtn').click();
   await page.locator('#globalSearchInput').fill('#長文');
   await expect(page.locator('.global-search-result-type')).toHaveText('Hashtag');
   await page.locator('#closeGlobalSearch').click();
@@ -1702,7 +1717,7 @@ test('visual content phase zero contracts pass', async ({ page }) => {
 test('visual content phase one creates, edits, stores, previews, orders, and removes entries safely', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto('/');
+  await gotoWorkbench(page);
   await page.evaluate(() => {
     window.__visualFiles = new Map();
     window.__savedVisualEntry = null;
@@ -1766,7 +1781,6 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('#workspaceView > .topbar')).toBeVisible();
   await expect(page.locator('#workspaceView > .topbar').getByRole('heading', { name: '圖文工作台', exact: true })).toBeVisible();
   await expect(page.locator('#workspaceView > .topbar .eyebrow')).toHaveText('STORYFLOW / WORKSPACE');
-  await expect(page.locator('#workspaceView > .topbar #topConnectionStatus')).toBeVisible();
   await expect(page.locator('#visualWorkspace > .visual-workspace-head')).toHaveCount(0);
   await expect(page.locator('#saveState')).toBeHidden();
   await expect(page.locator('#saveBtn')).toBeHidden();
@@ -2036,7 +2050,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await publishingPreview.locator('#savePlatformPreviewTitle').click();
   await expect(publishingPreview.locator('#platformPreviewPublishTitle')).toHaveText('巴哈月下預告');
   await publishingPreview.locator('#cancelPlatformCopy').click();
-  await page.locator('#globalSearchBtn').click();
+  await page.locator('#sidebarSearchBtn').click();
   await page.locator('#globalSearchInput').fill('巴哈月下');
   await expect(page.locator('.global-search-result-type.visual')).toHaveText('發布圖文');
   await page.locator('#globalSearchInput').fill('#夜色');
@@ -2185,7 +2199,7 @@ test('source sync offers a one-time undo for the active project', async ({ page 
   await expect(page.locator('body')).toHaveAttribute('data-test-status', 'pass');
   await expect(page.getByText('ALL PASS')).toBeVisible();
 
-  await page.goto('/');
+  await gotoWorkbench(page);
   await page.evaluate(() => {
     StoryFlowProjects.createProject({ title: '更新後作品' }, { quiet: true });
     state.projectSource = { type: 'google', docName: '測試 Google Docs' };
@@ -2230,7 +2244,7 @@ test('project source controller compares, applies, preserves manual articles, an
       }]
     })
   }));
-  await page.goto('/');
+  await gotoWorkbench(page);
 
   await page.evaluate(() => {
     StoryFlowIntegrations.hasGoogleToken = () => true;
@@ -2304,7 +2318,7 @@ test('project source controller compares, applies, preserves manual articles, an
 test('works cards report publishing progress per content type using publishing rules', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/?visual-regression=1');
+  await gotoWorkbench(page, '/?visual-regression=1');
 
   await page.locator('#createProjectManually').click();
   await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
@@ -2371,7 +2385,7 @@ test('works cards report publishing progress per content type using publishing r
 test('work creation waits for a connected folder and opens once there is one', async ({ page }) => {
   // No folder stand-in: this test is about the state before one exists.
   const pageErrors = await prepare(page, { connectedFolder: false });
-  await page.goto('/?visual-regression=1');
+  await gotoWorkbench(page, '/?visual-regression=1');
 
   const manual = page.locator('#createProjectManually');
   const google = page.locator('#createProjectFromGoogle');
@@ -2416,11 +2430,11 @@ test('first run on a phone keeps its only action clear of the bottom navigation'
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/?visual-regression=1');
 
-  const connect = page.locator('#workspaceConnectFolderBtn');
+  const connect = page.locator('#projectsConnectFolderBtn');
   await expect(connect).toBeVisible();
 
   const layout = await page.evaluate(() => {
-    const button = document.getElementById('workspaceConnectFolderBtn').getBoundingClientRect();
+    const button = document.getElementById('projectsConnectFolderBtn').getBoundingClientRect();
     // On a phone the sidebar becomes the fixed bottom navigation bar.
     const bar = document.querySelector('.sidebar');
     const barBox = bar?.getBoundingClientRect();
@@ -2507,9 +2521,9 @@ test('a folder-capable phone keeps its connect entry and is never told to switch
     window.StoryFlowIntegrations?.supportsFolderAccess?.())).toBe(true);
 
   // The way in must be present and must not be a dead end.
-  const connect = page.locator('#workspaceConnectFolderBtn');
+  const connect = page.locator('#projectsConnectFolderBtn');
   await expect(connect).toBeVisible();
-  await expect(page.locator('#suggestionEmpty strong')).toHaveText('先連接 StoryFlow 資料夾');
+  await expect(page.locator('.projects-empty-state strong')).toHaveText('先連接 StoryFlow 資料夾');
   await expect(page.locator('#folderBtn')).toHaveText('選擇資料夾');
 
   // Read-only exists to stop writes reaching the folder, not to stop connecting one.
@@ -2517,7 +2531,7 @@ test('a folder-capable phone keeps its connect entry and is never told to switch
     document.getElementById('folderBtn')?.dataset.mobileSafeWriteControl ?? null)).toBeNull();
 
   // And it must never be told this browser cannot do it.
-  await expect(page.locator('#suggestionEmpty')).not.toContainText('無法連接資料夾');
+  await expect(page.locator('.projects-empty-state')).not.toContainText('無法連接資料夾');
   await expect(page.locator('#projectCreationChooserNote')).not.toContainText('Chrome 或 Edge');
 
   expect(pageErrors).toEqual([]);

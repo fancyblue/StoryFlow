@@ -40,6 +40,10 @@ async function longformWorkspace(page) {
   await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
   await standInForConnectedFolder(page);
   await page.goto('/?visual-regression=1');
+  // Works is the landing page; these helpers are about the workbench. The click starts a
+  // smooth window.scrollTo, so wait for the page to come to rest before measuring anything.
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
   await page.locator('#createProjectManually').click();
   await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
   await page.locator('#sourceManualBtn').click();
@@ -128,9 +132,9 @@ test('shared controls keep their resolved appearance', async ({ page }) => {
     minHeight: '46px'
   });
 
-  // Statistics labels sit on the design token that clears 4.5:1, not the hardcoded
-  // value that measured 4.0:1.
-  await expectStyle(page, '.stat-card > span', {
+  // Chapter progress figures sit on the design token that clears 4.5:1, not the hardcoded
+  // value that measured 4.0:1. Same contract as the statistics strip they replaced.
+  await expectStyle(page, '.chapter-progress-figure', {
     color: 'rgb(106, 99, 87)',
     fontSize: '11.5px'
   });
@@ -169,7 +173,7 @@ test('overlays resolve to their own surface rather than inheriting a page rule',
   await longformWorkspace(page);
 
   // Command search: a real modal with no pixel coverage at all.
-  await page.locator('#globalSearchBtn').click();
+  await page.locator('#sidebarSearchBtn').click();
   await expect(page.locator('#globalSearchDialog')).toBeVisible();
   await expectStyle(page, '#globalSearchDialog', {
     position: 'fixed',

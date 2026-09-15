@@ -26,19 +26,15 @@
   }
 
   .panel,
-  .stat-card,
-  .project-library-card,
-  .publishing-stats article,
-  .settings-view .settings-section {
+.project-library-card,
+.publishing-stats article,
+.settings-view .settings-section{
     border-color:#ded9cc !important;
   }
   .panel{border-radius:15px !important}
-  .stats-grid { gap:8px !important; }
-  .stat-card {
-    padding:12px 14px !important;
-    border-radius:14px !important;
-  }
-  .stat-card span { color:#4b4557 !important; }
+  
+  
+  
   .button.primary{background:#5e5769!important;border-color:#968f80!important;box-shadow:none!important}
   .button.primary:hover:not(:disabled){background:#4b4557!important;border-color:#4b4557!important}
 

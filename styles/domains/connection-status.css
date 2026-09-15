@@ -35,7 +35,11 @@
      space and keeps connection/session actions anchored to the bottom edge. */
   .sidebar #sidebarConnectionStatus.sidebar-connection-status{
     display:flex!important;
-    flex-wrap:nowrap!important;
+    /* Two status rows and three utility controls do not fit on one line of a 215px rail:
+       the status labels have nowhere to go and run into each other. The foot wraps instead,
+       status on the first line and utilities on the second, which is also how the rail foot
+       is drawn in the design. */
+    flex-wrap:wrap!important;
     align-items:center!important;
     gap:3px!important;
     width:100%!important;
@@ -108,10 +112,10 @@
   #sidebarConnectionStatus .sidebar-utility-actions{
     display:flex!important;
     align-items:center!important;
-    flex:0 0 auto!important;
+    flex:1 0 100%!important;
     gap:3px!important;
-    width:auto!important;
-    margin-left:auto!important;
+    width:100%!important;
+    margin-left:0!important;
   }
   #sidebarConnectionStatus .sidebar-settings-button,
   #sidebarConnectionStatus .sidebar-logout{

@@ -195,12 +195,6 @@
     }
   }
 
-  function markProgressPriority() {
-    document.querySelectorAll('.stat-card').forEach(card => {
-      card.classList.toggle('stat-card-primary', Boolean(card.querySelector('#remainingChars')));
-    });
-  }
-
   function ensureSplitPreferencesToggle() {
     const panel = document.querySelector('.splitter-panel');
     const head = panel?.querySelector(':scope > .panel-head');
@@ -246,7 +240,6 @@
   }
 
   function syncHierarchy() {
-    markProgressPriority();
     ensureSplitPreferencesToggle();
   }
 

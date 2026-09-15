@@ -61,8 +61,11 @@ h3{letter-spacing:-.01em}
 }
 
 /* Cards are quieter and consistent; nested controls provide the hierarchy instead of heavy borders. */
-.panel,.stat-card,.project-library-card,.publishing-stats article,
-.settings-view .settings-section,.settings-view .security-note{
+.panel,
+.project-library-card,
+.publishing-stats article,
+.settings-view .settings-section,
+.settings-view .security-note{
   border-color:var(--line);
   border-radius:var(--radius-card);
 }
@@ -112,11 +115,10 @@ h3{letter-spacing:-.01em}
   border-color:rgba(200,193,176,.65)!important;
 }
 
-/* Workspace: keep navigation useful during long reading/splitting sessions. */
-.stats-grid{gap:10px;margin-bottom:16px}
-.stat-card{padding:13px 15px}
-.stat-card span{margin-bottom:5px;font-size:10px}
-.stat-card strong{font-size:22px;letter-spacing:-.02em}
+
+
+
+
 .workspace-grid,.workspace-grid.imported-source-mode{grid-template-columns:270px minmax(0,1fr)!important;gap:18px}
 .source-panel{
   top:20px;
@@ -241,9 +243,9 @@ dialog::backdrop{backdrop-filter:blur(2px)}
   .workspace-grid,.workspace-grid.imported-source-mode{grid-template-columns:1fr!important;gap:12px}
   .source-panel{position:static;max-height:none;overflow:visible}
   .panel{padding:16px!important}
-  .stats-grid{grid-template-columns:1fr 1fr;gap:8px}
-  .stat-card{padding:12px}
-  .stat-card strong{font-size:20px}
+  
+  
+  
   .projects-page-head,.publishing-page-head,.settings-page-head{flex-direction:column;gap:10px}
   .project-library-card{padding:14px}
   .publishing-stats{grid-template-columns:1fr 1fr}
