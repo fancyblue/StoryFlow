@@ -1,4 +1,9 @@
-// Primary navigation: workspace, works, publishing, and settings are separate app views.
+// Primary navigation: works, workspace, publishing, and settings are separate app views.
+//
+// Works is first and is where a cold start lands. The order follows the order of the work:
+// a work exists before it has chapters, and chapters exist before anything can be split or
+// published, so the list of works is the only destination that is never empty-by-dependency.
+// Landing on the workbench asked "which work?" before the interface had said there were any.
 (function () {
   const { hasConnectedFolder } = window.StoryFlowShared;
   if (!document.querySelector('link[data-storyflow-sidebar-layout]')) {
@@ -14,12 +19,12 @@
   const shell = document.querySelector('.app-shell');
   if (!nav || !sidebar || !shell) return;
 
-  let currentView = 'workspace';
+  let currentView = 'projects';
   let lastInputWasKeyboard = false;
   let pendingNewWork = null;
   const viewLabels = {
-    workspace: '工作台',
     projects: '作品',
+    workspace: '工作台',
     publishing: '發布',
     settings: '設定'
   };
@@ -299,5 +304,7 @@
 
   installNavHints();
   ensureSidebarToggle();
-  goTo('workspace', { remember: false });
+  // A returning session is restored from state.ui.lastView by the workspace-loaded handler
+  // above; this is only what a cold start sees.
+  goTo('projects', { remember: false });
 })();

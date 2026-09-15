@@ -10,7 +10,20 @@ Button weight follows the user's current task, not how often a control happens t
 
 ### Works library
 
-The Works page is the structural management hub. Managing chapters or visual entries is the most likely next step for any work. The “目前作品” badge and active-card treatment already communicate selection, so identical management actions must not change color merely because one card is current.
+The Works page is the structural management hub, the first navigation destination, and where
+a cold start lands. The order of the destinations follows the order of the work: a work exists
+before it has chapters, and chapters exist before anything can be split or published, so Works
+is the only destination that is never empty because something else has not happened yet. A
+returning session is restored to wherever it left off (`state.ui.lastView`); the landing page
+is what a cold start sees.
+
+Because it is the landing page, the Works empty state carries the whole first run, and it
+answers the same three questions the Workspace panel answers: this browser cannot reach a
+folder (no action — the only button available would be one that cannot succeed), no folder is
+connected yet (連接 StoryFlow 資料夾), or a folder is connected and there are no works yet
+(建立第一個作品). Offering creation before a folder exists invites a work that is gone on
+reload, because nothing can be written.
+ Managing chapters or visual entries is the most likely next step for any work. The “目前作品” badge and active-card treatment already communicate selection, so identical management actions must not change color merely because one card is current.
 
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
@@ -100,7 +113,7 @@ Global controls help the user move or locate content; they do not compete with t
 
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
-| G-01 | Move between Workspace, Works, Publishing and Settings | Sidebar or mobile navigation item | Collapse sidebar | Active-location treatment in navigation chrome, not page-primary styling |
+| G-01 | Move between Works, Workspace, Publishing and Settings | Sidebar or mobile navigation item | Collapse sidebar | Active-location treatment in navigation chrome, not page-primary styling |
 | G-02 | Find a work, chapter or publishing article | 搜尋／keyboard shortcut | Optional body search | Search trigger stays neutral; the selected result uses a soft active state |
 | G-03 | Open the selected search result | Enter／click result | Arrow-key navigation, Escape or `×` | The active row is emphasized; no persistent solid confirmation button is needed |
 | G-04 | Check Google and folder readiness | Connection status chips | Open the relevant connection action | Status-first treatment; disconnected chips may invite action without becoming the page's dominant CTA |

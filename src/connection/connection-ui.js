@@ -371,20 +371,54 @@
     };
   }
 
+  // Works is the landing page, so its empty state is the first thing a new user sees and it
+  // carries the whole first run. It used to offer 建立第一個作品 unconditionally, which was
+  // safe while the workbench was the landing page and owned the folder gate: a work created
+  // without a folder exists only in memory and is gone on reload. The three cases and their
+  // copy are the same ones the workbench panel answers, for the same reasons.
+  function renderProjectsEmptyState() {
+    const list = document.getElementById('projectsLibrary');
+    if (!list || window.StoryFlowProjects?.list?.().length) return;
+
+    let heading = '尚未建立作品';
+    let detail = '建立第一個作品後，即可載入章節、切篇並管理發布進度。';
+    let action = { id: 'projectsCreateFirstWorkBtn', label: '建立第一個作品', run: () => window.StoryFlowStartNewWork?.() };
+
+    if (!hasConnectedFolder() && !canReachAFolder()) {
+      heading = '這個瀏覽器無法連接資料夾';
+      detail = '作品、切篇結果與發布進度都要寫進本機資料夾，而這個瀏覽器不支援。請改用 Chrome 或 Edge 開啟 StoryFlow。';
+      // No action: the only button that could appear here is one that cannot succeed.
+      action = null;
+    } else if (!hasConnectedFolder()) {
+      heading = '先連接 StoryFlow 資料夾';
+      detail = '作品、切篇結果與發布進度都會寫進你選擇的資料夾。連接後就可以建立作品。';
+      action = { id: 'projectsConnectFolderBtn', label: '連接 StoryFlow 資料夾', run: () => document.getElementById('folderBtn')?.click() };
+    }
+
+    const empty = document.createElement('div');
+    empty.className = 'projects-empty-state';
+    const title = document.createElement('strong');
+    title.textContent = heading;
+    const copy = document.createElement('span');
+    copy.textContent = detail;
+    empty.append(title, copy);
+    if (action) {
+      const button = document.createElement('button');
+      button.id = action.id;
+      button.className = 'button primary';
+      button.type = 'button';
+      button.textContent = action.label;
+      button.addEventListener('click', action.run);
+      empty.appendChild(button);
+    }
+    list.replaceChildren(empty);
+  }
+
   const baseProjectsRender = window.StoryFlowRenderProjects;
   if (typeof baseProjectsRender === 'function') {
     window.StoryFlowRenderProjects = function renderProjectsWithEmptyState(...args) {
       const result = baseProjectsRender.apply(this, args);
-      const list = document.getElementById('projectsLibrary');
-      if (list && !window.StoryFlowProjects?.list?.().length) {
-        list.innerHTML = `
-          <div class="projects-empty-state">
-            <strong>尚未建立作品</strong>
-            <span>建立第一個作品後，即可載入章節、切篇並管理發布進度。</span>
-            <button class="button primary" type="button">建立第一個作品</button>
-          </div>`;
-        list.querySelector('button')?.addEventListener('click', () => window.StoryFlowStartNewWork?.());
-      }
+      renderProjectsEmptyState();
       return result;
     };
   }
@@ -396,8 +430,15 @@
 
   // The empty state now leads with folder connection, so it has to follow the
   // connection itself and not only project changes.
-  window.addEventListener('storyflow:connection-changed', syncWorkspaceEmptyState);
+  window.addEventListener('storyflow:connection-changed', () => {
+    syncWorkspaceEmptyState();
+    renderProjectsEmptyState();
+  });
 
   syncWorkspaceEmptyState();
+  // Works renders on projects-changed, which a cold start with no works never fires. Before
+  // Works was the landing page that left an unstyled gap nobody saw; now it is the first
+  // screen, so the empty state has to be there without waiting for a change event.
+  renderProjectsEmptyState();
   window.StoryFlowSyncEmptyWorkspace = syncWorkspaceEmptyState;
 })();

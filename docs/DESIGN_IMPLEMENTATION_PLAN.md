@@ -303,7 +303,7 @@ token 就位後，這一步是改幾十行的事。
 
 | # | 項目 | 主要檔案 | 備註 |
 | --- | --- | --- | --- |
-| 4-1 | 導覽順序改「作品 · 工作台 · 發布」，作品為預設落地頁 | `index.html`、`src/ui/navigation.js` | 改寫 UX_FLOW 的頁面順序 |
+| 4-1 ✅ | 導覽順序改「作品 · 工作台 · 發布」，作品為預設落地頁 | `index.html`、`src/ui/navigation.js`、`connection-ui.js` | 已完成。順序改了之後**首次使用流程會斷**——原本扛著資料夾關卡的是工作台的空狀態，作品頁的空狀態只寫死「建立第一個作品」，而且冷啟動時根本不會 render。所以一併補了作品頁的空狀態（三種情況比照工作台），這是 4-6 的一小塊，被 4-1 逼出來的。UX_FLOW 的 G-01 與 Works 章節已同步 |
 | 4-2 | 連線狀態移進導覽底部；搜尋與設定移出目的地清單 | `index.html`、`styles/domains/connection-status.css` | 現有三個設定入口要一併收斂 |
 | 4-3 | 統計從橫跨右欄移進切篇預覽，改成一條進度線 | `styles/layers/foundation.css`、`workspace.css` | 四個數字都是章節層的 |
 | 4-4 | 作品頁與發布頁共用「作品 › 章節 › 篇」清單元件 | `chapter-management.js`、`publishing-grouping.js`、`works-library-ux.js` | 本階段最大的一項，建議單獨排 |

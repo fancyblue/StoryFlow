@@ -40,6 +40,10 @@ async function longformWorkspace(page) {
   await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
   await standInForConnectedFolder(page);
   await page.goto('/?visual-regression=1');
+  // Works is the landing page; these helpers are about the workbench. The click starts a
+  // smooth window.scrollTo, so wait for the page to come to rest before measuring anything.
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
   await page.locator('#createProjectManually').click();
   await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
   await page.locator('#sourceManualBtn').click();
