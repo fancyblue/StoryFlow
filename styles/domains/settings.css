@@ -59,7 +59,6 @@
   border:1px solid var(--line);
   border-radius:16px;
   background:#fbfaf6;
-  box-shadow:0 2px 8px rgba(34,31,26,.03);
 }
 .settings-view .settings-section{}
 .settings-view .settings-section>strong{
@@ -271,7 +270,6 @@
     border-radius:9px;
     background:#2b2822;
     color:#fbfaf6;
-    box-shadow:0 8px 24px rgba(34,31,26,.2);
     font-size:12px;
     font-weight:700;
     line-height:1;
@@ -316,7 +314,6 @@
   border:1px solid var(--line);
   border-radius:16px;
   background:#fbfaf6;
-  box-shadow:0 2px 8px rgba(34,31,26,.03);
 }
 .settings-backup-head{
   display:flex;

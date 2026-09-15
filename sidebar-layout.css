@@ -68,7 +68,6 @@
     border-radius: 9px;
     background: #2b2822;
     color: #c8c1b0;
-    box-shadow: 0 5px 16px rgba(34,31,26,.18);
     font-size: 18px;
     line-height: 1;
     cursor: pointer;
@@ -124,7 +123,6 @@
     border-radius: 9px;
     background: #2b2822;
     color: #fbfaf6;
-    box-shadow: 0 8px 24px rgba(34,31,26,.2);
     font-size: 12px;
     font-weight: 700;
     line-height: 1;

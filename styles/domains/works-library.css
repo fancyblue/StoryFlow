@@ -36,11 +36,9 @@
   border-radius:15px!important;
   border-color:#ded9cc!important;
   background:#fbfaf6!important;
-  box-shadow:0 2px 10px rgba(34,31,26,.025)!important;
 }
 .project-library-card:hover{
   border-color:#c8c1b0!important;
-  box-shadow:0 5px 18px rgba(34,31,26,.055)!important;
 }
 .project-library-card.active{
   background:#fbfaf6!important;
@@ -136,7 +134,6 @@
   border-color:#968f80!important;
   background:#e8e5eb!important;
   color:var(--denim-900,#221f1a)!important;
-  box-shadow:0 2px 6px rgba(34,31,26,.08)!important;
 }
 .project-library-card .project-library-actions > .project-publish-btn:hover,
 .project-library-card .project-library-actions > .project-publish-btn:focus-visible,
@@ -145,7 +142,6 @@
   border-color:#c8c1b0!important;
   background:var(--sf-primary-soft,#f4f1e9)!important;
   color:var(--denim-900,#221f1a)!important;
-  box-shadow:0 2px 6px rgba(34,31,26,.08)!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
   border-color:#968f80!important;

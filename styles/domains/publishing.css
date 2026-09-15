@@ -733,13 +733,13 @@
 .publishing-project-badge.publishing-project-switcher{width:auto!important;min-width:0!important;max-width:none!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
 .publishing-project-compact{position:relative;display:flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0}
 .publishing-project-label{color:#6a6357;font-size:12px;font-weight:700;line-height:1;white-space:nowrap}
-.publishing-project-switch-btn{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:176px;max-width:min(320px,34vw);min-height:40px;padding:0 12px 0 14px;border:1px solid #c8c1b0;border-radius:10px;background:#fbfaf6;color:#4b4557;box-shadow:0 1px 3px rgba(34,31,26,.04);cursor:pointer;transition:border-color .16s ease,background .16s ease,box-shadow .16s ease}
+.publishing-project-switch-btn{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:176px;max-width:min(320px,34vw);min-height:40px;padding:0 12px 0 14px;border:1px solid #c8c1b0;border-radius:10px;background:#fbfaf6;color:#4b4557;cursor:pointer;transition:border-color .16s ease,background .16s ease,box-shadow .16s ease}
 .publishing-project-switch-btn strong{min-width:0;overflow:hidden;color:var(--sf-text);font-size:14px;font-weight:700;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
 .publishing-project-chevron{flex:0 0 14px;color:#4b4557}
-.publishing-project-switch-btn:hover:not(:disabled),.publishing-project-switch-btn:focus-visible,.publishing-project-switch-btn[aria-expanded="true"]{border-color:#c8c1b0;background:#f4f1e9;box-shadow:0 4px 12px rgba(34,31,26,.07);outline:none}
+.publishing-project-switch-btn:hover:not(:disabled),.publishing-project-switch-btn:focus-visible,.publishing-project-switch-btn[aria-expanded="true"]{border-color:#c8c1b0;background:#f4f1e9;outline:none}
 .publishing-project-switch-btn:disabled{cursor:default;opacity:1;border-color:#ded9cc;background:#fbfaf6}
 .publishing-project-switch-btn.single-project strong{color:#4b4557}
-.publishing-project-menu{position:absolute;top:calc(100% + 8px);right:0;z-index:150;display:grid;gap:4px;width:min(300px,72vw);max-height:min(320px,55vh);overflow:auto;padding:8px;border:1px solid #c8c1b0;border-radius:12px;background:#fbfaf6;box-shadow:0 14px 34px rgba(34,31,26,.16)}
+.publishing-project-menu{position:absolute;top:calc(100% + 8px);right:0;z-index:150;display:grid;gap:4px;width:min(300px,72vw);max-height:min(320px,55vh);overflow:auto;padding:8px;border:1px solid #c8c1b0;border-radius:12px;background:#fbfaf6;}
 .publishing-project-menu[hidden]{display:none!important}
 .publishing-project-menu-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:40px;padding:8px 10px;border:0;border-radius:9px;background:transparent;color:var(--sf-text);font-size:13px;font-weight:700;text-align:left;cursor:pointer}
 .publishing-project-menu-item span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1098,7 +1098,6 @@ button.publish-delete-btn{
   border-radius:10px;
   background:#fbfaf6;
   color:#221f1a;
-  box-shadow:0 12px 30px rgba(34,31,26,.18);
   font-size:11.5px;
   font-weight:500;
   line-height:1.55;

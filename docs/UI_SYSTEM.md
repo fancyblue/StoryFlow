@@ -123,6 +123,20 @@ The same rule forces the dark rail to carry its own destructive colour: `--vermi
 5.7:1 on paper but 2.5:1 on the rail, so `.sidebar-logout` uses a lightened pigment rather than
 the rail being made lighter.
 
+### One elevation, and it is for overlays only
+
+Panels, cards, rows, inputs, the statistics strip and the manuscript surface carry no
+shadow. They separate the way the palette intends them to: a `--paper-1` surface on the
+`--paper-0` ground, with a `--rule-1` hairline where an edge needs stating. Thirty-five
+elevation shadows were removed to get there, and `--sf-shadow-card` / `--shadow-card` /
+`--shadow-pop` went with them once nothing referenced them.
+
+`--sf-shadow-pop` is the one that stays. An overflow menu, a filter menu, a row action menu,
+the recovery dialog, a toast and `dialog` itself all float over content of their own colour,
+and neither a surface step nor a hairline can say "this is in front" when the thing behind
+is the same paper. That is the whole remaining brief for elevation: not depth as decoration,
+but the one case where flatness would be ambiguous.
+
 ### An opaque box-shadow is a ring, not a shadow
 
 Elevation in this palette is always translucent ink. So a `box-shadow` carrying an *opaque*

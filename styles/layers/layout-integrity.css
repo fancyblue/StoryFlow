@@ -22,7 +22,6 @@
   border:1px solid var(--sf-border,#ded9cc)!important;
   border-radius:14px!important;
   background:#fbfaf6!important;
-  box-shadow:var(--sf-shadow-card,0 8px 24px rgba(34,31,26,.035))!important;
 }
 .workspace-view > .stats-grid > .stat-card,
 .workspace-grid > .stats-grid > .stat-card{

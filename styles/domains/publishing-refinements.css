@@ -19,14 +19,12 @@
   border:1px solid #c8c1b0!important;
   border-radius:18px!important;
   background:#fbfaf6!important;
-  box-shadow:0 3px 12px rgba(34,31,26,.035)!important;
   overflow:visible!important;
 }
 #publishingView .publishing-project-group:last-child{margin-bottom:0!important}
 #publishingView .publishing-project-group-current,
 #publishingView .publishing-project-group:has(.publishing-project-current){
   border-color:#c8c1b0!important;
-  box-shadow:0 4px 16px rgba(34,31,26,.07)!important;
 }
 
 #publishingView .publishing-project-group-head{
