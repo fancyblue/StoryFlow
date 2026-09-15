@@ -173,7 +173,7 @@ test('overlays resolve to their own surface rather than inheriting a page rule',
   await longformWorkspace(page);
 
   // Command search: a real modal with no pixel coverage at all.
-  await page.locator('#globalSearchBtn').click();
+  await page.locator('#sidebarSearchBtn').click();
   await expect(page.locator('#globalSearchDialog')).toBeVisible();
   await expectStyle(page, '#globalSearchDialog', {
     position: 'fixed',

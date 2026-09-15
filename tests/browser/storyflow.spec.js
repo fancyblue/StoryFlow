@@ -1386,7 +1386,7 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await expect(preview.locator('#platformPreviewContent strong')).toHaveText('給讀者看的正式標題');
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('**給讀者看的正式標題**\n\n只應出現在內容區的正文。');
-  await page.locator('#globalSearchBtn').click();
+  await page.locator('#sidebarSearchBtn').click();
   await page.locator('#globalSearchInput').fill('#長文');
   await expect(page.locator('.global-search-result-type')).toHaveText('Hashtag');
   await page.locator('#closeGlobalSearch').click();
@@ -1778,7 +1778,6 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('#workspaceView > .topbar')).toBeVisible();
   await expect(page.locator('#workspaceView > .topbar').getByRole('heading', { name: '圖文工作台', exact: true })).toBeVisible();
   await expect(page.locator('#workspaceView > .topbar .eyebrow')).toHaveText('STORYFLOW / WORKSPACE');
-  await expect(page.locator('#workspaceView > .topbar #topConnectionStatus')).toBeVisible();
   await expect(page.locator('#visualWorkspace > .visual-workspace-head')).toHaveCount(0);
   await expect(page.locator('#saveState')).toBeHidden();
   await expect(page.locator('#saveBtn')).toBeHidden();
@@ -2048,7 +2047,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await publishingPreview.locator('#savePlatformPreviewTitle').click();
   await expect(publishingPreview.locator('#platformPreviewPublishTitle')).toHaveText('巴哈月下預告');
   await publishingPreview.locator('#cancelPlatformCopy').click();
-  await page.locator('#globalSearchBtn').click();
+  await page.locator('#sidebarSearchBtn').click();
   await page.locator('#globalSearchInput').fill('巴哈月下');
   await expect(page.locator('.global-search-result-type.visual')).toHaveText('發布圖文');
   await page.locator('#globalSearchInput').fill('#夜色');

@@ -293,6 +293,35 @@
   }
 
   trigger.addEventListener('click', openSearch);
+
+  // Search is a utility, not a destination, so on desktop it sits in the rail's utility row
+  // beside 設定 and 離開 rather than in the list of places the app can be. The nav item stays
+  // for the phone, where the bottom bar is the only persistent surface there is — the same
+  // split 設定 already uses, and the same reason. Which width shows which is a breakpoint
+  // question, so the stylesheets own it.
+  function ensureRailSearchButton() {
+    const utilities = document.querySelector('#sidebarConnectionStatus .sidebar-utility-actions');
+    if (!utilities || document.getElementById('sidebarSearchBtn')) return;
+    const button = document.createElement('button');
+    button.id = 'sidebarSearchBtn';
+    button.className = 'sidebar-settings-button sidebar-search-button';
+    button.type = 'button';
+    button.title = '搜尋';
+    button.dataset.hint = '搜尋';
+    button.setAttribute('aria-label', '搜尋');
+    button.innerHTML = '<span class="sidebar-utility-icon" aria-hidden="true">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">'
+      + '<circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg></span>'
+      + '<span class="sidebar-settings-label">搜尋</span>';
+    button.addEventListener('click', openSearch);
+    utilities.insertBefore(button, utilities.firstChild);
+  }
+
+  ensureRailSearchButton();
+  // The utility row is built by the settings and connection modules, whose order relative to
+  // this one is not guaranteed; a connection change is the first moment it certainly exists.
+  window.addEventListener('storyflow:connection-changed', ensureRailSearchButton);
+  window.addEventListener('storyflow:view-changed', ensureRailSearchButton);
   dialog.querySelector('#closeGlobalSearch').addEventListener('click', () => dialog.close());
   input.addEventListener('input', () => renderResults());
   includeBody.addEventListener('change', () => renderResults());

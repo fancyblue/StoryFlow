@@ -114,10 +114,17 @@ Global controls help the user move or locate content; they do not compete with t
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
 | G-01 | Move between Works, Workspace, Publishing and Settings | Sidebar or mobile navigation item | Collapse sidebar | Active-location treatment in navigation chrome, not page-primary styling |
-| G-02 | Find a work, chapter or publishing article | 搜尋／keyboard shortcut | Optional body search | Search trigger stays neutral; the selected result uses a soft active state |
+| G-02 | Find a work, chapter or publishing article | 搜尋 in the rail's utility row (the phone's bottom bar carries it instead)／keyboard shortcut | Optional body search | Search trigger stays neutral; the selected result uses a soft active state |
 | G-03 | Open the selected search result | Enter／click result | Arrow-key navigation, Escape or `×` | The active row is emphasized; no persistent solid confirmation button is needed |
-| G-04 | Check Google and folder readiness | Connection status chips | Open the relevant connection action | Status-first treatment; disconnected chips may invite action without becoming the page's dominant CTA |
+| G-04 | Check Google and folder readiness | Rail foot status rows | Open the relevant connection action | Status-first treatment; disconnected chips may invite action without becoming the page's dominant CTA |
 | G-05 | Collapse or expand desktop navigation | Sidebar toggle | — | Tertiary icon control with clear focus state |
+
+Connection state and the utilities live in the rail foot, not in a page header: Google and
+folder status on one line, then 搜尋, 設定 and 離開此裝置. The destination list holds only the
+three places the app can be. Search and Settings are utilities rather than destinations, so on
+desktop they sit in that utility row; the phone re-shows them in the bottom bar, which is the
+only persistent surface a phone has. Status is shown once — the workspace header used to
+repeat it as chips, which was a second place to keep in step and a second thing to look at.
 
 The active sidebar item may use a dark selected background because it communicates location inside persistent navigation. That treatment is separate from a solid page CTA and does not imply that clicking it is the recommended next task.
 

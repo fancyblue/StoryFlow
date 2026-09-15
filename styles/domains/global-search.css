@@ -1,4 +1,15 @@
 /* Global local-only search and command palette. */
+
+/* Search is a utility, not a destination. Desktop reaches it from the rail's utility row
+   beside 設定 and 離開; the nav item below is re-shown inside the phone block, where the
+   bottom bar is the only persistent surface there is. This mirrors what 設定 already does,
+   for the same reason. Breakpoint CSS owns it, never the `hidden` attribute.
+
+   The selector carries `.sidebar` for specificity, not for scoping: `layout-integrity.css`
+   sets `.sidebar .nav-item{display:grid!important}` and is re-appended after this file by
+   ensureThemeOrder(), so a two-class selector here loses on order. 設定 gets away with two
+   classes only because its attribute selector already outranks it. */
+.sidebar .nav .nav-search-trigger{display:none!important}
 .nav-search-trigger .nav-icon svg,
 .global-search-icon svg{
   display:block;
@@ -168,6 +179,7 @@
 
 @media(max-width:820px){
   body .sidebar .nav{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+  .sidebar .nav .nav-search-trigger{display:grid!important}
   .nav-search-trigger kbd{display:none}
   .nav-search-trigger .nav-label{display:block!important;width:auto}
 }

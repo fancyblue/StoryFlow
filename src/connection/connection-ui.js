@@ -16,34 +16,6 @@
     catch (_) { return false; }
   }
 
-  function ensureTopStatus() {
-    const actions = document.querySelector('.top-actions');
-    if (!actions || document.getElementById('topConnectionStatus')) return;
-
-    const group = document.createElement('div');
-    group.id = 'topConnectionStatus';
-    group.className = 'top-connection-status';
-    group.innerHTML = `
-      <button id="topGoogleConnection" class="connection-chip" type="button">
-        <span class="connection-chip-dot" aria-hidden="true"></span><span class="connection-chip-label">Google</span><strong class="connection-chip-state">登入</strong>
-      </button>
-      <button id="topFolderConnection" class="connection-chip" type="button">
-        <span class="connection-chip-dot" aria-hidden="true"></span><span class="connection-chip-label">資料夾</span><strong class="connection-chip-state">連接</strong>
-      </button>
-      <button id="storyflowLogoutBtn" class="button tiny ghost connection-logout" type="button">離開</button>`;
-
-    actions.insertBefore(group, actions.firstChild);
-
-    group.querySelector('#topGoogleConnection').addEventListener('click', () => {
-      if (googleConnected() || googleRestoring()) return;
-      document.getElementById('googleLoginBtn')?.click();
-    });
-    group.querySelector('#topFolderConnection').addEventListener('click', () => {
-      document.getElementById('folderBtn')?.click();
-    });
-    group.querySelector('#storyflowLogoutBtn').addEventListener('click', logoutStoryFlow);
-  }
-
   function ensureSidebarStatus() {
     const sidebar = document.querySelector('.sidebar');
     if (!sidebar || document.getElementById('sidebarConnectionStatus')) return;
@@ -77,14 +49,6 @@
     block.querySelector('#sidebarLogoutBtn').addEventListener('click', logoutStoryFlow);
   }
 
-  function setChip(button, connected, restoring, connectedText, disconnectedText) {
-    if (!button) return;
-    button.classList.toggle('connected', connected);
-    button.classList.toggle('restoring', restoring);
-    const state = button.querySelector('.connection-chip-state');
-    if (state) state.textContent = restoring ? '恢復中' : (connected ? connectedText : disconnectedText);
-  }
-
   function setSidebarRow(button, connected, restoring, connectedText, disconnectedText) {
     if (!button) return;
     button.classList.toggle('connected', connected);
@@ -98,7 +62,6 @@
   }
 
   function syncConnectionUi() {
-    ensureTopStatus();
     ensureSidebarStatus();
 
     const gConnected = googleConnected();
@@ -107,8 +70,6 @@
     const folderText = originalFolderStatus()?.textContent || '';
     const fNeedsPermission = /重新授權|重新連接/.test(folderText);
 
-    setChip(document.getElementById('topGoogleConnection'), gConnected, gRestoring, '已登入', '登入');
-    setChip(document.getElementById('topFolderConnection'), fConnected, false, '已連接', fNeedsPermission ? '重連' : '連接');
     setSidebarRow(document.getElementById('sidebarGoogleConnection'), gConnected, gRestoring, '已登入', '尚未登入');
     setSidebarRow(document.getElementById('sidebarFolderConnection'), fConnected, false, '已連接', fNeedsPermission ? '需要重新連接' : '尚未連接');
 
@@ -117,7 +78,7 @@
     let hasBootstrap = false;
     try { hasBootstrap = Boolean(sessionStorage.getItem('storyflow.integration-bootstrap.v1')); } catch (_) {}
     const showLeave = gConnected || fConnected || hasBootstrap;
-    document.querySelectorAll('#storyflowLogoutBtn,#sidebarLogoutBtn').forEach(button => { button.hidden = !showLeave; });
+    document.querySelectorAll('#sidebarLogoutBtn').forEach(button => { button.hidden = !showLeave; });
   }
 
   function deleteConnectionDatabase() {
@@ -171,7 +132,6 @@
   observed.forEach(node => observer.observe(node, { childList: true, subtree: true, attributes: true, characterData: true }));
   window.addEventListener('storyflow:connection-changed', syncConnectionUi);
 
-  ensureTopStatus();
   ensureSidebarStatus();
   syncConnectionUi();
   window.StoryFlowConnectionUi = { sync: syncConnectionUi, logout: logoutStoryFlow };

@@ -196,7 +196,7 @@
   // Capture first so logout semantics stay non-destructive and settings bootstrap is
   // definitely unloaded before the older handler can run.
   document.addEventListener('click', event => {
-    const button = event.target.closest?.('#storyflowLogoutBtn,#sidebarLogoutBtn');
+    const button = event.target.closest?.('#sidebarLogoutBtn');
     if (!button) return;
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -211,12 +211,6 @@
       sidebar.setAttribute('aria-label', '離開此裝置');
       const label = sidebar.querySelector('.sidebar-logout-label');
       if (label && label.textContent !== '離開此裝置') label.textContent = '離開此裝置';
-    }
-    const top = document.getElementById('storyflowLogoutBtn');
-    if (top) {
-      top.title = '離開此裝置';
-      top.setAttribute('aria-label', '離開此裝置');
-      top.textContent = '離開';
     }
   }
 

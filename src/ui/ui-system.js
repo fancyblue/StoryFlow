@@ -49,19 +49,6 @@
     });
   }
 
-  function syncConnectionLabels() {
-    const pairs = [
-      ['topGoogleConnection', 'Google'],
-      ['topFolderConnection', '資料夾']
-    ];
-    pairs.forEach(([id, label]) => {
-      const button = document.getElementById(id);
-      if (!button) return;
-      const state = button.querySelector('.connection-chip-state')?.textContent?.trim();
-      if (state) button.setAttribute('aria-label', `${label}：${state}`);
-    });
-  }
-
   function enhanceQuickSwitch() {
     const button = document.getElementById('quickSwitchProjectBtn');
     const menu = document.getElementById('workspaceProjectQuickSwitch');
@@ -127,22 +114,18 @@
       });
     }
     if (event.target.closest?.('.publishing-filter')) requestAnimationFrame(syncPublishingFilters);
-    requestAnimationFrame(syncConnectionLabels);
   });
 
   window.addEventListener('storyflow:view-changed', () => {
     requestAnimationFrame(() => {
       syncPublishingFilters();
-      syncConnectionLabels();
       enhanceQuickSwitch();
     });
   });
   window.addEventListener('storyflow:projects-changed', () => requestAnimationFrame(enhanceQuickSwitch));
-  window.addEventListener('storyflow:connection-changed', () => requestAnimationFrame(syncConnectionLabels));
 
   syncLiveRegions();
   syncPublishingFilters();
-  syncConnectionLabels();
   enhanceQuickSwitch();
   syncDialogSemantics();
 

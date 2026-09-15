@@ -296,16 +296,14 @@
     margin:0!important;
   }
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-utility-actions{
-    grid-column:1 / -1!important;
-    display:grid!important;
-    grid-template-columns:28px 28px!important;
-    justify-content:center!important;
-    align-items:center!important;
-    gap:4px!important;
-    width:auto!important;
-    margin:0!important;
+    /* The wrapper steps out of layout so its three controls become grid items of the foot
+       itself. Five controls then flow down the same two 28px columns — two status dots,
+       then 搜尋 and 設定, then 離開 — instead of a third utility widening a row that has to
+       fit inside a 66px rail. */
+    display:contents!important;
   }
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-settings-button,
+  .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-search-button,
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-logout{
     width:28px!important;
     min-width:28px!important;
