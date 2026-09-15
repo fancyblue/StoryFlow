@@ -25,7 +25,7 @@
   border-color:#c8c1b0!important;
   background:var(--sf-primary-soft,#f4f1e9)!important;
 }
-.projects-library{gap:9px!important}
+.projects-library{gap:0!important;border-top:1px solid #c8c1b0!important}
 .project-library-card{
   position:relative!important;
   /* Identity, progress, actions. The middle column is what stopped the row being a
@@ -33,17 +33,24 @@
   grid-template-columns:minmax(0,1fr) minmax(0,220px) auto!important;
   align-items:center!important;
   min-height:0!important;
-  border-radius:15px!important;
-  border-color:#ded9cc!important;
-  background:#fbfaf6!important;
-  box-shadow:0 2px 10px rgba(34,31,26,.025)!important;
+  /* A work is a row in a list, not a card on a board. One hairline underneath separates it
+     from the next; the 2px left gutter is reserved on every row so marking one current does
+     not shift the others. */
+  border:0!important;
+  border-bottom:1px solid #c8c1b0!important;
+  border-left:2px solid transparent!important;
+  border-radius:0!important;
+  background:transparent!important;
 }
 .project-library-card:hover{
-  border-color:#c8c1b0!important;
-  box-shadow:0 5px 18px rgba(34,31,26,.055)!important;
+  background:#f4f1e9!important;
 }
 .project-library-card.active{
-  background:#fbfaf6!important;
+  border-left-color:#4b4557!important;
+  background:#e8e5eb!important;
+}
+.projects-library > .project-library-card:last-child{
+  border-bottom:0!important;
 }
 .project-library-main{min-width:0!important}
 .project-library-title-row{gap:7px!important}
@@ -136,7 +143,6 @@
   border-color:#968f80!important;
   background:#e8e5eb!important;
   color:var(--denim-900,#221f1a)!important;
-  box-shadow:0 2px 6px rgba(34,31,26,.08)!important;
 }
 .project-library-card .project-library-actions > .project-publish-btn:hover,
 .project-library-card .project-library-actions > .project-publish-btn:focus-visible,
@@ -145,13 +151,12 @@
   border-color:#c8c1b0!important;
   background:var(--sf-primary-soft,#f4f1e9)!important;
   color:var(--denim-900,#221f1a)!important;
-  box-shadow:0 2px 6px rgba(34,31,26,.08)!important;
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
   border-color:#968f80!important;
   background:#e8e5eb!important;
   color:var(--denim-900,#221f1a)!important;
-  box-shadow:inset 3px 0 0 var(--denim-700,#221f1a)!important;
+  box-shadow:inset 3px 0 0 var(--denim-700,#4b4557)!important;
 }
 
 /* Publishing progress + its management action live together inside the metadata row.

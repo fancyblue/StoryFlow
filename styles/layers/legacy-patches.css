@@ -189,7 +189,6 @@
     z-index: 1000;
     padding: 7px max(8px, env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
     background: var(--sidebar, #4b4557);
-    box-shadow: 0 -8px 28px rgba(34,31,26,.14);
   }
   .sidebar .brand,
   .sidebar .sidebar-note { display: none; }

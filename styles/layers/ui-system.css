@@ -42,7 +42,9 @@
   --sf-warning:var(--ochre);
   --sf-warning-soft:var(--ochre-soft);
   --sf-focus:0 0 0 3px rgba(75,69,87,.20);
-  --sf-shadow-card:0 1px 2px rgba(34,31,26,.03),0 8px 24px rgba(34,31,26,.04);
+  /* The one elevation left in the app. Panels, cards, rows and inputs are flat and separate
+     by surface step and hairline; a menu or dialog floats over content of its own colour,
+     where neither of those can say "this is in front". */
   --sf-shadow-pop:0 18px 48px rgba(34,31,26,.16);
 }
 
@@ -63,7 +65,6 @@ h3{font-size:18px;font-weight:700;line-height:1.3}
   border:1px solid var(--sf-border)!important;
   border-radius:var(--sf-radius-lg)!important;
   background:var(--sf-surface)!important;
-  box-shadow:var(--sf-shadow-card)!important;
 }
 .panel{padding:20px!important}
 .panel-head{gap:12px!important;margin-bottom:16px!important}
@@ -158,7 +159,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
   .sidebar .nav{gap:10px!important}
   .sidebar .nav-item{min-height:48px!important;padding:0 14px!important;gap:12px!important;border-radius:12px!important;font-size:18px!important;font-weight:700!important;line-height:1!important}
   .sidebar .nav-item span{font-size:17px!important;font-weight:700!important;line-height:1!important}
-  .sidebar .nav-item.active{background:var(--denim-800,#4b4557)!important;box-shadow:inset 3px 0 0 #221f1a!important}
+  .sidebar .nav-item.active{background:var(--denim-800,#4b4557)!important;box-shadow:inset 3px 0 0 #c8c1b0!important}
   .sidebar .nav-item:hover{background:rgba(222,217,204,.12)!important}
   .sidebar-note{font-size:12.5px!important;line-height:1.6!important}
   .sidebar-toggle{width:34px!important;height:34px!important;border-radius:10px!important;background:rgba(255,255,255,.06)!important;border-color:rgba(200,193,176,.22)!important;box-shadow:none!important}
@@ -194,7 +195,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .source-panel-actions .button,#sourcePanelActions #refreshSourceBtn,#sourcePanelActions #loadSourceBtn{height:var(--sf-control)!important;min-height:var(--sf-control)!important;font-size:14px!important;border-radius:10px!important}
 .source-panel-actions .manual-source-sync-hint{min-height:var(--sf-control)!important;color:var(--sf-muted)!important;font-size:13px!important;font-weight:500!important;line-height:1.4!important}
 .chapter-group-label{padding:7px 9px!important;border-radius:8px!important;font-size:12px!important}
-.chapter-item{min-height:44px!important;padding:10px 11px!important;border-radius:10px!important;font-size:14px!important;font-weight:700!important}
+.chapter-item{min-height:44px!important;padding:10px 11px!important;border-radius:0!important;font-size:14px!important;font-weight:700!important}
 .chapter-item small{font-size:12px!important}
 .chapter-delete-button{width:34px!important;min-width:34px!important;border-radius:9px!important}
 .source-choice{border-color:var(--sf-border)!important;border-radius:14px!important}
@@ -213,12 +214,12 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .splitter-panel .suggestion-platform-bar select.text-input{height:40px!important;min-height:40px!important;border:1px solid var(--sf-border)!important;background:#fbfaf6!important;font-size:14px!important;border-radius:9px!important}
 #splitPlatformBar .sf-preview-mode-segment,.sf-preview-mode-segment{padding:3px!important;border:0!important;border-radius:9px!important;background:#f4f1e9!important}
 #splitPlatformBar .sf-preview-mode-segment button,.sf-preview-mode-segment button{min-height:34px!important;padding:0 11px!important;border-radius:7px!important;font-size:13px!important;font-weight:700!important;color:var(--sf-muted-strong,#3f3930)!important;white-space:nowrap!important}
-#splitPlatformBar .sf-preview-mode-segment button.active,.sf-preview-mode-segment button.active{background:#fbfaf6!important;color:var(--denim-700,#4b4557)!important;box-shadow:0 1px 4px rgba(34,31,26,.10)!important}
+#splitPlatformBar .sf-preview-mode-segment button.active,.sf-preview-mode-segment button.active{background:#fbfaf6!important;color:var(--denim-700,#4b4557)!important;}
 .splitter-panel .suggestion-title-row{min-height:40px!important;margin:4px 0 14px!important}
 .splitter-panel #suggestionChars{font-size:15px!important;font-weight:700!important;color:var(--denim-700,#4b4557)!important;white-space:nowrap!important}
 .splitter-panel .suggestion-title-row .pill{min-height:30px!important;padding:0 10px!important;background:#f4f1e9!important;color:var(--denim-800,#4b4557)!important;border:0!important;font-size:13px!important;font-weight:700!important;white-space:nowrap!important;word-break:keep-all!important}
 .split-preview-shell .preview{border-color:var(--sf-border)!important;border-radius:14px!important;background:#fbfaf6!important;font-size:16px!important;line-height:1.95!important;box-shadow:none!important}
-.preview-boundary-controls{border:1px solid var(--sf-border)!important;border-radius:10px!important;background:rgba(255,255,255,.96)!important;box-shadow:0 2px 8px rgba(34,31,26,.08)!important}
+.preview-boundary-controls{border:1px solid var(--sf-border)!important;border-radius:10px!important;background:rgba(255,255,255,.96)!important;}
 .preview-boundary-controls .button,.review-boundary-controls .button{height:34px!important;min-height:34px!important;font-size:13px!important}
 .review-format-bar{gap:14px!important;padding-bottom:14px!important;border-bottom:1px solid var(--sf-border)!important}
 .format-summary-text,.review-format-bar .format-summary-text{font-size:13px!important;line-height:1.45!important}

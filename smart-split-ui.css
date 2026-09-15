@@ -247,7 +247,6 @@
 #splitPlatformBar .sf-preview-mode-segment button.active {
   background:#fbfaf6 !important;
   color:#5e5769 !important;
-  box-shadow:0 1px 3px rgba(34,31,26,.08) !important;
 }
 
 .splitter-panel .suggestion-title-row {

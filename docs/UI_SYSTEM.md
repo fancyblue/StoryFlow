@@ -123,6 +123,38 @@ The same rule forces the dark rail to carry its own destructive colour: `--vermi
 5.7:1 on paper but 2.5:1 on the rail, so `.sidebar-logout` uses a lightened pigment rather than
 the rail being made lighter.
 
+### One elevation, and it is for overlays only
+
+Panels, cards, rows, inputs, the statistics strip and the manuscript surface carry no
+shadow. They separate the way the palette intends them to: a `--paper-1` surface on the
+`--paper-0` ground, with a `--rule-1` hairline where an edge needs stating. Thirty-five
+elevation shadows were removed to get there, and `--sf-shadow-card` / `--shadow-card` /
+`--shadow-pop` went with them once nothing referenced them.
+
+`--sf-shadow-pop` is the one that stays. An overflow menu, a filter menu, a row action menu,
+the recovery dialog, a toast and `dialog` itself all float over content of their own colour,
+and neither a surface step nor a hairline can say "this is in front" when the thing behind
+is the same paper. That is the whole remaining brief for elevation: not depth as decoration,
+but the one case where flatness would be ambiguous.
+
+### An opaque box-shadow is a ring, not a shadow
+
+Elevation in this palette is always translucent ink. So a `box-shadow` carrying an *opaque*
+colour is not elevation at all — it is a ring, a halo, or an edge marker, which is to say a
+border drawn by another name, and it takes the line and surface steps by lightness like any
+other border.
+
+Missing that distinction is not hypothetical. The repalette classified `box-shadow` as one
+thing and mapped every colour in it to ink, which turned a pale lavender focus glow into a
+solid near-black ring, a 4px pale-blue halo around a 9px status dot into a 4px near-black
+one, and a light marker bar on the active rail item into ink on ink — invisible. Eight of
+them shipped. `scripts/palette-contract.mjs` now fails on any opaque `box-shadow` using
+`--ink-1`, which is the signature of exactly that mistake.
+
+Focus indicators are the exception within the exception: they carry their own 3:1
+requirement, so they do not take the line steps either. They use `--focus` / `--sf-focus`,
+or the accent where a token does not reach.
+
 ### Colour is not covered by the visual baselines
 
 Playwright compares screenshots with pixelmatch, whose `threshold` defaults to 0.2 of the
@@ -136,6 +168,44 @@ left to do what they are good at: geometry. When changing colour, run `npm run t
 Do not lower `threshold` in `playwright.config.mjs` to compensate: the baselines are generated
 on one Chromium build and verified on another, and the tolerance that absorbs that difference
 is the same one a tightened threshold would consume.
+
+## Lists are rows, not cards
+
+Chapters, works and the statistics strip are lists. Each row carries a `border-bottom`
+hairline and nothing else: no fill of its own, no radius, no border around it, and the list
+closes up to `gap: 0` so the hairlines are what separate one row from the next. The panel a
+list sits inside keeps its frame; the rows inside it do not get one each.
+
+Two rules make this work.
+
+**The row owns the state, not the control inside it.** A chapter row is a title button plus
+a `⋯` button. Filling only the button left the state stopping short of the `⋯`, which read
+as the row being half-selected. The row carries the fill and the marker, so both reach the
+full width.
+
+**The active marker's gutter is reserved on every row.** Each row has
+`border-left: 2px solid transparent`, so marking one active colours a border that is already
+there instead of adding 2px and pushing every other row's text sideways.
+
+Active is two signals, not one: the accent left marker plus `--dai-soft`. Where a row also
+carries a badge naming the state — "目前作品" — the badge lifts to `--paper-1` so the tint it
+sits on does not swallow it. The badge is the half of that signal which does not depend on
+seeing colour.
+
+### Which hairline
+
+`--rule-1` is for lines drawn **on paper**. `--rule-2` is for lines drawn **on the page
+ground**, which is six lightness steps darker: `--rule-1` against it is 1.1:1, which is not a
+line anyone can see. The chapter list lives inside a `--paper-1` panel and uses `--rule-1`;
+the works list and the statistics strip sit on the ground and use `--rule-2`.
+
+### The statistics strip
+
+Four numbers do not need a card. The strip has one `--rule-2` line underneath and `--rule-2`
+dividers between the cells, and no fill. The primary cell used to lift itself with a paper
+fill, which was how it stood out when every sibling was also paper — with the cells flat it
+was the only thing left in the strip shaped like a card, so it now leads with what it already
+had: an accent label and a full-ink number.
 
 ## Type weight
 

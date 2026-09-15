@@ -75,7 +75,6 @@
   height:14px;
   border-radius:50%;
   background:#fbfaf6;
-  box-shadow:0 1px 3px rgba(34,31,26,.24);
   transition:transform .16s ease;
 }
 .mobile-safe-mode-switch[aria-checked="true"] .mobile-safe-mode-switch-track{background:#5e5769}

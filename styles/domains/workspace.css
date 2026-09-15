@@ -42,10 +42,14 @@
   margin:0!important;
   padding:0!important;
   overflow:hidden!important;
-  border:1px solid #ded9cc!important;
-  border-radius:14px!important;
-  background:#e8e5eb!important;
-  box-shadow:0 1px 2px rgba(34,31,26,.02),0 6px 20px rgba(34,31,26,.035)!important;
+  /* Four numbers do not need a card around them. The strip is anchored by one hairline
+     underneath and divided by hairlines between the cells; the 1px gap that used to let a
+     tinted background through as a divider is gone with the background. */
+  border:0!important;
+  border-bottom:1px solid #c8c1b0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  gap:0!important;
 }
 
 .workspace-grid.workspace-hierarchy > .workspace-main-column > .stats-grid[hidden]{display:none!important}
@@ -61,14 +65,15 @@
   min-height:48px!important;
   padding:9px 12px!important;
   border:0!important;
+  border-right:1px solid #c8c1b0!important;
   border-radius:0!important;
-  background:#fbfaf6!important;
+  background:transparent!important;
   box-shadow:none!important;
 }
-
-.workspace-grid.workspace-hierarchy > .workspace-main-column > .stats-grid .stat-card-primary{
-  background:#fbfaf6!important;
+.workspace-grid.workspace-hierarchy > .workspace-main-column > .stats-grid .stat-card:last-child{
+  border-right:0!important;
 }
+
 
 .workspace-grid.workspace-hierarchy > .workspace-main-column > .stats-grid .stat-card > span{
   grid-column:1!important;

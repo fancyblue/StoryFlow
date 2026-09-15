@@ -112,6 +112,22 @@ for (const file of loadedStylesheets()) {
 
 const unused = Object.keys(PALETTE).filter(key => !seen.has(key));
 
+// A box-shadow with an opaque colour is not elevation, it is a ring, a halo or an edge
+// marker — a border drawn by another name. Elevation in this palette is always translucent
+// ink. A solid --ink-1 ring is therefore never deliberate, and it is exactly what comes out
+// of treating one as a shadow: eight of them shipped that way before this rule existed,
+// including a 4px near-black halo around a 9px status dot.
+const RING_INK = /box-shadow\s*:\s*(?![^;}]*\brgba?\()[^;}]*#221f1a/i;
+for (const file of loadedStylesheets()) {
+  let text;
+  try { text = readFileSync(join(root, file), 'utf8'); } catch { continue; }
+  text.replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ' ')).split('\n').forEach((line, index) => {
+    if (RING_INK.test(line)) {
+      problems.push({ file, line: index + 1, found: line.trim().slice(0, 70), key: 'opaque ink ring' });
+    }
+  });
+}
+
 if (problems.length) {
   console.error(`Palette contract: ${problems.length} colour(s) outside the palette.\n`);
   for (const p of problems) console.error(`  ${p.file}:${p.line}  ${p.found}`);
