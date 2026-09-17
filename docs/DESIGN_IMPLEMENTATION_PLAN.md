@@ -307,7 +307,7 @@ token 就位後，這一步是改幾十行的事。
 | 4-2 ✅ | 連線狀態移進導覽底部；搜尋與設定移出目的地清單 | `connection-ui.js`、`global-search.js`、`connection-status.css`、`layout-integrity.css` | 已完成。**設定的三個入口早就收斂過了**——`#settingsNav` 與 `#openSettingsBtn` 在桌機已被 CSS 隱藏，只有手機底部列還留著 `#settingsNav`（刻意的，手機沒有常駐工具列）。真正還沒做的是兩件：① 工作台頁首那兩個連線膠囊是側欄底部狀態的**第二份**，已移除（連同只為它們存在的 `ensureTopStatus()`、`setChip()`、`syncConnectionLabels()`）；② 搜尋還在目的地清單裡，已移到側欄工具列，手機維持底部列。側欄底部改成兩行，收合狀態下五個控制項以 `display:contents` 走兩欄流排 |
 | 4-3 ✅ | 統計從橫跨右欄移進切篇預覽，改成一條進度線 | `index.html`、`workspace.css`、`core/app.js`、`source-article-ux.js` | 已完成。四個數字合成一行：一條進度條（已確認／總字數）加上三個數字，四個值一個都沒少。`.stats-grid` / `.stat-card` 的 **46 條 CSS 規則**隨之失效——注意其中 8 條是**跟別的元素共用選擇器**的（`.panel,.stat-card,...`），所以是逐一從選擇器清單裡拿掉，不是整條刪。`reframeWorkspaceHierarchy()` 原本會把統計條搬到欄位頂端，那個搬移現在是錯的，已移除，只留顯示與否的判斷 |
 | 4-4 ✅ | 作品頁與發布頁共用「作品 › 章節 › 篇」清單元件 | 新增 `styles/domains/list-hierarchy.css`；`chapter-management.js`、`publishing-project-filter.js`、`publishing-flow.js` | 已完成，但**共用的是層級契約不是 renderer**——見下方說明。另外**刪掉了 `publishing-grouping.js`**（76 行，完全失效） |
-| 4-5 | 發布篩選依語意分組；排序控制 | `publishing-flow.js` | 排序偏好要保存 → 見 GAPS 第 5 項 |
+| 4-5 ✅ | 發布篩選依語意分組；排序控制 | `publishing-flow.js`、`publishing-project-filter.js`、`projects.js`、`publishing.css` | 已完成。兩半一起做，因為它們動同一塊版面。GAPS 第 5 項**不需要資料模型變更**就結案了——長文的篇根本沒有時間戳記，所以「最近更新」做不到，改成「章節順序／最新在前」兩個方向。排序偏好是全域的，加進 `CARRIED_PREFERENCES`（那份清單原本在三個地方各寫一遍） |
 | 4-6 | 空狀態與首次使用關卡 | `connection-ui.css`、`quick-start.js` | 必須守 UX_FLOW W-06：空狀態只有一個實心動作 |
 
 ### 4-4 的範圍：共用契約，不是共用 renderer

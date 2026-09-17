@@ -133,11 +133,16 @@
         }));
     }
     const chapters = project?.state?.chapters || [];
-    for (let chapterIndex = chapters.length - 1; chapterIndex >= 0; chapterIndex -= 1) {
-      const chapter = chapters[chapterIndex];
+    // Same order as the single-project list, read from the same place. Keeping a second copy
+    // of the iteration is how the two lists would drift apart the first time one changed.
+    const reverse = window.StoryFlowPublishing?.sortReversed?.() !== false;
+    const chapterOrder = chapters.map((chapter, chapterIndex) => ({ chapter, chapterIndex }));
+    if (reverse) chapterOrder.reverse();
+    chapterOrder.forEach(({ chapter }) => {
       const parts = chapter?.parts || [];
-      for (let partIndex = parts.length - 1; partIndex >= 0; partIndex -= 1) {
-        const part = parts[partIndex];
+      const partOrder = parts.map((part, partIndex) => ({ part, partIndex }));
+      if (reverse) partOrder.reverse();
+      partOrder.forEach(({ part, partIndex }) => {
         entries.push({
           project,
           chapter,
@@ -147,8 +152,8 @@
           key: partKey(part, project),
           status: statusFor(part)
         });
-      }
-    }
+      });
+    });
     return entries;
   }
 

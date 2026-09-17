@@ -1096,8 +1096,12 @@ test('publishing counts content types by work even when one work has several ent
     const stack = document.querySelector('.publishing-filter-stack')?.getBoundingClientRect();
     const actions = document.querySelector('.publishing-toolbar-actions')?.getBoundingClientRect();
     const button = document.getElementById('continuePublishingBtn')?.getBoundingClientRect();
-    const hint = document.querySelector('.publishing-toolbar-hint')?.getBoundingClientRect();
-    if (!toolbar || !stack || !actions || !button || !hint) return null;
+    // Whatever trails the page action: the sort control for a longform work, the hint that
+    // explains the fixed order for a visual one. Measuring a specific one breaks the moment
+    // the other is the one on screen.
+    const trailing = document.querySelector('.publishing-toolbar-actions > *:not([hidden])');
+    const hint = trailing?.getBoundingClientRect();
+    if (!toolbar || !stack || !actions || !button || !hint || trailing === button) return null;
     return {
       actionsAfterFilters: actions.left >= stack.right,
       buttonAtRightEdge: Math.round(Math.abs(toolbar.right - button.right)),
@@ -2577,6 +2581,81 @@ test('row menus flip up rather than opening past the bottom of the window', asyn
   });
   expect(fits.top).toBeGreaterThanOrEqual(0);
   expect(fits.bottom).toBeLessThanOrEqual(fits.viewport);
+
+  expect(pageErrors).toEqual([]);
+});
+
+test('publishing order can follow chapters, and the choice follows the writer not the work', async ({ page }) => {
+  // The queue could only be read newest-first, which is the wrong end to start from when
+  // publishing a backlog. Neither option reads a timestamp: a longform part carries none, so
+  // both are directions through the same document order.
+  const pageErrors = await prepare(page);
+  await gotoWorkbench(page, '/?visual-regression=1');
+  await page.locator('#createProjectManually').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
+  await page.locator('#sourceManualBtn').click();
+  await page.locator('#manualProjectTitle').fill('排序測試');
+  await page.locator('#manualSourceTitle').fill('01、第一章');
+  await page.locator('#manualSourceText').fill('第一段。\n\n第二段。');
+  await page.locator('#previewManualSourceBtn').click();
+  await page.locator('#confirmSourcePreviewBtn').click();
+  await expect(page.locator('#suggestionCard')).toBeVisible();
+  await page.evaluate(() => { window.StoryFlowIntegrations.savePart = async () => 'x.md'; });
+  await page.locator('#confirmBtn').click();
+
+  await page.evaluate(() => {
+    const first = state.chapters[0];
+    const clone = JSON.parse(JSON.stringify(first.parts[0]));
+    clone.id = 'sort-part-2';
+    clone.title = '02、第二章（1）';
+    state.chapters.push({
+      ...JSON.parse(JSON.stringify(first)), id: 'sort-chapter-2', title: '02、第二章', parts: [clone]
+    });
+    window.renderAll?.();
+  });
+
+  const chapterOrder = () => page.evaluate(() =>
+    [...document.querySelectorAll('.publishing-chapter-group-head strong')].map(node => node.textContent.trim()));
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('#publishingSortControl')).toBeVisible();
+  await expect(page.getByRole('button', { name: '最新在前', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  expect(await chapterOrder()).toEqual(['02、第二章', '01、第一章']);
+
+  await page.getByRole('button', { name: '章節順序', exact: true }).click();
+  await expect(page.getByRole('button', { name: '章節順序', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  expect(await chapterOrder()).toEqual(['01、第一章', '02、第二章']);
+
+  // It belongs to the writer, not to one work: switchProject() replaces `state` wholesale, so
+  // carrying it has to be deliberate, the way the split preferences above it already are.
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '另一個作品' }, { quiet: true });
+  });
+  expect(await page.evaluate(() => state.publishSort)).toBe('chapter');
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.getByRole('button', { name: '章節順序', exact: true })).toHaveAttribute('aria-pressed', 'true');
+
+  expect(pageErrors).toEqual([]);
+});
+
+test('a visual work is not offered an order it has no chapters for', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await gotoWorkbench(page, '/?visual-regression=1');
+  await page.locator('#createProjectManually').click();
+  // The dialog renames itself once a type is chosen, so it is addressed by id rather than
+  // by the name it is about to stop having.
+  const typeDialog = page.locator('#visualTypeDialog');
+  await typeDialog.locator('#chooseVisualType').click();
+  await expect(typeDialog.locator('#visualSeriesCreatePanel')).toBeVisible();
+  await typeDialog.locator('#visualSeriesTitle').fill('圖文排序測試');
+  await typeDialog.locator('#visualFirstEntryTitle').fill('月下預告');
+  await typeDialog.getByRole('button', { name: '建立圖文系列', exact: true }).click();
+  await page.locator('.nav-item[data-view="publishing"]').click();
+
+  // Visual entries have no chapters, and unlike parts they do carry updatedAt, so the order
+  // is fixed and the sentence that explains it stays.
+  await expect(page.locator('#publishingSortControl')).toBeHidden();
+  await expect(page.locator('.publishing-toolbar-hint')).toHaveText('最近編輯的圖文顯示在最上面。');
 
   expect(pageErrors).toEqual([]);
 });
