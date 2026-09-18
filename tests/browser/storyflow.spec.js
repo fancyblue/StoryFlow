@@ -436,6 +436,18 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
   expect(pageErrors).toEqual([]);
 });
 
+// What "stays stable" protects is that working in a 24-chapter rail does not cost you your
+// place in it — CHROME_ACCEPTANCE states it as "neither the page nor chapter rail jumps to
+// the top". This was written as pixel-exact equality instead, a stricter claim than that
+// line, than the app can make, and than anyone would notice: a rebuild re-clamps the rail by
+// a few pixels, and clicking the last row's ⋯ makes the user agent reveal the control it has
+// just focused — one scroll event whose stack holds no script at all, and the thing that
+// keeps the menu on screen, since forcing the page back puts it 74px below the fold. Neither
+// is the app moving anything, and both failed about one run in twenty under load. So the
+// bound is one row: lose less than a row and you are still looking at what you were looking
+// at; lose more and the rail has jumped.
+const RAIL_ROW = 44;
+
 test('long chapter rail stays stable and manual add/edit share a large filled editor', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -467,11 +479,9 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   await expect.poll(() => page.evaluate(() => state.activeChapterId)).toBe('long-chapter-24');
   // Selecting a chapter rebuilds the rail. The claim is about where it comes to rest, not
   // about the frame mid-rerender, which drifts a few pixels under load.
-  await expect
-    .poll(() => panel.evaluate((element, before) => Math.abs(element.scrollTop - before) <= 2, beforeSelect.scrollTop))
-    .toBe(true);
   const afterSelect = await panel.evaluate(element => ({ scrollTop: element.scrollTop, windowY: window.scrollY }));
-  expect(afterSelect.windowY).toBe(beforeSelect.windowY);
+  expect(Math.abs(afterSelect.scrollTop - beforeSelect.scrollTop)).toBeLessThan(RAIL_ROW);
+  expect(Math.abs(afterSelect.windowY - beforeSelect.windowY)).toBeLessThan(RAIL_ROW);
 
   await page.locator('#chapterList .chapter-more-button').last().click();
   const menu = page.locator('#chapterList .chapter-row-action-menu:not([hidden])');
@@ -491,6 +501,7 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
       splitterTop: splitter.getBoundingClientRect().top,
       viewportHeight: innerHeight,
       overflowY: getComputedStyle(source).overflowY,
+      railScrollTop: source.scrollTop,
       windowY: window.scrollY
     };
   });
@@ -500,7 +511,8 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   expect(openLayout.menuBottom).toBeLessThanOrEqual(Math.min(openLayout.sourceBottom, openLayout.viewportHeight));
   expect(openLayout.splitterTop).toBeLessThan(openLayout.viewportHeight);
   expect(openLayout.overflowY).toBe('auto');
-  expect(openLayout.windowY).toBe(beforeSelect.windowY);
+  expect(Math.abs(openLayout.railScrollTop - afterSelect.scrollTop)).toBeLessThan(RAIL_ROW);
+  expect(Math.abs(openLayout.windowY - afterSelect.windowY)).toBeLessThan(RAIL_ROW);
 
   await menu.getByRole('menuitem', { name: /編輯章節/ }).click();
   await expect(page.locator('#manualSourceDialog')).toBeVisible();
