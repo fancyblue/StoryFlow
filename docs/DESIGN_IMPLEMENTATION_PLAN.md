@@ -355,7 +355,7 @@ token 就位後，這一步是改幾十行的事。
 
 ---
 
-## 階段 5 · 功能性重構（風險最高，最後做）
+## 階段 5 · 功能性重構（風險最高，最後做）　✅ 全部完成
 
 ### 5-1　讀稿檢視 + 接縫檢視合併，移除 `reviewDialog`　✅ 已完成
 
@@ -420,8 +420,40 @@ token 就位後，這一步是改幾十行的事。
 `src/ui/preview-mode.js`，以及 `styles/domains/publishing.css`、
 `styles/domains/publishing-refinements.css`、`styles/layers/{controls,ui-system,legacy-patches,theme}.css`。
 新增一張基準 `platform-preview-platform-1440.png`（選了平台之後的左欄）。
-- **5-3　圖片依 `placement` 分組顯示**，並常駐「圖片不會隨複製內容送出」的說明。
-- **5-4　圖文編輯器去框**，摘要從發布預覽對話框移回編輯器。
+### 5-3　圖片依 `placement` 分組顯示　✅ 已完成
+
+圖片管理器改成依 placement 分成三組（正文前／正文後、後記前／後記後），各自帶標題與張數，
+空的組不畫。**預覽本來就已經是分組的**，管理器卻是一串平的清單——兩邊對同一份資料說了不同的話。
+
+- 「上移／下移」改成在**組內**移動：輸出先依 placement 分組、組內才用陣列順序，
+  所以跨組的順序本來就沒有意義。原本的實作會把一張圖移過另一張落在完全不同位置的圖。
+  到組的兩端就停用。
+- 列改用 `data-image-id` 辨識。同一個檔案匯入兩次會共用一個 `originalName`，
+  畫面上顯示的檔名認不出是哪一列——測試就是在這裡撞上的。
+- 「圖片不會隨『複製內容』送出」改成**常駐**在管理器抬頭，一張圖都還沒有的時候就說。
+  原本只有預覽在有圖時才提；人是先設定圖片、後來才發現複製不帶圖的。
+
+### 5-4　圖文編輯器去框，摘要移回編輯器　✅ 已完成
+
+**去框**：`.visual-editor-panel` 不再是 `.panel`。工作區的格線已經把左邊的圖文列和右邊的
+編輯器分開了，編輯器自己的欄位也已經有結構，再加一層卡片只是把同一條界線畫兩次。
+長文工作台**維持**面板框——那裡的框分隔的是三個不同的工具，不是圍住同一件東西。
+圖文列同時套用和章節列、作品列一樣的列契約：分隔線、hover 底色、2px 目前標記由**列**承擔，
+裡面的按鈕一個都不帶。
+
+**摘要移回編輯器**：`part.summary` 原本有兩個編輯入口——發布預覽的 extras 與
+`摘要與 Hashtags` 工具——而圖文編輯器一個都沒有。摘要是寫關於這則圖文的東西，
+所以它現在寫在圖文編輯器裡，和標題、正文同一套自動儲存。發布預覽只剩下唯讀的點擊複製列，
+`#platformPreviewSummaryEditor` 與 `savePublishingSummary()` 一併移除。
+Hashtags **不跟著搬**：平台可以覆寫它，所以它留在發布那一側。
+長文的 `part.summary` 沒有自己的編輯器，維持在 `摘要與 Hashtags` 工具裡。
+
+順手修掉一個：`#visualImageGrid` 的空狀態是一句話，卻被當成一格 155px 的縮圖，
+句子在中間斷行。改成跨整列。
+
+動到：`src/publishing/article-images.js`、`src/projects/visual-workspace.js`、
+`src/publishing/publishing-flow.js`，以及 `styles/domains/{article-images,visual-workspace}.css`。
+`visual-workspace-1440.png` 基準更新。
 
 ---
 

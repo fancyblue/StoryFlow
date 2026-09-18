@@ -57,8 +57,8 @@
     { id: 'storyflowWorksLibraryUxJs', src: './src/projects/works-library-ux.js?v=20260905-a1', owner: 'projects' },
     { src: './src/projects/workspace-project-ux.js?v=20260918-a2', owner: 'projects' },
     { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260915-a2', owner: 'ui' },
-    { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260911-a1', owner: 'publishing' },
-    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260915-a2', owner: 'projects' }
+    { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260918-a1', owner: 'publishing' },
+    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260918-a1', owner: 'projects' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));

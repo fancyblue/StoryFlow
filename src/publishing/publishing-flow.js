@@ -398,17 +398,7 @@
               <button id="copyPlatformSummary" class="platform-preview-extra-copy" type="button">
                 <span>摘要</span><p id="platformPreviewSummary"></p><small>點一下複製</small>
               </button>
-              <button id="editPlatformPreviewSummary" class="button tiny ghost" type="button" aria-expanded="false">編輯</button>
             </div>
-            <section id="platformPreviewSummaryEditor" class="platform-preview-extra-editor" hidden>
-              <label for="platformPreviewSummaryInput">共用摘要</label>
-              <textarea id="platformPreviewSummaryInput" class="text-input" rows="3" maxlength="500" placeholder="簡短介紹這則圖文"></textarea>
-              <div class="platform-preview-extra-editor-actions">
-                <button id="savePlatformPreviewSummary" class="button tiny primary" type="button">儲存</button>
-                <button id="cancelPlatformPreviewSummary" class="button tiny ghost" type="button">取消</button>
-              </div>
-              <small>摘要為所有平台共用的選填資訊，不會加入主要內容。</small>
-            </section>
           </div>
           <div id="platformPreviewHashtagsBlock" class="platform-preview-extra-block platform-preview-hashtags-block" hidden>
             <div class="platform-preview-extra-row platform-preview-hashtags-row">
@@ -568,10 +558,6 @@
     const optionsSummary = panel.querySelector('#platformPreviewOptionsSummary');
     const editTitle = panel.querySelector('#editPlatformTitle');
     const summaryBlock = panel.querySelector('#platformPreviewSummaryBlock');
-    const summaryEditor = panel.querySelector('#platformPreviewSummaryEditor');
-    const summaryInput = panel.querySelector('#platformPreviewSummaryInput');
-    const editSummary = panel.querySelector('#editPlatformPreviewSummary');
-    const cancelSummary = panel.querySelector('#cancelPlatformPreviewSummary');
     const hashtagsBlock = panel.querySelector('#platformPreviewHashtagsBlock');
     const hashtagsEditor = panel.querySelector('#platformPreviewHashtagsEditor');
     const hashtagsInput = panel.querySelector('#platformPreviewHashtagsInput');
@@ -639,11 +625,7 @@
     settings.classList.toggle('hidden', !platformSpecific);
     editTitle.hidden = !platformSpecific;
     titleEditor.hidden = true;
-    summaryEditor.hidden = true;
     hashtagsEditor.hidden = true;
-    editSummary.hidden = !platformSpecific;
-    editSummary.setAttribute('aria-expanded', 'false');
-    editSummary.textContent = '編輯';
     editHashtags.hidden = !platformSpecific;
     editHashtags.setAttribute('aria-expanded', 'false');
     editHashtags.textContent = '編輯';
@@ -666,8 +648,7 @@
       summaryText = String(part.summary || '').trim();
       summaryCard.disabled = !summaryText;
       panel.querySelector('#platformPreviewSummary').textContent = summaryText || '尚未設定';
-      summaryCard.querySelector('small').textContent = summaryText ? '點一下複製' : '尚未設定';
-      summaryInput.value = summaryText;
+      summaryCard.querySelector('small').textContent = summaryText ? '點一下複製' : '在圖文編輯器設定';
       summaryCard.onclick = async () => {
         if (!summaryText) return;
         try {
@@ -718,14 +699,6 @@
       titleEditor.hidden = !titleEditor.hidden;
       if (!titleEditor.hidden) titleInput.focus();
     };
-    editSummary.onclick = () => {
-      if (!platformSpecific) return;
-      setExtraEditorExpanded(editSummary, summaryEditor, summaryEditor.hidden, summaryInput);
-    };
-    cancelSummary.onclick = () => {
-      summaryInput.value = summaryText;
-      setExtraEditorExpanded(editSummary, summaryEditor, false, summaryInput);
-    };
     editHashtags.onclick = () => {
       if (!platformSpecific) return;
       setExtraEditorExpanded(editHashtags, hashtagsEditor, hashtagsEditor.hidden, hashtagsInput);
@@ -735,12 +708,6 @@
       await savePlatformTitle(entry.chapter, part, platform, titleInput);
       titleEditor.hidden = true;
       refreshTitle();
-    };
-    panel.querySelector('#savePlatformPreviewSummary').onclick = async () => {
-      if (!entry || !platformSpecific) return;
-      await savePublishingSummary(entry.chapter, entry.part, summaryInput);
-      refreshSummaryView();
-      setExtraEditorExpanded(editSummary, summaryEditor, false, summaryInput);
     };
     panel.querySelector('#resetPlatformPreviewTitle').onclick = async () => {
       if (!entry || !platform) return;
@@ -1049,27 +1016,6 @@
       return true;
     } catch (error) {
       notify(`平台 Hashtags 已更新，但檔案尚未寫入：${error.message}`, true);
-      return false;
-    }
-  }
-
-  async function savePublishingSummary(chapter, part, input) {
-    normalizePublishItem(part);
-    part.summary = input.value.trim();
-    part.updatedAt = new Date().toISOString();
-    saveState('摘要已更新');
-    renderParts();
-
-    try {
-      const updated = isVisualPart(part) ? await writeVisualEntry(part) : await writeArticleMarkdown(chapter, part);
-      if (!updated) {
-        notify('摘要目前只保留在工作區；請重新連接資料夾後再保存一次。', true);
-        return false;
-      }
-      notify(part.summary ? '摘要已保存' : '摘要已清除');
-      return true;
-    } catch (error) {
-      notify(`摘要已更新，但檔案尚未寫入：${error.message}`, true);
       return false;
     }
   }

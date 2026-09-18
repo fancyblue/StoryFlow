@@ -1563,19 +1563,29 @@ test('article images import private copies, preview, reorder, describe, and remo
 
   await expect(toolDialog.locator('.article-image-row')).toHaveCount(2);
   await expect(card.locator('.publish-image-badge')).toHaveText('附圖 2 張');
-  let firstRow = toolDialog.locator('.article-image-row').first();
-  await firstRow.locator('input').nth(0).fill('夜空中的城堡');
-  await firstRow.locator('input').nth(1).fill('抵達王都前的夜景');
-  await firstRow.locator('select').selectOption('before-body');
-  await firstRow.getByRole('button', { name: '保存圖片資訊', exact: true }).click();
+  // Copying never carries the files, and the manager says so before any image exists, not
+  // as a consequence of having some.
+  await expect(toolDialog.locator('.article-image-manager-head span')).toContainText('不會隨「複製內容」送出');
 
-  await toolDialog.locator('.article-image-row').nth(1).getByRole('button', { name: '上移', exact: true }).click();
+  // Both imports came from a file called 插圖.png, so the visible name identifies neither
+  // row; the stored id does.
+  const idFor = fileName => page.evaluate(name => {
+    const part = state.chapters.find(chapter => chapter.title === '圖片章節').parts[0];
+    return part.images.find(image => image.fileName === name)?.id;
+  }, fileName);
+  const namedRow = async name => toolDialog.locator(`.article-image-row[data-image-id="${await idFor(name)}"]`);
+  await (await namedRow('插圖.png')).locator('input').nth(0).fill('夜空中的城堡');
+  await (await namedRow('插圖.png')).locator('input').nth(1).fill('抵達王都前的夜景');
+  await (await namedRow('插圖.png')).getByRole('button', { name: '保存圖片資訊', exact: true }).click();
+
+  // Both images still land in the same place, so ordering between them is meaningful.
+  await expect(toolDialog.locator('.article-image-group')).toHaveCount(1);
+  await (await namedRow('插圖-2.png')).getByRole('button', { name: '上移', exact: true }).click();
   const reordered = await page.evaluate(() => {
     const part = state.chapters.find(chapter => chapter.title === '圖片章節').parts[0];
     return {
       filenames: part.images.map(image => image.fileName),
       firstAlt: part.images.find(image => image.fileName === '插圖.png').alt,
-      firstPlacement: part.images.find(image => image.fileName === '插圖.png').placement,
       metadataVersion: window.__savedArticleMetadata.schemaVersion,
       metadataImages: window.__savedArticleMetadata.parts[0].images.length,
       markdown: window.__savedArticleMarkdown
@@ -1583,14 +1593,26 @@ test('article images import private copies, preview, reorder, describe, and remo
   });
   expect(reordered.filenames).toEqual(['插圖-2.png', '插圖.png']);
   expect(reordered.firstAlt).toBe('夜空中的城堡');
-  expect(reordered.firstPlacement).toBe('before-body');
   expect(reordered.metadataVersion).toBe(9);
   expect(reordered.metadataImages).toBe(2);
   expect(reordered.markdown).toContain('![夜空中的城堡](<./assets/image-test-part/插圖.png>)');
   expect(reordered.markdown).toContain('_抵達王都前的夜景_');
 
-  firstRow = toolDialog.locator('.article-image-row').nth(1);
-  await firstRow.getByRole('button', { name: '複製 Markdown', exact: true }).click();
+  // Moving one image elsewhere splits the list the way the output is split. Ordering across
+  // that line would be meaningless, so it is not offered.
+  await (await namedRow('插圖.png')).locator('select').selectOption('before-body');
+  await (await namedRow('插圖.png')).getByRole('button', { name: '保存圖片資訊', exact: true }).click();
+  await expect(toolDialog.locator('.article-image-group')).toHaveCount(2);
+  await expect(toolDialog.locator('.article-image-group').first()).toHaveAttribute('data-placement', 'before-body');
+  await expect(toolDialog.locator('.article-image-group-head strong').first()).toHaveText('正文前');
+  await expect((await namedRow('插圖.png')).getByRole('button', { name: '上移', exact: true })).toBeDisabled();
+  await expect((await namedRow('插圖.png')).getByRole('button', { name: '下移', exact: true })).toBeDisabled();
+  expect(await page.evaluate(() => {
+    const part = state.chapters.find(chapter => chapter.title === '圖片章節').parts[0];
+    return part.images.find(image => image.fileName === '插圖.png').placement;
+  })).toBe('before-body');
+
+  await (await namedRow('插圖.png')).getByRole('button', { name: '複製 Markdown', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedImageMarkdown)).toContain('夜空中的城堡');
 
   await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
@@ -1904,7 +1926,9 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('#visualProjectTitle')).toHaveValue('夜色圖文集');
   expect(await page.evaluate(() => StoryFlowProjects.activeId())).toBe(originalVisualProjectId);
   await expect(page.locator('#visualEntryList')).toContainText('月下預告');
-  await expect(page.locator('#visualEntrySummary')).toHaveCount(0);
+  // The summary is written about the entry, so it is written here. Hashtags are not: a
+  // platform may override them, so they stay with publishing.
+  await expect(page.locator('#visualEntrySummary')).toHaveCount(1);
   await expect(page.locator('#visualEntryHashtags')).toHaveCount(0);
   await expect(page.locator('#visualEntryStatus')).toHaveCount(0);
   await expect(page.locator('#visualEntryStatusHelp')).toHaveCount(0);
@@ -2057,36 +2081,43 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(publishingPreview.locator('#platformPreviewOptions')).toBeVisible();
   await expect(publishingPreview.locator('#platformPreviewMeta')).toBeHidden();
   await expect(publishingPreview.locator('[data-sf-preview-control="publish"]')).toHaveCount(0);
-  await expect(publishingPreview.locator('#platformPreviewSummaryEditor')).toBeHidden();
+  // The summary is authored in the visual editor, so the preview only shows and copies it.
+  await expect(publishingPreview.locator('#platformPreviewSummaryBlock')).toBeVisible();
+  await expect(publishingPreview.locator('#editPlatformPreviewSummary')).toHaveCount(0);
   await expect(publishingPreview.locator('#platformPreviewHashtagsEditor')).toBeHidden();
-  expect(await publishingPreview.evaluate(dialog => {
-    const body = dialog.querySelector('.platform-preview-body');
-    const contentHead = dialog.querySelector('.platform-preview-content-head');
-    const content = dialog.querySelector('#platformPreviewContent');
-    const summaryEditor = dialog.querySelector('#platformPreviewSummaryEditor');
-    const hashtagsEditor = dialog.querySelector('#platformPreviewHashtagsEditor');
-    const rows = [...dialog.querySelectorAll('.platform-preview-extra-row')];
+  expect(await publishingPreview.evaluate(panel => {
+    const body = panel.querySelector('.platform-preview-body');
+    const contentHead = panel.querySelector('.platform-preview-content-head');
+    const content = panel.querySelector('#platformPreviewContent');
+    const extras = panel.querySelector('#platformPreviewVisualExtras');
+    const hashtagsEditor = panel.querySelector('#platformPreviewHashtagsEditor');
+    const rows = [...panel.querySelectorAll('.platform-preview-extra-row')];
     const buttonsContained = rows.every(row => {
       const rowBox = row.getBoundingClientRect();
-      const buttonBox = row.querySelector(':scope > .button')?.getBoundingClientRect();
-      return buttonBox && buttonBox.left >= rowBox.left - 1 && buttonBox.right <= rowBox.right + 1
+      const button = row.querySelector(':scope > .button');
+      if (!button) return true;
+      const buttonBox = button.getBoundingClientRect();
+      return buttonBox.left >= rowBox.left - 1 && buttonBox.right <= rowBox.right + 1
         && buttonBox.top >= rowBox.top - 1 && buttonBox.bottom <= rowBox.bottom + 1;
     });
     return {
-      contentBeforeEditors: Boolean(content && summaryEditor && hashtagsEditor
-        && (content.compareDocumentPosition(summaryEditor) & Node.DOCUMENT_POSITION_FOLLOWING)
+      contentBeforeEditors: Boolean(content && extras && hashtagsEditor
+        && (content.compareDocumentPosition(extras) & Node.DOCUMENT_POSITION_FOLLOWING)
         && (content.compareDocumentPosition(hashtagsEditor) & Node.DOCUMENT_POSITION_FOLLOWING)),
       compactTop: Boolean(body && contentHead && contentHead.getBoundingClientRect().top - body.getBoundingClientRect().top <= 170),
       buttonsContained
     };
   })).toEqual({ contentBeforeEditors: true, compactTop: true, buttonsContained: true });
-  await publishingPreview.locator('#editPlatformPreviewSummary').click();
-  await expect(publishingPreview.locator('#platformPreviewSummaryEditor')).toBeVisible();
-  await publishingPreview.locator('#platformPreviewSummaryInput').fill('更新後的月光摘要');
-  await publishingPreview.locator('#savePlatformPreviewSummary').click();
-  await expect(publishingPreview.locator('#platformPreviewSummaryEditor')).toBeHidden();
-  await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('更新後的月光摘要');
+
+  // Editing it happens where the entry is written, and the preview reflects that.
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await page.locator('#visualEntrySummary').fill('更新後的月光摘要');
   await expect.poll(() => page.evaluate(() => state.visualEntries[0].summary)).toBe('更新後的月光摘要');
+  // The row and the platform it was left on both survive the trip, so coming back shows the
+  // same version with the new summary in it.
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(firstPlatformRow).toHaveClass(/is-current/);
+  await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('更新後的月光摘要');
   await publishingPreview.locator('#editPlatformPreviewHashtags').click();
   await expect(publishingPreview.locator('#platformPreviewHashtagsEditor')).toBeVisible();
   await expect(publishingPreview.locator('#platformPreviewHashtagsState')).toHaveText('沿用共用');

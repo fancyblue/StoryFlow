@@ -275,13 +275,14 @@
           <div id="visualEntryList" class="visual-entry-list"></div>
           <button id="visualNewEntryBtn" class="button full ghost visual-entry-add-button" type="button">＋ 新增圖文</button>
         </aside>
-        <section class="panel visual-editor-panel">
+        <section class="visual-editor-panel">
           <div id="visualEditorEmpty" class="visual-editor-empty"></div>
           <form id="visualEditorForm" class="visual-editor-form" hidden>
             <div class="visual-editor-toolbar">
               <label class="visual-field"><span>圖文標題</span><input id="visualEntryTitle" class="text-input" maxlength="160" /></label>
             </div>
             <label class="visual-field"><span>正文</span><textarea id="visualEntryBody" class="text-input visual-body-input" placeholder="輸入圖文正文；可使用 Markdown。"></textarea></label>
+            <label class="visual-field visual-field-summary"><span>摘要</span><textarea id="visualEntrySummary" class="text-input visual-summary-input" rows="2" maxlength="500" placeholder="簡短介紹這則圖文；選填，不會加入正文。"></textarea><small>各平台共用，發布時可直接複製。</small></label>
             <section class="visual-image-section">
               <div class="visual-image-section-head"><div><strong>圖片與封面</strong><p class="muted">拖曳或使用箭頭排序；點「編輯」維護替代文字、圖說與封面。</p></div><button id="visualImportImagesBtn" class="button ghost" type="button">匯入圖片</button></div>
               <input id="visualImageInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden />
@@ -511,8 +512,12 @@
     });
     const title = root.querySelector('#visualEntryTitle');
     const body = root.querySelector('#visualEntryBody');
+    // The summary is written about the entry, so it is written where the entry is written
+    // and saves the same way the title and body do.
+    const summary = root.querySelector('#visualEntrySummary');
     title.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.title = title.value; markChanged(); renderList(); renderMeta(); } });
     body.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.body = body.value; markChanged(); renderList(); renderMeta(); } });
+    summary.addEventListener('input', () => { const entry = activeEntry(); if (entry) { entry.summary = summary.value; markChanged(); } });
     root.querySelector('#visualRetrySaveBtn').addEventListener('click', () => flushEntryAutoSave('visual-entry-retry'));
     root.querySelector('#visualPreviewEntryBtn').addEventListener('click', openEntryPreview);
     const fileInput = root.querySelector('#visualImageInput');
@@ -796,6 +801,7 @@
     form.hidden = false;
     root.querySelector('#visualEntryTitle').value = entry.title;
     root.querySelector('#visualEntryBody').value = entry.body;
+    root.querySelector('#visualEntrySummary').value = entry.summary || '';
     root.querySelectorAll('#visualEditorForm input, #visualEditorForm textarea, #visualEditorForm select, #visualEditorForm button').forEach(control => {
       control.disabled = isReadOnly();
     });
