@@ -1233,24 +1233,26 @@ test('published articles keep an independent afterword and can exclude it from o
   await expect(card.locator('.publish-afterword-badge')).toContainText('有後記 10 字');
   await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
 
+  // Preview is the expanded row's left column, and the rail on the right chooses which
+  // version it shows. Nothing opens on top of the row that is already open.
   await card.getByRole('button', { name: '預覽「有後記的文章」', exact: true }).click();
-  const preview = page.locator('#platformPreviewDialog');
+  const preview = card.locator('.publish-preview-panel');
   await expect(preview).toBeVisible();
+  await expect(card.locator('.publish-platform-row.is-current')).toHaveAttribute('data-platform', '');
   await expect(preview.locator('#platformPreviewContent')).toContainText('正文原稿。');
   await expect(preview.locator('#platformPreviewContent')).toContainText('後記');
   await expect(preview.locator('#platformPreviewContent')).toContainText('這是寫給讀者的後記。');
   await expect(preview.locator('#platformPreviewSettings')).toBeHidden();
   await expect(preview.locator('#platformPreviewVisualExtras')).toBeHidden();
-  await preview.getByRole('button', { name: '關閉', exact: true }).last().click();
 
-  const platformRow = card.locator('.publish-platform-row').first();
-  await platformRow.getByRole('button', { name: /預覽與複製/ }).click();
-  const include = preview.locator('#platformPreviewIncludeAfterword');
-  await expect(preview.locator('#platformPreviewSettings')).toBeVisible();
+  const platformRow = card.locator('.publish-platform-row').nth(1);
+  await platformRow.locator('.publish-platform-choose').click();
+  await expect(platformRow).toHaveClass(/is-current/);
+  const include = card.locator('#platformPreviewIncludeAfterword');
+  await expect(card.locator('#platformPreviewSettings')).toBeVisible();
   await expect(include).toBeChecked();
   await include.uncheck();
-  await expect(preview.locator('#platformPreviewContent')).not.toContainText('這是寫給讀者的後記。');
-  await preview.getByRole('button', { name: '關閉', exact: true }).last().click();
+  await expect(card.locator('#platformPreviewContent')).not.toContainText('這是寫給讀者的後記。');
 
   const stateResult = await page.evaluate(() => {
     const chapter = state.chapters.find(item => item.title === '後記測試章節');
@@ -1312,8 +1314,14 @@ test('each platform can store a lightweight publication date and article URL', a
   await page.locator('.nav-item[data-view="publishing"]').click();
   const card = page.locator('.publish-list-item', { hasText: '等待發布的文章' });
   await card.getByRole('button', { name: /展開.*發布平台/ }).click();
-  const platformRow = card.locator('.publish-platform-row', { hasText: '巴哈小屋' });
-  await platformRow.getByRole('button', { name: '記錄「巴哈小屋」發布紀錄', exact: true }).click();
+  // Recording a publication is about one platform's version, so it happens beside that
+  // version: pick it in the rail, then act on it in the left column.
+  const platformRow = card.locator('.publish-platform-row[data-platform="巴哈小屋"]');
+  await platformRow.locator('.publish-platform-choose').click();
+  // Saving the record marks the platform published, which re-renders the list and so
+  // rebuilds this panel. A copy option chosen a moment earlier has to survive that.
+  await card.getByRole('checkbox', { name: '內容前附上標題' }).check();
+  await card.getByRole('button', { name: '記錄「巴哈小屋」發布紀錄', exact: true }).click();
 
   const dialog = page.locator('#publicationRecordDialog');
   await expect(dialog).toBeVisible();
@@ -1322,8 +1330,9 @@ test('each platform can store a lightweight publication date and article URL', a
   await dialog.getByRole('button', { name: '保存發布紀錄', exact: true }).click();
 
   await expect(platformRow.getByText('已發布', { exact: true })).toBeVisible();
+  await expect(card.getByRole('checkbox', { name: '內容前附上標題' })).toBeChecked();
   await expect(platformRow.locator('.publish-platform-record-summary')).toContainText('已記錄網址');
-  await expect(platformRow.getByRole('button', { name: '查看「巴哈小屋」發布紀錄', exact: true })).toBeVisible();
+  await expect(card.getByRole('button', { name: '查看「巴哈小屋」發布紀錄', exact: true })).toBeVisible();
 
   const saved = await page.evaluate(() => {
     const part = state.chapters.find(chapter => chapter.title === '發布紀錄測試章節').parts[0];
@@ -1336,7 +1345,7 @@ test('each platform can store a lightweight publication date and article URL', a
   expect(saved.record.url).toBe('https://example.com/story/1');
   expect(Number.isNaN(Date.parse(saved.record.publishedAt))).toBe(false);
 
-  await platformRow.getByRole('button', { name: '查看「巴哈小屋」發布紀錄', exact: true }).click();
+  await card.getByRole('button', { name: '查看「巴哈小屋」發布紀錄', exact: true }).click();
   await expect(dialog.locator('#openPublicationRecordUrl')).toHaveAttribute('href', 'https://example.com/story/1');
   await dialog.getByRole('button', { name: '取消', exact: true }).click();
 
@@ -1344,7 +1353,7 @@ test('each platform can store a lightweight publication date and article URL', a
     expect(confirmation.message()).toContain('清除已記錄的發布時間與文章網址');
     await confirmation.accept();
   });
-  await platformRow.getByRole('button', { name: '取消「巴哈小屋」已發布', exact: true }).click();
+  await card.getByRole('button', { name: '取消「巴哈小屋」已發布', exact: true }).click();
   await expect(platformRow.getByText('尚未發布', { exact: true })).toBeVisible();
   const cleared = await page.evaluate(() => {
     const record = state.chapters.find(chapter => chapter.title === '發布紀錄測試章節').parts[0].publicationRecords['巴哈小屋'];
@@ -1398,8 +1407,9 @@ test('platform titles stay separate and copy can prepend heading or bold title',
 
   const platformRow = card.locator('.publish-platform-row', { hasText: '巴哈小屋' });
   await expect(platformRow.locator('.publish-platform-hashtags')).toHaveText('#長文 #共用');
-  await platformRow.getByRole('button', { name: '預覽與複製「巴哈小屋」', exact: true }).click();
-  const preview = page.locator('#platformPreviewDialog');
+  await platformRow.locator('.publish-platform-choose').click();
+  const preview = card.locator('.publish-preview-panel');
+  await expect(platformRow).toHaveClass(/is-current/);
   await preview.getByRole('button', { name: '修改此平台標題', exact: true }).click();
   await preview.getByRole('textbox', { name: '此平台標題', exact: true }).fill('給讀者看的正式標題');
   await preview.getByRole('button', { name: '保存標題', exact: true }).click();
@@ -1449,7 +1459,11 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('# 給讀者看的正式標題\n\n只應出現在內容區的正文。');
 
-  await platformRow.getByRole('button', { name: '預覽與複製「巴哈小屋」', exact: true }).click();
+  // Copy options belong to one article-and-platform pairing. Leaving the platform and
+  // coming back is a fresh decision, so they start from the default again.
+  await card.locator('.publish-platform-row[data-platform=""] .publish-platform-choose').click();
+  await card.locator('.publish-platform-row[data-platform="巴哈小屋"] .publish-platform-choose').click();
+  await expect(preview.getByRole('checkbox', { name: '內容前附上標題' })).not.toBeChecked();
   await preview.getByRole('checkbox', { name: '內容前附上標題' }).check();
   await preview.locator('#platformPreviewTitleStyle').selectOption('bold');
   await expect(preview.locator('#platformPreviewContent strong')).toHaveText('給讀者看的正式標題');
@@ -1549,19 +1563,29 @@ test('article images import private copies, preview, reorder, describe, and remo
 
   await expect(toolDialog.locator('.article-image-row')).toHaveCount(2);
   await expect(card.locator('.publish-image-badge')).toHaveText('附圖 2 張');
-  let firstRow = toolDialog.locator('.article-image-row').first();
-  await firstRow.locator('input').nth(0).fill('夜空中的城堡');
-  await firstRow.locator('input').nth(1).fill('抵達王都前的夜景');
-  await firstRow.locator('select').selectOption('before-body');
-  await firstRow.getByRole('button', { name: '保存圖片資訊', exact: true }).click();
+  // Copying never carries the files, and the manager says so before any image exists, not
+  // as a consequence of having some.
+  await expect(toolDialog.locator('.article-image-manager-head span')).toContainText('不會隨「複製內容」送出');
 
-  await toolDialog.locator('.article-image-row').nth(1).getByRole('button', { name: '上移', exact: true }).click();
+  // Both imports came from a file called 插圖.png, so the visible name identifies neither
+  // row; the stored id does.
+  const idFor = fileName => page.evaluate(name => {
+    const part = state.chapters.find(chapter => chapter.title === '圖片章節').parts[0];
+    return part.images.find(image => image.fileName === name)?.id;
+  }, fileName);
+  const namedRow = async name => toolDialog.locator(`.article-image-row[data-image-id="${await idFor(name)}"]`);
+  await (await namedRow('插圖.png')).locator('input').nth(0).fill('夜空中的城堡');
+  await (await namedRow('插圖.png')).locator('input').nth(1).fill('抵達王都前的夜景');
+  await (await namedRow('插圖.png')).getByRole('button', { name: '保存圖片資訊', exact: true }).click();
+
+  // Both images still land in the same place, so ordering between them is meaningful.
+  await expect(toolDialog.locator('.article-image-group')).toHaveCount(1);
+  await (await namedRow('插圖-2.png')).getByRole('button', { name: '上移', exact: true }).click();
   const reordered = await page.evaluate(() => {
     const part = state.chapters.find(chapter => chapter.title === '圖片章節').parts[0];
     return {
       filenames: part.images.map(image => image.fileName),
       firstAlt: part.images.find(image => image.fileName === '插圖.png').alt,
-      firstPlacement: part.images.find(image => image.fileName === '插圖.png').placement,
       metadataVersion: window.__savedArticleMetadata.schemaVersion,
       metadataImages: window.__savedArticleMetadata.parts[0].images.length,
       markdown: window.__savedArticleMarkdown
@@ -1569,19 +1593,31 @@ test('article images import private copies, preview, reorder, describe, and remo
   });
   expect(reordered.filenames).toEqual(['插圖-2.png', '插圖.png']);
   expect(reordered.firstAlt).toBe('夜空中的城堡');
-  expect(reordered.firstPlacement).toBe('before-body');
   expect(reordered.metadataVersion).toBe(9);
   expect(reordered.metadataImages).toBe(2);
   expect(reordered.markdown).toContain('![夜空中的城堡](<./assets/image-test-part/插圖.png>)');
   expect(reordered.markdown).toContain('_抵達王都前的夜景_');
 
-  firstRow = toolDialog.locator('.article-image-row').nth(1);
-  await firstRow.getByRole('button', { name: '複製 Markdown', exact: true }).click();
+  // Moving one image elsewhere splits the list the way the output is split. Ordering across
+  // that line would be meaningless, so it is not offered.
+  await (await namedRow('插圖.png')).locator('select').selectOption('before-body');
+  await (await namedRow('插圖.png')).getByRole('button', { name: '保存圖片資訊', exact: true }).click();
+  await expect(toolDialog.locator('.article-image-group')).toHaveCount(2);
+  await expect(toolDialog.locator('.article-image-group').first()).toHaveAttribute('data-placement', 'before-body');
+  await expect(toolDialog.locator('.article-image-group-head strong').first()).toHaveText('正文前');
+  await expect((await namedRow('插圖.png')).getByRole('button', { name: '上移', exact: true })).toBeDisabled();
+  await expect((await namedRow('插圖.png')).getByRole('button', { name: '下移', exact: true })).toBeDisabled();
+  expect(await page.evaluate(() => {
+    const part = state.chapters.find(chapter => chapter.title === '圖片章節').parts[0];
+    return part.images.find(image => image.fileName === '插圖.png').placement;
+  })).toBe('before-body');
+
+  await (await namedRow('插圖.png')).getByRole('button', { name: '複製 Markdown', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedImageMarkdown)).toContain('夜空中的城堡');
 
   await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
   await card.getByRole('button', { name: '預覽「附圖文章」', exact: true }).click();
-  const preview = page.locator('#platformPreviewDialog');
+  const preview = card.locator('.publish-preview-panel');
   await expect(preview).toBeVisible();
   await expect(preview.locator('.platform-preview-image')).toHaveCount(2);
   await expect(preview.locator('#platformPreviewContent')).toContainText('圖片文章正文。');
@@ -1590,7 +1626,6 @@ test('article images import private copies, preview, reorder, describe, and remo
   await preview.locator('.platform-preview-image img').first().click();
   await expect(page.locator('#articleImageLightbox')).toBeVisible();
   await page.getByRole('button', { name: '關閉圖片', exact: true }).click();
-  await preview.getByRole('button', { name: '關閉', exact: true }).last().click();
 
   await card.getByRole('button', { name: '文章圖片 2', exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
@@ -1694,7 +1729,7 @@ test('global search jumps across works and only searches body text when requeste
   await expect(searchDialog.getByRole('option')).toHaveCount(2);
   await expect(searchDialog.getByRole('option').first()).toContainText('獨特的銀河關鍵字');
   await searchDialog.getByRole('option', { name: /銀河盡頭的第一封信/ }).click();
-  await expect(page.locator('#platformPreviewDialog')).toBeVisible();
+  await expect(page.locator('.publish-list-item.expanded .publish-preview-panel')).toBeVisible();
   await expect(page.locator('#platformPreviewContent')).toContainText('獨特的銀河關鍵字');
   expect(pageErrors).toEqual([]);
 });
@@ -1891,7 +1926,9 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('#visualProjectTitle')).toHaveValue('夜色圖文集');
   expect(await page.evaluate(() => StoryFlowProjects.activeId())).toBe(originalVisualProjectId);
   await expect(page.locator('#visualEntryList')).toContainText('月下預告');
-  await expect(page.locator('#visualEntrySummary')).toHaveCount(0);
+  // The summary is written about the entry, so it is written here. Hashtags are not: a
+  // platform may override them, so they stay with publishing.
+  await expect(page.locator('#visualEntrySummary')).toHaveCount(1);
   await expect(page.locator('#visualEntryHashtags')).toHaveCount(0);
   await expect(page.locator('#visualEntryStatus')).toHaveCount(0);
   await expect(page.locator('#visualEntryStatusHelp')).toHaveCount(0);
@@ -1974,11 +2011,12 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(publishCard.locator('.publish-list-actions > button:visible')).toHaveText(['預覽', '管理發布', '⋯']);
   await expect(publishCard.getByRole('button', { name: '更多「月下預告」操作', exact: true })).toBeVisible();
   await defaultVisualPreview.click();
-  const plainVisualPreview = page.locator('#platformPreviewDialog');
+  const plainVisualPreview = publishCard.locator('.publish-preview-panel');
   await expect(plainVisualPreview.locator('#platformPreviewTitle')).toHaveText('預覽');
   await expect(plainVisualPreview.locator('#platformPreviewSettings')).toBeHidden();
   await expect(plainVisualPreview.locator('#platformPreviewVisualExtras')).toBeHidden();
-  await plainVisualPreview.getByRole('button', { name: '關閉', exact: true }).last().click();
+  await publishCard.getByRole('button', { name: /收合「月下預告」的發布平台/ }).click();
+  await expect(plainVisualPreview).toHaveCount(0);
   await page.evaluate(() => {
     const spacer = document.createElement('div');
     spacer.id = 'publishingScrollAnchorFixture';
@@ -2027,50 +2065,59 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await visualAfterwordDialog.getByRole('button', { name: '保存後記', exact: true }).click();
   await expect(visualAfterwordDialog).toBeHidden();
   await expect.poll(() => page.evaluate(() => state.visualEntries[0].afterword)).toBe('圖文也有後記。');
-  await expect(publishCard.locator('.publish-platform-row')).toHaveCount(2);
-  const firstPlatformRow = publishCard.locator('.publish-platform-row').first();
+  // The rail lists the default output first, then one entry per platform.
+  await expect(publishCard.locator('.publish-platform-row')).toHaveCount(3);
+  await expect(publishCard.locator('.publish-platform-row').first()).toHaveAttribute('data-platform', '');
+  const firstPlatformRow = publishCard.locator('.publish-platform-row[data-platform="巴哈小屋"]');
   const platformHashtags = firstPlatformRow.locator('.publish-platform-hashtags');
   await expect(platformHashtags).toHaveText('#StoryFlow #夜色創作');
   await platformHashtags.click();
   await expect.poll(() => page.evaluate(() => window.__copiedVisualHelper)).toBe('#StoryFlow #夜色創作');
 
-  await firstPlatformRow.getByRole('button', { name: '預覽與複製「巴哈小屋」', exact: true }).click();
-  const publishingPreview = page.locator('#platformPreviewDialog');
+  await firstPlatformRow.locator('.publish-platform-choose').click();
+  const publishingPreview = publishCard.locator('.publish-preview-panel');
   await expect(publishingPreview).toBeVisible();
   await expect(publishingPreview.locator('#platformPreviewSettings')).toBeVisible();
   await expect(publishingPreview.locator('#platformPreviewOptions')).toBeVisible();
   await expect(publishingPreview.locator('#platformPreviewMeta')).toBeHidden();
   await expect(publishingPreview.locator('[data-sf-preview-control="publish"]')).toHaveCount(0);
-  await expect(publishingPreview.locator('#platformPreviewSummaryEditor')).toBeHidden();
+  // The summary is authored in the visual editor, so the preview only shows and copies it.
+  await expect(publishingPreview.locator('#platformPreviewSummaryBlock')).toBeVisible();
+  await expect(publishingPreview.locator('#editPlatformPreviewSummary')).toHaveCount(0);
   await expect(publishingPreview.locator('#platformPreviewHashtagsEditor')).toBeHidden();
-  expect(await publishingPreview.evaluate(dialog => {
-    const body = dialog.querySelector('.platform-preview-body');
-    const contentHead = dialog.querySelector('.platform-preview-content-head');
-    const content = dialog.querySelector('#platformPreviewContent');
-    const summaryEditor = dialog.querySelector('#platformPreviewSummaryEditor');
-    const hashtagsEditor = dialog.querySelector('#platformPreviewHashtagsEditor');
-    const rows = [...dialog.querySelectorAll('.platform-preview-extra-row')];
+  expect(await publishingPreview.evaluate(panel => {
+    const body = panel.querySelector('.platform-preview-body');
+    const contentHead = panel.querySelector('.platform-preview-content-head');
+    const content = panel.querySelector('#platformPreviewContent');
+    const extras = panel.querySelector('#platformPreviewVisualExtras');
+    const hashtagsEditor = panel.querySelector('#platformPreviewHashtagsEditor');
+    const rows = [...panel.querySelectorAll('.platform-preview-extra-row')];
     const buttonsContained = rows.every(row => {
       const rowBox = row.getBoundingClientRect();
-      const buttonBox = row.querySelector(':scope > .button')?.getBoundingClientRect();
-      return buttonBox && buttonBox.left >= rowBox.left - 1 && buttonBox.right <= rowBox.right + 1
+      const button = row.querySelector(':scope > .button');
+      if (!button) return true;
+      const buttonBox = button.getBoundingClientRect();
+      return buttonBox.left >= rowBox.left - 1 && buttonBox.right <= rowBox.right + 1
         && buttonBox.top >= rowBox.top - 1 && buttonBox.bottom <= rowBox.bottom + 1;
     });
     return {
-      contentBeforeEditors: Boolean(content && summaryEditor && hashtagsEditor
-        && (content.compareDocumentPosition(summaryEditor) & Node.DOCUMENT_POSITION_FOLLOWING)
+      contentBeforeEditors: Boolean(content && extras && hashtagsEditor
+        && (content.compareDocumentPosition(extras) & Node.DOCUMENT_POSITION_FOLLOWING)
         && (content.compareDocumentPosition(hashtagsEditor) & Node.DOCUMENT_POSITION_FOLLOWING)),
       compactTop: Boolean(body && contentHead && contentHead.getBoundingClientRect().top - body.getBoundingClientRect().top <= 170),
       buttonsContained
     };
   })).toEqual({ contentBeforeEditors: true, compactTop: true, buttonsContained: true });
-  await publishingPreview.locator('#editPlatformPreviewSummary').click();
-  await expect(publishingPreview.locator('#platformPreviewSummaryEditor')).toBeVisible();
-  await publishingPreview.locator('#platformPreviewSummaryInput').fill('更新後的月光摘要');
-  await publishingPreview.locator('#savePlatformPreviewSummary').click();
-  await expect(publishingPreview.locator('#platformPreviewSummaryEditor')).toBeHidden();
-  await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('更新後的月光摘要');
+
+  // Editing it happens where the entry is written, and the preview reflects that.
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await page.locator('#visualEntrySummary').fill('更新後的月光摘要');
   await expect.poll(() => page.evaluate(() => state.visualEntries[0].summary)).toBe('更新後的月光摘要');
+  // The row and the platform it was left on both survive the trip, so coming back shows the
+  // same version with the new summary in it.
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(firstPlatformRow).toHaveClass(/is-current/);
+  await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('更新後的月光摘要');
   await publishingPreview.locator('#editPlatformPreviewHashtags').click();
   await expect(publishingPreview.locator('#platformPreviewHashtagsEditor')).toBeVisible();
   await expect(publishingPreview.locator('#platformPreviewHashtagsState')).toHaveText('沿用共用');
@@ -2087,9 +2134,10 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
     stateHashtags: '#巴哈限定 #圖文',
     savedHashtags: '#巴哈限定 #圖文'
   });
-  await expect(publishCard.locator('.publish-platform-row').nth(1).locator('.publish-platform-hashtags')).toHaveText('#StoryFlow #夜色創作');
+  await expect(publishCard.locator('.publish-platform-row[data-platform="方格子"] .publish-platform-hashtags')).toHaveText('#StoryFlow #夜色創作');
 
-  expect(await publishingPreview.locator('.platform-preview-actions .button').allTextContents()).toEqual(['標註已發布', '關閉', '複製內容']);
+  // Everything you can do to the selected version sits beside the version itself.
+  expect(await publishingPreview.locator('.platform-preview-actions .button:visible').allTextContents()).toEqual(['記錄發布', '標註已發布', '複製內容']);
   await expect(publishingPreview.locator('.visual-upload-order')).toContainText('圖片不會被複製或自動上傳');
   await expect(publishingPreview.locator('.visual-upload-order li')).toHaveCount(2);
   await expect(publishingPreview.locator('#platformPreviewSummary')).toHaveText('更新後的月光摘要');
@@ -2115,7 +2163,6 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await publishingPreview.locator('#platformPreviewTitleInput').fill('巴哈月下預告');
   await publishingPreview.locator('#savePlatformPreviewTitle').click();
   await expect(publishingPreview.locator('#platformPreviewPublishTitle')).toHaveText('巴哈月下預告');
-  await publishingPreview.locator('#cancelPlatformCopy').click();
   await page.locator('#sidebarSearchBtn').click();
   await page.locator('#globalSearchInput').fill('巴哈月下');
   await expect(page.locator('.global-search-result-type.visual')).toHaveText('發布圖文');
@@ -2147,8 +2194,9 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(deletionCard).toBeVisible();
   await expect(deletionCard.locator('.publish-readiness-badge')).toHaveText('內容尚未完成');
   await deletionCard.getByRole('button', { name: '展開「準備刪除的圖文」的發布平台', exact: true }).click();
-  await expect(deletionCard.locator('.platform-status-btn').first()).toBeDisabled();
-  await expect(deletionCard.locator('.platform-record-btn').first()).toBeDisabled();
+  await deletionCard.locator('.publish-platform-row[data-platform="巴哈小屋"] .publish-platform-choose').click();
+  await expect(deletionCard.locator('#togglePlatformPublished')).toBeDisabled();
+  await expect(deletionCard.locator('#platformPreviewRecordBtn')).toBeDisabled();
   await deletionCard.getByRole('button', { name: '更多「準備刪除的圖文」操作', exact: true }).click();
   page.once('dialog', dialog => dialog.accept());
   await deletionCard.getByRole('menuitem', { name: '刪除圖文', exact: true }).click();
@@ -2405,23 +2453,29 @@ test('works cards report publishing progress per content type using publishing r
   // through the normal publishing controls is what moves it.
   await page.locator('.nav-item[data-view="publishing"]').click();
   await page.locator('.publish-manage-btn').first().click();
-  const toggles = page.locator('.platform-status-btn');
-  const platformCount = await toggles.count();
-  expect(platformCount).toBeGreaterThan(1);
+  // The rail's first entry is the default output; marking published is per platform, so
+  // each one is selected in turn and marked from the panel beside its content.
+  const platformNames = await page.locator('.publish-platform-row:not([data-platform=""])')
+    .evaluateAll(rows => rows.map(row => row.dataset.platform));
+  expect(platformNames.length).toBeGreaterThan(1);
+
+  const markPublished = async name => {
+    if (!(await page.locator('.publish-platform-row').first().isVisible())) {
+      await page.locator('.publish-manage-btn').first().click();
+    }
+    await page.locator(`.publish-platform-row[data-platform="${name}"] .publish-platform-choose`).click();
+    await page.locator('#togglePlatformPublished').click();
+  };
 
   // Publishing to some platforms but not all is "部分發布", not done. The card has to
   // agree, or it would be reporting a second, looser definition of finished.
-  await toggles.first().click();
+  await markPublished(platformNames[0]);
   await page.locator('.nav-item[data-view="projects"]').click();
   await expect(progress).toContainText('已完成 0 / 1');
 
   await page.locator('.nav-item[data-view="publishing"]').click();
-  // The expanded state survives navigation, so only expand when it is actually closed.
-  if (!(await page.locator('.platform-status-btn').first().isVisible())) {
-    await page.locator('.publish-manage-btn').first().click();
-  }
-  for (let index = 1; index < platformCount; index += 1) {
-    await page.locator('.platform-status-btn').nth(index).click();
+  for (const name of platformNames.slice(1)) {
+    await markPublished(name);
   }
 
   await page.locator('.nav-item[data-view="projects"]').click();

@@ -268,9 +268,10 @@ test('works, publishing, and settings retain their desktop composition', async (
   await expectVisibleChildrenSeparated(page.locator('.publish-list-actions'));
   await expect(page.locator('#publishingView')).toHaveScreenshot('publishing-queue-1440.png');
 
-  // The queue only shows a row's collapsed summary. The platform panel behind 管理發布 and the
-  // preview dialog are where most publishing CSS actually renders, so they need baselines of
-  // their own before any stylesheet refactor can claim "the pixels did not move".
+  // The queue only shows a row's collapsed summary. The two-column panel behind 管理發布 is
+  // where most publishing CSS actually renders, so it needs baselines of its own before any
+  // stylesheet refactor can claim "the pixels did not move" — one for the default output and
+  // one for a platform's version, because the left column changes shape between them.
   const publishRow = page.locator('.publish-list-item').first();
   await publishRow.getByRole('button', { name: /展開.*發布平台/ }).click();
   await expect(publishRow.locator('.publish-platform-row').first()).toBeVisible();
@@ -278,13 +279,18 @@ test('works, publishing, and settings retain their desktop composition', async (
   await expectHorizontallyBounded(publishRow.locator('.publish-platform-details'));
   await expect(page.locator('#publishingView')).toHaveScreenshot('publishing-detail-1440.png');
 
-  await publishRow.locator('.default-preview-btn').click();
-  const desktopPreview = page.locator('#platformPreviewDialog');
+  const desktopPreview = publishRow.locator('.publish-preview-panel');
   await expect(desktopPreview).toBeVisible();
-  await expectDialogContained(desktopPreview);
+  await expectHorizontallyBounded(desktopPreview);
   await expect(desktopPreview).toHaveScreenshot('platform-preview-1440.png');
-  await desktopPreview.getByRole('button', { name: '關閉', exact: true }).last().click();
-  await expect(desktopPreview).toBeHidden();
+
+  await publishRow.locator('.publish-platform-row:not([data-platform=""]) .publish-platform-choose')
+    .first().click();
+  await expect(publishRow.locator('#platformPreviewSettings')).toBeVisible();
+  await expectHorizontallyBounded(desktopPreview);
+  await expectVisibleChildrenSeparated(desktopPreview.locator('.platform-preview-actions'));
+  await expect(desktopPreview).toHaveScreenshot('platform-preview-platform-1440.png');
+  await publishRow.getByRole('button', { name: /收合.*發布平台/ }).click();
 
   await page.locator('#sidebarSettingsBtn').click();
   await expectDocumentBounded(page);
@@ -347,8 +353,8 @@ test('visual workspace, works actions, publishing actions, and previews stay con
   await expectHorizontallyBounded(publishCard.locator('.publish-list-actions'));
   await expectVisibleChildrenSeparated(publishCard.locator('.publish-list-actions'));
   await publishCard.getByRole('button', { name: '預覽「月下預告」', exact: true }).click();
-  const publishingPreview = page.locator('#platformPreviewDialog');
+  const publishingPreview = publishCard.locator('.publish-preview-panel');
   await expect(publishingPreview).toBeVisible();
-  await expectDialogContained(publishingPreview);
+  await expectHorizontallyBounded(publishingPreview);
   await expectVisibleChildrenSeparated(publishingPreview.locator('.platform-preview-actions'));
 });

@@ -149,13 +149,11 @@ input.text-input:focus{
 
 /* List/page action clusters also share one compact control height. */
 .project-library-actions,
-.publish-platform-actions,
 .publish-list-actions,
 .source-linked-actions{
   align-items:stretch!important;
 }
 .project-library-actions .button,
-.publish-platform-actions .button,
 .publish-list-actions .button,
 .source-linked-actions .button{
   height:32px!important;
@@ -278,7 +276,6 @@ input.text-input:focus{
   }
 
   .project-library-actions .button,
-  .publish-platform-actions .button,
   .publish-list-actions .button,
   .source-linked-actions .button,
   .boundary-control .button,

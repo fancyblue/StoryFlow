@@ -16,12 +16,18 @@
 .visual-workspace-layout { display: grid; grid-template-columns: var(--sf-workspace-source-columns); gap: var(--sf-workspace-column-gap); align-items: start; }
 .visual-entry-list-panel, .visual-editor-panel { min-width: 0; }
 .visual-entry-list-panel { position: relative; align-self: start; }
-.visual-editor-panel { padding: 18px; }
-.visual-entry-list { display: grid; gap: 8px; margin-top: 12px; }
-.visual-entry-row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 32px; align-items: center; gap: 6px; overflow: visible; }
-.visual-entry-select { width: 100%; min-width: 0; display: grid; gap: 3px; padding: 12px; text-align: left; border: 1px solid var(--line, #c8c1b0); border-radius: 12px; background: #fbfaf6; color: inherit; cursor: pointer; }
-.visual-entry-select:hover { border-color: #968f80; background: #fbfaf6; }
-.visual-entry-row.active .visual-entry-select { border-color: #4b4557; box-shadow: 0 0 0 2px rgba(34,31,26,.12); background: #fbfaf6; }
+/* The editor is this page's one subject and the grid already says where it is, so a card
+   around it only draws a boundary that is there anyway. Its own fields carry the structure. */
+.visual-editor-panel { padding: 2px 0 0; }
+/* Entries are a list of rows, like chapters and works. The row carries the separator and the
+   current marker; the button inside it carries neither. */
+.visual-entry-list { display: grid; gap: 0; margin-top: 12px; border-top: 1px solid var(--rule-2, #c8c1b0); }
+.visual-entry-row { border-bottom: 1px solid var(--rule-1, #ded9cc); border-left: 2px solid transparent; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 32px; align-items: center; gap: 6px; padding-left: 10px; overflow: visible; }
+.visual-entry-select { width: 100%; min-width: 0; display: grid; gap: 3px; padding: 11px 6px; text-align: left; border: 0; border-radius: 0; background: transparent; color: inherit; cursor: pointer; }
+.visual-entry-row:hover { background: var(--paper-2, #f4f1e9); }
+.visual-entry-row.active { border-left-color: var(--dai-700, #4b4557); background: var(--dai-soft, #e8e5eb); }
+.visual-entry-row.active .visual-entry-select strong { color: var(--dai-800, #3a3544); }
+.visual-entry-row:last-child { border-bottom: 0; }
 .visual-entry-row > .visual-entry-more { position: static !important; inset: auto !important; display: grid !important; visibility: visible !important; place-items: center !important; width: 32px !important; min-width: 32px !important; height: 32px !important; min-height: 32px !important; margin: 0 !important; padding: 0 !important; border: 1px solid transparent !important; border-radius: 9px !important; background: transparent !important; color: #6a6357 !important; font-size: 20px !important; font-weight: 700 !important; line-height: 1 !important; opacity: 1 !important; box-shadow: none !important; }
 .visual-entry-more:hover:not(:disabled), .visual-entry-more:focus-visible, .visual-entry-more[aria-expanded="true"] { border-color: #c8c1b0 !important; background: #fbfaf6 !important; color: #4b4557 !important; outline: none !important; }
 .visual-entry-row > .visual-entry-action-menu { position: absolute !important; top: calc(50% + 20px); right: 0; }
@@ -35,6 +41,9 @@
 .visual-editor-toolbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
 .visual-field { display: grid; gap: 7px; }
 .visual-field > span { font-weight: 700; font-size: 13px; color: #221f1a; }
+.visual-field > small { color: var(--ink-2, #6a6357); font-size: 11px; line-height: 1.5; }
+.visual-summary-input { min-height: 68px; resize: vertical; font: inherit; line-height: 1.7; }
+#visualEntrySummary.text-input { height: auto !important; min-height: 68px !important; padding: 10px 12px !important; line-height: 1.7 !important; resize: vertical; }
 .visual-body-input { min-height: 200px; resize: vertical; font: inherit; line-height: 1.75; }
 #visualEntryBody.text-input {
   height: auto !important;
@@ -46,6 +55,9 @@
 .visual-image-section { display: grid; gap: 14px; padding-top: 2px; }
 .visual-image-section-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
 .visual-image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
+/* The empty state is a sentence, not a thumbnail: it takes the row rather than one 155px
+   cell, which was breaking it mid-phrase. */
+.visual-image-grid > .visual-entry-empty { grid-column: 1 / -1; }
 .visual-image-card { position: relative; display: grid; gap: 8px; padding: 9px; border: 1px solid var(--line, #c8c1b0); border-radius: 13px; background: #fbfaf6; cursor: grab; }
 .visual-image-card.dragging { opacity: .48; }
 .visual-image-card.drag-over { outline: 2px solid #4b4557; outline-offset: 2px; }

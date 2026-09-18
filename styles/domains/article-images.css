@@ -28,7 +28,20 @@
   line-height:1.55;
   text-align:center;
 }
-.article-image-list{display:grid;gap:10px;margin-top:13px}
+.article-image-list{display:grid;gap:14px;margin-top:13px}
+/* One group per place the images land, because ordering only means anything between
+   neighbours that land in the same place. */
+.article-image-group{display:grid;gap:9px}
+.article-image-group-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  padding:0 2px 6px;
+  border-bottom:1px solid var(--rule-1,#ded9cc);
+}
+.article-image-group-head strong{color:var(--ink-1,#221f1a);font-size:12px}
+.article-image-group-head span{color:var(--ink-2,#6a6357);font-size:10px;font-weight:700}
 .article-image-row{
   display:grid;
   grid-template-columns:128px minmax(0,1fr);

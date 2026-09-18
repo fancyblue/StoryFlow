@@ -180,9 +180,20 @@
     }
   }
 
+  // Output groups images by placement and keeps array order within each group, so ordering
+  // is only ever meaningful against the neighbours that share a placement. Swapping with the
+  // adjacent array entry moved an image past one that lands somewhere else entirely.
+  function neighbourInPlacement(part, index, delta) {
+    const placement = part.images[index]?.placement;
+    for (let cursor = index + delta; cursor >= 0 && cursor < part.images.length; cursor += delta) {
+      if (part.images[cursor].placement === placement) return cursor;
+    }
+    return -1;
+  }
+
   function moveImage(chapter, part, index, delta, onChange) {
-    const target = index + delta;
-    if (target < 0 || target >= part.images.length) return;
+    const target = neighbourInPlacement(part, index, delta);
+    if (target < 0) return;
     [part.images[index], part.images[target]] = [part.images[target], part.images[index]];
     persistImages(chapter, part, '圖片順序已更新', onChange);
   }
@@ -288,6 +299,9 @@
   function createImageRow(chapter, part, image, index, onChange) {
     const row = document.createElement('article');
     row.className = 'article-image-row';
+    // Two imports of the same file keep one original name between them, so the visible
+    // filename does not identify a row. The stored id does.
+    row.dataset.imageId = image.id;
 
     const preview = document.createElement('div');
     preview.className = 'article-image-thumb';
@@ -339,12 +353,12 @@
     actions.className = 'article-image-actions';
     const up = document.createElement('button');
     up.type = 'button'; up.className = 'button tiny ghost'; up.textContent = '上移';
-    up.disabled = index === 0;
+    up.disabled = neighbourInPlacement(part, index, -1) < 0;
     up.dataset.mobileSafeWriteControl = 'true';
     up.addEventListener('click', () => moveImage(chapter, part, index, -1, onChange));
     const down = document.createElement('button');
     down.type = 'button'; down.className = 'button tiny ghost'; down.textContent = '下移';
-    down.disabled = index === part.images.length - 1;
+    down.disabled = neighbourInPlacement(part, index, 1) < 0;
     down.dataset.mobileSafeWriteControl = 'true';
     down.addEventListener('click', () => moveImage(chapter, part, index, 1, onChange));
     const copy = document.createElement('button');
@@ -387,7 +401,9 @@
     title.textContent = `文章圖片${part.images.length ? ` · ${part.images.length} 張` : ''}`;
     const description = document.createElement('span');
     description.className = 'muted';
-    description.textContent = '匯入後會複製到私人 StoryFlow 資料夾，不會上傳到 GitHub Pages。';
+    // Standing statement, not a consequence of having images: someone arrives here to set
+    // images up and has to know before doing the work that copying will not carry them.
+    description.textContent = '匯入後會複製到私人 StoryFlow 資料夾，不會上傳到 GitHub Pages。圖片也不會隨「複製內容」送出，發布時要依下面的順序逐張上傳。';
     copy.append(title, description);
     const headActions = document.createElement('div');
     headActions.className = 'article-image-manager-actions';
@@ -434,9 +450,31 @@
       return section;
     }
 
+    // The list is grouped the way the output is. A flat list left "上移" looking like it
+    // reordered the article when it only reordered one of three separate sequences.
     const list = document.createElement('div');
     list.className = 'article-image-list';
-    part.images.forEach((image, index) => list.appendChild(createImageRow(chapter, part, image, index, onChange)));
+    PLACEMENTS.forEach(([value, label]) => {
+      const indexes = part.images
+        .map((image, index) => ({ image, index }))
+        .filter(item => item.image.placement === value);
+      if (!indexes.length) return;
+      const group = document.createElement('section');
+      group.className = 'article-image-group';
+      group.dataset.placement = value;
+      const heading = document.createElement('div');
+      heading.className = 'article-image-group-head';
+      const name = document.createElement('strong');
+      name.textContent = label;
+      const count = document.createElement('span');
+      count.textContent = `${indexes.length.toLocaleString()} 張`;
+      heading.append(name, count);
+      group.appendChild(heading);
+      indexes.forEach(({ image, index }) => {
+        group.appendChild(createImageRow(chapter, part, image, index, onChange));
+      });
+      list.appendChild(group);
+    });
     section.appendChild(list);
     return section;
   }

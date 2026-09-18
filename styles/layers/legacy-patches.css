@@ -133,7 +133,6 @@
 .platform-remove-btn { width:24px; height:24px; min-width:24px; }
 .portable-settings-note { margin-top:10px; font-size:11px; color:var(--muted); }
 
-.platform-preview-dialog-card { width: min(760px, calc(100vw - 28px)); max-width: 760px; }
 .platform-preview-actions {margin-top: 14px; }
 .reset-workspace-btn { color: var(--danger, #a8443a); }
 

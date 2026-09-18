@@ -45,7 +45,7 @@
 | 基準 | 涵蓋 |
 | --- | --- |
 | `publishing-detail-1440.png` | 「管理發布」展開後的平台面板——發布補充內容、各平台列與其動作 |
-| `platform-preview-1440.png` | 桌面寬度的 `#platformPreviewDialog` |
+| `platform-preview-1440.png` | 桌面寬度的發布預覽（5-2 之後是列內的預覽面板，不再是對話框） |
 | `visual-workspace-1440.png` | 圖文工作台（清單 + 編輯器） |
 
 一併修掉一個潛在的間歇失敗：`.visual-autosave-status` 會印出時鐘（「已儲存 10:57」），
@@ -355,7 +355,7 @@ token 就位後，這一步是改幾十行的事。
 
 ---
 
-## 階段 5 · 功能性重構（風險最高，最後做）
+## 階段 5 · 功能性重構（風險最高，最後做）　✅ 全部完成
 
 ### 5-1　讀稿檢視 + 接縫檢視合併，移除 `reviewDialog`　✅ 已完成
 
@@ -389,9 +389,71 @@ token 就位後，這一步是改幾十行的事。
 `preview-mode.css`、`smart-split-ui.css`、`app-ux.css`。
 新增兩張基準：`reading-view-read-1440.png`、`reading-view-seam-1440.png`。
 
-- **5-2　管理發布改成兩欄**（左稿右平台軌），平台預覽改為左欄原地切換而非再開對話框。
-- **5-3　圖片依 `placement` 分組顯示**，並常駐「圖片不會隨複製內容送出」的說明。
-- **5-4　圖文編輯器去框**，摘要從發布預覽對話框移回編輯器。
+### 5-2　管理發布改成兩欄　✅ 已完成
+
+`管理發布` 展開後是兩欄：左邊稿，右邊平台軌。點右邊的項目，左欄就原地換成那個版本，
+不再疊一層對話框在已經展開的那一列上——跟 5-1 是同一個形狀的問題。
+
+做出來的樣子：
+
+- `#platformPreviewDialog` 移除。原本的對話框內容原封不動搬進 `.publish-preview-panel`，
+  由 `buildPublishPreviewPanel()` 建、`renderPublishPreview()` 填；`previewPublish()`
+  現在只是「選擇」——設定 `selectedPartKey` 與 `selectedPlatformKey` 後重繪。
+  因為同時只有一列展開，面板裡的 id 在文件中仍然唯一。
+- **平台軌的第一項是「StoryFlow 預設」**。沒有平台設定也是一個版本，把它做成一個項目，
+  所有版本就用同一種方式抵達；列上的「預覽」變成選中它，而不是開任何東西。
+- 作用在所選版本上的動作——`記錄發布／發布紀錄`、已發布切換、`複製內容`——
+  全部集中在左欄底部、緊鄰它們作用的內容，平台軌不再重複一份。
+- 複製選項屬於「一篇 × 一個平台」這個配對，不屬於面板元素：任何 `renderParts()`
+  都會重建面板，所以那些選項放在模組狀態裡；離開平台再回來則是新的決定，會重設。
+
+順手修掉兩條**從來沒生效過**的手機版規則：`.platform-preview-extra-copy` 與
+`.platform-preview-visual-extras-head` 的 `@media(max-width:680px)` 覆寫寫在同檔案的
+基礎規則**之前**，媒體查詢不增加優先序，所以後面那條一直贏。之前在對話框的寬度下看不出來，
+搬進比較窄的面板之後就變成「尚未設定」四個字直排。
+
+同時刪掉 `src/ui/workspace-interactions.js` 裡另一個同名的 `#platformPreviewDialog`：
+它掛在 `.part-row` 上，而 `publishing-flow.js` 早就整個換掉了 `window.renderParts`，
+所以那條路徑永遠不會被觸發。留著會和新面板 id 相撞。
+
+動到：`src/publishing/publishing-flow.js`、`src/ui/workspace-interactions.js`、
+`src/ui/preview-mode.js`，以及 `styles/domains/publishing.css`、
+`styles/domains/publishing-refinements.css`、`styles/layers/{controls,ui-system,legacy-patches,theme}.css`。
+新增一張基準 `platform-preview-platform-1440.png`（選了平台之後的左欄）。
+### 5-3　圖片依 `placement` 分組顯示　✅ 已完成
+
+圖片管理器改成依 placement 分成三組（正文前／正文後、後記前／後記後），各自帶標題與張數，
+空的組不畫。**預覽本來就已經是分組的**，管理器卻是一串平的清單——兩邊對同一份資料說了不同的話。
+
+- 「上移／下移」改成在**組內**移動：輸出先依 placement 分組、組內才用陣列順序，
+  所以跨組的順序本來就沒有意義。原本的實作會把一張圖移過另一張落在完全不同位置的圖。
+  到組的兩端就停用。
+- 列改用 `data-image-id` 辨識。同一個檔案匯入兩次會共用一個 `originalName`，
+  畫面上顯示的檔名認不出是哪一列——測試就是在這裡撞上的。
+- 「圖片不會隨『複製內容』送出」改成**常駐**在管理器抬頭，一張圖都還沒有的時候就說。
+  原本只有預覽在有圖時才提；人是先設定圖片、後來才發現複製不帶圖的。
+
+### 5-4　圖文編輯器去框，摘要移回編輯器　✅ 已完成
+
+**去框**：`.visual-editor-panel` 不再是 `.panel`。工作區的格線已經把左邊的圖文列和右邊的
+編輯器分開了，編輯器自己的欄位也已經有結構，再加一層卡片只是把同一條界線畫兩次。
+長文工作台**維持**面板框——那裡的框分隔的是三個不同的工具，不是圍住同一件東西。
+圖文列同時套用和章節列、作品列一樣的列契約：分隔線、hover 底色、2px 目前標記由**列**承擔，
+裡面的按鈕一個都不帶。
+
+**摘要移回編輯器**：`part.summary` 原本有兩個編輯入口——發布預覽的 extras 與
+`摘要與 Hashtags` 工具——而圖文編輯器一個都沒有。摘要是寫關於這則圖文的東西，
+所以它現在寫在圖文編輯器裡，和標題、正文同一套自動儲存。發布預覽只剩下唯讀的點擊複製列，
+`#platformPreviewSummaryEditor` 與 `savePublishingSummary()` 一併移除。
+Hashtags **不跟著搬**：平台可以覆寫它，所以它留在發布那一側。
+長文的 `part.summary` 沒有自己的編輯器，維持在 `摘要與 Hashtags` 工具裡。
+
+順手修掉一個：`#visualImageGrid` 的空狀態是一句話，卻被當成一格 155px 的縮圖，
+句子在中間斷行。改成跨整列。
+
+動到：`src/publishing/article-images.js`、`src/projects/visual-workspace.js`、
+`src/publishing/publishing-flow.js`，以及 `styles/domains/{article-images,visual-workspace}.css`。
+`visual-workspace-1440.png` 基準更新。
 
 ---
 

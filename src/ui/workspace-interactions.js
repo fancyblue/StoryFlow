@@ -184,36 +184,6 @@
   });
   window.addEventListener('storyflow:projects-changed', closeReadingView);
 
-  function ensurePlatformPreviewDialog() {
-    if ($('platformPreviewDialog')) return;
-    const dialog = document.createElement('dialog');
-    dialog.id = 'platformPreviewDialog';
-    dialog.innerHTML = `
-      <div class="dialog-card platform-preview-dialog-card">
-        <div class="panel-head"><div><p class="eyebrow">PUBLISH PREVIEW</p><h3 id="platformPreviewTitle">發布預覽</h3></div><button id="closePlatformPreview" class="icon-button" type="button">×</button></div>
-        <p id="platformPreviewMeta" class="muted"></p>
-        <pre id="platformPreviewContent" class="platform-preview-content"></pre>
-        <div class="platform-preview-actions"><button id="confirmPlatformCopy" class="button primary" type="button">確認並複製</button><button id="cancelPlatformCopy" class="button ghost" type="button">取消</button></div>
-      </div>`;
-    document.body.appendChild(dialog);
-    $('closePlatformPreview').onclick = () => dialog.close();
-    $('cancelPlatformCopy').onclick = () => dialog.close();
-  }
-
-  function previewPlatformCopy(part, platform) {
-    ensurePlatformPreviewDialog();
-    const text = platformFormat(part.raw, platform);
-    $('platformPreviewTitle').textContent = `${part.title} · ${platform}`;
-    $('platformPreviewMeta').textContent = '以下就是按下確認後會複製到剪貼簿的內容。';
-    $('platformPreviewContent').textContent = text;
-    $('confirmPlatformCopy').onclick = async () => {
-      await navigator.clipboard.writeText(text);
-      $('platformPreviewDialog').close();
-      notify(`已確認並複製 ${platform} 版本`);
-    };
-    $('platformPreviewDialog').showModal();
-  }
-
   function ensureResetAction() {
     if ($('resetWorkspaceBtn')) return;
     const actions = document.querySelector('.top-actions');
@@ -340,24 +310,9 @@
     }
   };
 
-  const baseRenderParts = window.renderParts;
-  window.renderParts = function renderPartsPatched() {
-    baseRenderParts();
-    const chapter = activeChapter();
-    [...els.partsList.querySelectorAll('.part-row')].forEach((row, index) => {
-      const part = chapter.parts[index];
-      const select = row.querySelector('.copy-platform');
-      const copyBtn = row.querySelector('.copy-btn');
-      if (!part || !select || !copyBtn) return;
-      copyBtn.textContent = '預覽平台版';
-      copyBtn.onclick = () => previewPlatformCopy(part, select.value);
-    });
-  };
-
   if ($('generateBtn')) $('generateBtn').onclick = suggestNextPart;
   ensureSplitPreviewControls();
   ensureReadingView();
-  ensurePlatformPreviewDialog();
   ensureResetAction();
   renderAll();
   updateWorkspaceMode();

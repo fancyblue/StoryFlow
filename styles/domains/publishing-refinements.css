@@ -191,24 +191,24 @@ html body #publishingView .publish-delete-btn[hidden]{
 
 /* Platform status actions use color as a quick semantic cue.
    Marking as published is a positive action; undoing a published state is a reversible warning action. */
-#publishingView .publish-platform-actions .platform-status-btn:not(.is-published){
+#publishingView .platform-preview-actions #togglePlatformPublished:not(.is-published){
   border-color:#59703f!important;
   background:#eef0e4!important;
   color:#59703f!important;
 }
-#publishingView .publish-platform-actions .platform-status-btn:not(.is-published):hover,
-#publishingView .publish-platform-actions .platform-status-btn:not(.is-published):focus-visible{
+#publishingView .platform-preview-actions #togglePlatformPublished:not(.is-published):hover,
+#publishingView .platform-preview-actions #togglePlatformPublished:not(.is-published):focus-visible{
   border-color:#59703f!important;
   background:#dde3cc!important;
   color:#59703f!important;
 }
-#publishingView .publish-platform-actions .platform-status-btn.is-published{
+#publishingView .platform-preview-actions #togglePlatformPublished.is-published{
   border-color:#8a6526!important;
   background:#f5eddc!important;
   color:#8a6526!important;
 }
-#publishingView .publish-platform-actions .platform-status-btn.is-published:hover,
-#publishingView .publish-platform-actions .platform-status-btn.is-published:focus-visible{
+#publishingView .platform-preview-actions #togglePlatformPublished.is-published:hover,
+#publishingView .platform-preview-actions #togglePlatformPublished.is-published:focus-visible{
   border-color:#8a6526!important;
   background:#ecdfc4!important;
   color:#8a6526!important;

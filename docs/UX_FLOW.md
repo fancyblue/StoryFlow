@@ -55,7 +55,7 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-06b | Commit the reviewed article | 確認並存成 Markdown | 少一個場景／多一個場景 | The single solid action, identical in both reading views |
 | WS-07 | Continue processing the remaining chapter | 產生下一篇 | Review the current ending again | Solid only when a valid next suggestion is ready |
 | WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | The row keeps a persistent `⋯`; edit is first and delete is second |
-| WS-10 | Maintain a visual entry | 編輯即自動儲存 | 預覽圖文、`⋯ → 刪除圖文` | Preview opens in a separate dialog; use the same direct-edit plus persistent-overflow pattern and Recovery flow as manual chapters |
+| WS-10 | Maintain a visual entry | 編輯即自動儲存 | 預覽圖文、`⋯ → 刪除圖文` | Title, body and summary are all written here and autosave together. Preview opens in a separate dialog; use the same direct-edit plus persistent-overflow pattern and Recovery flow as manual chapters. The editor carries no card of its own, and entry rows follow the shared list contract |
 
 The “切換作品” disclosure lives in the SOURCE card heading for both content modes and includes “＋ 新增作品”. The longform “作品與章節” rail and visual “作品與圖文” rail use the same outer width and breakpoint contract. “新增文章／新增圖文” sits below the corresponding chapter or entry list, never in the page header or list heading.
 
@@ -74,18 +74,18 @@ The Publishing page separates queue navigation from the actual publishing commit
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
 | P-01 | Resume the latest unfinished publication | 繼續發布 | Filters and project selector | One solid page action, visible only when pending or partial work exists |
-| P-02 | Choose a specific article or visual entry to process | 管理發布 | 預覽、`⋯` | Same labels and order for longform and visual content; the outer preview is a plain body/image check without platform formatting controls |
-| P-03 | Verify platform formatting | 預覽與複製 | One compact title/content settings card, then body/images, shared summary and effective platform Hashtags | Platform title style and optional publishing helpers exist only here; “複製內容” is the final primary action |
-| P-04 | Copy content to a platform | 複製內容 | Optionally prepend title as heading or bold, 複製標題、關閉 | The single solid action in the preview dialog |
+| P-02 | Choose a specific article or visual entry to process | 管理發布 | 預覽、`⋯` | Same labels and order for longform and visual content; expanding gives two columns — the manuscript on the left, its versions on the right |
+| P-03 | Verify platform formatting | Pick the platform in the rail | One compact title/content settings card, then body/images, shared summary and effective platform Hashtags | The left column switches in place; nothing opens over the row already open. Platform title style and optional publishing helpers exist only once a platform is picked |
+| P-04 | Copy content to a platform | 複製內容 | Optionally prepend title as heading or bold, 複製標題 | The single solid action at the foot of the left column |
 | P-05 | Store publication time and URL | 保存發布紀錄 | 取消、開啟文章 | The single solid action in the record dialog |
-| P-06 | Edit optional helpers or image metadata | 摘要與 Hashtags／後記／文章圖片, then save the active editor | Preview and ordering controls | Summary, Hashtags and afterword are shared by both types; article images remain longform-only |
-| P-07 | Give one platform a different publishing title | 修改此平台標題, then 保存標題 | 改回沿用 | Kept inside that platform's preview/copy dialog; never a large article-level form |
+| P-06 | Edit optional helpers or image metadata | 摘要與 Hashtags／後記／文章圖片, then save the active editor | Preview and ordering controls | Hashtags and afterword are shared by both types; article images remain longform-only. A visual entry's summary is edited in the visual editor instead |
+| P-07 | Give one platform a different publishing title | 修改此平台標題, then 保存標題 | 改回沿用 | Kept inside that platform's preview panel; never a large article-level form |
 | P-08 | Mark or undo platform publication | 標註已發布／取消已發布 | Publication record | State control, not a global primary action; reversal requires a clear warning |
 | P-09 | Find content by work, type or status | 作品／類型／發布狀態 filters | — | Type chips count works, status chips count entries; every filter control shares one typography and height scale. The three questions are separated by a hairline, not by changing the chips: grouping is what carries the structure |
 | P-14 | Work through the queue from either end | 排序：最新在前／章節順序 | — | Not a filter, so it does not take the chip shape and sits with the page action. Neither option reads a timestamp — a longform part carries none — so both are directions through document order. Hidden for a visual work, which has no chapters to order by and whose entries do carry `updatedAt`. The choice is the writer's habit, not the work's property: it carries across works |
 | P-10 | Perform infrequent article or visual-entry management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation; visual deletion uses the same command and guard in every page |
 | P-11 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
-| P-12 | Prepare optional publishing helpers | 摘要與 Hashtags | Click-to-copy rows and matching bottom platform-preview editors | Longform and visual content share the same helper behavior. The main content and image order come first. Summary and Hashtags show their effective values before editing and reveal one contained field only on demand; summary updates the shared value, while a platform may override Hashtags, explicitly use none or return to the common value. Neither helper enters the body automatically |
+| P-12 | Prepare optional publishing helpers | 摘要與 Hashtags | Click-to-copy rows and a platform Hashtags editor in the preview | The main content and image order come first. Both helpers show their effective value as a click-to-copy row; only Hashtags can be edited there, because a platform may override them, explicitly use none or return to the common value. The summary is a read-only row: a visual entry's is written in the visual editor, a longform part's in this tool. Neither helper enters the body automatically |
 | P-13 | Reduce a long Publishing queue by work | Small chevron in the work-group heading | Work count remains visible | Defaults expanded; collapse is session-only, keyboard accessible and survives filter rerenders without changing content or publishing state |
 
 An expanded “收合發布” control is still a disclosure. Use a stronger soft selection, border or adjacent panel treatment instead of the full primary fill; the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task. The separate work-group collapse control is icon-only and intentionally smaller: it hides or reveals the whole work body while leaving the title, content-type badge and item count visible. It is a view preference for the current browser session, not workspace data.
@@ -255,14 +255,14 @@ Deleting anything that owns images takes the images with it — an article, a vi
 ## Publishing titles
 
 ```text
-發布 → 管理發布 → 平台「預覽與複製」→ 修改此平台標題 → 保存
-                                         ↘ 改回沿用文章名稱
-                         複製內容 → 可選「標題放最前面」→ 大標題／粗體
+發布 → 管理發布 → 右側平台軌選一個平台 → 修改此平台標題 → 保存
+                                              ↘ 改回沿用文章名稱
+                              複製內容 → 可選「標題放最前面」→ 大標題／粗體
 ```
 
 - The internal article name remains the stable source and Markdown filename; editing the publishing title never renames either one.
-- A platform-specific title is edited only inside that platform's preview/copy dialog. Empty values fall back to the internal article name; legacy shared titles remain a compatibility fallback.
-- The article and platform rows expose a compact summary instead of a permanent title form. A custom platform title is shown quietly beneath its platform name.
+- A platform-specific title is edited only inside that platform's preview panel. Empty values fall back to the internal article name; legacy shared titles remain a compatibility fallback.
+- The article row and the rail expose a compact summary instead of a permanent title form. A custom platform title is shown quietly beneath its platform name.
 - “複製標題” remains separate. “複製內容” can optionally prepend the current platform title as a heading or bold text; rich clipboards receive HTML and plain-text destinations receive equivalent Markdown.
 - Source refresh keeps existing platform titles unchanged. Renaming or removing a platform migrates or removes its title together with status and publication records.
 
@@ -280,8 +280,8 @@ Deleting anything that owns images takes the images with it — an article, a vi
 - Use “匯入圖片”, not “上傳圖片”: the browser copies a user-selected local/provider file into the connected StoryFlow folder and sends nothing to StoryFlow hosting.
 - Supported formats are JPEG, PNG, WebP and GIF. SVG is intentionally excluded because it may contain active content; files above 8 MB remain allowed but visibly warn.
 - Every image belongs to one publishing part and uses its stable ID directory. Name collisions create a numbered filename instead of overwriting.
-- The manager exposes alternative text, optional caption, three placement groups and explicit ordering. Preview loads private object URLs only for the current page and supports a modal enlargement.
-- Markdown output includes relative image references. Platform content copy remains text-only and preview explicitly reminds the user to upload binaries separately.
+- The manager exposes alternative text, optional caption, three placement groups and explicit ordering. It is grouped by placement the way the output is, so “上移／下移” move within a group and stop at its ends; a row is identified by its stored id, because two imports of one file share an original name. Preview loads private object URLs only for the current page and supports a modal enlargement.
+- Markdown output includes relative image references. Platform content copy remains text-only. The manager says so permanently, before any image exists, and the preview repeats it with a count once there are images to order.
 - Missing files stay visible as actionable warnings instead of silently disappearing.
 - Phone read-only mode may read and preview existing assets but blocks import, metadata edits, reordering and removal until the current session is unlocked.
 - Deleting a publishing article removes image records but intentionally retains binary assets. Individual file deletion is explicit and creates a Recovery copy first.

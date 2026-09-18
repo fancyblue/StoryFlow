@@ -312,7 +312,7 @@
     if (!dialog?.open) return;
     if (dialog.id === 'sourcePreviewDialog') groupModes.set('source', 'preview');
     if (dialog.id === 'sourceRelinkDialog') groupModes.set('relink', 'preview');
-    if (dialog.id === 'platformPreviewDialog') groupModes.set('publish', 'preview');
+
   }
 
   function startObserver() {
