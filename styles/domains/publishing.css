@@ -153,16 +153,33 @@
   line-height:1;
 }
 
+/* Managing a publication is two columns: the manuscript on the left, the versions of it on
+   the right. Picking a version switches the left column in place — nothing opens over the
+   row you already opened. */
 .publish-platform-details{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(210px,258px);
+  align-items:start;
+  gap:14px;
   border-top:1px solid var(--line);
+  padding:2px 14px 14px;
 }
 .publish-platform-details[hidden]{display:none!important}
+.publish-manuscript-column{display:grid;gap:10px;min-width:0}
+.publish-platform-rail{
+  min-width:0;
+  margin-top:10px;
+  border:1px solid #ded9cc;
+  border-radius:11px;
+  background:#fbfaf6;
+  overflow:hidden;
+}
 .publish-article-tools{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:16px;
-  margin:10px 14px 2px;
+  margin:10px 0 0;
   padding:10px 12px;
   border:1px solid #ded9cc;
   border-radius:10px;
@@ -232,28 +249,47 @@
 }
 .publish-afterword-count{font-size:10px}
 .publish-platform-details-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:10px 14px 7px;
+  display:grid;
+  gap:2px;
+  padding:11px 12px 9px;
+  border-bottom:1px solid var(--line);
 }
-.publish-platform-details-head strong{letter-spacing:.02em}
-.publish-platform-list{display:grid;padding:0 8px 8px}
+.publish-platform-details-head strong{letter-spacing:.02em;font-size:12px}
+.publish-platform-details-head .muted{font-size:10px;line-height:1.45}
+.publish-platform-list{display:grid;padding:4px}
 .publish-platform-row{
   display:grid;
-  grid-template-columns:minmax(170px,1fr) auto;
-  gap:14px;
-  align-items:center;
-  padding:10px 8px;
+  gap:3px;
+  min-width:0;
+  padding:5px 6px 7px;
   border-top:1px solid var(--line);
 }
 .publish-platform-row:first-child{border-top:0}
-.publish-platform-state{display:grid;gap:4px;min-width:0}
-.publish-platform-state-line{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+/* The rail entry is the selection control; what you then do to that version happens in the
+   left column, beside the content it is about. */
+.publish-platform-choose{
+  display:grid;
+  gap:3px;
+  width:100%;
+  min-width:0;
+  padding:5px 7px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.publish-platform-choose:hover{background:#f4f1e9}
+.publish-platform-row.is-current .publish-platform-choose{background:#e8e5eb}
+.publish-platform-row.is-current .publish-platform-choose strong{color:#4b4557}
+.publish-platform-choose strong{font-size:13px}
+.publish-platform-state-line{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;flex-wrap:wrap}
 .publish-platform-hashtags{
   min-width:0;
-  max-width:min(34vw,300px);
+  max-width:100%;
+  margin-left:7px;
   overflow:hidden;
   padding:0;
   border:0;
@@ -268,7 +304,7 @@
 }
 .publish-platform-hashtags:hover,.publish-platform-hashtags:focus-visible{color:#4b4557;text-decoration:underline;outline:none}
 .publish-platform-hashtags.is-custom{color:#4b4557;font-weight:700}
-.publish-platform-hashtags-empty{color:#6f6759;font-size:10px}
+.publish-platform-hashtags-empty{margin-left:7px;color:#6f6759;font-size:10px}
 .publish-platform-hashtags-summary{color:#6a6357;font-size:10px;line-height:1.4}
 .publish-platform-record-summary{
   color:#6a6357;
@@ -287,8 +323,7 @@
   white-space:nowrap;
 }
 .publish-platform-status.done{background:#eef0e4;color:#59703f}
-.publish-platform-actions{display:flex;align-items:center;gap:6px}
-.platform-status-btn.is-published{border-color:#d7dec6;background:#eef0e4;color:#59703f}
+#togglePlatformPublished.is-published{border-color:#d7dec6;background:#eef0e4;color:#59703f}
 .publish-no-platform{padding:18px 14px;text-align:center;color:var(--muted)}
 .publish-no-platform strong,.publish-no-platform span{display:block}
 .publish-no-platform strong{color:var(--text);margin-bottom:5px}
@@ -298,44 +333,25 @@
 .publishing-empty span{margin-top:6px;max-width:520px;line-height:1.6}
 .publishing-empty .button{margin-top:14px}
 
-/* Publishing preview: fixed header/footer; only the reading surface scrolls. */
-.publishing-preview-dialog{
-  width:min(920px,calc(100vw - 32px))!important;
-  height:min(86dvh,880px);
-  max-width:920px!important;
-  max-height:calc(100dvh - 24px)!important;
-  padding:0!important;
-  overflow:hidden!important;
-}
-.publishing-preview-dialog>.platform-preview-dialog-card{
-  width:100%!important;
-  max-width:none!important;
-  height:100%;
-  max-height:none!important;
-  margin:0!important;
-  padding:0!important;
-  display:grid!important;
+/* Preview and copy is a panel in the row's left column. It is bounded rather than modal:
+   the content scrolls inside it while the actions stay put at its foot. */
+.publish-preview-panel{
+  display:grid;
   grid-template-rows:auto minmax(0,1fr) auto;
-  overflow:hidden!important;
+  min-width:0;
+  max-height:min(62dvh,640px);
+  border:1px solid #ded9cc;
+  border-radius:12px;
+  background:#fbfaf6;
+  overflow:hidden;
 }
-.platform-preview-dialog-card>.panel-head{
-  position:relative!important;
-  top:auto!important;
-  z-index:30;
-  display:flex!important;
-  align-items:flex-start!important;
-  justify-content:space-between!important;
-  gap:20px!important;
-  margin:0!important;
-  padding:22px 26px 18px!important;
-  background:#fbfaf6!important;
+.publish-preview-panel-head{
+  padding:12px 16px 10px;
   border-bottom:1px solid var(--line);
 }
-.platform-preview-dialog-card>.panel-head>div{min-width:0}
-.platform-preview-dialog-card>.panel-head .eyebrow{margin-bottom:6px}
-.platform-preview-dialog-card>.panel-head h3{margin:0;line-height:1.35;font-size:21px}
-.platform-preview-dialog-card>.panel-head .icon-button{position:static!important;flex:0 0 auto;margin-top:2px}
-.platform-preview-body{display:grid;grid-auto-rows:max-content;align-content:start;gap:14px;min-height:0;overflow:auto;padding:18px 26px 24px;scrollbar-gutter:stable}
+.publish-preview-panel-head .eyebrow{margin-bottom:4px}
+.publish-preview-panel-head h3{margin:0;line-height:1.35;font-size:16px}
+.platform-preview-body{display:grid;grid-auto-rows:max-content;align-content:start;gap:12px;min-height:0;overflow:auto;padding:14px 16px 16px;scrollbar-gutter:stable}
 .platform-preview-meta{margin:0!important;color:#6a6357;font-size:12px;line-height:1.45}
 .platform-preview-title-copy{
   display:flex;
@@ -449,19 +465,18 @@
   font:inherit;
 }
 .platform-preview-actions{
-  position:relative!important;
-  bottom:auto!important;
-  z-index:30;
   display:flex;
   justify-content:flex-end;
   align-items:center;
-  gap:10px;
+  gap:8px;
   flex-wrap:wrap;
   margin:0!important;
-  padding:14px 26px 18px!important;
+  padding:11px 16px 12px!important;
   background:#fbfaf6;
   border-top:1px solid var(--line);
 }
+.platform-preview-actions .button{min-height:36px}
+.platform-preview-actions .button[hidden]{display:none!important}
 .platform-preview-actions-spacer{flex:1 1 auto}
 .platform-preview-actions .button{min-height:40px}
 
@@ -560,13 +575,11 @@
   .publish-afterword-include{justify-self:start}
   .publish-afterword-footer{align-items:stretch;flex-direction:column}
   .publish-afterword-footer .button{width:100%}
-  .publish-platform-row{grid-template-columns:1fr;gap:8px;padding:10px 6px}
-  .publish-platform-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
-  .publish-platform-actions .button{width:100%}
-  .publishing-preview-dialog{width:calc(100vw - 12px)!important;height:calc(100dvh - 12px);max-height:calc(100dvh - 12px)!important}
-  .platform-preview-dialog-card>.panel-head{padding:16px 18px 14px!important}
-  .platform-preview-dialog-card>.panel-head h3{font-size:18px}
-  .platform-preview-body{padding:14px 18px 18px}
+  /* One column on a phone: the rail becomes a row of versions above the manuscript. */
+  .publish-platform-details{grid-template-columns:1fr;padding:2px 10px 12px}
+  .publish-platform-rail{margin-top:0;order:-1}
+  .publish-preview-panel{max-height:none}
+  .platform-preview-body{padding:14px 14px 16px}
   .platform-preview-title-copy{align-items:stretch;flex-direction:column}
   .platform-preview-title-actions{display:grid;grid-template-columns:1fr 1fr}
   .platform-preview-title-copy .button{width:100%}
@@ -576,9 +589,6 @@
   .platform-preview-copy-title-option{grid-template-columns:1fr}
   .platform-preview-copy-title-option select{width:100%}
   .platform-preview-content{min-height:0;padding:18px;font-size:15px}
-  .platform-preview-extra-copy{grid-template-columns:1fr}
-  .platform-preview-visual-extras-head{display:grid}
-  .platform-preview-visual-extras-head span{text-align:left}
   .platform-preview-hashtags-row{grid-template-columns:1fr}
   .platform-preview-hashtags-row>.button{width:100%}
   .platform-preview-actions{display:grid;grid-template-columns:1fr 1fr;justify-content:stretch;padding:12px 18px calc(14px + env(safe-area-inset-bottom))!important}
@@ -1223,16 +1233,12 @@ button.publish-delete-btn{
 
 
 /* Compact visual publishing preview: keep metadata secondary and editors contained. */
-.platform-preview-dialog-card .platform-preview-body{
-  gap:10px;
-  padding:14px 22px 18px;
-}
-.platform-preview-dialog-card .sf-preview-mode-control[hidden],
+.publish-preview-panel .sf-preview-mode-control[hidden],
 .platform-preview-meta[hidden],
 .platform-preview-visual-extras[hidden],
 .platform-preview-extra-block[hidden],
 .platform-preview-extra-editor[hidden]{display:none!important}
-.platform-preview-dialog-card .platform-preview-title-copy{
+.publish-preview-panel .platform-preview-title-copy{
   align-items:center;
   gap:12px;
   padding:9px 11px;
@@ -1245,11 +1251,11 @@ button.publish-delete-btn{
   height:34px;
   padding:0 11px!important;
 }
-.platform-preview-dialog-card .platform-preview-options summary{
+.publish-preview-panel .platform-preview-options summary{
   min-height:36px;
   padding:0 11px;
 }
-.platform-preview-dialog-card .platform-preview-content-head{margin:3px 0 -2px}
+.publish-preview-panel .platform-preview-content-head{margin:3px 0 -2px}
 .platform-preview-extra-block{display:grid;gap:8px;min-width:0}
 .platform-preview-extra-row,
 .platform-preview-hashtags-row{
@@ -1319,7 +1325,12 @@ button.publish-delete-btn{
 }
 .platform-preview-extra-editor>small{color:#6a6357;font-size:10px;line-height:1.5}
 @media(max-width:680px){
-  .platform-preview-dialog-card .platform-preview-body{padding:12px 14px 16px}
+  .publish-preview-panel .platform-preview-body{padding:12px 14px 16px}
+  /* The label, the value and the copy hint stack rather than compete for a phone's width.
+     The same overrides earlier in this file sat before the base rules and never applied. */
+  .platform-preview-extra-copy{grid-template-columns:minmax(0,1fr);gap:4px}
+  .platform-preview-visual-extras-head{display:grid;gap:3px}
+  .platform-preview-visual-extras-head span{text-align:left}
   .platform-preview-extra-row,
   .platform-preview-hashtags-row{grid-template-columns:minmax(0,1fr) auto}
   .platform-preview-extra-row>.button,

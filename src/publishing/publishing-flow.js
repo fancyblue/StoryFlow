@@ -26,6 +26,13 @@
   let deleteFolderHandle = null;
   let currentFilter = 'all';
   let selectedPartKey = null;
+  // Which platform the expanded row's left column is showing. '' is the StoryFlow default
+  // output — the rail's first entry, not an absence of one.
+  let selectedPlatformKey = '';
+  // The copy options belong to the pairing of one part with one platform, not to the panel
+  // element: the panel is rebuilt by any renderParts() and would otherwise forget them
+  // mid-flow.
+  let previewOptions = { includeTitle: false, titleStyle: 'heading' };
   let articleToolContext = null;
   let visualPreviewUrls = [];
 
@@ -324,124 +331,116 @@
     return { workspaceView, publishingView, publishingPanel };
   }
 
-  function rebuildPublishPreviewDialog() {
-    document.getElementById('platformPreviewDialog')?.remove();
-    const dialog = document.createElement('dialog');
-    dialog.id = 'platformPreviewDialog';
-    dialog.className = 'publishing-preview-dialog';
-    dialog.innerHTML = `
-      <div class="dialog-card platform-preview-dialog-card">
-        <div class="panel-head">
-          <div><p class="eyebrow">PREVIEW & COPY</p><h3 id="platformPreviewTitle">預覽與複製</h3></div>
-          <button id="closePlatformPreview" class="icon-button" type="button" aria-label="關閉">×</button>
-        </div>
-        <div class="platform-preview-body">
-          <p id="platformPreviewMeta" class="muted platform-preview-meta" hidden></p>
-          <section id="platformPreviewSettings" class="platform-preview-settings" aria-label="發布與複製設定">
-            <div class="platform-preview-title-copy" aria-label="發布標題">
-            <div>
-              <span id="platformPreviewTitleSource">發布標題</span>
-              <strong id="platformPreviewPublishTitle"></strong>
-            </div>
-            <div class="platform-preview-title-actions">
-              <button id="copyPlatformTitle" class="button tiny ghost" type="button" aria-label="複製標題">複製</button>
-              <button id="editPlatformTitle" class="button tiny ghost" type="button" aria-label="修改此平台標題">編輯</button>
-            </div>
-            </div>
-          <div id="platformPreviewTitleEditor" class="platform-preview-title-editor" hidden>
-            <label class="field-label" for="platformPreviewTitleInput">此平台標題</label>
-            <div class="platform-preview-title-editor-controls">
-              <input id="platformPreviewTitleInput" class="text-input" type="text" maxlength="200" />
-              <button id="savePlatformPreviewTitle" class="button primary" type="button">保存標題</button>
-              <button id="resetPlatformPreviewTitle" class="button ghost" type="button">改回沿用</button>
-            </div>
-            <small>只影響目前平台，不修改來源文章名稱或 Markdown 檔名。</small>
+  // Preview and copy is a panel inside the row being managed, not a dialog over it. The
+  // rail on the right picks which version the panel shows; nothing opens on top of the
+  // thing you already opened.
+  function buildPublishPreviewPanel() {
+    const panel = document.createElement('section');
+    panel.className = 'publish-preview-panel';
+    panel.setAttribute('aria-live', 'polite');
+    panel.innerHTML = `
+      <div class="publish-preview-panel-head">
+        <p class="eyebrow">PREVIEW & COPY</p>
+        <h3 id="platformPreviewTitle">預覽與複製</h3>
+      </div>
+      <div class="platform-preview-body">
+        <p id="platformPreviewMeta" class="muted platform-preview-meta" hidden></p>
+        <section id="platformPreviewSettings" class="platform-preview-settings" aria-label="發布與複製設定">
+          <div class="platform-preview-title-copy" aria-label="發布標題">
+          <div>
+            <span id="platformPreviewTitleSource">發布標題</span>
+            <strong id="platformPreviewPublishTitle"></strong>
           </div>
-          <div id="platformPreviewOptions" class="platform-preview-options">
-            <span id="platformPreviewOptionsSummary" hidden>使用預設</span>
-            <div class="platform-preview-options-body">
-              <div class="platform-preview-copy-title-option">
-                <label>
-                  <input id="platformPreviewIncludeTitle" type="checkbox" />
-                  <span>內容前附上標題</span>
-                </label>
-                <select id="platformPreviewTitleStyle" class="text-input" disabled aria-label="標題格式">
-                  <option value="heading">大標題</option>
-                  <option value="bold">粗體</option>
-                </select>
-              </div>
-              <label id="platformPreviewAfterwordOption" class="platform-preview-afterword-option" hidden>
-                <input id="platformPreviewIncludeAfterword" type="checkbox" />
-                <span>附上後記</span>
-                <small id="platformPreviewAfterwordCount"></small>
+          <div class="platform-preview-title-actions">
+            <button id="copyPlatformTitle" class="button tiny ghost" type="button" aria-label="複製標題">複製</button>
+            <button id="editPlatformTitle" class="button tiny ghost" type="button" aria-label="修改此平台標題">編輯</button>
+          </div>
+          </div>
+        <div id="platformPreviewTitleEditor" class="platform-preview-title-editor" hidden>
+          <label class="field-label" for="platformPreviewTitleInput">此平台標題</label>
+          <div class="platform-preview-title-editor-controls">
+            <input id="platformPreviewTitleInput" class="text-input" type="text" maxlength="200" />
+            <button id="savePlatformPreviewTitle" class="button primary" type="button">保存標題</button>
+            <button id="resetPlatformPreviewTitle" class="button ghost" type="button">改回沿用</button>
+          </div>
+          <small>只影響目前平台，不修改來源文章名稱或 Markdown 檔名。</small>
+        </div>
+        <div id="platformPreviewOptions" class="platform-preview-options">
+          <span id="platformPreviewOptionsSummary" hidden>使用預設</span>
+          <div class="platform-preview-options-body">
+            <div class="platform-preview-copy-title-option">
+              <label>
+                <input id="platformPreviewIncludeTitle" type="checkbox" />
+                <span>內容前附上標題</span>
               </label>
+              <select id="platformPreviewTitleStyle" class="text-input" disabled aria-label="標題格式">
+                <option value="heading">大標題</option>
+                <option value="bold">粗體</option>
+              </select>
             </div>
+            <label id="platformPreviewAfterwordOption" class="platform-preview-afterword-option" hidden>
+              <input id="platformPreviewIncludeAfterword" type="checkbox" />
+              <span>附上後記</span>
+              <small id="platformPreviewAfterwordCount"></small>
+            </label>
           </div>
-          </section>
-          <div class="platform-preview-content-head"><strong>內容預覽</strong><span>主要內容</span></div>
-          <div id="platformPreviewContent" class="platform-preview-content"></div>
-          <section id="platformPreviewVisualExtras" class="platform-preview-visual-extras" aria-label="選填發布資訊" hidden>
-            <div class="platform-preview-visual-extras-head">
-              <strong>選填發布資訊</strong>
-              <span>主要內容與圖片確認後，再依需要複製或調整。</span>
-            </div>
-            <div id="platformPreviewSummaryBlock" class="platform-preview-extra-block" hidden>
-              <div class="platform-preview-extra-row">
-                <button id="copyPlatformSummary" class="platform-preview-extra-copy" type="button">
-                  <span>摘要</span><p id="platformPreviewSummary"></p><small>點一下複製</small>
-                </button>
-                <button id="editPlatformPreviewSummary" class="button tiny ghost" type="button" aria-expanded="false">編輯</button>
-              </div>
-              <section id="platformPreviewSummaryEditor" class="platform-preview-extra-editor" hidden>
-                <label for="platformPreviewSummaryInput">共用摘要</label>
-                <textarea id="platformPreviewSummaryInput" class="text-input" rows="3" maxlength="500" placeholder="簡短介紹這則圖文"></textarea>
-                <div class="platform-preview-extra-editor-actions">
-                  <button id="savePlatformPreviewSummary" class="button tiny primary" type="button">儲存</button>
-                  <button id="cancelPlatformPreviewSummary" class="button tiny ghost" type="button">取消</button>
-                </div>
-                <small>摘要為所有平台共用的選填資訊，不會加入主要內容。</small>
-              </section>
-            </div>
-            <div id="platformPreviewHashtagsBlock" class="platform-preview-extra-block platform-preview-hashtags-block" hidden>
-              <div class="platform-preview-extra-row platform-preview-hashtags-row">
-                <button id="copyPlatformHashtags" class="platform-preview-extra-copy" type="button">
-                  <span>Hashtags</span><p id="platformPreviewHashtags"></p><small>點一下複製</small>
-                </button>
-                <button id="editPlatformPreviewHashtags" class="button tiny ghost" type="button" aria-expanded="false">編輯</button>
-              </div>
-              <section id="platformPreviewHashtagsEditor" class="platform-preview-extra-editor platform-preview-platform-hashtags" hidden>
-                <div class="platform-preview-extra-editor-head platform-preview-platform-hashtags-head">
-                  <label for="platformPreviewHashtagsInput">此平台 Hashtags</label>
-                  <span id="platformPreviewHashtagsState"></span>
-                </div>
-                <input id="platformPreviewHashtagsInput" class="text-input" type="text" maxlength="500" placeholder="#創作 #小說" />
-                <div class="platform-preview-extra-editor-actions platform-preview-platform-hashtags-actions">
-                  <button id="savePlatformPreviewHashtags" class="button tiny primary" type="button">儲存</button>
-                  <button id="resetPlatformPreviewHashtags" class="button tiny ghost" type="button">沿用共用</button>
-                </div>
-                <small>未自訂時沿用共用值；儲存空白代表此平台不使用 Hashtags。</small>
-              </section>
-            </div>
-          </section>
         </div>
-        <div class="platform-preview-actions">
-          <button id="togglePlatformPublished" class="button ghost" type="button">標註已發布</button>
-          <span class="platform-preview-actions-spacer"></span>
-          <button id="cancelPlatformCopy" class="button ghost" type="button">關閉</button>
-          <button id="confirmPlatformCopy" class="button primary" type="button">複製內容</button>
-        </div>
+        </section>
+        <div class="platform-preview-content-head"><strong>內容預覽</strong><span>主要內容</span></div>
+        <div id="platformPreviewContent" class="platform-preview-content"></div>
+        <section id="platformPreviewVisualExtras" class="platform-preview-visual-extras" aria-label="選填發布資訊" hidden>
+          <div class="platform-preview-visual-extras-head">
+            <strong>選填發布資訊</strong>
+            <span>主要內容與圖片確認後，再依需要複製或調整。</span>
+          </div>
+          <div id="platformPreviewSummaryBlock" class="platform-preview-extra-block" hidden>
+            <div class="platform-preview-extra-row">
+              <button id="copyPlatformSummary" class="platform-preview-extra-copy" type="button">
+                <span>摘要</span><p id="platformPreviewSummary"></p><small>點一下複製</small>
+              </button>
+              <button id="editPlatformPreviewSummary" class="button tiny ghost" type="button" aria-expanded="false">編輯</button>
+            </div>
+            <section id="platformPreviewSummaryEditor" class="platform-preview-extra-editor" hidden>
+              <label for="platformPreviewSummaryInput">共用摘要</label>
+              <textarea id="platformPreviewSummaryInput" class="text-input" rows="3" maxlength="500" placeholder="簡短介紹這則圖文"></textarea>
+              <div class="platform-preview-extra-editor-actions">
+                <button id="savePlatformPreviewSummary" class="button tiny primary" type="button">儲存</button>
+                <button id="cancelPlatformPreviewSummary" class="button tiny ghost" type="button">取消</button>
+              </div>
+              <small>摘要為所有平台共用的選填資訊，不會加入主要內容。</small>
+            </section>
+          </div>
+          <div id="platformPreviewHashtagsBlock" class="platform-preview-extra-block platform-preview-hashtags-block" hidden>
+            <div class="platform-preview-extra-row platform-preview-hashtags-row">
+              <button id="copyPlatformHashtags" class="platform-preview-extra-copy" type="button">
+                <span>Hashtags</span><p id="platformPreviewHashtags"></p><small>點一下複製</small>
+              </button>
+              <button id="editPlatformPreviewHashtags" class="button tiny ghost" type="button" aria-expanded="false">編輯</button>
+            </div>
+            <section id="platformPreviewHashtagsEditor" class="platform-preview-extra-editor platform-preview-platform-hashtags" hidden>
+              <div class="platform-preview-extra-editor-head platform-preview-platform-hashtags-head">
+                <label for="platformPreviewHashtagsInput">此平台 Hashtags</label>
+                <span id="platformPreviewHashtagsState"></span>
+              </div>
+              <input id="platformPreviewHashtagsInput" class="text-input" type="text" maxlength="500" placeholder="#創作 #小說" />
+              <div class="platform-preview-extra-editor-actions platform-preview-platform-hashtags-actions">
+                <button id="savePlatformPreviewHashtags" class="button tiny primary" type="button">儲存</button>
+                <button id="resetPlatformPreviewHashtags" class="button tiny ghost" type="button">沿用共用</button>
+              </div>
+              <small>未自訂時沿用共用值；儲存空白代表此平台不使用 Hashtags。</small>
+            </section>
+          </div>
+        </section>
+      </div>
+      <div class="platform-preview-actions">
+        <button id="platformPreviewRecordBtn" class="button ghost" type="button" hidden>記錄發布</button>
+        <button id="togglePlatformPublished" class="button ghost" type="button">標註已發布</button>
+        <span class="platform-preview-actions-spacer"></span>
+        <button id="confirmPlatformCopy" class="button primary" type="button">複製內容</button>
       </div>`;
-    document.body.appendChild(dialog);
-    dialog.querySelector('#closePlatformPreview').onclick = () => dialog.close();
-    dialog.querySelector('#cancelPlatformCopy').onclick = () => dialog.close();
-    dialog.addEventListener('close', () => {
-      visualPreviewUrls.forEach(url => URL.revokeObjectURL(url));
-      visualPreviewUrls = [];
-    });
-    return dialog;
+    return panel;
   }
 
-  const publishDialog = rebuildPublishPreviewDialog();
 
   function rebuildArticleToolDialog() {
     document.getElementById('publishingArticleToolDialog')?.remove();
@@ -552,43 +551,43 @@
     return true;
   }
 
-  function previewPublish(part, platform, contentMode = '') {
+  function renderPublishPreview(panel, part, platform, contentMode = '') {
     const visual = contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL || isVisualPart(part);
     const platformSpecific = Boolean(platform);
     normalizePartStatus(part);
     const entry = allEntries().find(item => item.part === part);
-    const toggle = publishDialog.querySelector('#togglePlatformPublished');
-    const settings = publishDialog.querySelector('#platformPreviewSettings');
-    const afterwordOption = publishDialog.querySelector('#platformPreviewAfterwordOption');
-    const includeAfterword = publishDialog.querySelector('#platformPreviewIncludeAfterword');
-    const includeTitle = publishDialog.querySelector('#platformPreviewIncludeTitle');
-    const titleStyle = publishDialog.querySelector('#platformPreviewTitleStyle');
-    const titleEditor = publishDialog.querySelector('#platformPreviewTitleEditor');
-    const titleInput = publishDialog.querySelector('#platformPreviewTitleInput');
-    const options = publishDialog.querySelector('#platformPreviewOptions');
-    const optionsSummary = publishDialog.querySelector('#platformPreviewOptionsSummary');
-    const editTitle = publishDialog.querySelector('#editPlatformTitle');
-    const summaryBlock = publishDialog.querySelector('#platformPreviewSummaryBlock');
-    const summaryEditor = publishDialog.querySelector('#platformPreviewSummaryEditor');
-    const summaryInput = publishDialog.querySelector('#platformPreviewSummaryInput');
-    const editSummary = publishDialog.querySelector('#editPlatformPreviewSummary');
-    const cancelSummary = publishDialog.querySelector('#cancelPlatformPreviewSummary');
-    const hashtagsBlock = publishDialog.querySelector('#platformPreviewHashtagsBlock');
-    const hashtagsEditor = publishDialog.querySelector('#platformPreviewHashtagsEditor');
-    const hashtagsInput = publishDialog.querySelector('#platformPreviewHashtagsInput');
-    const hashtagsState = publishDialog.querySelector('#platformPreviewHashtagsState');
-    const editHashtags = publishDialog.querySelector('#editPlatformPreviewHashtags');
-    const resetHashtags = publishDialog.querySelector('#resetPlatformPreviewHashtags');
-    const visualExtras = publishDialog.querySelector('#platformPreviewVisualExtras');
-    const summaryCard = publishDialog.querySelector('#copyPlatformSummary');
-    const hashtagsCard = publishDialog.querySelector('#copyPlatformHashtags');
+    const toggle = panel.querySelector('#togglePlatformPublished');
+    const settings = panel.querySelector('#platformPreviewSettings');
+    const afterwordOption = panel.querySelector('#platformPreviewAfterwordOption');
+    const includeAfterword = panel.querySelector('#platformPreviewIncludeAfterword');
+    const includeTitle = panel.querySelector('#platformPreviewIncludeTitle');
+    const titleStyle = panel.querySelector('#platformPreviewTitleStyle');
+    const titleEditor = panel.querySelector('#platformPreviewTitleEditor');
+    const titleInput = panel.querySelector('#platformPreviewTitleInput');
+    const options = panel.querySelector('#platformPreviewOptions');
+    const optionsSummary = panel.querySelector('#platformPreviewOptionsSummary');
+    const editTitle = panel.querySelector('#editPlatformTitle');
+    const summaryBlock = panel.querySelector('#platformPreviewSummaryBlock');
+    const summaryEditor = panel.querySelector('#platformPreviewSummaryEditor');
+    const summaryInput = panel.querySelector('#platformPreviewSummaryInput');
+    const editSummary = panel.querySelector('#editPlatformPreviewSummary');
+    const cancelSummary = panel.querySelector('#cancelPlatformPreviewSummary');
+    const hashtagsBlock = panel.querySelector('#platformPreviewHashtagsBlock');
+    const hashtagsEditor = panel.querySelector('#platformPreviewHashtagsEditor');
+    const hashtagsInput = panel.querySelector('#platformPreviewHashtagsInput');
+    const hashtagsState = panel.querySelector('#platformPreviewHashtagsState');
+    const editHashtags = panel.querySelector('#editPlatformPreviewHashtags');
+    const resetHashtags = panel.querySelector('#resetPlatformPreviewHashtags');
+    const visualExtras = panel.querySelector('#platformPreviewVisualExtras');
+    const summaryCard = panel.querySelector('#copyPlatformSummary');
+    const hashtagsCard = panel.querySelector('#copyPlatformHashtags');
     let summaryText = String(part.summary || '').trim();
     let hashtagsText = hashtagsFor(part, platform);
     const afterwordCount = afterwordChars(part);
     const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
 
     const refreshContent = () => {
-      const container = publishDialog.querySelector('#platformPreviewContent');
+      const container = panel.querySelector('#platformPreviewContent');
       const sections = outputSections(part, platform, includeAfterword.checked);
       if (visual) {
         renderVisualPublishPreview(container, part, outputFor(part, platform, includeAfterword.checked), includeTitle.checked ? titleStyle.value : '', platform);
@@ -617,18 +616,18 @@
       const currentTitle = publishTitleFor(part, platform);
       const platformOverride = platform && String(part.platformTitles?.[platform] || '').trim();
       const legacyOverride = String(part.publishTitle || '').trim();
-      publishDialog.querySelector('#platformPreviewTitle').textContent = platformSpecific
+      panel.querySelector('#platformPreviewTitle').textContent = platformSpecific
         ? `預覽與複製 · ${platformLabel(platform)}`
         : '預覽';
-      publishDialog.querySelector('#platformPreviewPublishTitle').textContent = currentTitle;
-      publishDialog.querySelector('#platformPreviewTitleSource').textContent = platformOverride
+      panel.querySelector('#platformPreviewPublishTitle').textContent = currentTitle;
+      panel.querySelector('#platformPreviewTitleSource').textContent = platformOverride
         ? '發布標題 · 此平台自訂'
         : legacyOverride ? '發布標題 · 沿用既有共用標題' : `發布標題 · 沿用${visual ? '圖文' : '文章'}名稱`;
       titleInput.value = platformOverride || '';
       refreshContent();
     };
 
-    const previewMeta = publishDialog.querySelector('#platformPreviewMeta');
+    const previewMeta = panel.querySelector('#platformPreviewMeta');
     previewMeta.textContent = platform
       ? `${platform} · ${visual ? '文字與圖片順序' : '貼文內容'}`
       : '預設輸出預覽 · 不會變更發布狀態';
@@ -666,7 +665,7 @@
     const refreshSummaryView = () => {
       summaryText = String(part.summary || '').trim();
       summaryCard.disabled = !summaryText;
-      publishDialog.querySelector('#platformPreviewSummary').textContent = summaryText || '尚未設定';
+      panel.querySelector('#platformPreviewSummary').textContent = summaryText || '尚未設定';
       summaryCard.querySelector('small').textContent = summaryText ? '點一下複製' : '尚未設定';
       summaryInput.value = summaryText;
       summaryCard.onclick = async () => {
@@ -688,14 +687,14 @@
       hashtagsCard.disabled = !hashtagsText;
       visualExtras.hidden = !platformSpecific;
       visualExtras.classList.toggle('hidden', !platformSpecific);
-      publishDialog.querySelector('#platformPreviewHashtags').textContent = hashtagsText || '尚未設定';
+      panel.querySelector('#platformPreviewHashtags').textContent = hashtagsText || '尚未設定';
       hashtagsCard.querySelector('small').textContent = hashtagsText ? '點一下複製' : '尚未設定';
       hashtagsInput.value = hashtagsText;
       hashtagsState.textContent = overridden
         ? (hashtagsText ? '此平台自訂' : '此平台不使用')
         : '沿用共用';
       resetHashtags.disabled = !overridden;
-      publishDialog.querySelector('#copyPlatformHashtags').onclick = async () => {
+      panel.querySelector('#copyPlatformHashtags').onclick = async () => {
         if (!hashtagsText) return;
         try {
           await writeClipboard(hashtagsText);
@@ -706,9 +705,9 @@
       };
     };
     refreshHashtagsView();
-    includeTitle.checked = false;
-    titleStyle.value = 'heading';
-    titleStyle.disabled = true;
+    includeTitle.checked = Boolean(previewOptions.includeTitle);
+    titleStyle.value = previewOptions.titleStyle || 'heading';
+    titleStyle.disabled = !includeTitle.checked;
     const refreshOptionsSummary = () => {
       const labels = [];
       if (includeTitle.checked) labels.push(titleStyle.value === 'bold' ? '含粗體標題' : '含大標題');
@@ -731,26 +730,26 @@
       if (!platformSpecific) return;
       setExtraEditorExpanded(editHashtags, hashtagsEditor, hashtagsEditor.hidden, hashtagsInput);
     };
-    publishDialog.querySelector('#savePlatformPreviewTitle').onclick = async () => {
+    panel.querySelector('#savePlatformPreviewTitle').onclick = async () => {
       if (!entry || !platform) return;
       await savePlatformTitle(entry.chapter, part, platform, titleInput);
       titleEditor.hidden = true;
       refreshTitle();
     };
-    publishDialog.querySelector('#savePlatformPreviewSummary').onclick = async () => {
+    panel.querySelector('#savePlatformPreviewSummary').onclick = async () => {
       if (!entry || !platformSpecific) return;
       await savePublishingSummary(entry.chapter, entry.part, summaryInput);
       refreshSummaryView();
       setExtraEditorExpanded(editSummary, summaryEditor, false, summaryInput);
     };
-    publishDialog.querySelector('#resetPlatformPreviewTitle').onclick = async () => {
+    panel.querySelector('#resetPlatformPreviewTitle').onclick = async () => {
       if (!entry || !platform) return;
       titleInput.value = '';
       await savePlatformTitle(entry.chapter, part, platform, titleInput);
       titleEditor.hidden = true;
       refreshTitle();
     };
-    publishDialog.querySelector('#savePlatformPreviewHashtags').onclick = async () => {
+    panel.querySelector('#savePlatformPreviewHashtags').onclick = async () => {
       if (!entry || !platformSpecific) return;
       await savePlatformHashtags(entry.chapter, entry.part, platform, hashtagsInput);
       refreshHashtagsView();
@@ -764,7 +763,7 @@
       refreshOptionsSummary();
       setExtraEditorExpanded(editHashtags, hashtagsEditor, false, hashtagsInput);
     };
-    publishDialog.querySelector('#copyPlatformTitle').onclick = async () => {
+    panel.querySelector('#copyPlatformTitle').onclick = async () => {
       try {
         await writeClipboard(publishTitleFor(part, platform));
         notify('已複製發布標題');
@@ -773,24 +772,25 @@
       }
     };
     includeTitle.onchange = () => {
+      previewOptions.includeTitle = includeTitle.checked;
       titleStyle.disabled = !includeTitle.checked;
       refreshOptionsSummary();
       refreshContent();
     };
     titleStyle.onchange = () => {
+      previewOptions.titleStyle = titleStyle.value;
       refreshOptionsSummary();
       refreshContent();
     };
     afterwordOption.hidden = !platformSpecific || afterwordCount === 0;
     includeAfterword.checked = part.includeAfterword !== false;
-    publishDialog.querySelector('#platformPreviewAfterwordCount').textContent = `${afterwordCount.toLocaleString()} 字`;
+    panel.querySelector('#platformPreviewAfterwordCount').textContent = `${afterwordCount.toLocaleString()} 字`;
     includeAfterword.onchange = async () => {
       if (!platformSpecific) return;
       part.includeAfterword = includeAfterword.checked;
       refreshOptionsSummary();
       saveState('後記輸出設定已更新');
       refreshContent();
-      renderParts();
       const entry = allEntries().find(item => item.part === part);
       if (!entry) return;
       try {
@@ -803,12 +803,27 @@
     };
     refreshOptionsSummary();
     refreshTitle();
+    const blockedByIncompleteVisual = Boolean(platform && visual && !isPublished && !visualContentComplete(part));
+    const recordButton = panel.querySelector('#platformPreviewRecordBtn');
+    recordButton.hidden = !platform;
+    recordButton.textContent = isPublished ? '發布紀錄' : '記錄發布';
+    recordButton.setAttribute('aria-label', `${isPublished ? '查看' : '記錄'}「${platform}」發布紀錄`);
+    recordButton.disabled = blockedByIncompleteVisual;
+    recordButton.title = blockedByIncompleteVisual ? '請先完成圖文內容' : '';
+    recordButton.onclick = () => {
+      if (!entry || !platform) return;
+      openPublicationRecord(entry.chapter, part, platform);
+    };
     toggle.hidden = !platform;
     toggle.textContent = isPublished ? '取消已發布標記' : '標註已發布';
-    toggle.disabled = Boolean(platform && visual && !isPublished && !visualContentComplete(part));
+    // The button's text is about the selected version; its accessible name has to say
+    // which one, because nothing in the sentence "取消已發布標記" names a platform.
+    toggle.setAttribute('aria-label', `${isPublished ? '取消' : '標註'}「${platform}」已發布`);
+    toggle.classList.toggle('is-published', isPublished);
+    toggle.disabled = blockedByIncompleteVisual;
     toggle.title = toggle.disabled ? '請先完成圖文標題，並加入正文或至少一張圖片' : '';
 
-    publishDialog.querySelector('#confirmPlatformCopy').onclick = async () => {
+    panel.querySelector('#confirmPlatformCopy').onclick = async () => {
       try {
         const selectedTitleStyle = includeTitle.checked ? titleStyle.value : '';
         await writeClipboard(
@@ -830,18 +845,33 @@
           await persistPublicationChange(part, `${platform} 已標註為已發布並記錄時間`);
         }
       }
-      publishDialog.close();
     };
 
-    toggle.onclick = async () => {
+    toggle.onclick = () => {
       if (!platform) return;
-      const changed = await togglePlatformPublished(part, platform);
-      if (changed) publishDialog.close();
+      togglePlatformPublished(part, platform);
     };
 
-    publishDialog.showModal();
     window.StoryFlowPreviewMode?.refresh?.();
-    return publishDialog;
+    return panel;
+  }
+
+  // Selecting a part and a platform is the whole of "preview": the expanded row's left
+  // column renders whichever pairing is selected, so callers say what to show rather than
+  // what to open.
+  function previewPublish(part, platform = '', contentMode = '') {
+    const entry = allEntries().find(item => item.part === part);
+    if (!entry) return null;
+    const key = partKey(entry.part);
+    const nextPlatform = platform || '';
+    if (selectedPartKey !== key || selectedPlatformKey !== nextPlatform) {
+      previewOptions = { includeTitle: false, titleStyle: 'heading' };
+      selectedPartKey = key;
+      selectedPlatformKey = nextPlatform;
+      renderParts();
+    }
+    const card = els.partsList?.querySelector(`[data-part-key="${CSS.escape(key)}"]`);
+    return card?.querySelector('.publish-preview-panel') || null;
   }
 
   async function writeArticleMarkdown(chapter, part) {
@@ -1208,38 +1238,44 @@
     return true;
   }
 
+  // A rail entry states one version of this article and selects it. The actions that act on
+  // that version — record, mark published, copy — belong beside the content they are about,
+  // in the left column, so they are not repeated here.
   function createPlatformRow(entry, platform) {
-    const { chapter, part } = entry;
-    const visual = entry.contentMode === 'visual';
-    const hashtagsText = hashtagsFor(part, platform);
-    const hashtagsOverridden = hasPlatformHashtagsOverride(part, platform);
-    const published = Boolean(part.platformStatus?.[platform]);
-    const platformTitle = publishTitleFor(part, platform);
-    const hasPlatformTitle = Boolean(String(part.platformTitles?.[platform] || '').trim());
-    const record = publicationRecord(part, platform);
+    const { part } = entry;
+    const isDefault = !platform;
+    const hashtagsText = isDefault ? '' : hashtagsFor(part, platform);
+    const hashtagsOverridden = !isDefault && hasPlatformHashtagsOverride(part, platform);
+    const published = isDefault ? false : Boolean(part.platformStatus?.[platform]);
+    const platformTitle = isDefault ? '' : publishTitleFor(part, platform);
+    const hasPlatformTitle = !isDefault && Boolean(String(part.platformTitles?.[platform] || '').trim());
+    const record = isDefault ? { publishedAt: '', url: '' } : publicationRecord(part, platform);
     const publishedAt = publicationDateLabel(record.publishedAt);
     const recordSummary = published
       ? `${publishedAt || '未記錄發布時間'}${record.url ? ' · 已記錄網址' : ''}`
       : '';
-    const publishingBlocked = visual && !published && !visualContentComplete(part);
+    const current = (selectedPlatformKey || '') === (platform || '');
+    const label = isDefault ? 'StoryFlow 預設' : platform;
+
     const row = document.createElement('div');
-    row.className = 'publish-platform-row';
+    row.className = `publish-platform-row${isDefault ? ' is-default-output' : ''}${current ? ' is-current' : ''}`;
+    row.dataset.platform = platform || '';
     row.innerHTML = `
-      <div class="publish-platform-state">
-        <div class="publish-platform-state-line">
-          <strong>${escapeHtml(platform)}</strong>
-          ${hashtagsText ? `<button class="publish-platform-hashtags ${hashtagsOverridden ? 'is-custom' : ''}" type="button" aria-label="複製 Hashtags：${escapeHtml(hashtagsText)}" title="${hashtagsOverridden ? '平台自訂 Hashtags；點一下複製' : '沿用共用 Hashtags；點一下複製'}">${escapeHtml(hashtagsText)}</button>` : '<span class="publish-platform-hashtags-empty">未設定 Hashtags</span>'}
-          <span class="publish-platform-status ${published ? 'done' : ''}">${published ? '已發布' : '尚未發布'}</span>
-        </div>
+      <button class="publish-platform-choose" type="button" aria-pressed="${current}" aria-label="顯示「${escapeHtml(label)}」版本">
+        <span class="publish-platform-state-line">
+          <strong>${escapeHtml(label)}</strong>
+          <span class="publish-platform-status ${published ? 'done' : ''}">${isDefault ? '不含平台設定' : published ? '已發布' : '尚未發布'}</span>
+        </span>
         ${hasPlatformTitle ? `<small class="publish-platform-title-summary">自訂標題：${escapeHtml(platformTitle)}</small>` : ''}
         ${hashtagsOverridden && !hashtagsText ? '<small class="publish-platform-hashtags-summary">此平台不使用 Hashtags</small>' : ''}
         ${recordSummary ? `<small class="publish-platform-record-summary">${escapeHtml(recordSummary)}</small>` : ''}
-      </div>
-      <div class="publish-platform-actions">
-        <button class="button tiny ghost platform-preview-btn" type="button" aria-label="預覽與複製「${escapeHtml(platform)}」">預覽與複製</button>
-        <button class="button tiny ghost platform-record-btn" type="button" aria-label="${published ? '查看' : '記錄'}「${escapeHtml(platform)}」發布紀錄" ${publishingBlocked ? 'disabled title="請先完成圖文內容"' : ''}>${published ? '發布紀錄' : '記錄發布'}</button>
-        <button class="button tiny ghost platform-status-btn ${published ? 'is-published' : ''}" type="button" aria-label="${published ? '取消' : '標註'}「${escapeHtml(platform)}」已發布" ${publishingBlocked ? 'disabled title="請先完成圖文內容"' : ''}>${published ? '取消已發布' : '標註已發布'}</button>
-      </div>`;
+      </button>
+      ${hashtagsText ? `<button class="publish-platform-hashtags ${hashtagsOverridden ? 'is-custom' : ''}" type="button" aria-label="複製 Hashtags：${escapeHtml(hashtagsText)}" title="${hashtagsOverridden ? '平台自訂 Hashtags；點一下複製' : '沿用共用 Hashtags；點一下複製'}">${escapeHtml(hashtagsText)}</button>` : isDefault ? '' : '<span class="publish-platform-hashtags-empty">未設定 Hashtags</span>'}`;
+
+    row.querySelector('.publish-platform-choose').addEventListener('click', event => {
+      event.stopPropagation();
+      previewPublish(part, platform, entry.contentMode);
+    });
     row.querySelector('.publish-platform-hashtags')?.addEventListener('click', async event => {
       event.stopPropagation();
       try {
@@ -1248,18 +1284,6 @@
       } catch (error) {
         notify(`複製 Hashtags 失敗：${error.message}`, true);
       }
-    });
-    row.querySelector('.platform-preview-btn').addEventListener('click', event => {
-      event.stopPropagation();
-      previewPublish(part, platform, entry.contentMode);
-    });
-    row.querySelector('.platform-record-btn').addEventListener('click', event => {
-      event.stopPropagation();
-      openPublicationRecord(chapter, part, platform);
-    });
-    row.querySelector('.platform-status-btn').addEventListener('click', event => {
-      event.stopPropagation();
-      togglePlatformPublished(part, platform);
     });
     return row;
   }
@@ -1357,26 +1381,37 @@
         </div>
       </div>
       <div class="publish-platform-details" ${expanded ? '' : 'hidden'}>
-        <div class="publish-article-tools ${visual ? 'visual-publish-summary' : ''}">
-          <div class="publish-article-tools-copy">
-            <strong>發布補充內容</strong>
-            <span>${visual ? `文字 ${bodyChars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張` : `正文 ${part.chars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張`} · 後記 ${afterwordCount.toLocaleString()} 字</span>
+        <div class="publish-manuscript-column">
+          <div class="publish-article-tools ${visual ? 'visual-publish-summary' : ''}">
+            <div class="publish-article-tools-copy">
+              <strong>發布補充內容</strong>
+              <span>${visual ? `文字 ${bodyChars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張` : `正文 ${part.chars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張`} · 後記 ${afterwordCount.toLocaleString()} 字</span>
+            </div>
+            <div class="publish-article-tool-actions">
+              <button class="button tiny ghost publish-helper-tool-btn" type="button">摘要與 Hashtags${summaryText || hashtagsText ? ' · 已設定' : ''}</button>
+              ${visual ? '' : `<button class="button tiny ghost publish-images-tool-btn" type="button">文章圖片${imageCount ? ` ${imageCount.toLocaleString()}` : ''}</button>`}
+              <button class="button tiny ghost publish-afterword-tool-btn" type="button">後記${afterwordCount ? ` ${afterwordCount.toLocaleString()} 字` : ''}</button>
+            </div>
           </div>
-          <div class="publish-article-tool-actions">
-            <button class="button tiny ghost publish-helper-tool-btn" type="button">摘要與 Hashtags${summaryText || hashtagsText ? ' · 已設定' : ''}</button>
-            ${visual ? '' : `<button class="button tiny ghost publish-images-tool-btn" type="button">文章圖片${imageCount ? ` ${imageCount.toLocaleString()}` : ''}</button>`}
-            <button class="button tiny ghost publish-afterword-tool-btn" type="button">後記${afterwordCount ? ` ${afterwordCount.toLocaleString()} 字` : ''}</button>
+          <div class="publish-preview-host"></div>
+        </div>
+        <aside class="publish-platform-rail" aria-label="發布平台">
+          <div class="publish-platform-details-head">
+            <strong>發布平台</strong>
+            <span class="muted">選一個，左邊就換成它的版本</span>
           </div>
-        </div>
-        <div class="publish-platform-details-head">
-          <strong>發布平台</strong>
-          <span class="muted">各平台狀態彼此獨立</span>
-        </div>
-        <div class="publish-platform-list"></div>
+          <div class="publish-platform-list"></div>
+        </aside>
       </div>`;
 
     const toggleExpanded = () => {
       const anchorTop = card.getBoundingClientRect().top;
+      // The rail belongs to the row that is open. Carrying a platform over to the next row
+      // would preselect a version of an article nobody asked about.
+      if (selectedPartKey !== key) {
+        selectedPlatformKey = '';
+        previewOptions = { includeTitle: false, titleStyle: 'heading' };
+      }
       selectedPartKey = selectedPartKey === key ? null : key;
       renderParts();
       const nextCard = els.partsList?.querySelector(`[data-part-key="${CSS.escape(key)}"]`);
@@ -1425,15 +1460,26 @@
         openArticleTool(chapter, part, 'afterword');
       });
       const platformList = card.querySelector('.publish-platform-list');
+      // The default output is the rail's first entry rather than the absence of a
+      // selection: every version of this article is reachable the same way.
+      platformList.appendChild(createPlatformRow(entry, ''));
       if (!platforms.length) {
-        platformList.innerHTML = '<div class="publish-no-platform"><strong>目前沒有發布平台</strong><span>請到設定新增發布平台後再管理發布狀態。</span><button class="button tiny ghost" type="button">前往設定</button></div>';
-        platformList.querySelector('button').addEventListener('click', event => {
+        const empty = document.createElement('div');
+        empty.className = 'publish-no-platform';
+        empty.innerHTML = '<strong>目前沒有發布平台</strong><span>請到設定新增發布平台後再管理發布狀態。</span><button class="button tiny ghost" type="button">前往設定</button>';
+        empty.querySelector('button').addEventListener('click', event => {
           event.stopPropagation();
           openSettings();
         });
+        platformList.appendChild(empty);
       } else {
         platforms.forEach(platform => platformList.appendChild(createPlatformRow(entry, platform)));
       }
+
+      if (selectedPlatformKey && !platforms.includes(selectedPlatformKey)) selectedPlatformKey = '';
+      const panel = buildPublishPreviewPanel();
+      card.querySelector('.publish-preview-host').appendChild(panel);
+      renderPublishPreview(panel, part, selectedPlatformKey, entry.contentMode);
     }
 
     return card;
@@ -1511,13 +1557,20 @@
 
     const entries = allEntries();
     refreshHeaderAndSummary(entries);
+    // The preview panel lives inside the list, so emptying it discards whatever object URLs
+    // a visual preview was holding. The dialog's close handler used to do this.
+    visualPreviewUrls.forEach(url => URL.revokeObjectURL(url));
+    visualPreviewUrls = [];
     els.partsList.innerHTML = '';
 
     const filtered = currentFilter === 'all'
       ? entries
       : entries.filter(entry => entry.status.key === currentFilter);
 
-    if (selectedPartKey && !filtered.some(entry => partKey(entry.part) === selectedPartKey)) selectedPartKey = null;
+    if (selectedPartKey && !filtered.some(entry => partKey(entry.part) === selectedPartKey)) {
+      selectedPartKey = null;
+      selectedPlatformKey = '';
+    }
 
     if (!entries.length) {
       els.partsList.innerHTML = '<div class="empty-state publishing-empty"><div class="empty-icon">↗</div><strong>尚未有可發布內容</strong><span>完成第一篇文章或第一則圖文後，會顯示在這裡。</span><button class="button primary publishing-empty-action" type="button">回到工作台</button></div>';

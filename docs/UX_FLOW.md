@@ -74,12 +74,12 @@ The Publishing page separates queue navigation from the actual publishing commit
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
 | P-01 | Resume the latest unfinished publication | 繼續發布 | Filters and project selector | One solid page action, visible only when pending or partial work exists |
-| P-02 | Choose a specific article or visual entry to process | 管理發布 | 預覽、`⋯` | Same labels and order for longform and visual content; the outer preview is a plain body/image check without platform formatting controls |
-| P-03 | Verify platform formatting | 預覽與複製 | One compact title/content settings card, then body/images, shared summary and effective platform Hashtags | Platform title style and optional publishing helpers exist only here; “複製內容” is the final primary action |
-| P-04 | Copy content to a platform | 複製內容 | Optionally prepend title as heading or bold, 複製標題、關閉 | The single solid action in the preview dialog |
+| P-02 | Choose a specific article or visual entry to process | 管理發布 | 預覽、`⋯` | Same labels and order for longform and visual content; expanding gives two columns — the manuscript on the left, its versions on the right |
+| P-03 | Verify platform formatting | Pick the platform in the rail | One compact title/content settings card, then body/images, shared summary and effective platform Hashtags | The left column switches in place; nothing opens over the row already open. Platform title style and optional publishing helpers exist only once a platform is picked |
+| P-04 | Copy content to a platform | 複製內容 | Optionally prepend title as heading or bold, 複製標題 | The single solid action at the foot of the left column |
 | P-05 | Store publication time and URL | 保存發布紀錄 | 取消、開啟文章 | The single solid action in the record dialog |
 | P-06 | Edit optional helpers or image metadata | 摘要與 Hashtags／後記／文章圖片, then save the active editor | Preview and ordering controls | Summary, Hashtags and afterword are shared by both types; article images remain longform-only |
-| P-07 | Give one platform a different publishing title | 修改此平台標題, then 保存標題 | 改回沿用 | Kept inside that platform's preview/copy dialog; never a large article-level form |
+| P-07 | Give one platform a different publishing title | 修改此平台標題, then 保存標題 | 改回沿用 | Kept inside that platform's preview panel; never a large article-level form |
 | P-08 | Mark or undo platform publication | 標註已發布／取消已發布 | Publication record | State control, not a global primary action; reversal requires a clear warning |
 | P-09 | Find content by work, type or status | 作品／類型／發布狀態 filters | — | Type chips count works, status chips count entries; every filter control shares one typography and height scale. The three questions are separated by a hairline, not by changing the chips: grouping is what carries the structure |
 | P-14 | Work through the queue from either end | 排序：最新在前／章節順序 | — | Not a filter, so it does not take the chip shape and sits with the page action. Neither option reads a timestamp — a longform part carries none — so both are directions through document order. Hidden for a visual work, which has no chapters to order by and whose entries do carry `updatedAt`. The choice is the writer's habit, not the work's property: it carries across works |
@@ -255,14 +255,14 @@ Deleting anything that owns images takes the images with it — an article, a vi
 ## Publishing titles
 
 ```text
-發布 → 管理發布 → 平台「預覽與複製」→ 修改此平台標題 → 保存
-                                         ↘ 改回沿用文章名稱
-                         複製內容 → 可選「標題放最前面」→ 大標題／粗體
+發布 → 管理發布 → 右側平台軌選一個平台 → 修改此平台標題 → 保存
+                                              ↘ 改回沿用文章名稱
+                              複製內容 → 可選「標題放最前面」→ 大標題／粗體
 ```
 
 - The internal article name remains the stable source and Markdown filename; editing the publishing title never renames either one.
-- A platform-specific title is edited only inside that platform's preview/copy dialog. Empty values fall back to the internal article name; legacy shared titles remain a compatibility fallback.
-- The article and platform rows expose a compact summary instead of a permanent title form. A custom platform title is shown quietly beneath its platform name.
+- A platform-specific title is edited only inside that platform's preview panel. Empty values fall back to the internal article name; legacy shared titles remain a compatibility fallback.
+- The article row and the rail expose a compact summary instead of a permanent title form. A custom platform title is shown quietly beneath its platform name.
 - “複製標題” remains separate. “複製內容” can optionally prepend the current platform title as a heading or bold text; rich clipboards receive HTML and plain-text destinations receive equivalent Markdown.
 - Source refresh keeps existing platform titles unchanged. Renaming or removing a platform migrates or removes its title together with status and publication records.
 

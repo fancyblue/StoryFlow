@@ -32,7 +32,7 @@ capability, which is exactly what CI cannot exercise.
 
 - [ ] Open StoryFlow and connect `StoryFlow-Acceptance`.
 - [ ] From an existing work, choose “切換作品” → “新增作品” → “長文作品”. Confirm the source chooser can return to work type, the manual form can return to source choice, and closing the flow leaves the original work active without adding an empty work.
-- [ ] Open the manual source, search, split confirmation and publishing preview dialogs. Confirm each dialog is announced by its visible heading and every `×` button is announced as “關閉”. Open Settings and confirm global search still opens above the page region.
+- [ ] Open the manual source and search dialogs. Confirm each dialog is announced by its visible heading and every `×` button is announced as “關閉”. Open Settings and confirm global search still opens above the page region.
 - [ ] Create a manual work and add one test chapter.
 - [ ] Confirm the new work appears only after “確定新增” or preview confirmation.
 - [ ] Check that “切換作品”, “切篇偏好” and publishing work filters use the same down/up chevron behavior.
@@ -90,6 +90,9 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] From Workspace, Works and Publishing, confirm visual deletion is reached through the entry row's `⋯ → 刪除圖文`, uses the same confirmation and Recovery guard, and is not duplicated in the editor footer. Delete a disposable entry and confirm Recovery is created, `content.md`/`metadata.json` are removed, and private `assets/` remains. Explicitly delete one image file and confirm it first appears in `Recovery/Assets/`.
 - [ ] On a phone-sized touch session in default read-only mode, confirm visual content and preview remain readable while entry creation, fields, import, ordering, removal and save controls are blocked.
 - [ ] In Publishing, confirm every longform and visual row uses the same “預覽／管理發布／⋯” order, 40 px action height and 14 px management text. Expanded “收合發布” uses a stronger soft selection rather than a solid primary fill.
+- [ ] Expand “管理發布”. Confirm it is two columns: the manuscript on the left and the platform rail on the right, with “StoryFlow 預設” selected first. Pick a platform and confirm the left column switches in place — no dialog opens — and that “記錄發布”, the published toggle and “複製內容” all sit at the foot of the left column, not in the rail.
+- [ ] Tick “內容前附上標題”, then mark the platform published from the same panel. Confirm the option is still ticked afterwards. Switch to another platform and back, and confirm it has reset.
+- [ ] At a phone width, confirm the rail sits above the manuscript, and that the optional 摘要／Hashtags rows read as stacked label-and-value blocks rather than one character per line.
 - [ ] In Workspace, confirm neither content type shows a direct publishing shortcut. Enter Publishing from primary navigation or the Works-page “管理發布” action.
 - [ ] Confirm Publishing's empty-state return action remains the single solid 40 px / 14 px CTA, while publishing filters remain compact pills.
 - [ ] In Settings, confirm “匯入 settings.json” is primary when Google integration is missing; the save button remains disabled and quiet until valid fields change. “新增平台” and “建立目前備份” stay secondary.

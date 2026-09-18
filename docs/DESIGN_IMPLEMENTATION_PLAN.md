@@ -45,7 +45,7 @@
 | 基準 | 涵蓋 |
 | --- | --- |
 | `publishing-detail-1440.png` | 「管理發布」展開後的平台面板——發布補充內容、各平台列與其動作 |
-| `platform-preview-1440.png` | 桌面寬度的 `#platformPreviewDialog` |
+| `platform-preview-1440.png` | 桌面寬度的發布預覽（5-2 之後是列內的預覽面板，不再是對話框） |
 | `visual-workspace-1440.png` | 圖文工作台（清單 + 編輯器） |
 
 一併修掉一個潛在的間歇失敗：`.visual-autosave-status` 會印出時鐘（「已儲存 10:57」），
@@ -389,7 +389,37 @@ token 就位後，這一步是改幾十行的事。
 `preview-mode.css`、`smart-split-ui.css`、`app-ux.css`。
 新增兩張基準：`reading-view-read-1440.png`、`reading-view-seam-1440.png`。
 
-- **5-2　管理發布改成兩欄**（左稿右平台軌），平台預覽改為左欄原地切換而非再開對話框。
+### 5-2　管理發布改成兩欄　✅ 已完成
+
+`管理發布` 展開後是兩欄：左邊稿，右邊平台軌。點右邊的項目，左欄就原地換成那個版本，
+不再疊一層對話框在已經展開的那一列上——跟 5-1 是同一個形狀的問題。
+
+做出來的樣子：
+
+- `#platformPreviewDialog` 移除。原本的對話框內容原封不動搬進 `.publish-preview-panel`，
+  由 `buildPublishPreviewPanel()` 建、`renderPublishPreview()` 填；`previewPublish()`
+  現在只是「選擇」——設定 `selectedPartKey` 與 `selectedPlatformKey` 後重繪。
+  因為同時只有一列展開，面板裡的 id 在文件中仍然唯一。
+- **平台軌的第一項是「StoryFlow 預設」**。沒有平台設定也是一個版本，把它做成一個項目，
+  所有版本就用同一種方式抵達；列上的「預覽」變成選中它，而不是開任何東西。
+- 作用在所選版本上的動作——`記錄發布／發布紀錄`、已發布切換、`複製內容`——
+  全部集中在左欄底部、緊鄰它們作用的內容，平台軌不再重複一份。
+- 複製選項屬於「一篇 × 一個平台」這個配對，不屬於面板元素：任何 `renderParts()`
+  都會重建面板，所以那些選項放在模組狀態裡；離開平台再回來則是新的決定，會重設。
+
+順手修掉兩條**從來沒生效過**的手機版規則：`.platform-preview-extra-copy` 與
+`.platform-preview-visual-extras-head` 的 `@media(max-width:680px)` 覆寫寫在同檔案的
+基礎規則**之前**，媒體查詢不增加優先序，所以後面那條一直贏。之前在對話框的寬度下看不出來，
+搬進比較窄的面板之後就變成「尚未設定」四個字直排。
+
+同時刪掉 `src/ui/workspace-interactions.js` 裡另一個同名的 `#platformPreviewDialog`：
+它掛在 `.part-row` 上，而 `publishing-flow.js` 早就整個換掉了 `window.renderParts`，
+所以那條路徑永遠不會被觸發。留著會和新面板 id 相撞。
+
+動到：`src/publishing/publishing-flow.js`、`src/ui/workspace-interactions.js`、
+`src/ui/preview-mode.js`，以及 `styles/domains/publishing.css`、
+`styles/domains/publishing-refinements.css`、`styles/layers/{controls,ui-system,legacy-patches,theme}.css`。
+新增一張基準 `platform-preview-platform-1440.png`（選了平台之後的左欄）。
 - **5-3　圖片依 `placement` 分組顯示**，並常駐「圖片不會隨複製內容送出」的說明。
 - **5-4　圖文編輯器去框**，摘要從發布預覽對話框移回編輯器。
 
