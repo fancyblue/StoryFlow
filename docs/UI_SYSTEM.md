@@ -86,6 +86,26 @@ A destructive action must never be the only enabled control in an empty state. W
 
 One action carries one label and one weight wherever it appears. Connecting the StoryFlow folder is reached from the Settings folder card and from the backup centre, so both read "連接資料夾" and both stay outlined; the backup control only proxies the owning card and must not out-emphasize it. Sidebar chrome ranks below navigation: the collapse toggle rests on a translucent fill, never on the `--denim-800` used by an active nav item, so a utility control cannot read as the current destination.
 
+## A disabled control explains itself, and looks disabled
+
+Two halves, and the second is the one that gets lost.
+
+**It says why, in text.** A `title` attribute is not the explanation: it is invisible on
+touch, and a keyboard user cannot reach it on a control that cannot take focus while
+disabled. The reason sits beside the control — 「需要先連接資料夾」 next to a disabled
+＋ 新增作品 — and is wired with `aria-describedby`. The `title` can stay as a second copy; it
+cannot be the only one.
+
+**It looks disabled.** `.button:disabled` sets the inactive treatment in `theme.css`, and any
+rule that colours a specific button by id overrides it — `--ink-faint` is the palette's step
+for inactive controls, and it never reached the one control that most needed it. The result
+was a button that said it could not be used, showed `cursor: not-allowed` on hover, and
+otherwise looked entirely usable.
+
+That is the same shape as the specificity note under [one hierarchy](#one-hierarchy-two-pages):
+a rule that takes over a property takes over all of its states too. If a selector sets
+`color` on a button, it owes that button a `:disabled` rule as well.
+
 ## Palette
 
 The interface is warm paper, warm ink, and one restrained accent. Colour values are defined

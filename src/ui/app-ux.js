@@ -62,7 +62,10 @@
           <h1>作品</h1>
           <p class="projects-page-subtitle">每個故事都有獨立的章節、切篇與發布進度。先選作品，再進入工作台或發布。</p>
         </div>
-        <button id="projectsNewWorkBtn" class="button ghost" type="button">＋ 新增作品</button>
+        <div class="projects-page-new-work">
+          <span id="projectsNewWorkReason" class="projects-page-new-work-reason" hidden></span>
+          <button id="projectsNewWorkBtn" class="button ghost" type="button" aria-describedby="projectsNewWorkReason">＋ 新增作品</button>
+        </div>
       </header>
       <div id="projectsLibrary" class="projects-library"></div>`;
     main.appendChild(view);
@@ -128,16 +131,29 @@
     });
 
     const newWork = view.querySelector('#projectsNewWorkBtn');
+    const newWorkReason = view.querySelector('#projectsNewWorkReason');
     if (newWork) {
-      newWork.hidden = projects.length === 0;
-      // Same rule as the workspace chooser: a work cannot be created before there is a
-      // folder to write it into, and the control says why rather than failing on click.
+      // Kept visible with no works, not hidden. It is already outlined, so it is not the
+      // competing solid header action W-06 rules out, and hiding it removed the one way
+      // into creation that does not depend on reading the empty state first.
+      newWork.hidden = false;
+      // A work cannot be created before there is a folder to write it into. The control
+      // says why in text beside it rather than only in a title: a tooltip is invisible on
+      // touch, and to a keyboard user until the control has focus it cannot take while
+      // disabled. UI_SYSTEM's rule is that a disabled control explains itself.
       const connected = Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
       newWork.disabled = !connected;
+      const reason = connected ? '' : (window.StoryFlowIntegrations?.supportsFolderAccess?.()
+        ? '需要先連接資料夾'
+        : '這個瀏覽器無法連接資料夾');
       if (connected) newWork.removeAttribute('title');
       else newWork.title = window.StoryFlowIntegrations?.supportsFolderAccess?.()
         ? '請先連接 StoryFlow 資料夾，再建立作品。'
         : '這個瀏覽器無法連接資料夾。請改用 Chrome 或 Edge。';
+      if (newWorkReason) {
+        newWorkReason.textContent = reason;
+        newWorkReason.hidden = !reason;
+      }
     }
 
     list.innerHTML = '';

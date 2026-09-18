@@ -153,7 +153,18 @@ test('primary action scale and navigation icon language stay consistent', async 
   await page.locator('.nav-item[data-view="projects"]').click();
   await expect(page.locator('.projects-empty-state .button')).toBeVisible();
   const emptyWork = await controlStyle(page.locator('.projects-empty-state .button'));
-  await expect(page.locator('#projectsNewWorkBtn')).toBeHidden();
+  // The header action stays visible with no works — W-06 rules out a competing *solid*
+  // header action, and this one is outlined. Hiding it removed the only way into creation
+  // that does not go through reading the empty state first. With no folder it is disabled,
+  // and it has to *look* disabled: the id rule that colours it was overriding the disabled
+  // treatment, leaving a control that said why it could not be used and looked usable.
+  await expect(page.locator('#projectsNewWorkBtn')).toBeVisible();
+  await expect(page.locator('#projectsNewWorkBtn')).toBeDisabled();
+  await expect(page.locator('#projectsNewWorkReason')).toHaveText('需要先連接資料夾');
+  expect(await controlStyle(page.locator('#projectsNewWorkBtn'))).toMatchObject({
+    backgroundColor: 'rgb(244, 241, 233)',
+    color: 'rgb(150, 143, 128)'
+  });
   expect(emptyWork).toMatchObject({
     height: 40,
     fontSize: 14,

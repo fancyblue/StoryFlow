@@ -33,7 +33,8 @@ reload, because nothing can be written.
 | W-03 | Jump directly to this work's publishing queue | 管理發布 | — | Tinted secondary shortcut |
 | W-04 | Make another work current | 開啟 | Then manage its chapters or enter its workspace | Both longform and visual works use the same label; selection is shown by the card and badge |
 | W-05 | Create another work | ＋ 新作品 | 作品類型、來源與內容表單可逐步返回 | Outlined or tinted while works already exist |
-| W-06 | Create the first work | 建立第一個作品 | — | The only solid action in the empty state; do not show a competing solid header action |
+| W-06 | Create the first work | 建立第一個作品 | ＋ 新增作品 stays in the header, outlined | The only solid action in the empty state; do not show a competing solid header action. Outlined is not competing, so the header action stays visible rather than being hidden — hiding it left the empty state's own button as the only route into creation |
+| W-06b | Understand why creation is unavailable | — | ＋ 新增作品 disabled, with 需要先連接資料夾 beside it | A disabled control states its reason in text next to itself, not only in a `title`: a tooltip is invisible on touch, and unreachable for a keyboard user on a control that cannot take focus while disabled. It must also *look* disabled — see UI_SYSTEM |
 | W-07 | Rename or delete a work | `⋯` | Confirmation and Recovery for deletion | Tertiary overflow; deletion uses the danger treatment only inside the decision |
 
 Every “管理章節” or “管理圖文” control uses the same noticeable light-blue treatment so the same label always communicates the same function. Current-work identity belongs to the card border and badge; no repeated row action uses a solid primary fill.
