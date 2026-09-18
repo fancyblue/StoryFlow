@@ -50,8 +50,9 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-02 | Select the work and chapter or visual entry to process | 切換作品／章節列／圖文列 | Add, edit or delete the matching content type | Selection and disclosure styling, never primary CTA styling |
 | WS-03 | Refresh a linked Google Docs chapter | 更新來源 | 復原來源更新 | Tinted action that opens comparison; only “套用所選變更” is solid after review |
 | WS-04 | Adjust an automatic split suggestion | 少一個場景／多一個場景 | 切篇偏好 | Outlined directional and disclosure controls |
-| WS-05 | Move the ending within a long scene | 手動微調 | Drag or choose a paragraph boundary | Selected/toggled treatment; boundary targets are not buttons competing for primary emphasis |
-| WS-06 | Commit the reviewed article | 切篇確認／確認並存成 Markdown | 返回修改、取消 | The single solid action for the review stage |
+| WS-05 | Move the ending within a long scene | 接縫檢視 | Drag or choose a paragraph boundary | A view of the reading surface, not a mode; boundary targets are not buttons competing for primary emphasis |
+| WS-06 | Read the chapter around the cut | 讀稿檢視 | `[讀稿｜接縫]`、預覽格式、回到工作台 | A page that replaces the workbench rails, not a dialog over them |
+| WS-06b | Commit the reviewed article | 確認並存成 Markdown | 少一個場景／多一個場景 | The single solid action, identical in both reading views |
 | WS-07 | Continue processing the remaining chapter | 產生下一篇 | Review the current ending again | Solid only when a valid next suggestion is ready |
 | WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | The row keeps a persistent `⋯`; edit is first and delete is second |
 | WS-10 | Maintain a visual entry | 編輯即自動儲存 | 預覽圖文、`⋯ → 刪除圖文` | Preview opens in a separate dialog; use the same direct-edit plus persistent-overflow pattern and Recovery flow as manual chapters |
@@ -207,17 +208,17 @@ Rules:
 ## Split confirmation and manual boundaries
 
 ```text
-SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認並存檔
-                                           ↘ 手動微調 → 拖曳結尾
-                                                        ↘ 點選段落間切點
+SMART SPLIT 場景建議 → 少／多一個場景 → 讀稿檢視 ⇄ 接縫檢視 → 確認並存檔
+                                                      ↘ 拖曳結尾
+                                                      ↘ 點選段落間切點
 ```
 
 - Automatic suggestions and the coarse arrow actions use real source-scene boundaries. Preferred character counts rank valid scene endings but do not manufacture a cut inside a scene.
-- “手動微調” is deliberately paragraph-level. It changes only the current unconfirmed suggestion end, snaps after a complete source paragraph and never edits the source draft.
-- Manual mode gives the chapter text most of the width, hides the previous-part column and renders one compact full-width line after every eligible paragraph. Quiet candidate labels appear only on hover or keyboard focus; the current “本篇結尾” line stays visible and draggable.
-- The review toolbar shows both current-part and remaining-unconfirmed character counts while manual mode is active. The current title, start boundary and source text remain unchanged when the end moves.
-- Leaving manual mode rerenders the normal chapter view and keeps the confirmed “這一篇結束” marker in view, so the author can verify the surrounding prose without searching for the cut again.
-- Scene-level controls remain available outside manual mode. Closing the confirmation dialog exits manual mode, and confirmed or published parts are never retroactively re-split by this interaction.
+- “讀稿檢視” replaces the workbench rails rather than covering them. It shows the whole chapter in one flow, with the already-confirmed text, this part and the text still ahead separated by ink depth.
+- “接縫檢視” is the same flow with cut points. It is deliberately paragraph-level: it changes only the current unconfirmed suggestion end, snaps after a complete source paragraph and never edits the source draft. Quiet candidate labels appear only on hover or keyboard focus; the current “本篇結尾” line stays visible and draggable.
+- The action row shows both current-part and remaining-unconfirmed character counts, and is identical in both views. The current title, start boundary and source text remain unchanged when the end moves.
+- Switching views keeps the cut where it was put and scrolls to the marker that view is about — the draggable ending in 接縫, the “這一篇結束” marker in 讀稿 — so the author can verify the surrounding prose without searching for the cut again.
+- Scene-level controls remain available in both views. Leaving the workbench or switching work closes the reading surface, and confirmed or published parts are never retroactively re-split by this interaction.
 - A single source paragraph cannot be cut internally. The author must first add a real paragraph break to the source if sentence-level splitting is required.
 - Platform paragraph spacing and scene separation are independent. Compact paragraph output uses one newline between ordinary paragraphs, but every original scene boundary keeps either the configured marker or, when the marker is hidden, one blank line.
 

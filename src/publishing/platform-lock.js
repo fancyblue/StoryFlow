@@ -55,7 +55,7 @@
 
   function syncSelectors() {
     fillSelector(document.getElementById('suggestionPlatformSelect'));
-    fillSelector(document.getElementById('reviewPlatformSelect'));
+    fillSelector(document.getElementById('readingPlatformSelect'));
     document.querySelectorAll('.copy-platform').forEach(fillSelector);
   }
 
@@ -69,7 +69,7 @@
 
   function bindSelectors() {
     bindSelector(document.getElementById('suggestionPlatformSelect'));
-    bindSelector(document.getElementById('reviewPlatformSelect'));
+    bindSelector(document.getElementById('readingPlatformSelect'));
     document.querySelectorAll('.copy-platform').forEach(bindSelector);
   }
 

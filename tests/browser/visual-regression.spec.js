@@ -214,6 +214,42 @@ test('workspace keeps a long chapter rail contained at desktop widths', async ({
   }
 });
 
+test('the reading surface keeps one column across both of its views', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openManualWork(page);
+  await page.evaluate(() => {
+    const chapter = activeChapter();
+    chapter.draft = Array.from({ length: 14 }, (_, index) =>
+      `第 ${index + 1} 段，鐘聲停下後長廊只剩窗外落雨的聲音，她攤開掌心看著淡銀色的印紋沿指節亮起。`
+    ).join('\n');
+    chapter.confirmedBlockCount = 0;
+    chapter.parts = [];
+    renderAll();
+    suggestNextPart();
+    StoryFlowSetSuggestionEnd(7);
+  });
+
+  await page.locator('#openReadingViewBtn').click();
+  const view = page.locator('#readingView');
+  await expect(view).toBeVisible();
+  await expectDocumentBounded(page);
+
+  // Head, hint, text and actions are one column with one left edge. A shared layer that
+  // re-breaks that alignment is exactly what this baseline is here to catch.
+  const edges = await view.evaluate(node => [
+    '.reading-view-head', '#readingFlow', '.reading-view-actions'
+  ].map(selector => Math.round(node.querySelector(selector).getBoundingClientRect().left)));
+  expect(new Set(edges).size).toBe(1);
+
+  await expect(view).toHaveScreenshot('reading-view-read-1440.png');
+
+  await view.getByRole('button', { name: '接縫', exact: true }).click();
+  await expect(view).toHaveAttribute('data-view', 'seam');
+  await expect(view.locator('.manual-boundary-target')).toHaveCount(14);
+  await expectDocumentBounded(page);
+  await expect(view).toHaveScreenshot('reading-view-seam-1440.png');
+});
+
 test('works, publishing, and settings retain their desktop composition', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openManualWork(page);

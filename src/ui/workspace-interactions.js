@@ -51,14 +51,14 @@
     const panel = document.querySelector('.splitter-panel');
     if (!panel) return;
     const head = panel.querySelector('.panel-head');
-    if (head && !$('openSplitReviewBtn')) {
+    if (head && !$('openReadingViewBtn')) {
       const button = document.createElement('button');
-      button.id = 'openSplitReviewBtn';
+      button.id = 'openReadingViewBtn';
       button.type = 'button';
       button.className = 'button tiny ghost';
-      button.textContent = '切篇確認';
+      button.textContent = '讀稿檢視';
       button.disabled = !suggestion;
-      button.onclick = openReviewDialog;
+      button.onclick = openReadingView;
       head.appendChild(button);
     }
 
@@ -85,99 +85,104 @@
     };
   }
 
-  function fullChapterHighlightedHTML(chapter) {
-    const blocks = parseBlocks(chapter.draft);
-    if (!blocks.length) return '目前章節沒有內容。';
-    const options = suggestionPreviewPlatform ? platformOptions(suggestionPreviewPlatform) : {
-      indent: state.formatting.defaultIndent,
-      paragraphSpacing: state.formatting.defaultParagraphSpacing,
-      sceneSeparator: state.formatting.defaultSceneSeparator,
-      marker: state.sceneMarker
-    };
-    const start = suggestion?.start ?? -1;
-    const end = suggestion?.end ?? -1;
-    const pieces = [];
-    blocks.forEach((block, index) => {
-      if (index === start) pieces.push('<span class="range-boundary">──── 這一篇開始 ────</span>\n');
-      const line = escapeHtml(applyIndent(block.raw, options.indent));
-      pieces.push(index >= start && index < end ? `<span class="current-range-highlight">${line}</span>` : line);
-      if (index === end - 1) pieces.push('\n<span class="range-boundary">──── 這一篇結束 ────</span>');
-      if (index < blocks.length - 1) {
-        pieces.push(escapeHtml(formattedBlockBreak(block, options)));
-      }
-    });
-    return pieces.join('');
+  // The reading view is a page, not a modal: 讀稿 reads the chapter and 接縫 marks the cut
+  // points in that same flow. boundary-engine owns what the flow says; this only owns the
+  // shell — opening it, closing it, and keeping its format select in step with the panel's.
+  function readingView() {
+    return $('readingView');
   }
 
-  function ensureReviewDialog() {
-    if ($('reviewDialog')) return;
-    const dialog = document.createElement('dialog');
-    dialog.id = 'reviewDialog';
-    dialog.className = 'review-dialog';
-    dialog.innerHTML = `
-      <div class="dialog-card review-dialog-card">
-        <div class="panel-head">
-          <div><p class="eyebrow">CONTENT CHECK</p><h3>切篇確認</h3></div>
-          <button id="closeReviewDialog" class="icon-button" type="button">×</button>
-        </div>
-        <div class="review-format-bar">
-          <label class="platform-select-field"><span>三欄比較格式</span><select id="reviewPlatformSelect" class="text-input"></select></label>
-          <div id="reviewPlatformSettings" class="suggestion-platform-settings"></div>
-        </div>
-        <p id="reviewDialogMeta" class="muted review-dialog-note"></p>
-        <div class="review-dialog-grid">
-          <article class="review-column">
-            <div class="review-column-head"><span>上一篇</span><strong id="dialogReviewPreviousTitle">—</strong></div>
-            <pre id="dialogReviewPrevious" class="review-content"></pre>
-          </article>
-          <article class="review-column current">
-            <div class="review-column-head"><span>這一篇</span><strong id="dialogReviewCurrentTitle">—</strong></div>
-            <pre id="dialogReviewCurrent" class="review-content"></pre>
-          </article>
-          <article class="review-column full-chapter-column">
-            <div class="review-column-head"><span>章節全文</span><strong id="dialogReviewFullTitle">—</strong></div>
-            <pre id="dialogReviewFull" class="review-content"></pre>
-          </article>
-        </div>
-        <div class="platform-preview-actions"><button id="closeReviewDialogBottom" class="button primary" type="button">確認完畢，回到切篇</button></div>
-      </div>`;
-    document.body.appendChild(dialog);
-    const select = $('reviewPlatformSelect');
-    select.add(new Option('StoryFlow 預設格式', ''));
-    platforms.forEach(platform => select.add(new Option(platform, platform)));
-    select.onchange = () => {
-      suggestionPreviewPlatform = select.value;
-      if ($('suggestionPlatformSelect')) $('suggestionPlatformSelect').value = suggestionPreviewPlatform;
-      renderSuggestionPlatformSettings();
-      refreshSuggestionPreview();
-      fillReviewDialog();
+  function ensureReadingView() {
+    const view = readingView();
+    if (!view || view.dataset.readingReady) return view;
+    view.dataset.readingReady = '1';
+
+    const select = $('readingPlatformSelect');
+    if (select && !select.options.length) {
+      select.add(new Option('StoryFlow 預設格式', ''));
+      platforms.forEach(platform => select.add(new Option(platform, platform)));
+    }
+    if (select) {
+      select.value = suggestionPreviewPlatform;
+      select.onchange = () => {
+        suggestionPreviewPlatform = select.value;
+        if ($('suggestionPlatformSelect')) $('suggestionPlatformSelect').value = suggestionPreviewPlatform;
+        renderSuggestionPlatformSettings();
+        refreshSuggestionPreview();
+      };
+    }
+
+    $('closeReadingViewBtn').onclick = closeReadingView;
+    $('readingConfirmBtn').onclick = () => {
+      $('confirmBtn')?.click();
+      closeReadingView();
     };
-    $('closeReviewDialog').onclick = () => dialog.close();
-    $('closeReviewDialogBottom').onclick = () => dialog.close();
+    return view;
   }
 
-  function fillReviewDialog() {
-    if (!suggestion) return;
-    ensureReviewDialog();
+  function syncReadingHead() {
     const chapter = activeChapter();
-    const previous = chapter.parts?.length ? chapter.parts[chapter.parts.length - 1] : null;
-    const format = platformSettingSummary(suggestionPreviewPlatform);
-    $('reviewPlatformSelect').value = suggestionPreviewPlatform;
-    $('reviewPlatformSettings').innerHTML = platformSettingsMarkup(suggestionPreviewPlatform);
-    $('dialogReviewPreviousTitle').textContent = previous?.title || '沒有上一篇';
-    $('dialogReviewPrevious').textContent = previous ? formatTextForPlatform(previous.raw, suggestionPreviewPlatform) : '這是本章第一篇。';
-    $('dialogReviewCurrentTitle').textContent = suggestion.name;
-    $('dialogReviewCurrent').textContent = suggestionPreviewText();
-    $('dialogReviewFullTitle').textContent = chapter.title;
-    $('dialogReviewFull').innerHTML = fullChapterHighlightedHTML(chapter);
-    $('reviewDialogMeta').textContent = `三個畫面都套用「${format.label}」。章節全文中的醒目區域就是目前切篇範圍。`;
+    const title = $('readingViewTitle');
+    const progress = $('readingViewProgress');
+    if (title) title.textContent = chapter?.title || '章節';
+    if (!progress) return;
+    const parts = chapter?.parts?.length || 0;
+    const blocks = chapter ? parseBlocks(chapter.draft) : [];
+    const done = Math.min(Number(chapter?.confirmedBlockCount || 0), blocks.length);
+    progress.textContent = blocks.length
+      ? `已確認 ${parts} 篇 · 原稿 ${blocks.length} 段中的第 ${Math.min(done + 1, blocks.length)} 段起還沒切`
+      : '這個章節還沒有內容。';
   }
 
-  function openReviewDialog() {
-    if (!suggestion) return;
-    fillReviewDialog();
-    $('reviewDialog').showModal();
+  function openReadingView() {
+    const view = ensureReadingView();
+    if (!view) return;
+    const select = $('readingPlatformSelect');
+    if (select) select.value = suggestionPreviewPlatform;
+    syncReadingHead();
+    view.hidden = false;
+    document.body.classList.add('sf-reading-open');
+    window.StoryFlowPreviewMode?.setMode?.('reading', 'preview');
+    window.StoryFlowSetReadingViewMode?.('read');
+    window.StoryFlowRefreshReviewFromSource?.(true);
+    window.StoryFlowPreviewMode?.refresh?.();
+    $('closeReadingViewBtn')?.focus?.({ preventScroll: true });
   }
+
+  function closeReadingView() {
+    const view = readingView();
+    if (!view || view.hidden) return;
+    view.hidden = true;
+    document.body.classList.remove('sf-reading-open');
+    window.StoryFlowSetReadingViewMode?.('read');
+    $('openReadingViewBtn')?.focus?.({ preventScroll: true });
+  }
+
+  window.StoryFlowReadingView = {
+    open: openReadingView,
+    close: closeReadingView,
+    isOpen: () => Boolean(readingView()) && !readingView().hidden,
+    syncHead: syncReadingHead
+  };
+
+  // A page has no built-in dismissal the way a dialog does, and Escape is what a reader
+  // reaches for. A modal on top owns the key first — and only a modal: settings-page.js
+  // keeps `#settingsDialog` permanently `open` so it can render inline, so `dialog[open]`
+  // alone would mean this key never reached the reading surface at all.
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    if (!window.StoryFlowReadingView.isOpen()) return;
+    if ([...document.querySelectorAll('dialog[open]')].some(dialog => dialog.matches(':modal'))) return;
+    event.preventDefault();
+    closeReadingView();
+  });
+
+  // Reading is about one chapter of one work. Leaving the workbench or switching work
+  // would otherwise leave the previous chapter's text on screen.
+  window.addEventListener('storyflow:view-changed', event => {
+    if (event.detail?.view !== 'workspace') closeReadingView();
+  });
+  window.addEventListener('storyflow:projects-changed', closeReadingView);
 
   function ensurePlatformPreviewDialog() {
     if ($('platformPreviewDialog')) return;
@@ -252,7 +257,7 @@
   window.renderSuggestion = function renderSuggestionPatched() {
     ensureSplitPreviewControls();
     baseRenderSuggestion();
-    const reviewBtn = $('openSplitReviewBtn');
+    const reviewBtn = $('openReadingViewBtn');
     if (reviewBtn) reviewBtn.disabled = !suggestion;
     renderSuggestionPlatformSettings();
     refreshSuggestionPreview();
@@ -351,7 +356,7 @@
 
   if ($('generateBtn')) $('generateBtn').onclick = suggestNextPart;
   ensureSplitPreviewControls();
-  ensureReviewDialog();
+  ensureReadingView();
   ensurePlatformPreviewDialog();
   ensureResetAction();
   renderAll();

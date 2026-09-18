@@ -357,11 +357,38 @@ token 就位後，這一步是改幾十行的事。
 
 ## 階段 5 · 功能性重構（風險最高，最後做）
 
-- **5-1　讀稿檢視 + 接縫檢視合併，移除 `reviewDialog`**
-  - 動到 `src/ui/workspace-interactions.js`（對話框本體）、`workspace-ux.js`、
-    `src/split/boundary-engine.js`（手動微調不再是模式）、
-    `styles/domains/workspace-ux.css` 的整組 `.manual-boundary-active` 規則。
-  - 這是唯一會刪掉既有使用者流程的一項，務必先確認。
+### 5-1　讀稿檢視 + 接縫檢視合併，移除 `reviewDialog`　✅ 已完成
+
+計畫這一行寫的是「合併」，實際上不是：**讀稿檢視原本並不存在**。
+`readingMode|讀稿|focusMode|immersive` 在 `src/` 全域搜不到任何東西，
+所以這一項不是把兩個既有畫面接起來，而是新建一個頁面級的閱讀介面，
+再把接縫（原本的 `reviewDialog` + `手動微調` 模式）併進去。
+設計稿主張兩者該整併的依據是「底部操作完全相同」，這點成立，
+而且程式裡早就留下了證據：`.manual-boundary-active` 會把「上一篇」那一欄整個隱藏，
+因為章節全文已經涵蓋它。
+
+做出來的樣子：
+
+- `#readingView` 是 `#workspaceView` 裡的一個 `<section>`，不是 `<dialog>`。
+  打開時兩側欄位收掉，章節取代它們的位置——用對話框蓋住工作區來顯示同一份工作區，
+  那層蓋子本身沒有作用。
+- 三欄改成**單一連續文字流**，已確認／這一篇／尚未處理以墨色深淺（`--ink-3`／`--ink-1`／`--ink-2`）
+  加上 `這一篇開始／結束` 標記區分。「上一篇」就是 start 之前那幾段，不需要複製到第二欄才能比對。
+- `接縫` 是檢視，不是模式。`手動微調` 這顆切換鍵、`.manual-boundary-active` 整組規則、
+  `reviewDialog` 本體與三欄的 CSS 全部移除。
+- 標題、提示、內文、底部操作共用一個欄寬與同一條左邊界。欄寬是**長度**（`--sf-reading-column`），
+  不是 `em`——這些子元素從 12px 到 21px 都有，用 `em` 會讓每一個各自算出不同的欄寬，
+  第一版就是這樣讓提示文字掉出左邊界的。
+
+動到：`index.html`、`src/ui/workspace-interactions.js`、`src/split/boundary-engine.js`、
+`src/split/smart-split-ui.js`、`src/ui/preview-mode.js`、`src/ui/workspace-ux.js`、
+`src/ui/app-ux.js`、`src/publishing/publishing-flow.js`、`src/split/smart-split-title.js`、
+`src/projects/workspace-project-ux.js`、`src/persistence/settings-sync.js`、
+`src/publishing/platform-lock.js`、`src/settings/platform-settings.js`，
+以及 `styles/domains/workspace-ux.css`、`styles/layers/{legacy-patches,ui-system,theme}.css`、
+`preview-mode.css`、`smart-split-ui.css`、`app-ux.css`。
+新增兩張基準：`reading-view-read-1440.png`、`reading-view-seam-1440.png`。
+
 - **5-2　管理發布改成兩欄**（左稿右平台軌），平台預覽改為左欄原地切換而非再開對話框。
 - **5-3　圖片依 `placement` 分組顯示**，並常駐「圖片不會隨複製內容送出」的說明。
 - **5-4　圖文編輯器去框**，摘要從發布預覽對話框移回編輯器。

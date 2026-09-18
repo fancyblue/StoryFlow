@@ -39,8 +39,7 @@
   align-self:flex-end;
   padding-bottom:1px;
 }
-.review-format-bar .sf-preview-mode-control{
-  margin-left:auto;
+.reading-view-controls .sf-preview-mode-control{
   align-self:center;
 }
 .sf-preview-mode-source,
@@ -165,27 +164,28 @@
 
 /* Existing preview boxes already provide borders/padding; only remove browser pre defaults. */
 .source-preview-content.sf-preview-surface,
-.review-content.sf-preview-surface,
+.reading-flow.sf-preview-surface,
 .platform-preview-content.sf-preview-surface{
   font-family:inherit;
 }
 
-/* The full-chapter column is reading context, not a selection highlight. */
-#dialogReviewFull.sf-preview-rendered{
+/* The chapter flow is reading context, not a selection highlight: this part is told apart
+   by ink depth and by its start/end markers, not by a coloured band. */
+#readingFlow.sf-preview-rendered{
   white-space:pre-wrap!important;
 }
-#dialogReviewFull .current-range-highlight{
+#readingFlow .current-range-highlight{
   background:transparent!important;
   box-shadow:none!important;
 }
-#dialogReviewFull .current-range-highlight strong,
-#dialogReviewFull .current-range-highlight em{
+#readingFlow .current-range-highlight strong,
+#readingFlow .current-range-highlight em{
   color:inherit;
 }
 
 @media(max-width:760px){
   #splitPlatformBar .sf-preview-mode-control,
-  .review-format-bar .sf-preview-mode-control{
+  .reading-view-controls .sf-preview-mode-control{
     width:100%;
     margin-left:0;
     justify-content:flex-start;

@@ -248,7 +248,7 @@
       workspaceView.className = 'app-view workspace-view';
       const first = main.firstElementChild;
       main.insertBefore(workspaceView, first || null);
-      ['.topbar', '.workspace-grid'].forEach(selector => {
+      ['.topbar', '.workspace-grid', '.reading-view'].forEach(selector => {
         const node = main.querySelector(`:scope > ${selector}`);
         if (node) workspaceView.appendChild(node);
       });

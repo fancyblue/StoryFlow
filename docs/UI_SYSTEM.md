@@ -377,7 +377,36 @@ Longform chapters/articles and visual entries share this rule. Their list-level 
 
 On the Works page, “管理章節／管理圖文” is the most likely next step and uses the same emphasized light-blue treatment on every work card. Both content types use “工作台” for the active work and “開啟” for inactive works; never substitute type-specific open labels for that open action. “管理發布” is a quieter tinted shortcut. The “目前作品” badge and card treatment alone communicate which work is active; action color must not duplicate selection or make identical labels look like different functions. Expanded management uses a stronger soft selection with an inset accent, never a solid primary fill. Manual chapters and visual entries show direct “編輯” plus a persistent trailing `⋯` for Recovery-guarded deletion.
 
-Split confirmation has two precision levels. “少一個場景／多一個場景” are coarse directional actions and keep their arrows; “手動微調” is a pressed-state mode button, not a disclosure. In manual mode, the full-chapter column is the primary surface: the previous-part column and coarse scene buttons are hidden, the current ending is a compact solid draggable blue line, and alternative paragraph endings are quiet dashed full-width targets whose labels appear only on hover or focus. Every target must still work by click and keyboard. The toolbar reports “本篇／後續” character counts. Manual targets appear only for the current unconfirmed range and never imply that source prose is editable. Returning to normal review must scroll the chapter view to the selected end marker instead of retaining a now-invalid manual-mode scroll offset.
+## The reading surface
+
+Reading a chapter and deciding where to cut it are one surface with two views, `讀稿` and
+`接縫`, not two places. It is a page inside the workbench (`#readingView`), not a dialog: both
+workbench rails collapse and the chapter takes their place, because a modal that covers the
+work in order to show the same work is only a lid.
+
+One flow carries what three columns used to. The text before this part, this part, and what is
+still ahead are told apart by **ink depth** — `--ink-3`, `--ink-1`, `--ink-2` — plus the
+`這一篇開始／結束` markers. Nothing is duplicated into a second column to be comparable; the
+previous part is literally the paragraphs above the start.
+
+Head, hint, text and actions are one column with one shared left edge, and the width left over
+is right-hand margin, as everywhere else prose is read. That column is a **length**
+(`--sf-reading-column`), not an `em`: these children run from 12 px to 21 px, and an `em`
+measure would hand each of them a different column. It is wide enough for the 36 em reading
+measure inside the flow plus its padding.
+
+`接縫` is a view, not a mode. `少一個場景／多一個場景` are coarse directional actions and keep
+their arrows in both views; the seam view adds one compact full-width cut point after every
+eligible paragraph. The current ending is a solid draggable line; candidates are quiet dashed
+lines whose labels appear only on hover or keyboard focus, and every one must work by click and
+by keyboard. Cut points appear only for the current unconfirmed range and never imply that
+source prose is editable. The `顯示 預覽／原始 MD` switch steps aside while the seam view is
+showing, because raw Markdown would throw away the buttons that view is made of. Switching
+views keeps the cut where the author put it and scrolls the flow to the marker that view is
+about, rather than keeping the other view's now-meaningless offset.
+
+The bottom actions — character counts, the two scene buttons, `確認並存成 Markdown` — are
+identical in both views. That is the evidence the two were one surface all along.
 
 Character counts in review headers are supporting metadata, not headings: keep them smaller and quieter than the article title and action label. In the works library, “工作台”, “開啟”, “管理發布” and “管理章節” share one control height, font size and weight. All “管理章節” buttons use one emphasized light-blue treatment; Workbench stays outlined and publishing uses a paler tinted treatment.
 

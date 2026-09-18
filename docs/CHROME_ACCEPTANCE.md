@@ -56,13 +56,15 @@ capability, which is exactly what CI cannot exercise.
 Before publishing, verify split precision with a disposable chapter containing one long scene and at least six paragraphs but no blank scene break:
 
 - [ ] Generate the default suggestion and confirm it remains on a real scene ending.
-- [ ] Open “切篇確認” and confirm “少一個場景／多一個場景” still perform coarse scene-level movement.
-- [ ] At a desktop viewport around 760 CSS px high, open “切篇確認”. Confirm “確認完畢，回到切篇” is fully visible immediately, the dialog card itself does not need to scroll, and each comparison column still scrolls independently.
-- [ ] Choose “手動微調”. Confirm the full chapter shows one selectable boundary after each eligible paragraph and the current “這一篇結束” line is visibly draggable.
-- [ ] Drag the ending to another paragraph, then use a different paragraph's click target. Confirm “本篇／後續” counts, highlight and current preview update immediately.
-- [ ] Confirm manual mode shows only the current-part and chapter columns; candidate endings are thin lines whose labels appear on hover/focus, while the blue current ending stays visible without creating large gaps between paragraphs.
-- [ ] Choose an ending in the middle of a long chapter and press “結束微調”. Confirm the normal chapter view stays at “這一篇結束” instead of jumping to the chapter bottom.
-- [ ] Confirm “本篇／後續” counts are visually smaller than the article title and “結束微調” action, while remaining readable without wrapping.
+- [ ] Open “讀稿檢視” and confirm the workbench rails are gone rather than covered, and that “少一個場景／多一個場景” still perform coarse scene-level movement.
+- [ ] At a desktop viewport around 760 CSS px high, open “讀稿檢視”. Confirm “確認並存成 Markdown” is fully visible immediately, the page itself does not need to scroll, and only the chapter flow scrolls.
+- [ ] In 讀稿, confirm the already-confirmed text, this part and the text still ahead are distinguishable by ink depth, and that the head, the text and the action row share one left edge.
+- [ ] Switch to “接縫”. Confirm the flow shows one selectable boundary after each eligible paragraph and the current “本篇結尾” line is visibly draggable.
+- [ ] Drag the ending to another paragraph, then use a different paragraph's click target. Confirm “本篇／後續” counts, ink depth and the split panel's preview update immediately.
+- [ ] Confirm candidate endings are thin lines whose labels appear on hover/focus, that the current ending stays visible without creating large gaps between paragraphs, and that the “顯示 預覽／原始 MD” switch is absent while 接縫 is showing.
+- [ ] Choose an ending in the middle of a long chapter and switch back to “讀稿”. Confirm the cut stays where it was put and the view stays at “這一篇結束” instead of jumping to the chapter bottom.
+- [ ] Confirm “本篇／後續” counts are visually smaller than the chapter title and the primary action, while remaining readable without wrapping.
+- [ ] Press “回到工作台”, then navigate to 發布 and back. Confirm the reading surface is closed and the workbench rails are back.
 - [ ] In the works library, confirm “工作台／開啟／管理發布／管理章節／管理圖文” use the same text size and control height. Expanded manual chapters and visual entries both show direct edit plus a persistent `⋯` containing the Recovery-guarded delete action.
 - [ ] Give the suggestion a custom title before moving it and confirm the title is preserved.
 - [ ] Close and reopen confirmation; confirm manual mode resets. Confirm the source draft is byte-for-byte unchanged and no confirmed publishing article was rewritten.

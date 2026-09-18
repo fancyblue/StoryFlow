@@ -78,7 +78,7 @@
 .splitter-panel .suggestion-platform-bar{
   grid-template-columns:minmax(150px,190px) minmax(0,1fr)!important;
 }
-.review-format-bar .format-summary-text{max-width:520px}
+.reading-view-controls .format-summary-text{max-width:none}
 
 /* Feedback must remain visible on Works/Publishing, where the workspace save label is hidden. */
 .storyflow-toast-stack{

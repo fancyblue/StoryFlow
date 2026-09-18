@@ -202,22 +202,18 @@
   }
 
   function tidyReviewToolbar() {
-    const dialog = document.getElementById('reviewDialog');
-    if (!dialog) return;
+    const view = document.getElementById('readingView');
+    if (!view) return;
 
-    const formatLabel = dialog.querySelector('.review-format-bar .platform-select-field > span');
+    // The select sits next to the view switch, so its visible label would read as a second
+    // control name. The accessible name stays on the control itself.
+    const formatLabel = view.querySelector('.reading-view-controls .platform-select-field > span');
     if (formatLabel && formatLabel.textContent) {
       formatLabel.textContent = '';
       formatLabel.setAttribute('aria-hidden', 'true');
     }
-    const select = document.getElementById('reviewPlatformSelect');
+    const select = document.getElementById('readingPlatformSelect');
     if (select) select.setAttribute('aria-label', '預覽格式');
-
-    const controls = document.getElementById('reviewBoundaryControls');
-    const currentHead = dialog.querySelector('.review-column.current .review-column-head');
-    if (controls && currentHead && controls.parentElement !== currentHead) {
-      currentHead.appendChild(controls);
-    }
   }
 
   function syncAll() {
@@ -230,7 +226,7 @@
 
   document.addEventListener('click', event => {
     if (!event.target.closest?.('#workspaceProjectQuickSwitch, #quickSwitchProjectBtn')) closeQuickSwitch();
-    if (event.target.closest?.('#openSplitReviewBtn')) setTimeout(tidyReviewToolbar, 0);
+    if (event.target.closest?.('#openReadingViewBtn')) setTimeout(tidyReviewToolbar, 0);
   });
   window.addEventListener('storyflow:projects-changed', () => setTimeout(syncAll, 0));
   window.addEventListener('storyflow:connection-changed', syncAll);

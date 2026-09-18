@@ -175,7 +175,7 @@
   margin:0!important;
   min-width:0!important;
 }
-.splitter-panel .smart-split-header-actions #openSplitReviewBtn,
+.splitter-panel .smart-split-header-actions #openReadingViewBtn,
 .splitter-panel .smart-split-header-actions #splitPreferencesToggle{
   margin:0!important;
   white-space:nowrap!important;
@@ -350,7 +350,7 @@
     gap:10px!important;
   }
   .source-heading-actions .quick-switch-project-btn,
-  .splitter-panel .smart-split-header-actions #openSplitReviewBtn,
+  .splitter-panel .smart-split-header-actions #openReadingViewBtn,
   .splitter-panel .smart-split-header-actions #splitPreferencesToggle{
     min-height:40px!important;
     height:40px!important;
@@ -363,7 +363,7 @@
   .source-heading-title-row,
   .splitter-panel > .panel-head{gap:8px!important}
   .source-heading-actions .quick-switch-project-btn,
-  .splitter-panel .smart-split-header-actions #openSplitReviewBtn,
+  .splitter-panel .smart-split-header-actions #openReadingViewBtn,
   .splitter-panel .smart-split-header-actions #splitPreferencesToggle{
     min-height:36px!important;
     height:36px!important;

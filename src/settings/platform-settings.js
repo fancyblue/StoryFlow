@@ -36,7 +36,7 @@
 
   function refreshDependentUI() {
     syncPlatformSelect(document.getElementById('suggestionPlatformSelect'));
-    syncPlatformSelect(document.getElementById('reviewPlatformSelect'));
+    syncPlatformSelect(document.getElementById('readingPlatformSelect'));
     if (typeof renderParts === 'function') renderParts();
     if (typeof renderSuggestion === 'function') renderSuggestion();
   }

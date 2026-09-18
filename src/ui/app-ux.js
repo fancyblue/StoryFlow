@@ -329,8 +329,8 @@
     const suggestionSelect = document.getElementById('suggestionPlatformSelect');
     if (suggestionBox) suggestionBox.innerHTML = `<span class="format-summary-text">${escapeHtml(formatSummary(suggestionSelect?.value || ''))}</span>`;
 
-    const reviewBox = document.getElementById('reviewPlatformSettings');
-    const reviewSelect = document.getElementById('reviewPlatformSelect');
+    const reviewBox = document.getElementById('readingPlatformSettings');
+    const reviewSelect = document.getElementById('readingPlatformSelect');
     if (reviewBox) reviewBox.innerHTML = `<span class="format-summary-text">${escapeHtml(formatSummary(reviewSelect?.value || ''))}</span>`;
   }
 
@@ -358,12 +358,12 @@
   }
 
   document.addEventListener('change', event => {
-    if (event.target?.id === 'suggestionPlatformSelect' || event.target?.id === 'reviewPlatformSelect') {
+    if (event.target?.id === 'suggestionPlatformSelect' || event.target?.id === 'readingPlatformSelect') {
       setTimeout(refreshFormatSummaries, 0);
     }
   });
   document.addEventListener('click', event => {
-    if (event.target?.closest?.('#openSplitReviewBtn')) setTimeout(refreshFormatSummaries, 0);
+    if (event.target?.closest?.('#openReadingViewBtn')) setTimeout(refreshFormatSummaries, 0);
   });
 
   window.addEventListener('storyflow:projects-changed', () => {

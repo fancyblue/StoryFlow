@@ -12,8 +12,8 @@
   gap:8px;
   flex:0 0 auto;
 }
-.smart-split-header-actions #openSplitReviewBtn { white-space:nowrap; }
-.smart-split-header-actions #openSplitReviewBtn[hidden] { display:none !important; }
+.smart-split-header-actions #openReadingViewBtn { white-space:nowrap; }
+.smart-split-header-actions #openReadingViewBtn[hidden] { display:none !important; }
 
 /* Preferences are deliberately not part of the heading row. */
 .splitter-panel .smart-split-mini-settings {
@@ -106,20 +106,6 @@
 }
 .preview-boundary-controls .button { padding:6px 9px; }
 
-.review-boundary-controls {
-  display:flex;
-  align-items:center;
-  gap:8px;
-  justify-content:flex-end;
-  margin-left:auto;
-}
-.review-current-chars { color:var(--muted);white-space:nowrap; }
-#reviewDialogMeta[hidden] { display:none !important; }
-
-@media (max-width:980px) {
-  .review-format-bar { grid-template-columns:1fr; }
-  .review-boundary-controls { justify-content:flex-start; margin-left:0; }
-}
 
 @media (max-width:700px) {
   .splitter-panel > .panel-head { gap:10px; }
