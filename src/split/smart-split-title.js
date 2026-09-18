@@ -52,7 +52,6 @@
 
     const input = document.getElementById('suggestionTitleInput');
     const hiddenName = document.getElementById('suggestionName');
-    const reviewTitle = document.getElementById('dialogReviewCurrentTitle');
 
     if (userEditedTitle) {
       const custom = String(input?.value || suggestion.name || '').trim();
@@ -63,7 +62,6 @@
     }
 
     if (hiddenName) hiddenName.textContent = suggestion.name;
-    if (reviewTitle) reviewTitle.textContent = suggestion.name;
   }
 
   // Mark only real user typing as a custom title. Programmatic range changes do not
@@ -96,7 +94,7 @@
 
   document.addEventListener('click', event => {
     const id = event.target?.closest?.('button')?.id;
-    if (['shrinkBtn', 'expandBtn', 'reviewShrinkBtn', 'reviewExpandBtn'].includes(id)) {
+    if (['shrinkBtn', 'expandBtn', 'readingShrinkBtn', 'readingExpandBtn'].includes(id)) {
       window.setTimeout(syncTitle, 0);
     }
   }, true);

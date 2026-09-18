@@ -129,6 +129,11 @@
 .project-chapter-manager{
   grid-column:1 / -1;
   width:100%;
+  /* The current work's row is tinted. Its expansion is content below that row, not more of
+     it, so the expansion is paper — which also separates the two without another line. */
+  margin-top:14px;
+  padding-top:2px;
+  background:#fbfaf6;
   border-top:1px solid #ded9cc;
 }
 .project-chapter-manager-head{
@@ -136,7 +141,8 @@
   align-items:flex-start;
   justify-content:space-between;
   gap:14px;
-  margin-bottom:10px;
+  margin-bottom:0;
+  padding-bottom:9px;
 }
 .project-chapter-manager-head > div{
   display:grid;
@@ -154,7 +160,7 @@
 }
 .project-chapter-manager-list{
   display:grid;
-  gap:6px;
+  gap:0;
 }
 .project-chapter-manager-row{
   display:grid;
@@ -163,9 +169,7 @@
   gap:10px;
   min-height:48px;
   padding:8px 10px 8px 12px;
-  border:1px solid #ded9cc;
-  border-radius:10px;
-  background:#fbfaf6;
+  background:transparent;
 }
 .project-chapter-title{
   display:flex;

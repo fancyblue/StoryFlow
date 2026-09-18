@@ -4,9 +4,7 @@
 (function () {
   const TARGET_SELECTOR = [
     '#preview',
-    '#dialogReviewPrevious',
-    '#dialogReviewCurrent',
-    '#dialogReviewFull',
+    '#readingFlow',
     '#sourcePreviewContent',
     '#sourceRefreshBefore',
     '#sourceRefreshAfter',
@@ -18,7 +16,7 @@
   const states = new WeakMap();
   const groupModes = new Map([
     ['split', 'preview'],
-    ['review', 'preview'],
+    ['reading', 'preview'],
     ['source', 'preview'],
     ['relink', 'preview'],
     ['publish', 'preview']
@@ -169,7 +167,7 @@
   function groupFor(element) {
     if (!element) return null;
     if (element.id === 'preview') return 'split';
-    if (/^dialogReview/.test(element.id)) return 'review';
+    if (element.id === 'readingFlow') return 'reading';
     if (/^sourceRelink/.test(element.id)) return 'relink';
     if (/^sourcePreview|^sourceRefresh/.test(element.id)) return 'source';
     if (element.id === 'platformPreviewContent') return 'publish';
@@ -182,7 +180,7 @@
 
   function captureAuthoredContent(element, stateRecord) {
     stateRecord.rawText = element.textContent || '';
-    stateRecord.authoredHtml = element.id === 'dialogReviewFull' ? element.innerHTML : '';
+    stateRecord.authoredHtml = element.id === 'readingFlow' ? element.innerHTML : '';
   }
 
   function previewText(element, stateRecord) {
@@ -206,7 +204,7 @@
       return;
     }
 
-    const html = element.id === 'dialogReviewFull' && stateRecord.authoredHtml
+    const html = element.id === 'readingFlow' && stateRecord.authoredHtml
       ? transformAuthoredHtml(stateRecord.authoredHtml)
       : renderMarkdownDocument(previewText(element, stateRecord));
     element.innerHTML = `<span class="sf-preview-rendered-root" data-sf-preview-owned="1">${html}</span>`;
@@ -223,7 +221,7 @@
 
   function controlAnchor(group) {
     if (group === 'split') return document.getElementById('splitPlatformBar');
-    if (group === 'review') return document.querySelector('#reviewDialog .review-format-bar');
+    if (group === 'reading') return document.querySelector('#readingView .reading-view-controls');
     if (group === 'source') return document.getElementById('sourcePreviewWarning');
     if (group === 'relink') return document.getElementById('sourceRelinkWarning');
     if (group === 'publish') return document.getElementById('platformPreviewMeta');
@@ -285,7 +283,7 @@
 
   function scan() {
     pauseObserver(() => {
-      ['split', 'review', 'source', 'relink', 'publish'].forEach(ensureControl);
+      ['split', 'reading', 'source', 'relink', 'publish'].forEach(ensureControl);
       document.querySelectorAll(TARGET_SELECTOR).forEach(element => {
         const group = groupFor(element);
         if (!group) return;
@@ -306,13 +304,12 @@
         }
         renderTarget(element);
       });
-      ['split', 'review', 'source', 'relink', 'publish'].forEach(syncControl);
+      ['split', 'reading', 'source', 'relink', 'publish'].forEach(syncControl);
     });
   }
 
   function resetDialogMode(dialog) {
     if (!dialog?.open) return;
-    if (dialog.id === 'reviewDialog') groupModes.set('review', 'preview');
     if (dialog.id === 'sourcePreviewDialog') groupModes.set('source', 'preview');
     if (dialog.id === 'sourceRelinkDialog') groupModes.set('relink', 'preview');
     if (dialog.id === 'platformPreviewDialog') groupModes.set('publish', 'preview');

@@ -8,7 +8,7 @@
   max-width:680px!important;
   margin-top:6px!important;
 }
-.projects-page-head > #projectsNewWorkBtn{
+.projects-page-head #projectsNewWorkBtn{
   min-height:40px!important;
   height:40px!important;
   padding:0 14px!important;
@@ -20,8 +20,8 @@
   color:var(--denim-800,#4b4557)!important;
   box-shadow:none!important;
 }
-.projects-page-head > #projectsNewWorkBtn:hover,
-.projects-page-head > #projectsNewWorkBtn:focus-visible{
+.projects-page-head #projectsNewWorkBtn:hover,
+.projects-page-head #projectsNewWorkBtn:focus-visible{
   border-color:#c8c1b0!important;
   background:var(--sf-primary-soft,#f4f1e9)!important;
 }
@@ -346,4 +346,31 @@
     width:100%;
     justify-content:flex-start;
   }
+}
+
+/* The header's create action stays visible while there are no works — it is outlined, so it
+   is not the competing solid action W-06 rules out — and states why it is unavailable in
+   text beside itself rather than only in a title attribute. A tooltip is invisible on touch
+   and, for a keyboard user, unreachable on a control that cannot take focus while disabled. */
+.projects-page-new-work{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:0 0 auto;
+}
+.projects-page-new-work-reason{
+  color:#6f6759;
+  font-size:11.5px;
+  line-height:1.4;
+  white-space:nowrap;
+}
+.projects-page-new-work-reason[hidden]{display:none!important}
+/* The id rule above sets this button's colours, so it also has to give back the disabled
+   treatment it was overriding: without this the control is disabled, says why, and still
+   looks entirely enabled — `cursor: not-allowed` on hover was the only cue it was not.
+   --ink-faint is the palette's inactive-control step, which is where WCAG exempts contrast. */
+.projects-page-head #projectsNewWorkBtn:disabled{
+  border-color:#ded9cc!important;
+  background:#f4f1e9!important;
+  color:#968f80!important;
 }

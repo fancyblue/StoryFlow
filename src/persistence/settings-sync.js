@@ -269,7 +269,7 @@
   function refreshPlatformDropdown(select) {
     if (!select) return;
     const current = select.value;
-    const hasDefault = select.id === 'suggestionPlatformSelect' || select.id === 'reviewPlatformSelect';
+    const hasDefault = select.id === 'suggestionPlatformSelect' || select.id === 'readingPlatformSelect';
     select.innerHTML = '';
     if (hasDefault) select.add(new Option('預設格式', ''));
     platforms.forEach(platform => select.add(new Option(platform, platform)));
@@ -280,7 +280,7 @@
   function refreshPlatformUI() {
     ensurePlatformConfigs();
     refreshPlatformDropdown(document.getElementById('suggestionPlatformSelect'));
-    refreshPlatformDropdown(document.getElementById('reviewPlatformSelect'));
+    refreshPlatformDropdown(document.getElementById('readingPlatformSelect'));
     if (typeof renderFormattingSettings === 'function') renderFormattingSettings();
     if (typeof renderParts === 'function') renderParts();
     renderPlatformManager();

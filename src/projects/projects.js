@@ -84,6 +84,21 @@
     return store.projects.find(project => project.id === store.activeProjectId) || store.projects[0];
   }
 
+  // Preferences that belong to the writer rather than to one work. `state` is replaced
+  // wholesale whenever the active work changes — switched into, created, or deleted into —
+  // so anything here has to be carried across deliberately. It is one list because it used
+  // to be spelled out at all three sites, and the next preference added after that reached
+  // only one of them.
+  const CARRIED_PREFERENCES = ['formatting', 'sceneMarker', 'minChars', 'maxChars', 'publishSort'];
+
+  function capturePreferences(source = state) {
+    const carried = {};
+    CARRIED_PREFERENCES.forEach(key => {
+      if (source?.[key] !== undefined) carried[key] = clone(source[key]);
+    });
+    return carried;
+  }
+
   function syncActiveRecord(sourceState = state) {
     ensureStore();
     const record = activeRecord();
@@ -209,17 +224,9 @@
     }
 
     syncActiveRecord();
-    const sharedFormatting = clone(state.formatting);
-    const sharedSceneMarker = state.sceneMarker;
-    const sharedMin = state.minChars;
-    const sharedMax = state.maxChars;
-
+    const carried = capturePreferences();
     store.activeProjectId = target.id;
-    state = normalizeProjectState(clone(target.state));
-    state.formatting = sharedFormatting;
-    state.sceneMarker = sharedSceneMarker;
-    state.minChars = sharedMin;
-    state.maxChars = sharedMax;
+    state = Object.assign(normalizeProjectState(clone(target.state)), carried);
     suggestion = null;
     syncActiveRecord();
     renderAll();
@@ -241,10 +248,7 @@
       next.activeChapterId = null;
       next.visualEntries = visualEntry ? [StoryFlowContentModel.normalizeVisualEntry(visualEntry)] : [];
     }
-    next.formatting = clone(state.formatting);
-    next.sceneMarker = state.sceneMarker;
-    next.minChars = state.minChars;
-    next.maxChars = state.maxChars;
+    Object.assign(next, capturePreferences());
     const normalized = normalizeProjectState(next);
 
     let record = activeRecord();
@@ -322,17 +326,10 @@
       store.projects = [blank];
     }
 
-    const sharedFormatting = clone(state.formatting);
-    const sharedSceneMarker = state.sceneMarker;
-    const sharedMin = state.minChars;
-    const sharedMax = state.maxChars;
+    const carried = capturePreferences();
     const next = store.projects[Math.min(index, store.projects.length - 1)] || store.projects[0];
     store.activeProjectId = next.id;
-    state = normalizeProjectState(clone(next.state));
-    state.formatting = sharedFormatting;
-    state.sceneMarker = sharedSceneMarker;
-    state.minChars = sharedMin;
-    state.maxChars = sharedMax;
+    state = Object.assign(normalizeProjectState(clone(next.state)), carried);
     suggestion = null;
     syncActiveRecord();
     renderAll();

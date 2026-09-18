@@ -21,17 +21,7 @@
 
   function syncAllFormatSelects() {
     syncFormatSelect(document.getElementById('suggestionPlatformSelect'));
-    syncFormatSelect(document.getElementById('reviewPlatformSelect'));
-  }
-
-  function currentFormatPlatform() {
-    const review = document.getElementById('reviewDialog');
-    if (review?.open) return document.getElementById('reviewPlatformSelect')?.value || '';
-    return document.getElementById('suggestionPlatformSelect')?.value || '';
-  }
-
-  function formatText(raw, platform) {
-    return platform ? platformFormat(raw, platform) : webFormat(raw);
+    syncFormatSelect(document.getElementById('readingPlatformSelect'));
   }
 
   function identityForSuggestion() {
@@ -49,7 +39,7 @@
     customTitle = previousTitle;
     renderSuggestion();
     syncEditableTitle();
-    if (document.getElementById('reviewDialog')?.open) refreshReviewDialog(false);
+    window.StoryFlowRefreshReviewFromSource?.(false);
   }
 
   function syncEditableTitle() {
@@ -80,8 +70,6 @@
         customTitle = input.value;
         if (suggestion) suggestion.name = customTitle || suggestion.name;
         original.textContent = customTitle;
-        const reviewTitle = document.getElementById('dialogReviewCurrentTitle');
-        if (reviewTitle) reviewTitle.textContent = customTitle;
       });
       input.addEventListener('change', () => {
         if (!input.value.trim()) {
@@ -118,7 +106,7 @@
     const panel = document.querySelector('.splitter-panel');
     const head = panel?.querySelector('.panel-head');
     const mini = document.getElementById('smartSplitMiniSettings');
-    const reviewBtn = document.getElementById('openSplitReviewBtn');
+    const reviewBtn = document.getElementById('openReadingViewBtn');
     const card = document.getElementById('suggestionCard');
     const titleRow = panel?.querySelector('.suggestion-title-row');
     const formatBar = document.getElementById('splitPlatformBar');
@@ -159,106 +147,6 @@
     }
   }
 
-  function reviewFullChapterHTML(platform) {
-    const chapter = activeChapter();
-    const blocks = parseBlocks(chapter.draft);
-    if (!blocks.length) return '目前章節沒有內容。';
-    const options = platform ? platformOptions(platform) : {
-      indent: state.formatting.defaultIndent,
-      paragraphSpacing: state.formatting.defaultParagraphSpacing,
-      sceneSeparator: state.formatting.defaultSceneSeparator,
-      marker: state.sceneMarker
-    };
-    const start = suggestion?.start ?? -1;
-    const end = suggestion?.end ?? -1;
-    const pieces = [];
-
-    blocks.forEach((block, index) => {
-      if (index === start) pieces.push('<span class="range-boundary range-start">──── 這一篇開始 ────</span>\n');
-      const line = escapeHtml(applyIndent(block.raw, options.indent));
-      pieces.push(index >= start && index < end ? `<span class="current-range-highlight">${line}</span>` : line);
-      if (index === end - 1) pieces.push('\n<span class="range-boundary">──── 這一篇結束 ────</span>');
-      if (index < blocks.length - 1) {
-        pieces.push(escapeHtml(formattedBlockBreak(block, options)));
-      }
-    });
-    return pieces.join('');
-  }
-
-  function scrollReviewToCurrentStart() {
-    const fullBox = document.getElementById('dialogReviewFull');
-    if (!fullBox) return;
-
-    // Reset first. offsetTop on an inline marker is relative to whichever ancestor
-    // becomes its offset parent, not necessarily this scrolling <pre>; that made the
-    // previous positioning unreliable. Measure both boxes in viewport coordinates
-    // after the dialog has completed layout, then translate that delta into scrollTop.
-    fullBox.scrollTop = 0;
-
-    const align = () => {
-      const marker = fullBox.querySelector('.range-start');
-      if (!marker || !fullBox.isConnected) return;
-      const boxRect = fullBox.getBoundingClientRect();
-      const markerRect = marker.getBoundingClientRect();
-      const target = fullBox.scrollTop + markerRect.top - boxRect.top - 12;
-      fullBox.scrollTop = Math.max(0, target);
-    };
-
-    requestAnimationFrame(() => requestAnimationFrame(align));
-    // One delayed pass covers late font/layout changes in the modal without animation.
-    window.setTimeout(align, 80);
-  }
-
-  function refreshReviewDialog(scrollToStart = false) {
-    if (!suggestion) return;
-    syncAllFormatSelects();
-    const platform = document.getElementById('reviewPlatformSelect')?.value || '';
-    const chapter = activeChapter();
-    const previous = chapter.parts?.length ? chapter.parts[chapter.parts.length - 1] : null;
-    const previousBox = document.getElementById('dialogReviewPrevious');
-    const currentBox = document.getElementById('dialogReviewCurrent');
-    const fullBox = document.getElementById('dialogReviewFull');
-    const currentTitle = document.getElementById('dialogReviewCurrentTitle');
-    const fullTitle = document.getElementById('dialogReviewFullTitle');
-    const chars = document.getElementById('reviewCurrentChars');
-    const meta = document.getElementById('reviewDialogMeta');
-
-    if (previousBox) previousBox.textContent = previous ? formatText(previous.raw, platform) : '這是本章第一篇。';
-    if (currentBox) currentBox.textContent = formatText(suggestion.raw, platform);
-    if (fullBox) fullBox.innerHTML = reviewFullChapterHTML(platform);
-    if (currentTitle) currentTitle.textContent = customTitle || suggestion.name;
-    if (fullTitle) fullTitle.textContent = chapter.title;
-    if (chars) chars.textContent = `${suggestion.chars.toLocaleString()} 字`;
-    if (meta) meta.hidden = true;
-    if (scrollToStart) scrollReviewToCurrentStart();
-  }
-
-  function installReviewControls() {
-    const dialog = document.getElementById('reviewDialog');
-    if (!dialog) return;
-    const formatBar = dialog.querySelector('.review-format-bar');
-    if (formatBar && !document.getElementById('reviewBoundaryControls')) {
-      const controls = document.createElement('div');
-      controls.id = 'reviewBoundaryControls';
-      controls.className = 'review-boundary-controls';
-      controls.innerHTML = `
-        <span id="reviewCurrentChars" class="review-current-chars"></span>
-        <button id="reviewShrinkBtn" class="button tiny ghost" type="button">← 少一段</button>
-        <button id="reviewExpandBtn" class="button tiny ghost" type="button">多一段 →</button>`;
-      formatBar.appendChild(controls);
-      document.getElementById('reviewShrinkBtn').onclick = () => preserveTitleAdjust(-1);
-      document.getElementById('reviewExpandBtn').onclick = () => preserveTitleAdjust(1);
-    }
-
-    const platformSelect = document.getElementById('reviewPlatformSelect');
-    if (platformSelect && !platformSelect.dataset.smartSplitBound) {
-      platformSelect.dataset.smartSplitBound = '1';
-      platformSelect.addEventListener('focus', syncAllFormatSelects);
-      platformSelect.addEventListener('pointerdown', syncAllFormatSelects);
-      platformSelect.addEventListener('change', () => setTimeout(() => refreshReviewDialog(false), 0));
-    }
-  }
-
   function bindSuggestionPlatformSelect() {
     const select = document.getElementById('suggestionPlatformSelect');
     if (!select || select.dataset.smartSplitReliable) return;
@@ -280,23 +168,12 @@
     }
     syncEditableTitle();
     installPreviewOverlayControls();
-    installReviewControls();
-    refreshReviewDialog(false);
+    window.StoryFlowRefreshReviewFromSource?.(false);
   };
-
-  const reviewBtn = document.getElementById('openSplitReviewBtn');
-  if (reviewBtn && !reviewBtn.dataset.smartSplitBound) {
-    reviewBtn.dataset.smartSplitBound = '1';
-    reviewBtn.addEventListener('click', () => setTimeout(() => {
-      installReviewControls();
-      refreshReviewDialog(true);
-    }, 0));
-  }
 
   syncAllFormatSelects();
   bindSuggestionPlatformSelect();
   organizeSmartSplit();
   installPreviewOverlayControls();
-  installReviewControls();
   if (suggestion) syncEditableTitle();
 })();

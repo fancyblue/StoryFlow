@@ -306,19 +306,89 @@ token 就位後，這一步是改幾十行的事。
 | 4-1 ✅ | 導覽順序改「作品 · 工作台 · 發布」，作品為預設落地頁 | `index.html`、`src/ui/navigation.js`、`connection-ui.js` | 已完成。順序改了之後**首次使用流程會斷**——原本扛著資料夾關卡的是工作台的空狀態，作品頁的空狀態只寫死「建立第一個作品」，而且冷啟動時根本不會 render。所以一併補了作品頁的空狀態（三種情況比照工作台），這是 4-6 的一小塊，被 4-1 逼出來的。UX_FLOW 的 G-01 與 Works 章節已同步 |
 | 4-2 ✅ | 連線狀態移進導覽底部；搜尋與設定移出目的地清單 | `connection-ui.js`、`global-search.js`、`connection-status.css`、`layout-integrity.css` | 已完成。**設定的三個入口早就收斂過了**——`#settingsNav` 與 `#openSettingsBtn` 在桌機已被 CSS 隱藏，只有手機底部列還留著 `#settingsNav`（刻意的，手機沒有常駐工具列）。真正還沒做的是兩件：① 工作台頁首那兩個連線膠囊是側欄底部狀態的**第二份**，已移除（連同只為它們存在的 `ensureTopStatus()`、`setChip()`、`syncConnectionLabels()`）；② 搜尋還在目的地清單裡，已移到側欄工具列，手機維持底部列。側欄底部改成兩行，收合狀態下五個控制項以 `display:contents` 走兩欄流排 |
 | 4-3 ✅ | 統計從橫跨右欄移進切篇預覽，改成一條進度線 | `index.html`、`workspace.css`、`core/app.js`、`source-article-ux.js` | 已完成。四個數字合成一行：一條進度條（已確認／總字數）加上三個數字，四個值一個都沒少。`.stats-grid` / `.stat-card` 的 **46 條 CSS 規則**隨之失效——注意其中 8 條是**跟別的元素共用選擇器**的（`.panel,.stat-card,...`），所以是逐一從選擇器清單裡拿掉，不是整條刪。`reframeWorkspaceHierarchy()` 原本會把統計條搬到欄位頂端，那個搬移現在是錯的，已移除，只留顯示與否的判斷 |
-| 4-4 | 作品頁與發布頁共用「作品 › 章節 › 篇」清單元件 | `chapter-management.js`、`publishing-grouping.js`、`works-library-ux.js` | 本階段最大的一項，建議單獨排 |
-| 4-5 | 發布篩選依語意分組；排序控制 | `publishing-flow.js` | 排序偏好要保存 → 見 GAPS 第 5 項 |
-| 4-6 | 空狀態與首次使用關卡 | `connection-ui.css`、`quick-start.js` | 必須守 UX_FLOW W-06：空狀態只有一個實心動作 |
+| 4-4 ✅ | 作品頁與發布頁共用「作品 › 章節 › 篇」清單元件 | 新增 `styles/domains/list-hierarchy.css`；`chapter-management.js`、`publishing-project-filter.js`、`publishing-flow.js` | 已完成，但**共用的是層級契約不是 renderer**——見下方說明。另外**刪掉了 `publishing-grouping.js`**（76 行，完全失效） |
+| 4-5 ✅ | 發布篩選依語意分組；排序控制 | `publishing-flow.js`、`publishing-project-filter.js`、`projects.js`、`publishing.css` | 已完成。兩半一起做，因為它們動同一塊版面。GAPS 第 5 項**不需要資料模型變更**就結案了——長文的篇根本沒有時間戳記，所以「最近更新」做不到，改成「章節順序／最新在前」兩個方向。排序偏好是全域的，加進 `CARRIED_PREFERENCES`（那份清單原本在三個地方各寫一遍） |
+| 4-6 ✅ | 空狀態與首次使用關卡 | `app-ux.js`、`works-library.css`（`quick-start.js` 沒有改動） | 已完成。**W-06 本身已經沒有違規**——4-1 補的作品頁空狀態就是最後那一個缺口，我用一份活的稽核把六個可達的空狀態全部量過（實心按鈕數、頁首有沒有競爭的實心鈕），全部通過。真正還沒做的是設計稿 First run 那一節裡的另外兩件事，見下 |
+
+### 4-4 的範圍：共用契約，不是共用 renderer
+
+計畫寫「兩頁共用同一組清單元件」。實作時我把它讀成**共用層級契約**，而不是把兩個 renderer 合成一個：
+
+- **共用的**（`styles/domains/list-hierarchy.css`）：縮排一階 `16px`、列與列之間的髮絲線、
+  最後一列不畫線、每一列預留 2px 的目前標記槽、層級標題行的排版、展開箭頭的方向。
+  `cascade-contract.spec.js` 有一條測試把兩頁的量測值對起來比，不一致就紅。
+- **沒有共用的**：兩頁的資料來源不同（作品頁走 `StoryFlowProjects.list()`，
+  發布頁走 `renderParts()` 掃 `chapter.parts`），列裡面顯示什麼、有哪些動作也不同。
+  合併成一個 renderer 是另一件大得多的事，而且計畫那一行要求的是
+  「結構、縮排、分隔線、展開控制一致，只有顯示欄位與動作依頁面任務不同」——那正是契約做到的。
+- **展開控制共用的是行為不是外觀**：兩邊都有 `aria-expanded`、都轉同一個箭頭，
+  但作品列的展開鈕同時是一個具名動作（管理章節／收合章節），發布頁的章節群組不是。
+  把作品列改成裸箭頭會違反 UI_SYSTEM 的「一個動作一個標籤」。
+
+**順手刪掉 `publishing-grouping.js`**（76 行）。它用**抓畫面文字**的方式分章節群組
+（同名章節會被併在一起），而且 `publishing-project-filter.js` 在它之後跑、
+會把整個清單重建一次——它的產出從頭到尾都被丟掉。刪掉之後整套測試只有「模組數量 55 → 54」
+這一條斷言變紅，那就是它已經死掉的證明。
+
+### 4-6 的範圍：做了什麼、沒做什麼
+
+先講**沒做**的：設計稿 First run 有三個空狀態，我只做了兩個半。
+
+- **「瀏覽器不支援」那一格的「以唯讀模式繼續」沒有做。** 查證後：唯讀模式
+  （`mobile-safe-mode.js`）是**手機自動進入**的狀態，沒有任何 `setReadOnly` 之類的 API 可以讓人
+  主動進去。而且 Safari／Firefox 沒有 File System Access API，也就沒有資料夾內容可讀——
+  那顆按鈕會把人帶到一個空的 app。要做它等於**發明一個新模式**，不是實作設計稿。
+  維持 4-1 的處理：這一格不給動作，由文案說明真正的要求。
+- **設計稿裡 01/02/03/04 的「關卡」條沒有做。** 它在那一節的說明文字裡、下面掛著
+  「關卡順序 · …」的圖說，讀起來是在解釋流程順序，不是一個要蓋出來的常駐元件。
+
+做的兩件，都是規則層級的缺口而不是偏好問題：
+
+1. **頁首的「＋ 新增作品」沒有作品時改成保持顯示**（原本是 `hidden`）。它本來就是外框按鈕，
+   W-06 擋的是**競爭的實心**按鈕，外框不算；藏起來反而把「不先讀空狀態就能建立作品」這條路拿掉了。
+2. **停用時的理由變成看得見的文字**（「需要先連接資料夾」），不再只有 `title`。
+   tooltip 在觸控上看不到，鍵盤使用者也碰不到一顆停用中、拿不到 focus 的按鈕。
+   **而且順手抓到一個缺陷**：`works-library.css` 用 id 選擇器設了那顆按鈕的顏色，
+   把 `.button:disabled` 的停用樣式蓋掉了——結果是一顆說明自己不能用、
+   但看起來完全能用的按鈕（只有 hover 時的 `cursor: not-allowed` 透露）。
+   這跟 4-4 那條「接手一個屬性就要連它的狀態一起接手」是同一個形狀。
 
 ---
 
 ## 階段 5 · 功能性重構（風險最高，最後做）
 
-- **5-1　讀稿檢視 + 接縫檢視合併，移除 `reviewDialog`**
-  - 動到 `src/ui/workspace-interactions.js`（對話框本體）、`workspace-ux.js`、
-    `src/split/boundary-engine.js`（手動微調不再是模式）、
-    `styles/domains/workspace-ux.css` 的整組 `.manual-boundary-active` 規則。
-  - 這是唯一會刪掉既有使用者流程的一項，務必先確認。
+### 5-1　讀稿檢視 + 接縫檢視合併，移除 `reviewDialog`　✅ 已完成
+
+計畫這一行寫的是「合併」，實際上不是：**讀稿檢視原本並不存在**。
+`readingMode|讀稿|focusMode|immersive` 在 `src/` 全域搜不到任何東西，
+所以這一項不是把兩個既有畫面接起來，而是新建一個頁面級的閱讀介面，
+再把接縫（原本的 `reviewDialog` + `手動微調` 模式）併進去。
+設計稿主張兩者該整併的依據是「底部操作完全相同」，這點成立，
+而且程式裡早就留下了證據：`.manual-boundary-active` 會把「上一篇」那一欄整個隱藏，
+因為章節全文已經涵蓋它。
+
+做出來的樣子：
+
+- `#readingView` 是 `#workspaceView` 裡的一個 `<section>`，不是 `<dialog>`。
+  打開時兩側欄位收掉，章節取代它們的位置——用對話框蓋住工作區來顯示同一份工作區，
+  那層蓋子本身沒有作用。
+- 三欄改成**單一連續文字流**，已確認／這一篇／尚未處理以墨色深淺（`--ink-3`／`--ink-1`／`--ink-2`）
+  加上 `這一篇開始／結束` 標記區分。「上一篇」就是 start 之前那幾段，不需要複製到第二欄才能比對。
+- `接縫` 是檢視，不是模式。`手動微調` 這顆切換鍵、`.manual-boundary-active` 整組規則、
+  `reviewDialog` 本體與三欄的 CSS 全部移除。
+- 標題、提示、內文、底部操作共用一個欄寬與同一條左邊界。欄寬是**長度**（`--sf-reading-column`），
+  不是 `em`——這些子元素從 12px 到 21px 都有，用 `em` 會讓每一個各自算出不同的欄寬，
+  第一版就是這樣讓提示文字掉出左邊界的。
+
+動到：`index.html`、`src/ui/workspace-interactions.js`、`src/split/boundary-engine.js`、
+`src/split/smart-split-ui.js`、`src/ui/preview-mode.js`、`src/ui/workspace-ux.js`、
+`src/ui/app-ux.js`、`src/publishing/publishing-flow.js`、`src/split/smart-split-title.js`、
+`src/projects/workspace-project-ux.js`、`src/persistence/settings-sync.js`、
+`src/publishing/platform-lock.js`、`src/settings/platform-settings.js`，
+以及 `styles/domains/workspace-ux.css`、`styles/layers/{legacy-patches,ui-system,theme}.css`、
+`preview-mode.css`、`smart-split-ui.css`、`app-ux.css`。
+新增兩張基準：`reading-view-read-1440.png`、`reading-view-seam-1440.png`。
+
 - **5-2　管理發布改成兩欄**（左稿右平台軌），平台預覽改為左欄原地切換而非再開對話框。
 - **5-3　圖片依 `placement` 分組顯示**，並常駐「圖片不會隨複製內容送出」的說明。
 - **5-4　圖文編輯器去框**，摘要從發布預覽對話框移回編輯器。

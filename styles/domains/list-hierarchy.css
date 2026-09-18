@@ -1,0 +1,70 @@
+/* Shared list hierarchy.
+
+   Works and Publishing both show 作品 › 章節 (› 篇), and both built it their own way: Works
+   indented a chapter row 21px and drew hairlines between them, Publishing indented nothing
+   at all and separated by header alone. Same hierarchy, two different readings of it.
+
+   This file owns the part that should not differ — how deep a level sits, what separates one
+   row from the next, and where the active marker goes. What each page shows in a row, and
+   which actions it offers, stays that page's business: a chapter row on Works carries 編輯章節,
+   a part row on Publishing carries 預覽與複製, and neither belongs here.
+
+   The declarations carry `!important` because ensureThemeOrder() re-appends `ui-system.css`
+   and `layout-integrity.css` after this file; without it the contract loses on order to
+   rules that were never about hierarchy. */
+
+:root{
+  /* One step. Two levels down is two steps, and nothing is ever half a step. */
+  --sf-hier-step:16px;
+}
+
+/* A nested level: one step in from the level that contains it. */
+.sf-hier-nest{
+  padding-left:var(--sf-hier-step)!important;
+}
+
+/* A row at any level. The bottom hairline separates it from its sibling; the last row has
+   none, because the level's own edge already ends it. The 2px left border is reserved on
+   every row so marking one current colours a border that is already there rather than
+   adding one and pushing every other row's text sideways. */
+.sf-hier-row{
+  border-bottom:1px solid var(--rule-1,#ded9cc)!important;
+  border-left:2px solid transparent!important;
+}
+.sf-hier-row:last-child{
+  border-bottom:0!important;
+}
+.sf-hier-row.is-current{
+  border-left-color:var(--dai-700,#4b4557)!important;
+}
+
+/* A level's header line: what the level is, then its count or controls at the far end. */
+.sf-hier-head{
+  display:flex!important;
+  align-items:center!important;
+  gap:9px!important;
+  border-bottom:1px solid var(--rule-1,#ded9cc)!important;
+}
+/* The trailing element goes to the far end — unless it is also the first, which is the case
+   where the head is only a title and pushing it right would right-align the level's name. */
+.sf-hier-head > :last-child:not(:first-child){
+  margin-left:auto!important;
+}
+
+/* The disclosure chevron. Both pages point it the same way for the same state; whether the
+   control also carries a label is the page's decision — a work row's expander is a named
+   action ("管理章節"), a chapter group's is not. */
+.sf-disclosure-chevron{
+  display:inline-block;
+  flex:0 0 auto;
+  width:9px;
+  height:9px;
+  margin-left:2px;
+  border-right:1.6px solid currentColor;
+  border-bottom:1.6px solid currentColor;
+  transform:rotate(45deg);
+  transform-origin:center;
+}
+[aria-expanded="true"] > .sf-disclosure-chevron{
+  transform:rotate(-135deg);
+}

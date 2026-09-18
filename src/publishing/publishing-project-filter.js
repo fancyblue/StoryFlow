@@ -133,11 +133,16 @@
         }));
     }
     const chapters = project?.state?.chapters || [];
-    for (let chapterIndex = chapters.length - 1; chapterIndex >= 0; chapterIndex -= 1) {
-      const chapter = chapters[chapterIndex];
+    // Same order as the single-project list, read from the same place. Keeping a second copy
+    // of the iteration is how the two lists would drift apart the first time one changed.
+    const reverse = window.StoryFlowPublishing?.sortReversed?.() !== false;
+    const chapterOrder = chapters.map((chapter, chapterIndex) => ({ chapter, chapterIndex }));
+    if (reverse) chapterOrder.reverse();
+    chapterOrder.forEach(({ chapter }) => {
       const parts = chapter?.parts || [];
-      for (let partIndex = parts.length - 1; partIndex >= 0; partIndex -= 1) {
-        const part = parts[partIndex];
+      const partOrder = parts.map((part, partIndex) => ({ part, partIndex }));
+      if (reverse) partOrder.reverse();
+      partOrder.forEach(({ part, partIndex }) => {
         entries.push({
           project,
           chapter,
@@ -147,8 +152,8 @@
           key: partKey(part, project),
           status: statusFor(part)
         });
-      }
-    }
+      });
+    });
     return entries;
   }
 
@@ -338,7 +343,7 @@
     const { project, part, status, key } = entry;
     const visual = entry.contentMode === 'visual';
     const card = document.createElement('article');
-    card.className = 'publish-list-item publishing-combined-row';
+    card.className = 'publish-list-item publishing-combined-row sf-hier-row';
     card.dataset.projectId = project.id;
     card.dataset.partKey = key;
     const statusCount = status.total ? ` · ${status.published}/${status.total}` : '';
@@ -370,7 +375,7 @@
     const projectName = project.title || project.state?.projectTitle || '未命名作品';
 
     const head = document.createElement('header');
-    head.className = 'publishing-project-group-head';
+    head.className = 'publishing-project-group-head sf-hier-head';
     const titleWrap = document.createElement('div');
     titleWrap.className = 'publishing-project-group-title';
     const title = document.createElement('strong');
@@ -425,14 +430,14 @@
         const section = document.createElement('section');
         section.className = 'publishing-chapter-group';
         const chapterHead = document.createElement('header');
-        chapterHead.className = 'publishing-chapter-group-head';
+        chapterHead.className = 'publishing-chapter-group-head sf-hier-head';
         const chapterTitle = document.createElement('strong');
         chapterTitle.textContent = entry.contentMode === 'visual' ? '圖文清單' : (entry.chapter?.title || '未命名章節');
         const chapterCount = document.createElement('span');
         chapterCount.className = 'publishing-chapter-group-count';
         chapterHead.append(chapterTitle, chapterCount);
         const rows = document.createElement('div');
-        rows.className = 'publishing-chapter-group-rows';
+        rows.className = 'publishing-chapter-group-rows sf-hier-nest';
         section.append(chapterHead, rows);
         chapter = { section, rows, count: chapterCount, size: 0 };
         chapters.set(chapterId, chapter);

@@ -223,7 +223,7 @@
       });
     }
 
-    const review = document.getElementById('openSplitReviewBtn');
+    const review = document.getElementById('openReadingViewBtn');
     if (toggle.parentElement !== actions) {
       if (review?.parentElement === actions) actions.insertBefore(toggle, review);
       else actions.prepend(toggle);

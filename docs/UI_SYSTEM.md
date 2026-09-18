@@ -86,6 +86,26 @@ A destructive action must never be the only enabled control in an empty state. W
 
 One action carries one label and one weight wherever it appears. Connecting the StoryFlow folder is reached from the Settings folder card and from the backup centre, so both read "連接資料夾" and both stay outlined; the backup control only proxies the owning card and must not out-emphasize it. Sidebar chrome ranks below navigation: the collapse toggle rests on a translucent fill, never on the `--denim-800` used by an active nav item, so a utility control cannot read as the current destination.
 
+## A disabled control explains itself, and looks disabled
+
+Two halves, and the second is the one that gets lost.
+
+**It says why, in text.** A `title` attribute is not the explanation: it is invisible on
+touch, and a keyboard user cannot reach it on a control that cannot take focus while
+disabled. The reason sits beside the control — 「需要先連接資料夾」 next to a disabled
+＋ 新增作品 — and is wired with `aria-describedby`. The `title` can stay as a second copy; it
+cannot be the only one.
+
+**It looks disabled.** `.button:disabled` sets the inactive treatment in `theme.css`, and any
+rule that colours a specific button by id overrides it — `--ink-faint` is the palette's step
+for inactive controls, and it never reached the one control that most needed it. The result
+was a button that said it could not be used, showed `cursor: not-allowed` on hover, and
+otherwise looked entirely usable.
+
+That is the same shape as the specificity note under [one hierarchy](#one-hierarchy-two-pages):
+a rule that takes over a property takes over all of its states too. If a selector sets
+`color` on a button, it owes that button a `:disabled` rule as well.
+
 ## Palette
 
 The interface is warm paper, warm ink, and one restrained accent. Colour values are defined
@@ -211,6 +231,46 @@ read; the figures carry the exact values, including the two a bar cannot show �
 left, and how many parts exist. An empty chapter has no ratio, so the bar shows none rather
 than full.
 
+## One hierarchy, two pages
+
+Works and Publishing both show 作品 › 章節 (› 篇). Works expands to chapters; Publishing
+expands to parts, and then to platforms inside a part. They are built by different renderers
+from different data, and that is fine — what is not fine is each of them deciding separately
+how deep a level sits and what separates one row from the next. Works indented a chapter row
+21px and drew hairlines under each; Publishing indented nothing at all and drew them as a
+`border-top` on every row after the first. Same hierarchy, two readings of it.
+
+`styles/domains/list-hierarchy.css` owns the part that should not differ:
+
+| Class | What it fixes |
+| --- | --- |
+| `.sf-hier-nest` | One `--sf-hier-step` (16px) of indent. Two levels down is two steps, and nothing is ever half a step |
+| `.sf-hier-row` | The hairline under a row, none under the last, and the 2px left gutter the current marker lives in |
+| `.sf-hier-head` | A level's header line: what the level is, then its count or controls at the far end |
+| `.sf-disclosure-chevron` | The chevron, pointing the same way for the same state |
+
+What a row *contains* stays each page's business. A chapter row on Works carries 編輯章節; a
+part row on Publishing carries 預覽與複製; neither belongs in the shared file.
+
+The disclosure is shared in behaviour, not in appearance: both expanders carry
+`aria-expanded` and rotate the same chevron, but a work row's expander is also a named action
+("管理章節" / "收合章節") while a chapter group's is a bare control. Giving the work row a bare
+chevron would drop an action label that [action hierarchy](#action-hierarchy) requires.
+
+`cascade-contract.spec.js` pins it: both pages' nested level, row separator and marker gutter
+must come back identical, and the step must be exactly 16px. A page that drifts to "about the
+same depth" fails there rather than being noticed a year later.
+
+### Owning a property means owning all of it
+
+`publishing.css` had `.publishing-chapter-group .publish-list-item{border:0!important}` from
+when the group drew its own separators. Two classes beat one, so the shared contract lost
+regardless of load order, and the contract's border never rendered. That rule now zeroes only
+the top and right — the card edges a row inside a group should not have — and leaves bottom
+and left to the contract. When a shared rule and a local one both claim a property, the local
+one has to give back the part it no longer owns; lowering the shared rule's specificity is not
+available, because specificity is what made the local rule win in the first place.
+
 ## Type weight
 
 The interface uses exactly three weights: **400**, **500**, **700**. No other numeric value
@@ -317,7 +377,36 @@ Longform chapters/articles and visual entries share this rule. Their list-level 
 
 On the Works page, “管理章節／管理圖文” is the most likely next step and uses the same emphasized light-blue treatment on every work card. Both content types use “工作台” for the active work and “開啟” for inactive works; never substitute type-specific open labels for that open action. “管理發布” is a quieter tinted shortcut. The “目前作品” badge and card treatment alone communicate which work is active; action color must not duplicate selection or make identical labels look like different functions. Expanded management uses a stronger soft selection with an inset accent, never a solid primary fill. Manual chapters and visual entries show direct “編輯” plus a persistent trailing `⋯` for Recovery-guarded deletion.
 
-Split confirmation has two precision levels. “少一個場景／多一個場景” are coarse directional actions and keep their arrows; “手動微調” is a pressed-state mode button, not a disclosure. In manual mode, the full-chapter column is the primary surface: the previous-part column and coarse scene buttons are hidden, the current ending is a compact solid draggable blue line, and alternative paragraph endings are quiet dashed full-width targets whose labels appear only on hover or focus. Every target must still work by click and keyboard. The toolbar reports “本篇／後續” character counts. Manual targets appear only for the current unconfirmed range and never imply that source prose is editable. Returning to normal review must scroll the chapter view to the selected end marker instead of retaining a now-invalid manual-mode scroll offset.
+## The reading surface
+
+Reading a chapter and deciding where to cut it are one surface with two views, `讀稿` and
+`接縫`, not two places. It is a page inside the workbench (`#readingView`), not a dialog: both
+workbench rails collapse and the chapter takes their place, because a modal that covers the
+work in order to show the same work is only a lid.
+
+One flow carries what three columns used to. The text before this part, this part, and what is
+still ahead are told apart by **ink depth** — `--ink-3`, `--ink-1`, `--ink-2` — plus the
+`這一篇開始／結束` markers. Nothing is duplicated into a second column to be comparable; the
+previous part is literally the paragraphs above the start.
+
+Head, hint, text and actions are one column with one shared left edge, and the width left over
+is right-hand margin, as everywhere else prose is read. That column is a **length**
+(`--sf-reading-column`), not an `em`: these children run from 12 px to 21 px, and an `em`
+measure would hand each of them a different column. It is wide enough for the 36 em reading
+measure inside the flow plus its padding.
+
+`接縫` is a view, not a mode. `少一個場景／多一個場景` are coarse directional actions and keep
+their arrows in both views; the seam view adds one compact full-width cut point after every
+eligible paragraph. The current ending is a solid draggable line; candidates are quiet dashed
+lines whose labels appear only on hover or keyboard focus, and every one must work by click and
+by keyboard. Cut points appear only for the current unconfirmed range and never imply that
+source prose is editable. The `顯示 預覽／原始 MD` switch steps aside while the seam view is
+showing, because raw Markdown would throw away the buttons that view is made of. Switching
+views keeps the cut where the author put it and scrolls the flow to the marker that view is
+about, rather than keeping the other view's now-meaningless offset.
+
+The bottom actions — character counts, the two scene buttons, `確認並存成 Markdown` — are
+identical in both views. That is the evidence the two were one surface all along.
 
 Character counts in review headers are supporting metadata, not headings: keep them smaller and quieter than the article title and action label. In the works library, “工作台”, “開啟”, “管理發布” and “管理章節” share one control height, font size and weight. All “管理章節” buttons use one emphasized light-blue treatment; Workbench stays outlined and publishing uses a paler tinted treatment.
 

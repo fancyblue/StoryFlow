@@ -153,7 +153,18 @@ test('primary action scale and navigation icon language stay consistent', async 
   await page.locator('.nav-item[data-view="projects"]').click();
   await expect(page.locator('.projects-empty-state .button')).toBeVisible();
   const emptyWork = await controlStyle(page.locator('.projects-empty-state .button'));
-  await expect(page.locator('#projectsNewWorkBtn')).toBeHidden();
+  // The header action stays visible with no works — W-06 rules out a competing *solid*
+  // header action, and this one is outlined. Hiding it removed the only way into creation
+  // that does not go through reading the empty state first. With no folder it is disabled,
+  // and it has to *look* disabled: the id rule that colours it was overriding the disabled
+  // treatment, leaving a control that said why it could not be used and looked usable.
+  await expect(page.locator('#projectsNewWorkBtn')).toBeVisible();
+  await expect(page.locator('#projectsNewWorkBtn')).toBeDisabled();
+  await expect(page.locator('#projectsNewWorkReason')).toHaveText('需要先連接資料夾');
+  expect(await controlStyle(page.locator('#projectsNewWorkBtn'))).toMatchObject({
+    backgroundColor: 'rgb(244, 241, 233)',
+    color: 'rgb(150, 143, 128)'
+  });
   expect(emptyWork).toMatchObject({
     height: 40,
     fontSize: 14,
@@ -369,7 +380,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(55);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(54);
 
   await page.locator('#createProjectManually').click();
   await page.getByRole('dialog', { name: '選擇作品類型' }).getByRole('button', { name: /長文作品/ }).click();
@@ -454,8 +465,12 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
 
   await page.locator('#chapterList .chapter-main-button').last().click();
   await expect.poll(() => page.evaluate(() => state.activeChapterId)).toBe('long-chapter-24');
+  // Selecting a chapter rebuilds the rail. The claim is about where it comes to rest, not
+  // about the frame mid-rerender, which drifts a few pixels under load.
+  await expect
+    .poll(() => panel.evaluate((element, before) => Math.abs(element.scrollTop - before) <= 2, beforeSelect.scrollTop))
+    .toBe(true);
   const afterSelect = await panel.evaluate(element => ({ scrollTop: element.scrollTop, windowY: window.scrollY }));
-  expect(Math.abs(afterSelect.scrollTop - beforeSelect.scrollTop)).toBeLessThanOrEqual(2);
   expect(afterSelect.windowY).toBe(beforeSelect.windowY);
 
   await page.locator('#chapterList .chapter-more-button').last().click();
@@ -630,7 +645,7 @@ test('compact paragraph output preserves original scene boundaries', async ({ pa
   expect(pageErrors).toEqual([]);
 });
 
-test('split confirmation can move an unconfirmed ending between paragraphs without changing the source', async ({ page }) => {
+test('reading and seam are one surface that can move an ending without changing the source', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 760 });
   await gotoWorkbench(page);
@@ -653,77 +668,93 @@ test('split confirmation can move an unconfirmed ending between paragraphs witho
   await expect(page.locator('#expandBtn')).toHaveText('多一個場景 →');
   await expect.poll(() => page.evaluate(() => suggestion?.end)).toBe(18);
   await page.locator('#suggestionTitleInput').fill('自訂長場景上篇');
-  await page.locator('#openSplitReviewBtn').click();
 
-  const dialog = page.locator('#reviewDialog');
-  await expect(dialog).toBeVisible();
-  const initialDialogLayout = await dialog.evaluate(node => {
-    const card = node.querySelector('.review-dialog-card');
-    const grid = node.querySelector('.review-dialog-grid');
-    const footer = node.querySelector('.platform-preview-actions');
-    const button = node.querySelector('#closeReviewDialogBottom');
-    const dialogRect = node.getBoundingClientRect();
-    const footerRect = footer.getBoundingClientRect();
-    const buttonRect = button.getBoundingClientRect();
+  // 讀稿 is a page, not a modal: the workbench rails collapse instead of being covered.
+  await page.locator('#openReadingViewBtn').click();
+  const view = page.locator('#readingView');
+  await expect(view).toBeVisible();
+  await expect(view).toHaveAttribute('data-view', 'read');
+  await expect(page.locator('#workspaceView > .workspace-grid')).toBeHidden();
+  await expect(view.locator('#readingViewTitle')).toHaveText('六千字長場景');
+  await expect(view.locator('.manual-boundary-target')).toHaveCount(0);
+
+  const readingLayout = await view.evaluate(node => {
+    const flow = node.querySelector('#readingFlow');
+    const actions = node.querySelector('.reading-view-actions');
+    const confirm = node.querySelector('#readingConfirmBtn');
+    const viewRect = node.getBoundingClientRect();
     return {
-      dialogBottom: dialogRect.bottom,
-      gridHeight: grid.getBoundingClientRect().height,
-      footerBottom: footerRect.bottom,
-      buttonBottom: buttonRect.bottom,
-      cardClientHeight: card.clientHeight,
-      cardScrollHeight: card.scrollHeight,
-      cardOverflowY: getComputedStyle(card).overflowY
+      flowHeight: flow.getBoundingClientRect().height,
+      flowScrolls: getComputedStyle(flow).overflowY,
+      actionsBottom: actions.getBoundingClientRect().bottom,
+      confirmBottom: confirm.getBoundingClientRect().bottom,
+      viewBottom: viewRect.bottom,
+      headLeft: node.querySelector('.reading-view-head').getBoundingClientRect().left,
+      flowLeft: flow.getBoundingClientRect().left
     };
   });
-  expect(initialDialogLayout.gridHeight).toBeGreaterThan(200);
-  expect(initialDialogLayout.footerBottom).toBeLessThanOrEqual(initialDialogLayout.dialogBottom + 2);
-  expect(initialDialogLayout.buttonBottom).toBeLessThanOrEqual(initialDialogLayout.dialogBottom - 8);
-  expect(initialDialogLayout.cardScrollHeight).toBeLessThanOrEqual(initialDialogLayout.cardClientHeight + 1);
-  expect(initialDialogLayout.cardOverflowY).toBe('hidden');
-  const manualButton = dialog.getByRole('button', { name: '手動微調', exact: true });
-  await manualButton.click();
-  await expect(dialog).toHaveClass(/manual-boundary-active/);
-  await expect(dialog.locator('#manualBoundaryHint')).toContainText('不修改原稿');
-  await expect(dialog.locator('.manual-boundary-target')).toHaveCount(18);
-  await expect(dialog.locator('.manual-boundary-target.is-current')).toHaveAttribute('data-boundary-end', '18');
-  const manualLayout = await dialog.evaluate(node => {
-    const columns = [...node.querySelectorAll('.review-dialog-grid > .review-column')];
+  expect(readingLayout.flowHeight).toBeGreaterThan(200);
+  expect(readingLayout.flowScrolls).toBe('auto');
+  expect(readingLayout.actionsBottom).toBeLessThanOrEqual(readingLayout.viewBottom + 2);
+  expect(readingLayout.confirmBottom).toBeLessThanOrEqual(readingLayout.viewBottom + 2);
+  // Head and text share one left edge; the width left over is right-hand margin.
+  expect(Math.abs(readingLayout.headLeft - readingLayout.flowLeft)).toBeLessThanOrEqual(22);
+
+  // Context is told apart by ink depth in one flow rather than by a second column.
+  const tones = await view.evaluate(node => {
+    const blocks = [...node.querySelectorAll('#readingFlow .reading-block')];
+    return {
+      total: blocks.length,
+      current: blocks.filter(block => block.classList.contains('is-current')).length,
+      ahead: blocks.filter(block => block.classList.contains('is-ahead')).length
+    };
+  });
+  expect(tones.total).toBe(18);
+  expect(tones.current).toBe(18);
+
+  await view.getByRole('button', { name: '接縫', exact: true }).click();
+  await expect(view).toHaveAttribute('data-view', 'seam');
+  await expect(view.locator('#readingViewHint')).toContainText('不修改原稿');
+  await expect(view.locator('.manual-boundary-target')).toHaveCount(18);
+  await expect(view.locator('.manual-boundary-target.is-current')).toHaveAttribute('data-boundary-end', '18');
+
+  const seamLayout = await view.evaluate(node => {
     const candidates = [...node.querySelectorAll('.manual-boundary-target:not(.is-current)')];
     const current = node.querySelector('.manual-boundary-target.is-current');
     const quietLabel = candidates[0]?.querySelector('.manual-boundary-label');
+    const modeControl = node.querySelector('[data-sf-preview-control="reading"]');
     return {
-      visibleColumns: columns.filter(column => getComputedStyle(column).display !== 'none').length,
       maxCandidateHeight: Math.max(...candidates.map(target => target.getBoundingClientRect().height)),
       currentHeight: current?.getBoundingClientRect().height || 0,
       quietLabelOpacity: quietLabel ? getComputedStyle(quietLabel).opacity : '',
-      charsFontSize: parseFloat(getComputedStyle(node.querySelector('#reviewCurrentChars')).fontSize)
+      modeControlHidden: modeControl ? getComputedStyle(modeControl).display === 'none' : true,
+      charsFontSize: parseFloat(getComputedStyle(node.querySelector('#readingCurrentChars')).fontSize)
     };
   });
-  expect(manualLayout.visibleColumns).toBe(2);
-  expect(manualLayout.maxCandidateHeight).toBeLessThanOrEqual(18);
-  expect(manualLayout.currentHeight).toBeLessThanOrEqual(24);
-  expect(manualLayout.quietLabelOpacity).toBe('0');
-  expect(manualLayout.charsFontSize).toBeLessThanOrEqual(13);
-  await expect.poll(() => dialog.locator('.manual-boundary-target.is-current').evaluate(marker => {
-    const full = marker.closest('#dialogReviewFull');
+  expect(seamLayout.maxCandidateHeight).toBeLessThanOrEqual(18);
+  expect(seamLayout.currentHeight).toBeLessThanOrEqual(24);
+  expect(seamLayout.quietLabelOpacity).toBe('0');
+  // Raw Markdown would throw away the cut points this view is made of.
+  expect(seamLayout.modeControlHidden).toBe(true);
+  expect(seamLayout.charsFontSize).toBeLessThanOrEqual(13);
+  await expect.poll(() => view.locator('.manual-boundary-target.is-current').evaluate(marker => {
+    const flow = marker.closest('#readingFlow');
     const markerRect = marker.getBoundingClientRect();
-    const fullRect = full?.getBoundingClientRect();
-    return Boolean(fullRect && markerRect.top >= fullRect.top && markerRect.bottom <= fullRect.bottom);
+    const flowRect = flow?.getBoundingClientRect();
+    return Boolean(flowRect && markerRect.top >= flowRect.top && markerRect.bottom <= flowRect.bottom);
   })).toBe(true);
 
-  await dialog.locator('.manual-boundary-target[data-boundary-end="10"]').click();
+  await view.locator('.manual-boundary-target[data-boundary-end="10"]').click();
   await expect.poll(() => page.evaluate(() => suggestion?.end)).toBe(10);
-  await expect(dialog.locator('#reviewCurrentChars')).toContainText(/本篇 .* 字 · 後續 .* 字/);
-  await expect(dialog.locator('#dialogReviewCurrent')).toContainText('第 10 段');
-  await expect(dialog.locator('#dialogReviewCurrent')).not.toContainText('第 11 段');
-  await expect(dialog.locator('#dialogReviewFull .current-range-highlight')).toHaveCount(10);
+  await expect(view.locator('#readingCurrentChars')).toContainText(/本篇 .* 字 · 後續 .* 字/);
+  await expect(view.locator('#readingFlow .current-range-highlight')).toHaveCount(10);
+  await expect(view.locator('#readingFlow .reading-block.is-ahead')).toHaveCount(8);
   await expect(page.locator('#suggestionTitleInput')).toHaveValue('自訂長場景上篇');
 
-  await dialog.locator('.manual-boundary-target.is-current')
-    .dragTo(dialog.locator('.manual-boundary-target[data-boundary-end="11"]'));
+  await view.locator('.manual-boundary-target.is-current')
+    .dragTo(view.locator('.manual-boundary-target[data-boundary-end="11"]'));
   await expect.poll(() => page.evaluate(() => suggestion?.end)).toBe(11);
-  await expect(dialog.locator('.manual-boundary-target.is-current')).toHaveAttribute('data-boundary-end', '11');
-  await expect(dialog.locator('#dialogReviewCurrent')).toContainText('第 11 段');
+  await expect(view.locator('.manual-boundary-target.is-current')).toHaveAttribute('data-boundary-end', '11');
 
   const result = await page.evaluate(() => ({
     draft: activeChapter().draft,
@@ -733,21 +764,52 @@ test('split confirmation can move an unconfirmed ending between paragraphs witho
   }));
   expect(result).toEqual({ draft: originalDraft, title: '自訂長場景上篇', start: 0, end: 11 });
 
-  await dialog.getByRole('button', { name: '結束微調', exact: true }).click();
-  await expect(dialog).not.toHaveClass(/manual-boundary-active/);
-  await expect(dialog.locator('.manual-boundary-target')).toHaveCount(0);
-  await expect.poll(() => dialog.locator('#dialogReviewFull .range-end').evaluate(marker => {
-    const full = marker.closest('#dialogReviewFull');
+  // Switching back is a view change, not the end of a mode: the cut stays where it was put.
+  await view.getByRole('button', { name: '讀稿', exact: true }).click();
+  await expect(view).toHaveAttribute('data-view', 'read');
+  await expect(view.locator('.manual-boundary-target')).toHaveCount(0);
+  await expect(page.locator('#readingViewHint')).toBeHidden();
+  await expect.poll(() => page.evaluate(() => suggestion?.end)).toBe(11);
+  await expect.poll(() => view.locator('#readingFlow .range-end').evaluate(marker => {
+    const flow = marker.closest('#readingFlow');
     const markerRect = marker.getBoundingClientRect();
-    const fullRect = full?.getBoundingClientRect();
-    return Boolean(fullRect && markerRect.top >= fullRect.top && markerRect.bottom <= fullRect.bottom);
+    const flowRect = flow?.getBoundingClientRect();
+    return Boolean(flowRect && markerRect.top >= flowRect.top && markerRect.bottom <= flowRect.bottom);
   })).toBe(true);
 
-  await dialog.getByRole('button', { name: '手動微調', exact: true }).click();
-  await dialog.locator('#closeReviewDialog').click();
-  await page.locator('#openSplitReviewBtn').click();
-  await expect(dialog.locator('#reviewManualBoundaryBtn')).toHaveAttribute('aria-pressed', 'false');
-  await expect(dialog.locator('.manual-boundary-target')).toHaveCount(0);
+  await view.getByRole('button', { name: '接縫', exact: true }).click();
+  await page.locator('#closeReadingViewBtn').click();
+  await expect(view).toBeHidden();
+  await expect(page.locator('#workspaceView > .workspace-grid')).toBeVisible();
+  await page.locator('#openReadingViewBtn').click();
+  await expect(view).toHaveAttribute('data-view', 'read');
+  await expect(view.locator('.manual-boundary-target')).toHaveCount(0);
+
+  // A page has no built-in dismissal the way a dialog does, so Escape has to be wired up.
+  await page.keyboard.press('Escape');
+  await expect(view).toBeHidden();
+
+  // The primary action belongs to the reading surface, not to the collapsed panel behind it.
+  await page.evaluate(() => {
+    window.StoryFlowIntegrations.savePart = async () => 'Works/手動切點測試/六千字長場景/自訂長場景上篇.md';
+  });
+  await page.locator('#openReadingViewBtn').click();
+  await expect(view).toBeVisible();
+  await page.locator('#readingConfirmBtn').click();
+  await expect(view).toBeHidden();
+  await expect.poll(() => page.evaluate(() => activeChapter().parts.length)).toBe(1);
+  expect(await page.evaluate(() => activeChapter().parts[0].title)).toBe('自訂長場景上篇');
+
+  // Reading is about one chapter of one work: leaving the workbench closes it rather than
+  // leaving the previous chapter's text behind the next destination.
+  expect(await view.evaluate(node => Boolean(node.closest('#workspaceView')))).toBe(true);
+  await page.locator('#openReadingViewBtn').click();
+  await expect(view).toBeVisible();
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(view).toBeHidden();
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await expect(view).toBeHidden();
+  await expect(page.locator('#workspaceView > .workspace-grid')).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 
@@ -1096,8 +1158,12 @@ test('publishing counts content types by work even when one work has several ent
     const stack = document.querySelector('.publishing-filter-stack')?.getBoundingClientRect();
     const actions = document.querySelector('.publishing-toolbar-actions')?.getBoundingClientRect();
     const button = document.getElementById('continuePublishingBtn')?.getBoundingClientRect();
-    const hint = document.querySelector('.publishing-toolbar-hint')?.getBoundingClientRect();
-    if (!toolbar || !stack || !actions || !button || !hint) return null;
+    // Whatever trails the page action: the sort control for a longform work, the hint that
+    // explains the fixed order for a visual one. Measuring a specific one breaks the moment
+    // the other is the one on screen.
+    const trailing = document.querySelector('.publishing-toolbar-actions > *:not([hidden])');
+    const hint = trailing?.getBoundingClientRect();
+    if (!toolbar || !stack || !actions || !button || !hint || trailing === button) return null;
     return {
       actionsAfterFilters: actions.left >= stack.right,
       buttonAtRightEdge: Math.round(Math.abs(toolbar.right - button.right)),
@@ -2577,6 +2643,81 @@ test('row menus flip up rather than opening past the bottom of the window', asyn
   });
   expect(fits.top).toBeGreaterThanOrEqual(0);
   expect(fits.bottom).toBeLessThanOrEqual(fits.viewport);
+
+  expect(pageErrors).toEqual([]);
+});
+
+test('publishing order can follow chapters, and the choice follows the writer not the work', async ({ page }) => {
+  // The queue could only be read newest-first, which is the wrong end to start from when
+  // publishing a backlog. Neither option reads a timestamp: a longform part carries none, so
+  // both are directions through the same document order.
+  const pageErrors = await prepare(page);
+  await gotoWorkbench(page, '/?visual-regression=1');
+  await page.locator('#createProjectManually').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
+  await page.locator('#sourceManualBtn').click();
+  await page.locator('#manualProjectTitle').fill('排序測試');
+  await page.locator('#manualSourceTitle').fill('01、第一章');
+  await page.locator('#manualSourceText').fill('第一段。\n\n第二段。');
+  await page.locator('#previewManualSourceBtn').click();
+  await page.locator('#confirmSourcePreviewBtn').click();
+  await expect(page.locator('#suggestionCard')).toBeVisible();
+  await page.evaluate(() => { window.StoryFlowIntegrations.savePart = async () => 'x.md'; });
+  await page.locator('#confirmBtn').click();
+
+  await page.evaluate(() => {
+    const first = state.chapters[0];
+    const clone = JSON.parse(JSON.stringify(first.parts[0]));
+    clone.id = 'sort-part-2';
+    clone.title = '02、第二章（1）';
+    state.chapters.push({
+      ...JSON.parse(JSON.stringify(first)), id: 'sort-chapter-2', title: '02、第二章', parts: [clone]
+    });
+    window.renderAll?.();
+  });
+
+  const chapterOrder = () => page.evaluate(() =>
+    [...document.querySelectorAll('.publishing-chapter-group-head strong')].map(node => node.textContent.trim()));
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('#publishingSortControl')).toBeVisible();
+  await expect(page.getByRole('button', { name: '最新在前', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  expect(await chapterOrder()).toEqual(['02、第二章', '01、第一章']);
+
+  await page.getByRole('button', { name: '章節順序', exact: true }).click();
+  await expect(page.getByRole('button', { name: '章節順序', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  expect(await chapterOrder()).toEqual(['01、第一章', '02、第二章']);
+
+  // It belongs to the writer, not to one work: switchProject() replaces `state` wholesale, so
+  // carrying it has to be deliberate, the way the split preferences above it already are.
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '另一個作品' }, { quiet: true });
+  });
+  expect(await page.evaluate(() => state.publishSort)).toBe('chapter');
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.getByRole('button', { name: '章節順序', exact: true })).toHaveAttribute('aria-pressed', 'true');
+
+  expect(pageErrors).toEqual([]);
+});
+
+test('a visual work is not offered an order it has no chapters for', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await gotoWorkbench(page, '/?visual-regression=1');
+  await page.locator('#createProjectManually').click();
+  // The dialog renames itself once a type is chosen, so it is addressed by id rather than
+  // by the name it is about to stop having.
+  const typeDialog = page.locator('#visualTypeDialog');
+  await typeDialog.locator('#chooseVisualType').click();
+  await expect(typeDialog.locator('#visualSeriesCreatePanel')).toBeVisible();
+  await typeDialog.locator('#visualSeriesTitle').fill('圖文排序測試');
+  await typeDialog.locator('#visualFirstEntryTitle').fill('月下預告');
+  await typeDialog.getByRole('button', { name: '建立圖文系列', exact: true }).click();
+  await page.locator('.nav-item[data-view="publishing"]').click();
+
+  // Visual entries have no chapters, and unlike parts they do carry updatedAt, so the order
+  // is fixed and the sentence that explains it stays.
+  await expect(page.locator('#publishingSortControl')).toBeHidden();
+  await expect(page.locator('.publishing-toolbar-hint')).toHaveText('最近編輯的圖文顯示在最上面。');
 
   expect(pageErrors).toEqual([]);
 });

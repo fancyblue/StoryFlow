@@ -1,6 +1,28 @@
-// Dedicated publishing dashboard: compact newest-first list, expandable platform details.
+// Dedicated publishing dashboard: compact list, expandable platform details.
 (function () {
   const { safeName } = window.StoryFlowShared;
+
+  // Publishing order. Neither option reads a timestamp, because a longform part does not
+  // carry one — no createdAt, no updatedAt, no confirmedAt. 章節順序 walks the document
+  // forwards; 最新在前 walks it backwards, which for a serial written and split in order
+  // puts the most recently confirmed part at the top. The two differ only in direction, and
+  // that is the whole feature: publishing a backlog from the beginning was not possible.
+  //
+  // Visual entries are excluded. They have no chapters to order by, and they do carry
+  // updatedAt, so they keep sorting by it.
+  const PUBLISH_SORTS = {
+    latest: { label: '最新在前', reverse: true },
+    chapter: { label: '章節順序', reverse: false }
+  };
+  const DEFAULT_PUBLISH_SORT = 'latest';
+
+  function publishSortKey() {
+    const stored = typeof state !== 'undefined' ? state?.publishSort : null;
+    return PUBLISH_SORTS[stored] ? stored : DEFAULT_PUBLISH_SORT;
+  }
+  function publishSortReversed() {
+    return PUBLISH_SORTS[publishSortKey()].reverse;
+  }
   let deleteFolderHandle = null;
   let currentFilter = 'all';
   let selectedPartKey = null;
@@ -192,15 +214,18 @@
           return { contentMode: 'visual', chapter: null, chapterIndex: -1, part, partIndex, status: statusFor(part) };
         });
     }
-    for (let chapterIndex = state.chapters.length - 1; chapterIndex >= 0; chapterIndex -= 1) {
-      const chapter = state.chapters[chapterIndex];
+    const reverse = publishSortReversed();
+    const chapterOrder = state.chapters.map((chapter, chapterIndex) => ({ chapter, chapterIndex }));
+    if (reverse) chapterOrder.reverse();
+    chapterOrder.forEach(({ chapter, chapterIndex }) => {
       const parts = chapter.parts || [];
-      for (let partIndex = parts.length - 1; partIndex >= 0; partIndex -= 1) {
-        const part = parts[partIndex];
+      const partOrder = parts.map((part, partIndex) => ({ part, partIndex }));
+      if (reverse) partOrder.reverse();
+      partOrder.forEach(({ part, partIndex }) => {
         normalizePartStatus(part);
         entries.push({ chapter, chapterIndex, part, partIndex, status: statusFor(part) });
-      }
-    }
+      });
+    });
     return entries;
   }
 
@@ -223,7 +248,7 @@
       workspaceView.className = 'app-view workspace-view';
       const first = main.firstElementChild;
       main.insertBefore(workspaceView, first || null);
-      ['.topbar', '.workspace-grid'].forEach(selector => {
+      ['.topbar', '.workspace-grid', '.reading-view'].forEach(selector => {
         const node = main.querySelector(`:scope > ${selector}`);
         if (node) workspaceView.appendChild(node);
       });
@@ -262,7 +287,12 @@
             <button class="publishing-filter" type="button" data-filter="complete">已完成</button>
           </div>
           <div class="publishing-toolbar-actions">
-            <span class="muted publishing-toolbar-hint">最新確認的文章顯示在最上面。</span>
+            <div id="publishingSortControl" class="publishing-sort" role="group" aria-label="發布順序">
+              <span class="publishing-sort-label">排序</span>
+              <button class="publishing-sort-option" type="button" data-publish-sort="latest">最新在前</button>
+              <button class="publishing-sort-option" type="button" data-publish-sort="chapter">章節順序</button>
+            </div>
+            <span class="muted publishing-toolbar-hint" hidden>最近編輯的圖文顯示在最上面。</span>
             <button id="continuePublishingBtn" class="button primary publishing-continue-btn" type="button" hidden>繼續發布</button>
           </div>
         </div>`;
@@ -274,6 +304,12 @@
         if (!button) return;
         currentFilter = button.dataset.filter || 'all';
         renderParts();
+      });
+
+      publishingView.querySelector('#publishingSortControl').addEventListener('click', event => {
+        const button = event.target.closest('[data-publish-sort]');
+        if (!button) return;
+        window.StoryFlowPublishing?.setSort?.(button.dataset.publishSort);
       });
     } else if (publishingPanel.parentElement !== publishingView) {
       publishingView.appendChild(publishingPanel);
@@ -1286,7 +1322,7 @@
     const key = partKey(part);
     const expanded = selectedPartKey === key;
     const card = document.createElement('article');
-    card.className = `publish-list-item ${expanded ? 'expanded' : ''}`;
+    card.className = `publish-list-item sf-hier-row ${expanded ? 'expanded' : ''}`;
     card.dataset.partKey = key;
     card.dataset.contentMode = visual ? 'visual' : 'longform';
 
@@ -1415,7 +1451,19 @@
       ? '外層顯示整體狀態；展開後管理各平台與圖片上傳順序。'
       : '外層只顯示整體發布狀態；點選文章後再展開各平台細項。';
     if (totalLabel) totalLabel.textContent = visualMode ? '圖文數' : '已確認文章';
-    if (toolbarHint) toolbarHint.textContent = visualMode ? '最近編輯的圖文顯示在最上面。' : '最新確認的文章顯示在最上面。';
+    // A visual work has no chapters to order by and its entries do carry updatedAt, so the
+    // control has nothing to offer there — the sentence it replaced still explains the order.
+    const sortControl = document.getElementById('publishingSortControl');
+    if (sortControl) {
+      sortControl.hidden = visualMode;
+      const active = publishSortKey();
+      sortControl.querySelectorAll('[data-publish-sort]').forEach(button => {
+        const on = button.dataset.publishSort === active;
+        button.classList.toggle('active', on);
+        button.setAttribute('aria-pressed', String(on));
+      });
+    }
+    if (toolbarHint) toolbarHint.hidden = !visualMode;
     const projectTitle = document.getElementById('publishingProjectTitle');
     if (projectTitle) projectTitle.textContent = state.projectTitle || '未命名作品';
     const values = {
@@ -1490,6 +1538,18 @@
   };
 
   window.StoryFlowPublishing = {
+    sortKey: publishSortKey,
+    sortReversed: publishSortReversed,
+    sortOptions: () => Object.entries(PUBLISH_SORTS).map(([key, value]) => ({ key, label: value.label })),
+    setSort(key) {
+      if (!PUBLISH_SORTS[key] || publishSortKey() === key) return false;
+      // A working habit, not a property of a work: it rides across switchProject() with the
+      // split preferences, which is the existing idiom for exactly this.
+      state.publishSort = key;
+      try { saveState('排序已更新'); } catch (_) {}
+      window.renderParts?.();
+      return true;
+    },
     persistPart: writeArticleMarkdown,
     openPart(key, { preview = false } = {}) {
       const entry = allEntries().find(item => partKey(item.part) === key);

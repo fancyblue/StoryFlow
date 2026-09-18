@@ -3,8 +3,8 @@
   const CONTROL_DIRECTIONS = new Map([
     ['shrinkBtn', -1],
     ['expandBtn', 1],
-    ['reviewShrinkBtn', -1],
-    ['reviewExpandBtn', 1]
+    ['readingShrinkBtn', -1],
+    ['readingExpandBtn', 1]
   ]);
   let manualPointerDrag = null;
   let suppressManualClickUntil = 0;
@@ -117,7 +117,7 @@
   }
 
   function currentReviewPlatform() {
-    return document.getElementById('reviewPlatformSelect')?.value || '';
+    return document.getElementById('readingPlatformSelect')?.value || '';
   }
 
   function formatOptions(platform) {
@@ -129,8 +129,15 @@
     };
   }
 
-  function manualBoundaryActive() {
-    return document.getElementById('reviewManualBoundaryBtn')?.getAttribute('aria-pressed') === 'true';
+  // Adjusting a cut point is no longer a mode inside a dialog: it is the 接縫 view of the
+  // reading surface. Everything below asks which view is showing rather than whether a
+  // toggle is pressed.
+  function seamViewActive() {
+    return document.getElementById('readingView')?.dataset.view === 'seam';
+  }
+
+  function readingFlow() {
+    return document.getElementById('readingFlow');
   }
 
   function boundaryTarget(end, currentEnd, sceneBoundary = false) {
@@ -145,56 +152,60 @@
     return `<button type="button" class="${classes.join(' ')}" data-boundary-end="${end}"${current ? ' draggable="true"' : ''} aria-label="${accessibleLabel}"><span class="manual-boundary-handle" aria-hidden="true">${current ? '⠿' : ''}</span><span class="manual-boundary-label">${visibleLabel}</span></button>`;
   }
 
+  // One continuous flow carries what three columns used to: the confirmed text before this
+  // part, this part, and what is still ahead. They are told apart by ink depth, so nothing
+  // has to be duplicated into a second column to be comparable.
+  function blockTone(index, start, end) {
+    if (index < start) return 'is-done';
+    if (index < end) return 'is-current';
+    return 'is-ahead';
+  }
+
   function formattedFullChapterHTML() {
     const blocks = sourceBlocks();
     if (!blocks.length) return '目前章節沒有內容。';
     const options = formatOptions(currentReviewPlatform());
     const start = suggestion?.start ?? -1;
     const end = suggestion?.end ?? -1;
-    const manual = manualBoundaryActive();
+    const seam = seamViewActive();
     const out = [];
 
     blocks.forEach((block, index) => {
       if (index === start) out.push('<span class="range-boundary range-start">──── 這一篇開始 ────</span>\n');
       const line = escapeHtml(applyIndent(block.raw, options.indent));
       const highlighted = index >= start && index < end;
-      out.push(manual
-        ? `<span class="review-source-block${highlighted ? ' current-range-highlight' : ''}" data-block-index="${index}">${line}</span>`
-        : highlighted ? `<span class="current-range-highlight">${line}</span>` : line);
-      if (manual && index >= start) out.push(boundaryTarget(index + 1, end, Boolean(block.strongBoundaryAfter)));
+      const classes = ['reading-block', blockTone(index, start, end)];
+      if (highlighted) classes.push('current-range-highlight');
+      out.push(`<span class="${classes.join(' ')}" data-block-index="${index}">${line}</span>`);
+      if (seam && index >= start) out.push(boundaryTarget(index + 1, end, Boolean(block.strongBoundaryAfter)));
       else if (index === end - 1) out.push('\n<span class="range-boundary range-end">──── 這一篇結束 ────</span>');
       if (index >= blocks.length - 1) return;
 
-      // In manual mode every paragraph boundary is already represented by a
-      // full-width button. Literal newlines around block elements create large
-      // anonymous line boxes inside the <pre>, so spacing belongs to CSS there.
-      if (!manual) out.push(escapeHtml(formattedBlockBreak(block, options)));
+      // In the 接縫 view every paragraph boundary is already represented by a full-width
+      // button. Literal newlines around block elements create large anonymous line boxes
+      // inside the <pre>, so spacing belongs to CSS there.
+      if (!seam) out.push(escapeHtml(formattedBlockBreak(block, options)));
     });
     return out.join('');
   }
 
   function refreshReview(scrollToStart = false) {
-    if (!suggestion) return;
-    const chapter = activeChapter();
-    const platform = currentReviewPlatform();
-    const previous = chapter.parts?.length ? chapter.parts[chapter.parts.length - 1] : null;
-    const full = document.getElementById('dialogReviewFull');
-    const current = document.getElementById('dialogReviewCurrent');
-    const previousBox = document.getElementById('dialogReviewPrevious');
-    const chars = document.getElementById('reviewCurrentChars');
+    const view = document.getElementById('readingView');
+    if (!view) return;
+    const full = readingFlow();
+    const chars = document.getElementById('readingCurrentChars');
 
-    if (full) full.innerHTML = formattedFullChapterHTML();
-    if (current) current.textContent = platform ? platformFormat(suggestion.raw, platform) : webFormat(suggestion.raw);
-    if (previousBox) previousBox.textContent = previous
-      ? (platform ? platformFormat(previous.raw, platform) : webFormat(previous.raw))
-      : '這是本章第一篇。';
+    if (full) full.innerHTML = suggestion ? formattedFullChapterHTML() : '這個章節目前沒有可切篇的內容。';
     if (chars) {
-      const blocks = sourceBlocks();
-      const remaining = charsBetween(blocks, Number(suggestion.end), blocks.length);
-      chars.textContent = manualBoundaryActive()
-        ? `本篇 ${suggestion.chars.toLocaleString()} 字 · 後續 ${remaining.toLocaleString()} 字`
-        : `${suggestion.chars.toLocaleString()} 字`;
+      if (!suggestion) {
+        chars.textContent = '';
+      } else {
+        const blocks = sourceBlocks();
+        const remaining = charsBetween(blocks, Number(suggestion.end), blocks.length);
+        chars.textContent = `本篇 ${suggestion.chars.toLocaleString()} 字 · 後續 ${remaining.toLocaleString()} 字`;
+      }
     }
+    window.StoryFlowReadingView?.syncHead?.();
 
     if (scrollToStart && full) {
       const marker = full.querySelector('.range-start');
@@ -283,37 +294,8 @@
     return true;
   }
 
-  function ensureManualBoundaryControls() {
-    const controls = document.getElementById('reviewBoundaryControls');
-    const dialog = document.getElementById('reviewDialog');
-    if (!controls || !dialog) return;
-
-    let button = document.getElementById('reviewManualBoundaryBtn');
-    if (!button) {
-      button = document.createElement('button');
-      button.id = 'reviewManualBoundaryBtn';
-      button.className = 'button tiny ghost';
-      button.type = 'button';
-      button.textContent = '手動微調';
-      button.setAttribute('aria-pressed', 'false');
-      button.setAttribute('data-mobile-safe-write-control', 'true');
-      button.title = '把這一篇的結尾精確移到任一段落後方';
-      controls.appendChild(button);
-    }
-
-    let hint = document.getElementById('manualBoundaryHint');
-    if (!hint) {
-      hint = document.createElement('p');
-      hint.id = 'manualBoundaryHint';
-      hint.className = 'manual-boundary-hint';
-      hint.hidden = true;
-      hint.textContent = '點段落間細線設定結尾；藍色「本篇結尾」也可拖曳。只調整切點，不修改原稿。';
-      document.querySelector('#reviewDialog .review-format-bar')?.insertAdjacentElement('afterend', hint);
-    }
-  }
-
   function alignReviewMarker(selector, focus = false) {
-    const full = document.getElementById('dialogReviewFull');
+    const full = readingFlow();
     if (!full) return;
     const align = () => {
       const marker = full.querySelector(selector);
@@ -328,34 +310,40 @@
     window.setTimeout(align, 90);
   }
 
-  function setManualBoundaryMode(active) {
-    ensureManualBoundaryControls();
-    const button = document.getElementById('reviewManualBoundaryBtn');
-    const dialog = document.getElementById('reviewDialog');
-    const hint = document.getElementById('manualBoundaryHint');
-    if (!button || !dialog) return;
-    const wasActive = button.getAttribute('aria-pressed') === 'true';
-    button.setAttribute('aria-pressed', String(active));
-    button.textContent = active ? '結束微調' : '手動微調';
-    dialog.classList.toggle('manual-boundary-active', active);
-    if (hint) hint.hidden = !active;
-    if (!active) {
+  function setReadingViewMode(view) {
+    const surface = document.getElementById('readingView');
+    if (!surface) return;
+    const seam = view === 'seam';
+    const changed = surface.dataset.view !== (seam ? 'seam' : 'read');
+    surface.dataset.view = seam ? 'seam' : 'read';
+
+    surface.querySelectorAll('[data-reading-view]').forEach(button => {
+      const active = (button.dataset.readingView === 'seam') === seam;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+    const hint = document.getElementById('readingViewHint');
+    if (hint) hint.hidden = !seam;
+
+    if (!seam) {
       manualPointerDrag = null;
       clearManualDropState();
     }
-    if (active) window.StoryFlowPreviewMode?.setMode?.('review', 'preview');
+    // Raw Markdown would throw away the cut-point buttons this view is made of.
+    if (seam) window.StoryFlowPreviewMode?.setMode?.('reading', 'preview');
     refreshReview(false);
-    if (active) alignReviewMarker('.manual-boundary-target.is-current', true);
-    else if (wasActive && dialog.open) alignReviewMarker('.range-end');
+    if (!changed) return;
+    if (seam) alignReviewMarker('.manual-boundary-target.is-current', true);
+    else alignReviewMarker('.range-end');
   }
 
   function clearManualDropState() {
     document.querySelectorAll('.manual-boundary-target.is-drop-target').forEach(target => target.classList.remove('is-drop-target'));
-    document.getElementById('reviewDialog')?.classList.remove('manual-boundary-dragging');
+    document.getElementById('readingView')?.classList.remove('manual-boundary-dragging');
   }
 
   function manualTargetForDrag(event) {
-    const full = document.getElementById('dialogReviewFull');
+    const full = readingFlow();
     if (!full || !full.contains(event.target)) return null;
     const direct = event.target?.closest?.('.manual-boundary-target');
     if (direct) return direct;
@@ -368,7 +356,7 @@
   }
 
   function manualTargetNearY(clientY) {
-    const full = document.getElementById('dialogReviewFull');
+    const full = readingFlow();
     const targets = [...(full?.querySelectorAll('.manual-boundary-target') || [])];
     return targets.reduce((closest, target) => {
       const rect = target.getBoundingClientRect();
@@ -389,13 +377,13 @@
   }, true);
 
   document.addEventListener('click', event => {
-    if (event.target?.closest?.('#reviewManualBoundaryBtn')) {
-      const active = document.getElementById('reviewManualBoundaryBtn')?.getAttribute('aria-pressed') !== 'true';
-      setManualBoundaryMode(active);
+    const viewButton = event.target?.closest?.('[data-reading-view]');
+    if (viewButton) {
+      setReadingViewMode(viewButton.dataset.readingView);
       return;
     }
-    const target = event.target?.closest?.('#dialogReviewFull .manual-boundary-target');
-    if (!target || !manualBoundaryActive()) return;
+    const target = event.target?.closest?.('#readingFlow .manual-boundary-target');
+    if (!target || !seamViewActive()) return;
     if (Date.now() < suppressManualClickUntil) {
       event.preventDefault();
       return;
@@ -404,8 +392,8 @@
   });
 
   document.addEventListener('pointerdown', event => {
-    const target = event.target?.closest?.('#dialogReviewFull .manual-boundary-target.is-current');
-    if (!target || !manualBoundaryActive() || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    const target = event.target?.closest?.('#readingFlow .manual-boundary-target.is-current');
+    if (!target || !seamViewActive() || (event.pointerType === 'mouse' && event.button !== 0)) return;
     manualPointerDrag = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -414,7 +402,7 @@
       moved: false
     };
     target.setPointerCapture?.(event.pointerId);
-    document.getElementById('reviewDialog')?.classList.add('manual-boundary-dragging');
+    document.getElementById('readingView')?.classList.add('manual-boundary-dragging');
     event.preventDefault();
   });
 
@@ -430,7 +418,7 @@
       manualPointerDrag.end = Number(target.dataset.boundaryEnd);
     }
 
-    const full = document.getElementById('dialogReviewFull');
+    const full = readingFlow();
     const rect = full?.getBoundingClientRect();
     if (full && rect) {
       if (event.clientY < rect.top + 44) full.scrollTop -= 22;
@@ -454,23 +442,23 @@
   document.addEventListener('pointercancel', finishManualPointerDrag);
 
   document.addEventListener('dragstart', event => {
-    const target = event.target?.closest?.('#dialogReviewFull .manual-boundary-target.is-current');
-    if (!target || !manualBoundaryActive()) return;
+    const target = event.target?.closest?.('#readingFlow .manual-boundary-target.is-current');
+    if (!target || !seamViewActive()) return;
     event.dataTransfer?.setData('text/plain', target.dataset.boundaryEnd || '');
     if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
-    document.getElementById('reviewDialog')?.classList.add('manual-boundary-dragging');
+    document.getElementById('readingView')?.classList.add('manual-boundary-dragging');
   });
 
   document.addEventListener('dragover', event => {
     const target = manualTargetForDrag(event);
-    if (!target || !manualBoundaryActive()) return;
+    if (!target || !seamViewActive()) return;
     event.preventDefault();
     clearManualDropState();
-    document.getElementById('reviewDialog')?.classList.add('manual-boundary-dragging');
+    document.getElementById('readingView')?.classList.add('manual-boundary-dragging');
     target.classList.add('is-drop-target');
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
 
-    const full = document.getElementById('dialogReviewFull');
+    const full = readingFlow();
     const rect = full?.getBoundingClientRect();
     if (!full || !rect) return;
     if (event.clientY < rect.top + 44) full.scrollTop -= 22;
@@ -479,7 +467,7 @@
 
   document.addEventListener('drop', event => {
     const target = manualTargetForDrag(event);
-    if (!target || !manualBoundaryActive()) return;
+    if (!target || !seamViewActive()) return;
     event.preventDefault();
     const end = Number(target.dataset.boundaryEnd);
     clearManualDropState();
@@ -489,21 +477,18 @@
   document.addEventListener('dragend', clearManualDropState);
 
   document.addEventListener('change', event => {
-    if (event.target?.id === 'reviewPlatformSelect') refreshReview(false);
+    if (event.target?.id === 'readingPlatformSelect') refreshReview(false);
   });
 
   document.addEventListener('click', event => {
-    if (event.target?.closest?.('#openSplitReviewBtn')) {
+    if (event.target?.closest?.('#openReadingViewBtn')) {
       setTimeout(() => {
-        ensureManualBoundaryControls();
-        setManualBoundaryMode(false);
+        setReadingViewMode('read');
         refreshReview(true);
         syncControlState();
       }, 0);
     }
   });
-
-  document.getElementById('reviewDialog')?.addEventListener('close', () => setManualBoundaryMode(false));
 
   const previousRenderSuggestion = window.renderSuggestion;
   window.renderSuggestion = function renderSuggestionWithSceneControls() {
@@ -520,7 +505,7 @@
   window.StoryFlowSceneEnds = () => sceneEnds(sourceBlocks());
   window.StoryFlowRefreshReviewFromSource = refreshReview;
   window.StoryFlowSetSuggestionEnd = setSuggestionEnd;
+  window.StoryFlowSetReadingViewMode = setReadingViewMode;
 
-  ensureManualBoundaryControls();
   syncControlState();
 })();

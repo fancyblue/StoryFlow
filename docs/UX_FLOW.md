@@ -33,7 +33,8 @@ reload, because nothing can be written.
 | W-03 | Jump directly to this work's publishing queue | 管理發布 | — | Tinted secondary shortcut |
 | W-04 | Make another work current | 開啟 | Then manage its chapters or enter its workspace | Both longform and visual works use the same label; selection is shown by the card and badge |
 | W-05 | Create another work | ＋ 新作品 | 作品類型、來源與內容表單可逐步返回 | Outlined or tinted while works already exist |
-| W-06 | Create the first work | 建立第一個作品 | — | The only solid action in the empty state; do not show a competing solid header action |
+| W-06 | Create the first work | 建立第一個作品 | ＋ 新增作品 stays in the header, outlined | The only solid action in the empty state; do not show a competing solid header action. Outlined is not competing, so the header action stays visible rather than being hidden — hiding it left the empty state's own button as the only route into creation |
+| W-06b | Understand why creation is unavailable | — | ＋ 新增作品 disabled, with 需要先連接資料夾 beside it | A disabled control states its reason in text next to itself, not only in a `title`: a tooltip is invisible on touch, and unreachable for a keyboard user on a control that cannot take focus while disabled. It must also *look* disabled — see UI_SYSTEM |
 | W-07 | Rename or delete a work | `⋯` | Confirmation and Recovery for deletion | Tertiary overflow; deletion uses the danger treatment only inside the decision |
 
 Every “管理章節” or “管理圖文” control uses the same noticeable light-blue treatment so the same label always communicates the same function. Current-work identity belongs to the card border and badge; no repeated row action uses a solid primary fill.
@@ -49,8 +50,9 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-02 | Select the work and chapter or visual entry to process | 切換作品／章節列／圖文列 | Add, edit or delete the matching content type | Selection and disclosure styling, never primary CTA styling |
 | WS-03 | Refresh a linked Google Docs chapter | 更新來源 | 復原來源更新 | Tinted action that opens comparison; only “套用所選變更” is solid after review |
 | WS-04 | Adjust an automatic split suggestion | 少一個場景／多一個場景 | 切篇偏好 | Outlined directional and disclosure controls |
-| WS-05 | Move the ending within a long scene | 手動微調 | Drag or choose a paragraph boundary | Selected/toggled treatment; boundary targets are not buttons competing for primary emphasis |
-| WS-06 | Commit the reviewed article | 切篇確認／確認並存成 Markdown | 返回修改、取消 | The single solid action for the review stage |
+| WS-05 | Move the ending within a long scene | 接縫檢視 | Drag or choose a paragraph boundary | A view of the reading surface, not a mode; boundary targets are not buttons competing for primary emphasis |
+| WS-06 | Read the chapter around the cut | 讀稿檢視 | `[讀稿｜接縫]`、預覽格式、回到工作台 | A page that replaces the workbench rails, not a dialog over them |
+| WS-06b | Commit the reviewed article | 確認並存成 Markdown | 少一個場景／多一個場景 | The single solid action, identical in both reading views |
 | WS-07 | Continue processing the remaining chapter | 產生下一篇 | Review the current ending again | Solid only when a valid next suggestion is ready |
 | WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | The row keeps a persistent `⋯`; edit is first and delete is second |
 | WS-10 | Maintain a visual entry | 編輯即自動儲存 | 預覽圖文、`⋯ → 刪除圖文` | Preview opens in a separate dialog; use the same direct-edit plus persistent-overflow pattern and Recovery flow as manual chapters |
@@ -79,7 +81,8 @@ The Publishing page separates queue navigation from the actual publishing commit
 | P-06 | Edit optional helpers or image metadata | 摘要與 Hashtags／後記／文章圖片, then save the active editor | Preview and ordering controls | Summary, Hashtags and afterword are shared by both types; article images remain longform-only |
 | P-07 | Give one platform a different publishing title | 修改此平台標題, then 保存標題 | 改回沿用 | Kept inside that platform's preview/copy dialog; never a large article-level form |
 | P-08 | Mark or undo platform publication | 標註已發布／取消已發布 | Publication record | State control, not a global primary action; reversal requires a clear warning |
-| P-09 | Find content by work, type or status | 作品／類型／發布狀態 filters | — | Type chips count works, status chips count entries; every filter control shares one typography and height scale |
+| P-09 | Find content by work, type or status | 作品／類型／發布狀態 filters | — | Type chips count works, status chips count entries; every filter control shares one typography and height scale. The three questions are separated by a hairline, not by changing the chips: grouping is what carries the structure |
+| P-14 | Work through the queue from either end | 排序：最新在前／章節順序 | — | Not a filter, so it does not take the chip shape and sits with the page action. Neither option reads a timestamp — a longform part carries none — so both are directions through document order. Hidden for a visual work, which has no chapters to order by and whose entries do carry `updatedAt`. The choice is the writer's habit, not the work's property: it carries across works |
 | P-10 | Perform infrequent article or visual-entry management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation; visual deletion uses the same command and guard in every page |
 | P-11 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
 | P-12 | Prepare optional publishing helpers | 摘要與 Hashtags | Click-to-copy rows and matching bottom platform-preview editors | Longform and visual content share the same helper behavior. The main content and image order come first. Summary and Hashtags show their effective values before editing and reveal one contained field only on demand; summary updates the shared value, while a platform may override Hashtags, explicitly use none or return to the common value. Neither helper enters the body automatically |
@@ -205,17 +208,17 @@ Rules:
 ## Split confirmation and manual boundaries
 
 ```text
-SMART SPLIT 場景建議 → 少／多一個場景 → 切篇確認 → 確認並存檔
-                                           ↘ 手動微調 → 拖曳結尾
-                                                        ↘ 點選段落間切點
+SMART SPLIT 場景建議 → 少／多一個場景 → 讀稿檢視 ⇄ 接縫檢視 → 確認並存檔
+                                                      ↘ 拖曳結尾
+                                                      ↘ 點選段落間切點
 ```
 
 - Automatic suggestions and the coarse arrow actions use real source-scene boundaries. Preferred character counts rank valid scene endings but do not manufacture a cut inside a scene.
-- “手動微調” is deliberately paragraph-level. It changes only the current unconfirmed suggestion end, snaps after a complete source paragraph and never edits the source draft.
-- Manual mode gives the chapter text most of the width, hides the previous-part column and renders one compact full-width line after every eligible paragraph. Quiet candidate labels appear only on hover or keyboard focus; the current “本篇結尾” line stays visible and draggable.
-- The review toolbar shows both current-part and remaining-unconfirmed character counts while manual mode is active. The current title, start boundary and source text remain unchanged when the end moves.
-- Leaving manual mode rerenders the normal chapter view and keeps the confirmed “這一篇結束” marker in view, so the author can verify the surrounding prose without searching for the cut again.
-- Scene-level controls remain available outside manual mode. Closing the confirmation dialog exits manual mode, and confirmed or published parts are never retroactively re-split by this interaction.
+- “讀稿檢視” replaces the workbench rails rather than covering them. It shows the whole chapter in one flow, with the already-confirmed text, this part and the text still ahead separated by ink depth.
+- “接縫檢視” is the same flow with cut points. It is deliberately paragraph-level: it changes only the current unconfirmed suggestion end, snaps after a complete source paragraph and never edits the source draft. Quiet candidate labels appear only on hover or keyboard focus; the current “本篇結尾” line stays visible and draggable.
+- The action row shows both current-part and remaining-unconfirmed character counts, and is identical in both views. The current title, start boundary and source text remain unchanged when the end moves.
+- Switching views keeps the cut where it was put and scrolls to the marker that view is about — the draggable ending in 接縫, the “這一篇結束” marker in 讀稿 — so the author can verify the surrounding prose without searching for the cut again.
+- Scene-level controls remain available in both views. Leaving the workbench or switching work closes the reading surface, and confirmed or published parts are never retroactively re-split by this interaction.
 - A single source paragraph cannot be cut internally. The author must first add a real paragraph break to the source if sentence-level splitting is required.
 - Platform paragraph spacing and scene separation are independent. Compact paragraph output uses one newline between ordinary paragraphs, but every original scene boundary keeps either the configured marker or, when the marker is hidden, one blank line.
 
