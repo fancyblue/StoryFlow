@@ -14,9 +14,11 @@
     const projectTitle = card.querySelector('.project-library-title-row strong')?.textContent?.trim() || '未命名作品';
     const open = card.querySelector('.project-open-btn');
     if (open) {
-      const label = card.classList.contains('active') ? '工作台' : '開啟';
-      if (open.textContent !== label) open.textContent = label;
-      open.setAttribute('aria-label', `${label}「${projectTitle}」`);
+      // One label, whichever work it is. The action is the same destination either way,
+      // and the row already says which work is current three times over; a label that
+      // changes per row only makes the action column harder to scan.
+      if (open.textContent !== '開啟') open.textContent = '開啟';
+      open.setAttribute('aria-label', `開啟「${projectTitle}」`);
     }
 
     const publish = card.querySelector('.project-publish-btn');
@@ -107,6 +109,7 @@
     if (event.key === 'Escape') closeOverflowMenus();
   });
 
+  window.addEventListener('storyflow:works-rendered', scheduleDecorate);
   window.addEventListener('storyflow:projects-changed', scheduleDecorate);
   window.addEventListener('storyflow:view-changed', scheduleDecorate);
   window.addEventListener('load', scheduleDecorate, { once: true });

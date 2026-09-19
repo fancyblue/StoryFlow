@@ -267,13 +267,13 @@
     if (!typeFilters) {
       typeFilters = document.createElement('div');
       typeFilters.id = 'publishingContentTypeFilters';
-      typeFilters.className = 'publishing-content-type-filters';
+      typeFilters.className = 'content-type-filters';
       typeFilters.setAttribute('role', 'group');
       typeFilters.setAttribute('aria-label', '篩選內容類型');
       typeFilters.innerHTML = `
-        <button class="publishing-type-filter active" type="button" data-content-type="all">全部類型</button>
-        <button class="publishing-type-filter" type="button" data-content-type="longform">長文</button>
-        <button class="publishing-type-filter" type="button" data-content-type="visual">圖文</button>`;
+        <button class="content-type-filter active" type="button" data-content-type="all">全部類型</button>
+        <button class="content-type-filter" type="button" data-content-type="longform">長文</button>
+        <button class="content-type-filter" type="button" data-content-type="visual">圖文</button>`;
       stack.insertBefore(typeFilters, statusFilters);
       typeFilters.addEventListener('click', event => {
         const button = event.target.closest('[data-content-type]');

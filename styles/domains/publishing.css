@@ -46,10 +46,12 @@
   display:flex;
   justify-content:space-between;
 }
-.publishing-filters,.publishing-content-type-filters{display:flex;gap:6px;flex-wrap:wrap}
-.publishing-content-type-filters{padding-right:8px;border-right:1px solid #ded9cc}
+.publishing-filters,.content-type-filters{display:flex;gap:6px;flex-wrap:wrap}
+/* The divider belongs to the toolbar that sets a second group after these chips, not to
+   the chips themselves — Works reuses them with nothing on the other side of that edge. */
+#publishingContentTypeFilters{padding-right:8px;border-right:1px solid #ded9cc}
 .publishing-continue-btn{flex:0 0 auto;min-height:34px;padding:0 14px;white-space:nowrap}
-.publishing-filter,.publishing-type-filter{
+.publishing-filter,.content-type-filter{
   border:1px solid var(--line);
   background:#fbfaf6;
   color:var(--muted);
@@ -58,8 +60,8 @@
   font-size:11px;
   font-weight:700;
 }
-.publishing-type-filter.active{background:#f4f1e9;border-color:#c8c1b0;color:#4b4557}
-.publishing-type-filter[data-content-type="visual"].active{background:#eef0e4;border-color:#59703f;color:#59703f}
+.content-type-filter.active{background:#f4f1e9;border-color:#c8c1b0;color:#4b4557}
+.content-type-filter[data-content-type="visual"].active{background:#eef0e4;border-color:#59703f;color:#59703f}
 
 .publishing-dashboard-panel{margin-top:0!important;}
 .publishing-dashboard-panel>.panel-head{
@@ -1357,7 +1359,7 @@ button.publish-delete-btn{
 
 /* Publishing consistency: project, type and status filters share one control scale. */
 body #publishingView #publishingProjectFilterBtn,
-body #publishingView #publishingContentTypeFilters .publishing-type-filter,
+body #publishingView #publishingContentTypeFilters .content-type-filter,
 body #publishingView #publishingFilters .publishing-filter{
   box-sizing:border-box!important;
   display:inline-flex!important;
@@ -1435,7 +1437,7 @@ body #publishingView #publishingProjectFilterBtn strong{
 }
 @media(max-width:680px){
   body #publishingView #publishingProjectFilterBtn,
-  body #publishingView #publishingContentTypeFilters .publishing-type-filter,
+  body #publishingView #publishingContentTypeFilters .content-type-filter,
   body #publishingView #publishingFilters .publishing-filter{
     min-height:36px!important;
     height:36px!important;

@@ -91,17 +91,6 @@
     });
   }
 
-  function projectsInLibraryOrder() {
-    const api = window.StoryFlowProjects;
-    if (!api) return [];
-    const activeId = api.activeId?.();
-    return [...(api.list?.() || [])].sort((a, b) => {
-      if (a.id === activeId) return -1;
-      if (b.id === activeId) return 1;
-      return String(a.title || '').localeCompare(String(b.title || ''), 'zh-Hant');
-    });
-  }
-
   function isManualChapter(chapter) {
     return Boolean(chapter && !chapter.source && !chapter.detachedSource);
   }
@@ -449,15 +438,18 @@
   function decorateProjectsView() {
     const library = document.getElementById('projectsLibrary');
     if (!library) return;
-    const projects = projectsInLibraryOrder();
+    // Each card names the work it is for, so read that rather than re-deriving the order
+    // and pairing by index. That pairing required this file and the renderer to sort the
+    // same way — a duplicated sort that had to stay in step — and it gave up entirely
+    // whenever the counts differed, which is every time the list is filtered.
+    const byId = new Map((window.StoryFlowProjects?.list?.() || []).map(project => [project.id, project]));
     const cards = [...library.querySelectorAll(':scope > .project-library-card')];
-    if (!cards.length || cards.length !== projects.length) return;
+    if (!cards.length) return;
 
     const activeId = window.StoryFlowProjects?.activeId?.();
-    cards.forEach((card, index) => {
-      const project = projects[index];
+    cards.forEach(card => {
+      const project = byId.get(card.dataset.projectId);
       if (!project) return;
-      card.dataset.projectId = project.id;
 
       const actions = card.querySelector('.project-library-actions');
       if (!actions) return;
@@ -539,6 +531,7 @@
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') closeChapterMenus();
   });
+  window.addEventListener('storyflow:works-rendered', () => window.setTimeout(decorateProjectsView, 0));
   window.addEventListener('storyflow:projects-changed', () => window.setTimeout(syncAll, 0));
   window.addEventListener('storyflow:view-changed', () => window.setTimeout(syncAll, 0));
   window.addEventListener('load', () => window.setTimeout(syncAll, 650), { once: true });

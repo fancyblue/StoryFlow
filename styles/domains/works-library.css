@@ -25,6 +25,10 @@
   border-color:#c8c1b0!important;
   background:var(--sf-primary-soft,#f4f1e9)!important;
 }
+/* The filter sits with the list it narrows, above the list's own opening rule. */
+#worksTypeFilters{margin:0 0 14px!important}
+#worksTypeFilters[hidden]{display:none!important}
+.projects-filter-empty{padding:28px 2px!important;margin:0!important;text-align:center!important}
 .projects-library{gap:0!important;border-top:1px solid #c8c1b0!important}
 .project-library-card{
   position:relative!important;

@@ -65,7 +65,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Choose an ending in the middle of a long chapter and switch back to “讀稿”. Confirm the cut stays where it was put and the view stays at “這一篇結束” instead of jumping to the chapter bottom.
 - [ ] Confirm “本篇／後續” counts are visually smaller than the chapter title and the primary action, while remaining readable without wrapping.
 - [ ] Press “回到工作台”, then navigate to 發布 and back. Confirm the reading surface is closed and the workbench rails are back.
-- [ ] In the works library, confirm “工作台／開啟／管理發布／管理章節／管理圖文” use the same text size and control height. Expanded manual chapters and visual entries both show direct edit plus a persistent `⋯` containing the Recovery-guarded delete action.
+- [ ] In the works library, confirm “開啟／管理發布／管理章節／管理圖文” use the same text size and control height, and that “開啟” reads the same on the current work as on any other. Expanded manual chapters and visual entries both show direct edit plus a persistent `⋯` containing the Recovery-guarded delete action.
 - [ ] Give the suggestion a custom title before moving it and confirm the title is preserved.
 - [ ] Close and reopen confirmation; confirm manual mode resets. Confirm the source draft is byte-for-byte unchanged and no confirmed publishing article was rewritten.
 - [ ] Turn off “段落間空一行” for a disposable platform. Confirm ordinary paragraphs are compact but an original scene boundary still shows the configured marker.
@@ -79,7 +79,8 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Create or load a disposable work with enough chapters to scroll the source rail. Select a chapter near the bottom and confirm neither the page nor chapter rail jumps to the top.
 - [ ] Open the bottom chapter's `⋯` menu. Confirm it opens upward inside the visible rail and SMART SPLIT does not move down or change width.
 - [ ] Open “編輯章節”, record its dialog size, then open “手動新增文章”. Confirm both use the same large editor, the textarea fills the available height, and the footer meets the card bottom without a blank region below the buttons.
-- [ ] In Works, confirm every “管理章節” is the same emphasized light-blue 40 px / 14 px action. “工作台／開啟” stays outlined, “管理發布” stays paler, and only the card border and “目前作品” badge identify the current work.
+- [ ] In Works, confirm every “管理章節” is the same emphasized light-blue 40 px / 14 px action. “開啟” stays outlined, “管理發布” stays paler, and the tint, left marker and “目前作品” badge identify the current work — never its position, which stays in title order however the list is opened or managed.
+- [ ] In Works, filter by 全部類型／長文／圖文. Confirm the chips carry counts, match Publishing's, and that “管理章節／管理圖文” and the `⋯` menu survive the filter on every row still shown.
 - [ ] With no works, confirm only “建立第一個作品” is shown as the solid action. After creating a work, confirm the header “＋ 新作品” returns as an outlined 40 px / 14 px action.
 - [ ] Create a “圖文系列” with a first entry. Confirm Works shows a `圖文` label, Workspace replaces the longform/Smart Split layout, and “管理發布” opens the visual entry in the shared Publishing page. Switch between a longform and visual work and confirm the same Workspace header and connection controls remain in place; only the title and mode-specific editing actions change.
 - [ ] Compare longform “作品與章節” and visual “作品與圖文” at the same viewport. Confirm both rails are unframed columns parted from their subject by one hairline — no card fill, border or radius on either side of it — and that outer rail width, gap and editor alignment are identical. Narrow past 820 px and confirm the hairline turns to the bottom edge of the rail in both.

@@ -1,5 +1,9 @@
 // Cross-app UX refinements: dedicated works library, safe chapter removal, clearer format summaries.
 (function () {
+  // Which type the works list is narrowed to. A view preference, not a property of any
+  // work, so it lives here and not in the workspace state that switchProject persists.
+  let worksTypeFilter = 'all';
+
   function projectApi() { return window.StoryFlowProjects; }
 
   function ensureToastStack() {
@@ -67,11 +71,24 @@
           <button id="projectsNewWorkBtn" class="button ghost" type="button" aria-describedby="projectsNewWorkReason">＋ 新增作品</button>
         </div>
       </header>
+      <div id="worksTypeFilters" class="content-type-filters" role="group" aria-label="篩選作品類型">
+        <button class="content-type-filter active" type="button" data-content-type="all">全部類型</button>
+        <button class="content-type-filter" type="button" data-content-type="longform">長文</button>
+        <button class="content-type-filter" type="button" data-content-type="visual">圖文</button>
+      </div>
       <div id="projectsLibrary" class="projects-library"></div>`;
     main.appendChild(view);
 
     view.querySelector('#projectsNewWorkBtn').addEventListener('click', () => {
       window.StoryFlowStartNewWork?.();
+    });
+    // The same control Publishing filters by, in the same place relative to its list and
+    // with the same data-content-type values: one question asked once, not twice.
+    view.querySelector('#worksTypeFilters').addEventListener('click', event => {
+      const button = event.target.closest('[data-content-type]');
+      if (!button) return;
+      worksTypeFilter = button.dataset.contentType || 'all';
+      renderProjectsView();
     });
     return view;
   }
@@ -124,11 +141,34 @@
     if (!api || !list) return;
 
     const activeId = api.activeId?.();
-    const projects = [...(api.list?.() || [])].sort((a, b) => {
-      if (a.id === activeId) return -1;
-      if (b.id === activeId) return 1;
-      return String(a.title || '').localeCompare(String(b.title || ''), 'zh-Hant');
-    });
+    // One stable order. The current work used to be pinned to the top, so opening or
+    // managing one from the bottom of a scrolled list teleported it to the first row and
+    // re-sorted everything around it — the reader's place went with it. Which work is
+    // current is already said by the tint, the marker and the badge; position does not
+    // need to be a fourth signal, and it is the only one that costs you where you were.
+    const all = [...(api.list?.() || [])]
+      .sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'zh-Hant'));
+    const contentTypeOf = project => (project.contentMode === 'visual' ? 'visual' : 'longform');
+    const projects = worksTypeFilter === 'all'
+      ? all
+      : all.filter(project => contentTypeOf(project) === worksTypeFilter);
+
+    const filters = view.querySelector('#worksTypeFilters');
+    if (filters) {
+      const counts = {
+        all: all.length,
+        longform: all.filter(project => contentTypeOf(project) === 'longform').length,
+        visual: all.filter(project => contentTypeOf(project) === 'visual').length
+      };
+      const labels = { all: '全部類型', longform: '長文', visual: '圖文' };
+      filters.hidden = all.length === 0;
+      filters.querySelectorAll('[data-content-type]').forEach(button => {
+        const key = button.dataset.contentType;
+        button.textContent = `${labels[key]} ${counts[key]}`;
+        button.classList.toggle('active', key === worksTypeFilter);
+        button.setAttribute('aria-pressed', String(key === worksTypeFilter));
+      });
+    }
 
     const newWork = view.querySelector('#projectsNewWorkBtn');
     const newWorkReason = view.querySelector('#projectsNewWorkReason');
@@ -157,6 +197,15 @@
     }
 
     list.innerHTML = '';
+    if (all.length && !projects.length) {
+      // Narrowed to nothing is not the same as owning nothing, and the page must not
+      // read as the latter. The way back is the control that got here.
+      const empty = document.createElement('p');
+      empty.className = 'projects-filter-empty muted';
+      empty.textContent = worksTypeFilter === 'visual' ? '沒有圖文作品。' : '沒有長文作品。';
+      list.appendChild(empty);
+      return;
+    }
     projects.forEach(project => {
       const active = project.id === activeId;
       const card = document.createElement('article');
@@ -179,7 +228,7 @@
         </div>
         ${progressMarkup(project.publishProgress)}
         <div class="project-library-actions">
-          <button class="button tiny ghost project-open-btn" type="button">${active ? '工作台' : '開啟'}</button>
+          <button class="button tiny ghost project-open-btn" type="button">開啟</button>
           <button class="button tiny ghost project-publish-btn" type="button">管理發布</button>
           <button class="button tiny ghost project-library-delete" type="button">刪除</button>
         </div>`;
@@ -197,6 +246,16 @@
       });
       list.appendChild(card);
     });
+    announceRender();
+  }
+
+  // The rows are rebuilt here, and two other modules add what they own to each one — the
+  // manage-chapters action and the overflow menu. They used to hear about it only through
+  // storyflow:projects-changed, which eighteen listeners act on, including the persistence
+  // guard and the one that closes the reading view. Narrowing the list by type is none of
+  // their business, so it says the one true thing instead: these rows were re-rendered.
+  function announceRender() {
+    window.dispatchEvent(new CustomEvent('storyflow:works-rendered'));
   }
 
   function blankChapter() {
