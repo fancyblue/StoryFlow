@@ -62,7 +62,6 @@ h3{letter-spacing:-.01em}
 
 /* Cards are quieter and consistent; nested controls provide the hierarchy instead of heavy borders. */
 .panel,
-.project-library-card,
 .publishing-stats article,
 .settings-view .settings-section,
 .settings-view .security-note{

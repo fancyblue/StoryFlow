@@ -61,8 +61,13 @@ h3{font-size:18px;font-weight:700;line-height:1.3}
 /* Layout and card rhythm */
 .main{padding:28px clamp(20px,2.4vw,36px)!important}
 .topbar,.projects-page-head,.publishing-page-head,.settings-page-head{margin-bottom:20px!important}
+/* A work is a row in the works list, not a card, so .project-library-card is not in this
+   list. It was, and this rule loads after works-library.css and carries !important at the
+   same specificity, so the row contract that file states — no border, no radius, no fill of
+   its own — never rendered. The list drew a straight rule across its top and then a 16px
+   card immediately under it, which reads as the card pushing through the line. A shared
+   card rule may not name a component that has decided it is a row. */
 .panel,
-.project-library-card,
 .publishing-stats article,
 .settings-view .settings-section,
 .publishing-project-badge{

@@ -411,6 +411,60 @@ test('both content modes draw one SOURCE rail and open one work switcher over it
   });
 });
 
+// A work is a row in the works list. The stylesheets say so in works-library.css and said
+// the opposite in the two shared card rules, which name components by class and load later:
+// same specificity, also !important, so the row contract never rendered and every work drew
+// a 16px card. The list's own rule across the top then met a rounded corner immediately
+// under it, which reads as the card pushing through the line. Neither the baseline (one work,
+// under tolerance) nor any DOM assertion caught it, because the markup was right the whole
+// time — only the resolved values were wrong, which is this file's subject.
+test('a work resolves to a row in a list, not a card', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+  // Three works, so there is a row that is neither the current one nor the last: the last
+  // deliberately has no separator, because the list's own edge already ends it.
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '契約第二作品', contentMode: 'longform' }, { quiet: true });
+    StoryFlowProjects.createProject({ title: '契約第三作品', contentMode: 'longform' }, { quiet: true });
+  });
+  await page.evaluate(() => StoryFlowProjects.switchProject(
+    StoryFlowProjects.list().find(project => project.title === '契約測試').id, { quiet: true }
+  ));
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await expect(page.locator('.project-library-card').first()).toBeVisible();
+  await page.mouse.move(0, 0);
+
+  // No frame of its own, and no radius: the list draws the separation, the row does not.
+  await expectStyle(page, '.project-library-card:not(.active):not(:last-child)', {
+    borderTopWidth: '0px',
+    borderRightWidth: '0px',
+    borderBottomWidth: '1px',
+    borderTopLeftRadius: '0px',
+    backgroundColor: 'rgba(0, 0, 0, 0)'
+  });
+
+  // The marker gutter is reserved on every row, so marking one current colours a border that
+  // is already there instead of moving the others sideways.
+  await expectStyle(page, '.project-library-card:not(.active):not(:last-child)', { borderLeftWidth: '2px' });
+  await expectStyle(page, '.project-library-card.active', {
+    borderLeftWidth: '2px',
+    borderLeftColor: 'rgb(75, 69, 87)',
+    backgroundColor: 'rgb(232, 229, 235)',
+    borderTopLeftRadius: '0px'
+  });
+
+  // The list states its own top edge; a row starting under it must not curve away from it.
+  const seam = await page.locator('.projects-library').evaluate(list => {
+    const first = list.querySelector('.project-library-card');
+    return {
+      gap: Math.round(first.getBoundingClientRect().top - list.getBoundingClientRect().top),
+      rowRadius: getComputedStyle(first).borderTopLeftRadius,
+      listRule: getComputedStyle(list).borderTopWidth
+    };
+  });
+  expect(seam).toEqual({ gap: 1, rowRadius: '0px', listRule: '1px' });
+});
+
 test('works and publishing draw the same hierarchy', async ({ page }) => {
   // Both pages show 作品 › 章節 (› 篇), and each used to draw it its own way: Works indented a
   // chapter 21px and separated rows with hairlines, Publishing indented nothing at all. What
