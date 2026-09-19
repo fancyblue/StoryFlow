@@ -46,12 +46,16 @@
   margin:0;
 }
 
-/* Preview format is a small utility row; the disabled duplicate settings are noise here. */
+/* Preview format is a small utility row; the disabled duplicate settings are noise here.
+   The shared bar is a filled strip because elsewhere it sits on the page ground, and the
+   theme layer states that fill with !important. Here it sits inside the split panel and is
+   a row of controls, not a surface — restated at this specificity so the local rule wins
+   the part it owns. It went unnoticed while the panel was a card in the same paper. */
 .splitter-panel .suggestion-platform-bar {
   display:flex;
-  padding:0;
-  border:0;
-  background:transparent;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
 }
 .splitter-panel .suggestion-platform-bar .platform-select-field > span {
   display:block;

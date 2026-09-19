@@ -10,15 +10,25 @@
 .workspace-grid.workspace-hierarchy{
   grid-template-columns:var(--sf-workspace-source-columns)!important;
   gap:var(--sf-workspace-column-gap)!important;
-  align-items:start!important;
+  align-items:stretch!important;
   overflow:visible!important;
 }
 
+/* A list beside its subject, the shape the visual workspace and Publishing already use:
+   one hairline says where the two columns part. Two cards said it twice — the grid gap
+   already separates them — and the rail's frame stopped wherever its chapter list did,
+   leaving an edge with nothing on the other side of it partway down the page. Stretching
+   the rail is what lets the one line run the full height of the pairing. */
 .workspace-grid.workspace-hierarchy > .source-panel{
   grid-column:1!important;
   grid-row:1!important;
-  align-self:start!important;
+  align-self:stretch!important;
   overflow:auto!important;
+  padding:0 18px 0 0!important;
+  border:0!important;
+  border-right:1px solid var(--rule-1,#ded9cc)!important;
+  border-radius:0!important;
+  background:transparent!important;
 }
 
 .workspace-grid.workspace-hierarchy > .workspace-main-column{
@@ -51,12 +61,20 @@
   display:none!important;
 }
 
-.workspace-grid.workspace-hierarchy > .workspace-main-column > .splitter-panel{
+/* The split panel is this page's one subject and the grid already says where it is, so a
+   card around it only draws a boundary that is there anyway — and a framed panel beside an
+   unframed rail is the pairing the rail's hairline was meant to replace. */
+.workspace-grid.workspace-hierarchy > .workspace-main-column > .splitter-panel,
+.workspace-grid.workspace-hierarchy > .splitter-panel{
   grid-column:1!important;
   grid-row:auto!important;
   min-width:0!important;
   width:100%!important;
   margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
 }
 
 .source-panel #chapterList{
@@ -64,6 +82,15 @@
 }
 
 .workspace-grid.workspace-hierarchy > .source-panel:has(.chapter-row-action-menu:not([hidden])){
+  z-index:90!important;
+}
+
+/* The rail scrolls its own content, which is right for a long chapter list and wrong for
+   a menu that opens over the page. The work switcher hangs below the SOURCE heading and
+   can be taller than what is left of a short rail, so while it is open the rail stops
+   clipping instead of growing a scrollbar around a disclosure. */
+.workspace-grid.workspace-hierarchy > .source-panel:has(.workspace-project-quick-switch:not([hidden])){
+  overflow:visible!important;
   z-index:90!important;
 }
 
@@ -92,6 +119,14 @@
   .workspace-grid.workspace-hierarchy > .workspace-main-column{
     grid-column:1!important;
     grid-row:2!important;
+  }
+
+  /* Stacked, the two columns part along a horizontal edge, so the hairline turns with
+     them. A right edge on a full-width rail would be a line with no column beside it. */
+  .workspace-grid.workspace-hierarchy > .source-panel{
+    padding:0 0 18px!important;
+    border-right:0!important;
+    border-bottom:1px solid var(--rule-1,#ded9cc)!important;
   }
 
   

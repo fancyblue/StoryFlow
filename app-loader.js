@@ -43,7 +43,7 @@
     { src: './src/ui/preview-mode.js?v=20260918-a1', owner: 'ui' },
     { src: './src/connection/google-auth.js?v=20260825-p2b', owner: 'connection' },
     { src: './src/connection/mobile-google-auth.js?v=20260817-1858', owner: 'connection' },
-    { src: './src/ui/workspace-ux.js?v=20260918-a2', owner: 'ui' },
+    { src: './src/ui/workspace-ux.js?v=20260919-a3', owner: 'ui' },
     { src: './src/ui/ui-system.js?v=20260915-a2', owner: 'ui' },
     { id: 'storyflowPublishingDeleteJs', src: './src/publishing/publishing-delete.js?v=20260912-a1', owner: 'publishing' },
     { id: 'storyflowProjectPersistenceGuardJs', src: './src/persistence/project-persistence-guard.js?v=20260826-p7a', owner: 'persistence' },
@@ -58,7 +58,7 @@
     { src: './src/projects/workspace-project-ux.js?v=20260918-a2', owner: 'projects' },
     { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260915-a2', owner: 'ui' },
     { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260918-a1', owner: 'publishing' },
-    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260919-a2', owner: 'projects' }
+    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260919-a3', owner: 'projects' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));

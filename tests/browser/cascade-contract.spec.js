@@ -33,7 +33,12 @@ async function expectStyle(page, selector, expected) {
   const props = Object.keys(expected).filter(key => key !== '__rendered');
   const actual = await computed(page, selector, props);
   expect(actual, `${selector} is missing from the page`).not.toBeNull();
-  expect(actual, selector).toMatchObject(expected);
+  // These controls transition their fill, so a single reading can catch a frame of one
+  // rather than the value the cascade resolved — a hover fill on its way back out reads as
+  // neither colour. Settle on the resolved value instead of asserting the first frame,
+  // which is also what keeps this from turning into a sleep tuned to a duration.
+  await expect.poll(() => computed(page, selector, props), { message: selector })
+    .toMatchObject(expected);
 }
 
 async function longformWorkspace(page) {
@@ -53,6 +58,11 @@ async function longformWorkspace(page) {
   await page.locator('#previewManualSourceBtn').click();
   await page.locator('#confirmSourcePreviewBtn').click();
   await expect(page.locator('#suggestionCard')).toBeVisible();
+  // These specs assert resting appearance. The pointer stays wherever the last click left
+  // it, and the workspace that replaces the dialog can put a control under it — 確認並存成
+  // Markdown lands there once the split panel stops carrying card padding — so the hover
+  // fill is what gets measured. Park the pointer off the composition first.
+  await page.mouse.move(0, 0);
 }
 
 async function stylesheetOrder(page) {
@@ -303,6 +313,102 @@ test('the hidden attribute always wins over a component display rule', async ({ 
     return display;
   });
   expect(forced).toBe('none');
+});
+
+// Longform and visual read the same SOURCE rail, and the same work switcher opens in it.
+// Both claims were untrue at once, from one deleted `*/`: the rules that made the switcher
+// an overlay sat inside a comment that a commit left unterminated, so the menu rendered in
+// flow — shoving the visual rail's fields down the page, and in longform opening as plain
+// text far enough down the rail that it read as the button doing nothing. Neither pixel
+// baselines nor the DOM assertions caught it, because the markup was correct throughout and
+// the menus are closed in every baseline. These are resolved values, which is the level the
+// failure actually lived at.
+async function visualWorkspace(page) {
+  await page.evaluate(() => StoryFlowProjects.createProject(
+    { title: '契約圖文', contentMode: 'visual' }, { quiet: true }
+  ));
+  await expect(page.locator('#visualWorkspace')).toBeVisible();
+  await page.mouse.move(0, 0);
+}
+
+function railShape(page, selector) {
+  return page.locator(selector).evaluate(el => {
+    const style = getComputedStyle(el);
+    return {
+      backgroundColor: style.backgroundColor,
+      borderTopWidth: style.borderTopWidth,
+      borderRightWidth: style.borderRightWidth,
+      borderRightColor: style.borderRightColor,
+      borderTopLeftRadius: style.borderTopLeftRadius,
+      padding: style.padding,
+      width: Math.round(el.getBoundingClientRect().width)
+    };
+  });
+}
+
+// What the disclosure has to be: a layer over the rail, under the button that opens it,
+// carrying its own surface — and leaving the rail's own fields exactly where they were.
+async function switcherShape(page, { button, menu, fieldBelow }) {
+  const fieldTopBefore = await page.locator(fieldBelow).evaluate(el => Math.round(el.getBoundingClientRect().top));
+  await page.locator(button).click();
+  await expect(page.locator(menu)).toBeVisible();
+  await expect(page.locator(`${menu} .workspace-project-quick-switch-new`)).toHaveText('＋新增作品');
+  const shape = await page.locator(menu).evaluate((el, ids) => {
+    const style = getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    const trigger = document.querySelector(ids.button).getBoundingClientRect();
+    return {
+      position: style.position,
+      ownSurface: style.backgroundColor !== 'rgba(0, 0, 0, 0)' && parseFloat(style.borderTopWidth) > 0,
+      belowTrigger: Math.round(rect.top - trigger.bottom),
+      alignedToTrigger: Math.round(rect.right - trigger.right),
+      overlaps: rect.top < document.querySelector(ids.fieldBelow).getBoundingClientRect().top
+    };
+  }, { button, fieldBelow });
+  const fieldTopAfter = await page.locator(fieldBelow).evaluate(el => Math.round(el.getBoundingClientRect().top));
+  return { ...shape, movedTheRail: fieldTopAfter - fieldTopBefore };
+}
+
+test('both content modes draw one SOURCE rail and open one work switcher over it', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+
+  const longformRail = await railShape(page, '.workspace-grid.workspace-hierarchy > .source-panel');
+  const longformSwitcher = await switcherShape(page, {
+    button: '#quickSwitchProjectBtn',
+    menu: '#workspaceProjectQuickSwitch',
+    fieldBelow: '#projectTitle'
+  });
+
+  await visualWorkspace(page);
+
+  const visualRail = await railShape(page, '.visual-entry-list-panel');
+  const visualSwitcher = await switcherShape(page, {
+    button: '#visualProjectSwitchBtn',
+    menu: '#visualProjectMenu',
+    fieldBelow: '#visualProjectTitle'
+  });
+
+  // One rail, drawn by one hairline between the columns rather than a frame around each.
+  expect(longformRail).toEqual(visualRail);
+  expect(longformRail).toMatchObject({
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+    borderTopWidth: '0px',
+    borderRightWidth: '1px',
+    borderRightColor: 'rgb(222, 217, 204)',
+    borderTopLeftRadius: '0px',
+    padding: '0px 18px 0px 0px'
+  });
+
+  expect(longformSwitcher).toEqual(visualSwitcher);
+  expect(longformSwitcher).toMatchObject({
+    position: 'absolute',
+    ownSurface: true,
+    belowTrigger: 6,
+    alignedToTrigger: 0,
+    overlaps: true,
+    movedTheRail: 0
+  });
 });
 
 test('works and publishing draw the same hierarchy', async ({ page }) => {
