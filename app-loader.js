@@ -16,8 +16,8 @@
     { src: './src/ui/workspace-interactions.js?v=20260918-a1', owner: 'ui' },
     { src: './src/persistence/settings-sync.js?v=20260918-a2', owner: 'persistence' },
     { src: './src/persistence/workspace-safety.js?v=20260824-p0', owner: 'persistence' },
-    { src: './src/split/smart-split-ui.js?v=20260918-a2', owner: 'split' },
-    { src: './src/publishing/platform-lock.js?v=20260918-a2', owner: 'publishing' },
+    { src: './src/split/smart-split-ui.js?v=20260919-a1', owner: 'split' },
+    { src: './src/publishing/platform-lock.js?v=20260919-a1', owner: 'publishing' },
     { src: './src/source/source-diff.js?v=20260912-a1', owner: 'source' },
     { src: './src/source/source-sync-history.js?v=20260825-p1', owner: 'source' },
     { src: './src/source/source-flow.js?v=20260831-p48a', owner: 'source' },
@@ -58,7 +58,7 @@
     { src: './src/projects/workspace-project-ux.js?v=20260918-a2', owner: 'projects' },
     { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260915-a2', owner: 'ui' },
     { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260918-a1', owner: 'publishing' },
-    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260918-a1', owner: 'projects' }
+    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260919-a1', owner: 'projects' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));

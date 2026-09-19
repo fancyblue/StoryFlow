@@ -59,20 +59,6 @@
     document.querySelectorAll('.copy-platform').forEach(fillSelector);
   }
 
-  function bindSelector(select) {
-    if (!select || select.dataset.platformPresetBound) return;
-    select.dataset.platformPresetBound = '1';
-    const resync = () => fillSelector(select);
-    select.addEventListener('focus', resync);
-    select.addEventListener('pointerdown', resync);
-  }
-
-  function bindSelectors() {
-    bindSelector(document.getElementById('suggestionPlatformSelect'));
-    bindSelector(document.getElementById('readingPlatformSelect'));
-    document.querySelectorAll('.copy-platform').forEach(bindSelector);
-  }
-
   function updateSettingsCopy() {
     const section = document.getElementById('platformFormatSettings')?.closest('.settings-section');
     const description = section?.querySelector('p');
@@ -84,14 +70,14 @@
     if (typeof renderFormattingSettings === 'function') renderFormattingSettings();
     if (typeof renderParts === 'function') renderParts();
     if (typeof renderPlatformManager === 'function') renderPlatformManager();
-    syncSelectors(); bindSelectors(); updateSettingsCopy();
+    syncSelectors(); updateSettingsCopy();
   }
 
   normalizePlatformState({ migrate: false });
   const baseRenderSuggestion = window.renderSuggestion;
-  window.renderSuggestion = function () { baseRenderSuggestion(); syncSelectors(); bindSelectors(); };
+  window.renderSuggestion = function () { baseRenderSuggestion(); syncSelectors(); };
   const baseRenderParts = window.renderParts;
-  window.renderParts = function () { baseRenderParts(); syncSelectors(); bindSelectors(); };
+  window.renderParts = function () { baseRenderParts(); syncSelectors(); };
 
   const baseChooseOutputDirectory = StoryFlowIntegrations.chooseOutputDirectory;
   StoryFlowIntegrations.chooseOutputDirectory = async (...args) => {

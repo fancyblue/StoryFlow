@@ -251,7 +251,7 @@
     visual.innerHTML = `
       <div id="visualReadonlyNote" class="visual-readonly-note" hidden>手機目前為唯讀：可以閱讀與預覽，但不會新增、排序、匯入、刪除或保存。</div>
       <div class="visual-workspace-layout">
-        <aside class="panel source-panel visual-entry-list-panel">
+        <aside class="source-panel visual-entry-list-panel">
           <div class="panel-head visual-project-panel-head">
             <div>
               <p class="eyebrow">SOURCE</p>

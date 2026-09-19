@@ -129,12 +129,15 @@
 .project-chapter-manager{
   grid-column:1 / -1;
   width:100%;
-  /* The current work's row is tinted. Its expansion is content below that row, not more of
-     it, so the expansion is paper — which also separates the two without another line. */
+  /* This used to be paper on the tinted current-work card, on the reasoning that the
+     expansion is content below the row rather than more of it. On the tint that reads as an
+     unfinished box: the block's left and right edges show against the card while its bottom
+     runs into the card's padding, so the eye reports a line that stopped. A rule across the
+     card's content width says the same thing and finishes. */
   margin-top:14px;
-  padding-top:2px;
-  background:#fbfaf6;
-  border-top:1px solid #ded9cc;
+  padding-top:12px;
+  background:transparent;
+  border-top:1px solid var(--rule-1,#ded9cc);
 }
 .project-chapter-manager-head{
   display:flex;

@@ -147,19 +147,10 @@
     }
   }
 
-  function bindSuggestionPlatformSelect() {
-    const select = document.getElementById('suggestionPlatformSelect');
-    if (!select || select.dataset.smartSplitReliable) return;
-    select.dataset.smartSplitReliable = '1';
-    select.addEventListener('focus', syncAllFormatSelects);
-    select.addEventListener('pointerdown', syncAllFormatSelects);
-  }
-
   const baseRender = window.renderSuggestion;
   window.renderSuggestion = function renderSuggestionSmartSplit() {
     baseRender();
     syncAllFormatSelects();
-    bindSuggestionPlatformSelect();
     organizeSmartSplit();
     if (!suggestion) {
       customTitle = '';
@@ -172,7 +163,6 @@
   };
 
   syncAllFormatSelects();
-  bindSuggestionPlatformSelect();
   organizeSmartSplit();
   installPreviewOverlayControls();
   if (suggestion) syncEditableTitle();
