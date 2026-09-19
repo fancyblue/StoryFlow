@@ -2751,11 +2751,15 @@ test('publishing order can follow chapters, and the choice follows the writer no
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.locator('#publishingSortControl')).toBeVisible();
   await expect(page.getByRole('button', { name: '最新在前', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  expect(await chapterOrder()).toEqual(['02、第二章', '01、第一章']);
+  // Polled, not read once. The pressed state lands with the click; the list behind it is
+  // re-rendered through wrappers that run on their own turn of the event loop, so a single
+  // reading can be taken before the order it is asserting has been drawn. Seen as a flaky
+  // pass on CI, where the retry then succeeded.
+  await expect.poll(chapterOrder).toEqual(['02、第二章', '01、第一章']);
 
   await page.getByRole('button', { name: '章節順序', exact: true }).click();
   await expect(page.getByRole('button', { name: '章節順序', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  expect(await chapterOrder()).toEqual(['01、第一章', '02、第二章']);
+  await expect.poll(chapterOrder).toEqual(['01、第一章', '02、第二章']);
 
   // It belongs to the writer, not to one work: switchProject() replaces `state` wholesale, so
   // carrying it has to be deliberate, the way the split preferences above it already are.

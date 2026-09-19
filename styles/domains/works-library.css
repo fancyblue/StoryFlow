@@ -76,9 +76,6 @@
   font-size:11.5px!important;
   line-height:1.4!important;
 }
-.project-library-card.has-published-progress{border-color:#ded9cc!important}
-.project-library-card.active.has-published-progress{border-color:#c8c1b0!important}
-
 .project-library-actions{
   position:relative!important;
   display:flex!important;

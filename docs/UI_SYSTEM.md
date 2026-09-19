@@ -196,6 +196,18 @@ hairline and nothing else: no fill of its own, no radius, no border around it, a
 closes up to `gap: 0` so the hairlines are what separate one row from the next. Where the
 panel a list sits inside still has a frame, the rows inside it do not get one each.
 
+**A shared card rule may not name a row.** Both `ui-polish.css` and `ui-system.css` carry a
+rule that gives `.panel` and a list of named components a border, a 16px radius and a
+`--paper-1` fill, and `.project-library-card` was in that list. It loads after
+`works-library.css`, at the same specificity and also `!important`, so the row contract that
+file states — no border, no radius, no fill — never rendered once in the app: every work drew
+a card. The list's own rule across its top then met a rounded corner one pixel below it,
+which reads as the card pushing through the line rather than as a list starting. Nothing
+caught it, because the markup was right the whole time and a one-work baseline changes fewer
+pixels than the tolerance; `cascade-contract.spec.js` now asserts the resolved values.
+Naming a component in a shared card rule is a claim about what it is, so a component that has
+decided it is a row has to come out of that list, not out-specify it.
+
 Two rules make this work.
 
 **The row owns the state, not the control inside it.** A chapter row is a title button plus
