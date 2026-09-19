@@ -5,7 +5,7 @@
 // order here makes that dependency explicit without hiding it in one long HTML line.
 (function () {
   const scripts = [
-    { src: './src/core/shared.js?v=20260912-a1', owner: 'core' },
+    { src: './src/core/shared.js?v=20260919-a2', owner: 'core' },
     { src: './src/core/config.js?v=20260817-1625', owner: 'core' },
     { src: './src/projects/content-model.js?v=20260830-p47a', owner: 'projects' },
     { src: './src/persistence/integrations.js?v=20260912-a1', owner: 'persistence' },
@@ -13,11 +13,11 @@
     { src: './src/connection/session-auth.js?v=20260817-1522', owner: 'connection' },
     { src: './src/connection/folder-session.js?v=20260825-p1e', owner: 'connection' },
     { src: './src/ui/ui-bootstrap.js?v=20260824-p1c', owner: 'ui' },
-    { src: './src/ui/workspace-interactions.js?v=20260918-a1', owner: 'ui' },
-    { src: './src/persistence/settings-sync.js?v=20260918-a2', owner: 'persistence' },
+    { src: './src/ui/workspace-interactions.js?v=20260919-a2', owner: 'ui' },
+    { src: './src/persistence/settings-sync.js?v=20260919-a2', owner: 'persistence' },
     { src: './src/persistence/workspace-safety.js?v=20260824-p0', owner: 'persistence' },
-    { src: './src/split/smart-split-ui.js?v=20260918-a2', owner: 'split' },
-    { src: './src/publishing/platform-lock.js?v=20260918-a2', owner: 'publishing' },
+    { src: './src/split/smart-split-ui.js?v=20260919-a2', owner: 'split' },
+    { src: './src/publishing/platform-lock.js?v=20260919-a2', owner: 'publishing' },
     { src: './src/source/source-diff.js?v=20260912-a1', owner: 'source' },
     { src: './src/source/source-sync-history.js?v=20260825-p1', owner: 'source' },
     { src: './src/source/source-flow.js?v=20260831-p48a', owner: 'source' },
@@ -33,7 +33,7 @@
     { src: './src/connection/connection-ui.js?v=20260915-a2', owner: 'connection' },
     { src: './src/connection/logout-unload-settings.js?v=20260915-a2', owner: 'connection' },
     { src: './src/settings/settings-page.js?v=20260912-a1', owner: 'settings' },
-    { id: 'storyflowPlatformSettingsJs', src: './src/settings/platform-settings.js?v=20260918-a2', owner: 'settings' },
+    { id: 'storyflowPlatformSettingsJs', src: './src/settings/platform-settings.js?v=20260919-a2', owner: 'settings' },
     { id: 'storyflowSettingsBootstrapJs', src: './src/settings/settings-bootstrap.js?v=20260905-p51a', owner: 'settings' },
     { id: 'storyflowSettingsFileImportJs', src: './src/settings/settings-file-import.js?v=20260825-p2b', owner: 'settings' },
     { id: 'storyflowBackupCenterJs', src: './src/settings/backup-center.js?v=20260905-p51a', owner: 'settings' },
@@ -58,7 +58,7 @@
     { src: './src/projects/workspace-project-ux.js?v=20260918-a2', owner: 'projects' },
     { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260915-a2', owner: 'ui' },
     { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260918-a1', owner: 'publishing' },
-    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260918-a1', owner: 'projects' }
+    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260919-a2', owner: 'projects' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));

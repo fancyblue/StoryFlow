@@ -25,18 +25,10 @@
     return `新平台 ${number}`;
   }
 
-  function syncPlatformSelect(select) {
-    if (!select) return;
-    const current = select.value;
-    select.innerHTML = '';
-    select.add(new Option('預設格式', ''));
-    platforms.forEach(name => select.add(new Option(name, name)));
-    select.value = platforms.includes(current) ? current : '';
-  }
-
   function refreshDependentUI() {
-    syncPlatformSelect(document.getElementById('suggestionPlatformSelect'));
-    syncPlatformSelect(document.getElementById('readingPlatformSelect'));
+    const { fillPlatformSelect } = window.StoryFlowShared;
+    fillPlatformSelect(document.getElementById('suggestionPlatformSelect'));
+    fillPlatformSelect(document.getElementById('readingPlatformSelect'));
     if (typeof renderParts === 'function') renderParts();
     if (typeof renderSuggestion === 'function') renderSuggestion();
   }

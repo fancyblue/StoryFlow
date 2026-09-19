@@ -43,34 +43,13 @@
     if (firstMigration) state.platformPresetVersion = PRESET_VERSION;
   }
 
-  function fillSelector(select) {
-    if (!select) return;
-    const current = select.value;
-    select.innerHTML = '';
-    select.add(new Option('預設設定', ''));
-    platforms.forEach(name => select.add(new Option(name, name)));
-    const values = [...select.options].map(option => option.value);
-    select.value = values.includes(current) ? current : '';
-  }
-
   function syncSelectors() {
-    fillSelector(document.getElementById('suggestionPlatformSelect'));
-    fillSelector(document.getElementById('readingPlatformSelect'));
-    document.querySelectorAll('.copy-platform').forEach(fillSelector);
-  }
-
-  function bindSelector(select) {
-    if (!select || select.dataset.platformPresetBound) return;
-    select.dataset.platformPresetBound = '1';
-    const resync = () => fillSelector(select);
-    select.addEventListener('focus', resync);
-    select.addEventListener('pointerdown', resync);
-  }
-
-  function bindSelectors() {
-    bindSelector(document.getElementById('suggestionPlatformSelect'));
-    bindSelector(document.getElementById('readingPlatformSelect'));
-    document.querySelectorAll('.copy-platform').forEach(bindSelector);
+    const { fillPlatformSelect } = window.StoryFlowShared;
+    fillPlatformSelect(document.getElementById('suggestionPlatformSelect'));
+    fillPlatformSelect(document.getElementById('readingPlatformSelect'));
+    // A row's copy target is a platform, so it offers no "no platform" option.
+    document.querySelectorAll('.copy-platform')
+      .forEach(select => fillPlatformSelect(select, { withDefault: false }));
   }
 
   function updateSettingsCopy() {
@@ -84,14 +63,14 @@
     if (typeof renderFormattingSettings === 'function') renderFormattingSettings();
     if (typeof renderParts === 'function') renderParts();
     if (typeof renderPlatformManager === 'function') renderPlatformManager();
-    syncSelectors(); bindSelectors(); updateSettingsCopy();
+    syncSelectors(); updateSettingsCopy();
   }
 
   normalizePlatformState({ migrate: false });
   const baseRenderSuggestion = window.renderSuggestion;
-  window.renderSuggestion = function () { baseRenderSuggestion(); syncSelectors(); bindSelectors(); };
+  window.renderSuggestion = function () { baseRenderSuggestion(); syncSelectors(); };
   const baseRenderParts = window.renderParts;
-  window.renderParts = function () { baseRenderParts(); syncSelectors(); bindSelectors(); };
+  window.renderParts = function () { baseRenderParts(); syncSelectors(); };
 
   const baseChooseOutputDirectory = StoryFlowIntegrations.chooseOutputDirectory;
   StoryFlowIntegrations.chooseOutputDirectory = async (...args) => {

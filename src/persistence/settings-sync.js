@@ -266,21 +266,11 @@
     }
   }
 
-  function refreshPlatformDropdown(select) {
-    if (!select) return;
-    const current = select.value;
-    const hasDefault = select.id === 'suggestionPlatformSelect' || select.id === 'readingPlatformSelect';
-    select.innerHTML = '';
-    if (hasDefault) select.add(new Option('預設格式', ''));
-    platforms.forEach(platform => select.add(new Option(platform, platform)));
-    const values = [...select.options].map(option => option.value);
-    select.value = values.includes(current) ? current : (hasDefault ? '' : (platforms[0] || ''));
-  }
-
   function refreshPlatformUI() {
+    const { fillPlatformSelect } = window.StoryFlowShared;
     ensurePlatformConfigs();
-    refreshPlatformDropdown(document.getElementById('suggestionPlatformSelect'));
-    refreshPlatformDropdown(document.getElementById('readingPlatformSelect'));
+    fillPlatformSelect(document.getElementById('suggestionPlatformSelect'));
+    fillPlatformSelect(document.getElementById('readingPlatformSelect'));
     if (typeof renderFormattingSettings === 'function') renderFormattingSettings();
     if (typeof renderParts === 'function') renderParts();
     renderPlatformManager();

@@ -71,11 +71,22 @@
 .publishing-dashboard-panel>.panel-head h2{line-height:1.3}
 .publishing-dashboard-panel>.panel-head .muted{display:block;margin-top:6px;line-height:1.5;max-width:760px}
 
+/* Collapsed, an article is a row among rows: the hairline is the whole of its boundary.
+   Expanded, it holds a region of controls that has to read as belonging to it, so that one
+   gets a frame — the only one between the queue and the manuscript. */
 .publish-list-item{
-  border:1px solid var(--line);
-  background:#fbfaf6;
+  border:0;
+  border-bottom:1px solid var(--rule-1,#ded9cc);
+  border-radius:0;
+  background:transparent;
   overflow:hidden;
   transition:border-color .15s ease,box-shadow .15s ease;
+}
+.publish-list-item:last-child{border-bottom:0}
+.publish-list-item.expanded{
+  border:1px solid var(--rule-1,#ded9cc);
+  border-radius:14px;
+  background:var(--paper-1,#fbfaf6);
 }
 
 .publish-list-summary{
@@ -159,31 +170,38 @@
 .publish-platform-details{
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(210px,258px);
-  align-items:start;
+  /* The rail stretches so the hairline between the columns runs the whole split. Sized to
+     its own content it stopped partway down, which reads as a line that failed to draw. */
+  align-items:stretch;
   gap:14px;
   border-top:1px solid var(--line);
   padding:2px 14px 14px;
 }
 .publish-platform-details[hidden]{display:none!important}
 .publish-manuscript-column{display:grid;gap:10px;min-width:0}
+/* The rail is the column beside the manuscript. One hairline is enough to say where the
+   two columns part; a box makes it a third object floating inside a second one. */
 .publish-platform-rail{
   min-width:0;
-  margin-top:10px;
-  border:1px solid #ded9cc;
-  border-radius:11px;
-  background:#fbfaf6;
-  overflow:hidden;
+  margin-top:6px;
+  padding-left:14px;
+  border:0;
+  border-left:1px solid var(--rule-1,#ded9cc);
+  border-radius:0;
+  background:transparent;
+  overflow:visible;
 }
 .publish-article-tools{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:16px;
-  margin:10px 0 0;
-  padding:10px 12px;
-  border:1px solid #ded9cc;
-  border-radius:10px;
-  background:#fbfaf6;
+  margin:6px 0 0;
+  padding:0 0 11px;
+  border:0;
+  border-bottom:1px solid var(--rule-1,#ded9cc);
+  border-radius:0;
+  background:transparent;
 }
 .publish-article-tools-copy{min-width:0}
 .publish-article-tools-copy strong,.publish-article-tools-copy span{display:block}
@@ -335,23 +353,24 @@
 
 /* Preview and copy is a panel in the row's left column. It is bounded rather than modal:
    the content scrolls inside it while the actions stay put at its foot. */
+/* No frame and no inner scroller. The panel used to cap itself at 62dvh, which put the
+   manuscript in a small window inside a page that also scrolls — two scrollbars for one
+   piece of text, and very little of it visible at once. The page scrolls; this does not. */
 .publish-preview-panel{
   display:grid;
-  grid-template-rows:auto minmax(0,1fr) auto;
+  grid-template-rows:auto auto auto;
   min-width:0;
-  max-height:min(62dvh,640px);
-  border:1px solid #ded9cc;
-  border-radius:12px;
-  background:#fbfaf6;
-  overflow:hidden;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  overflow:visible;
 }
-.publish-preview-panel-head{
-  padding:12px 16px 10px;
-  border-bottom:1px solid var(--line);
-}
-.publish-preview-panel-head .eyebrow{margin-bottom:4px}
-.publish-preview-panel-head h3{margin:0;line-height:1.35;font-size:16px}
-.platform-preview-body{display:grid;grid-auto-rows:max-content;align-content:start;gap:12px;min-height:0;overflow:auto;padding:14px 16px 16px;scrollbar-gutter:stable}
+/* One line, not an eyebrow over a heading: the rail already says which version is showing
+   and marks it as current. */
+.publish-preview-panel-head{padding:10px 0 0}
+.publish-preview-panel-head .eyebrow{display:none}
+.publish-preview-panel-head h3{margin:0;line-height:1.35;font-size:13px;color:var(--ink-2,#6a6357);font-weight:700}
+.platform-preview-body{display:grid;grid-auto-rows:max-content;align-content:start;gap:11px;min-height:0;overflow:visible;padding:9px 0 12px}
 .platform-preview-meta{margin:0!important;color:#6a6357;font-size:12px;line-height:1.45}
 .platform-preview-title-copy{
   display:flex;
@@ -446,7 +465,7 @@
 .platform-preview-afterword-option[hidden]{display:none!important}
 .platform-preview-afterword-option input{margin:0;accent-color:var(--primary)}
 .platform-preview-afterword-option small{color:var(--muted);font-size:10px;font-weight:700}
-.platform-preview-content-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 -4px}
+.platform-preview-content-head{display:none}
 .platform-preview-content-head strong{color:#221f1a;font-size:13px}
 .platform-preview-content-head span{color:#6a6357;font-size:10px;font-weight:700}
 .platform-preview-content{
@@ -471,9 +490,9 @@
   gap:8px;
   flex-wrap:wrap;
   margin:0!important;
-  padding:11px 16px 12px!important;
-  background:#fbfaf6;
-  border-top:1px solid var(--line);
+  padding:11px 0 2px!important;
+  background:transparent;
+  border-top:1px solid var(--rule-1,#ded9cc);
 }
 .platform-preview-actions .button{min-height:36px}
 .platform-preview-actions .button[hidden]{display:none!important}
@@ -832,9 +851,9 @@
 
 .publishing-chapter-group{
   min-width:0;
-  border:1px solid #ded9cc;
-  border-radius:14px;
-  background:#fbfaf6;
+  border:0;
+  border-radius:0;
+  background:transparent;
   overflow:visible;
 }
 .publishing-chapter-group-head{
@@ -843,9 +862,9 @@
   justify-content:space-between;
   gap:12px;
   min-height:42px;
-  padding:8px 12px;
-  border-bottom:1px solid #ded9cc;
-  background:#fbfaf6;
+  padding:8px 2px 7px;
+  border-bottom:1px solid var(--rule-1,#ded9cc);
+  background:transparent;
   border-radius:13px 13px 0 0;
 }
 .publishing-chapter-group-head strong{
@@ -1176,25 +1195,24 @@ button.publish-delete-btn{
 .platform-preview-extra-copy:disabled{
   cursor:default;
   opacity:1;
-  border-style:dashed;
   color:#6a6357;
 }
-.platform-preview-extra-copy:disabled:hover{border-color:#ded9cc;background:#fbfaf6;outline:none}
+.platform-preview-extra-copy:disabled:hover{background:transparent;outline:none}
 .platform-preview-extra-copy{
   display:grid;
   grid-template-columns:auto minmax(0,1fr) auto;
   gap:10px;
   align-items:start;
   width:100%;
-  padding:10px 12px;
-  border:1px solid #ded9cc;
-  border-radius:10px;
-  background:#fbfaf6;
+  padding:8px 0;
+  border:0;
+  border-radius:0;
+  background:transparent;
   color:inherit;
   text-align:left;
   cursor:pointer;
 }
-.platform-preview-extra-copy:hover,.platform-preview-extra-copy:focus-visible{border-color:#c8c1b0;background:#f4f1e9;outline:2px solid rgba(75,69,87,.14)}
+.platform-preview-extra-copy:hover,.platform-preview-extra-copy:focus-visible{background:var(--paper-2,#f4f1e9);outline:none}
 .platform-preview-extra-copy span{color:#6a6357;font-size:11px;font-weight:700}
 .platform-preview-extra-copy p{margin:0;color:#221f1a;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .platform-preview-extra-copy small{color:var(--muted);font-size:10px;white-space:nowrap}
@@ -1358,23 +1376,25 @@ body #publishingView #publishingProjectFilterBtn strong{
 }
 
 /* Publishing preview uses one compact settings card for title and content composition. */
+/* Title and copy options are one group, ended by a rule rather than boxed. */
 .platform-preview-settings{
   display:grid;
-  overflow:hidden;
-  border:1px solid #ded9cc;
-  border-radius:10px;
-  background:#fbfaf6;
+  overflow:visible;
+  border:0;
+  border-bottom:1px solid var(--rule-1,#ded9cc);
+  border-radius:0;
+  background:transparent;
 }
 .platform-preview-settings .platform-preview-title-copy{
   gap:12px;
   margin:0;
-  padding:11px 12px!important;
+  padding:0 0 9px!important;
   border:0!important;
   border-radius:0!important;
   background:transparent!important;
 }
 .platform-preview-settings .platform-preview-title-editor{
-  margin:0 12px 12px;
+  margin:0 0 11px;
 }
 .platform-preview-settings .platform-preview-options{
   margin:0;

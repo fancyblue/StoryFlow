@@ -13,12 +13,24 @@
 .visual-entry-list-actions { display: grid; justify-items: end; gap: 8px; }
 .visual-entry-add-button { margin-top: 10px; }
 .visual-mode-badge, .project-type-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 9px; border-radius: 999px; background: #f4f1e9; color: #4b4557; font-size: 12px; font-weight: 700; }
-.visual-workspace-layout { display: grid; grid-template-columns: var(--sf-workspace-source-columns); gap: var(--sf-workspace-column-gap); align-items: start; }
+.visual-workspace-layout { display: grid; grid-template-columns: var(--sf-workspace-source-columns); gap: var(--sf-workspace-column-gap); align-items: stretch; }
 .visual-entry-list-panel, .visual-editor-panel { min-width: 0; }
-.visual-entry-list-panel { position: relative; align-self: start; }
+/* A list beside its subject, the same shape Publishing uses: one hairline says where the
+   two columns part. A card here left a framed column next to an unframed one, ending partway
+   down the page — an edge with nothing on the other side of it, which reads as a broken line
+   rather than as a boundary. */
+.visual-entry-list-panel {
+  position: relative;
+  align-self: stretch;
+  padding: 0 18px 0 0;
+  border: 0;
+  border-right: 1px solid var(--rule-1, #ded9cc);
+  border-radius: 0;
+  background: transparent;
+}
 /* The editor is this page's one subject and the grid already says where it is, so a card
    around it only draws a boundary that is there anyway. Its own fields carry the structure. */
-.visual-editor-panel { padding: 2px 0 0; }
+.visual-editor-panel { padding: 0; }
 /* Entries are a list of rows, like chapters and works. The row carries the separator and the
    current marker; the button inside it carries neither. */
 .visual-entry-list { display: grid; gap: 0; margin-top: 12px; border-top: 1px solid var(--rule-2, #c8c1b0); }

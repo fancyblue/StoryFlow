@@ -3,25 +3,10 @@
   let customTitle = '';
   let suggestionIdentity = '';
 
-  function availablePlatforms() {
-    const names = [...platforms, ...Object.keys(state.formatting?.platforms || {})];
-    return [...new Set(names.map(name => String(name || '').trim()).filter(Boolean))];
-  }
-
-  function syncFormatSelect(select) {
-    if (!select) return;
-    const current = select.value;
-    const names = availablePlatforms();
-    select.innerHTML = '';
-    select.add(new Option('預設格式', ''));
-    names.forEach(name => select.add(new Option(name, name)));
-    const values = [...select.options].map(option => option.value);
-    select.value = values.includes(current) ? current : '';
-  }
-
   function syncAllFormatSelects() {
-    syncFormatSelect(document.getElementById('suggestionPlatformSelect'));
-    syncFormatSelect(document.getElementById('readingPlatformSelect'));
+    const { fillPlatformSelect } = window.StoryFlowShared;
+    fillPlatformSelect(document.getElementById('suggestionPlatformSelect'));
+    fillPlatformSelect(document.getElementById('readingPlatformSelect'));
   }
 
   function identityForSuggestion() {
@@ -147,19 +132,10 @@
     }
   }
 
-  function bindSuggestionPlatformSelect() {
-    const select = document.getElementById('suggestionPlatformSelect');
-    if (!select || select.dataset.smartSplitReliable) return;
-    select.dataset.smartSplitReliable = '1';
-    select.addEventListener('focus', syncAllFormatSelects);
-    select.addEventListener('pointerdown', syncAllFormatSelects);
-  }
-
   const baseRender = window.renderSuggestion;
   window.renderSuggestion = function renderSuggestionSmartSplit() {
     baseRender();
     syncAllFormatSelects();
-    bindSuggestionPlatformSelect();
     organizeSmartSplit();
     if (!suggestion) {
       customTitle = '';
@@ -172,7 +148,6 @@
   };
 
   syncAllFormatSelects();
-  bindSuggestionPlatformSelect();
   organizeSmartSplit();
   installPreviewOverlayControls();
   if (suggestion) syncEditableTitle();
