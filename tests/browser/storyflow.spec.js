@@ -2223,7 +2223,9 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await page.locator('.nav-item[data-view="projects"]').click();
   const card = page.locator('.project-library-card', { hasText: '夜色圖文集' });
   await expect(card.locator('.project-type-badge')).toHaveText('圖文');
-  await expect(card.getByRole('button', { name: '工作台「夜色圖文集」', exact: true })).toBeVisible();
+  // One label whichever work it is, current or not: the destination is the same, and the
+  // row says which one is current with its tint, its marker and its 目前作品 badge.
+  await expect(card.getByRole('button', { name: '開啟「夜色圖文集」', exact: true })).toBeVisible();
   const inactiveVisualCard = page.locator('.project-library-card', { hasText: '第二圖文集' });
   await expect(inactiveVisualCard.getByRole('button', { name: '開啟「第二圖文集」', exact: true })).toBeVisible();
   await expect(card.getByRole('button', { name: '管理發布「夜色圖文集」', exact: true })).toBeVisible();
@@ -2770,6 +2772,72 @@ test('publishing order can follow chapters, and the choice follows the writer no
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.getByRole('button', { name: '章節順序', exact: true })).toHaveAttribute('aria-pressed', 'true');
 
+  expect(pageErrors).toEqual([]);
+});
+
+test('the works list keeps its order and its row actions while being managed and filtered', async ({ page }) => {
+  // Managing a work makes it current, and the current work used to be pinned to the top of
+  // the list. Opening one from the bottom of a scrolled list therefore teleported it to the
+  // first row and re-sorted everything around it, which is the whole reason this is pinned:
+  // the row has to stay where the reader left it.
+  const pageErrors = await prepare(page);
+  await gotoWorkbench(page, '/?visual-regression=1');
+  await page.locator('#createProjectManually').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
+  await page.locator('#sourceManualBtn').click();
+  await page.locator('#manualProjectTitle').fill('排序甲');
+  await page.locator('#manualSourceTitle').fill('01、第一章');
+  await page.locator('#manualSourceText').fill('第一段。');
+  await page.locator('#previewManualSourceBtn').click();
+  await page.locator('#confirmSourcePreviewBtn').click();
+  await expect(page.locator('#suggestionCard')).toBeVisible();
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '排序乙', contentMode: 'longform' }, { quiet: true });
+    StoryFlowProjects.createProject({ title: '排序丙圖文', contentMode: 'visual' }, { quiet: true });
+    StoryFlowProjects.switchProject(
+      StoryFlowProjects.list().find(project => project.title === '排序甲').id, { quiet: true }
+    );
+  });
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await expect(page.locator('.project-library-card')).toHaveCount(3);
+  const titles = () => page.locator('.project-library-card .project-library-title-row strong')
+    .allTextContents().then(list => list.map(text => text.trim()));
+  // Which order the collation produces is not the contract and varies with ICU; that it
+  // does not change under the reader is. Take it as given and hold it to that.
+  const order = await titles();
+  expect(order).toHaveLength(3);
+
+  // Manage the last row. It becomes the current work, and it stays where it is.
+  const lastTitle = order[2];
+  await page.locator('.project-library-card').nth(2)
+    .getByRole('button', { name: /^管理(章節|圖文)$/ }).click();
+  await expect(page.locator('.project-library-card.active .project-library-title-row strong'))
+    .toHaveText(lastTitle);
+  await expect.poll(titles).toEqual(order);
+
+  // One label whichever work it is; the current one is named by its badge, not by its action.
+  expect([...new Set(await page.locator('.project-open-btn').allTextContents())]).toEqual(['開啟']);
+  await expect(page.locator('.project-library-card.active .project-current-badge')).toHaveText('目前作品');
+
+  // The filter narrows the list, and what other modules add to each row survives it: the
+  // manage action used to be paired to rows by index against an unfiltered list, and gave
+  // up entirely whenever the two counts disagreed.
+  await expect(page.locator('#worksTypeFilters [data-content-type="all"]')).toHaveText('全部類型 3');
+  await expect(page.locator('#worksTypeFilters [data-content-type="longform"]')).toHaveText('長文 2');
+  await expect(page.locator('#worksTypeFilters [data-content-type="visual"]')).toHaveText('圖文 1');
+
+  await page.locator('#worksTypeFilters [data-content-type="visual"]').click();
+  await expect.poll(titles).toEqual(['排序丙圖文']);
+  await expect(page.locator('.project-manage-chapters-btn')).toHaveCount(1);
+  await expect(page.locator('.project-library-more-btn')).toHaveCount(1);
+
+  await page.locator('#worksTypeFilters [data-content-type="longform"]').click();
+  await expect.poll(titles).toEqual(order.filter(title => title !== '排序丙圖文'));
+  await expect(page.locator('.project-manage-chapters-btn')).toHaveCount(2);
+
+  await page.locator('#worksTypeFilters [data-content-type="all"]').click();
+  await expect.poll(titles).toEqual(order);
   expect(pageErrors).toEqual([]);
 });
 
