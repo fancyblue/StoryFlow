@@ -431,7 +431,11 @@ test('a work resolves to a row in a list, not a card', async ({ page }) => {
     StoryFlowProjects.list().find(project => project.title === '契約測試').id, { quiet: true }
   ));
   await page.locator('.nav-item[data-view="projects"]').click();
-  await expect(page.locator('.project-library-card').first()).toBeVisible();
+  // The works list is re-rendered by handlers that run on their own turn of the event loop,
+  // so "the first card exists" is not "the list is the one this test is about". Wait for the
+  // three works, and for the current one to be marked, before reading anything off them.
+  await expect(page.locator('.project-library-card')).toHaveCount(3);
+  await expect(page.locator('.project-library-card.active')).toHaveCount(1);
   await page.mouse.move(0, 0);
 
   // No frame of its own, and no radius: the list draws the separation, the row does not.
@@ -454,15 +458,18 @@ test('a work resolves to a row in a list, not a card', async ({ page }) => {
   });
 
   // The list states its own top edge; a row starting under it must not curve away from it.
-  const seam = await page.locator('.projects-library').evaluate(list => {
+  // Polled, not read once: a single geometry reading can land on a re-render, and this one
+  // failed on CI exactly that way while passing on the retry.
+  await expect.poll(() => page.locator('.projects-library').evaluate(list => {
     const first = list.querySelector('.project-library-card');
+    if (!first) return null;
     return {
       gap: Math.round(first.getBoundingClientRect().top - list.getBoundingClientRect().top),
       rowRadius: getComputedStyle(first).borderTopLeftRadius,
       listRule: getComputedStyle(list).borderTopWidth
     };
-  });
-  expect(seam).toEqual({ gap: 1, rowRadius: '0px', listRule: '1px' });
+  }), { message: 'the first row meets the list rule without a radius between them' })
+    .toEqual({ gap: 1, rowRadius: '0px', listRule: '1px' });
 });
 
 test('works and publishing draw the same hierarchy', async ({ page }) => {
