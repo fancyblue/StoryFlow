@@ -86,7 +86,11 @@
 .visual-preview figure { margin: 0; display: grid; gap: 6px; }
 .visual-preview img { max-width: 100%; max-height: 520px; object-fit: contain; border-radius: 10px; background: #ecdfc4; }
 .visual-preview figcaption { color: #3f3930; font-size: 13px; }
-.visual-editor-footer { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 4px; }
+/* The footer is not another field. It states what the whole entry amounts to and carries
+   the action that leaves it, so it closes the editor rather than continuing it: one rule
+   across, then air, the same emphasis line the entry list uses to open itself. Four pixels
+   of padding and nothing else had left it reading as one more row of the form it ends. */
+.visual-editor-footer { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 18px; border-top: 1px solid var(--rule-2, #c8c1b0); }
 .visual-editor-footer-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .visual-editor-footer-actions .button:not(.tiny) { min-width: 112px; }
 .visual-autosave-status { color: var(--muted, #6a6357); font-size: 12px; font-weight: 700; white-space: nowrap; }
