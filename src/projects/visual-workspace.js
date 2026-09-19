@@ -51,11 +51,13 @@
     menuTitle.className = 'workspace-project-quick-switch-title';
     menuTitle.textContent = '切換作品';
     menu.appendChild(menuTitle);
+    // Same label, same shape as the longform switcher: 新增作品 is the secondary action
+    // of this menu in both content modes, so it carries the one class that says so.
     const newWork = document.createElement('button');
     newWork.id = 'visualProjectNewWork';
     newWork.type = 'button';
-    newWork.className = 'workspace-project-quick-switch-item visual-project-new-work';
-    newWork.innerHTML = '<span>＋ 新增作品</span>';
+    newWork.className = 'workspace-project-quick-switch-new';
+    newWork.innerHTML = '<span aria-hidden="true">＋</span><strong>新增作品</strong>';
     newWork.addEventListener('click', async event => {
       event.preventDefault();
       event.stopPropagation();
@@ -258,14 +260,14 @@
               <div class="source-heading-title-row">
                 <h2>作品與圖文</h2>
                 <div class="source-heading-actions">
-                  <button id="visualProjectSwitchBtn" class="quick-switch-project-btn" type="button" aria-haspopup="menu" aria-expanded="false">
+                  <button id="visualProjectSwitchBtn" class="quick-switch-project-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="visualProjectMenu">
                     <span>切換作品</span><span class="sf-chevron" aria-hidden="true"></span>
                   </button>
+                  <div id="visualProjectMenu" class="workspace-project-quick-switch" role="menu" aria-label="切換作品" hidden></div>
                 </div>
               </div>
             </div>
           </div>
-          <div id="visualProjectMenu" class="workspace-project-quick-switch visual-project-menu" role="menu" hidden></div>
           <label class="field-label" for="visualProjectTitle">作品名稱</label>
           <input id="visualProjectTitle" class="text-input visual-project-title-input" maxlength="160" />
           <div class="visual-entry-section-head">

@@ -1,11 +1,5 @@
-/* Workspace readability: clearer stats,
-the reading surface,
-and faster work switching. */
-
-/* Stats: label is readable{display:grid!important;grid-template-columns:max-content max-content!important;grid-template-rows:auto auto!important;align-items:center!important;justify-content:start!important;column-gap:7px!important;row-gap:0!important}
-
-
-
+/* Workspace readability: the source rail, work switching,
+and the reading surface. */
 
 .source-panel{position:sticky}
 .source-panel>.panel-head{flex-wrap:wrap!important;align-items:center!important}
@@ -17,7 +11,13 @@ and faster work switching. */
 .quick-switch-project-btn:hover,.quick-switch-project-btn:focus-visible,.quick-switch-project-btn[aria-expanded="true"]{border-color:#c8c1b0;background:#f4f1e9;color:var(--denim-800,#4b4557);outline:none}
 .splitter-panel .smart-split-header-actions #openReadingViewBtn{min-height:30px!important;margin-left:auto!important;padding:0 10px!important;border:1px solid #c8c1b0!important;border-radius:8px!important;background:#fbfaf6!important;color:var(--denim-700,#4b4557)!important;box-shadow:none!important;font-size:11.5px!important;font-weight:700!important;line-height:1!important}
 .splitter-panel .smart-split-header-actions #openReadingViewBtn:hover,.splitter-panel .smart-split-header-actions #openReadingViewBtn:focus-visible{border-color:#c8c1b0!important;background:#f4f1e9!important;color:var(--denim-800,#4b4557)!important;outline:none!important;box-shadow:none!important}
-.workspace-project-quick-switch{position:absolute;top:58px;left:14px;right:14px;z-index:40;display:grid;gap:4px;max-height:min(320px,55vh);overflow:auto;padding:8px;border:1px solid #c8c1b0;border-radius:12px;background:#fbfaf6;}
+/* The disclosure opens against its own trigger, not against the panel box. A fixed
+   58px from the panel's top edge was a reading of one heading height: the SOURCE head
+   grew a title row, and the menu began covering the heading it belongs to. Anchoring to
+   .source-heading-actions keeps it under the button in both content modes and survives
+   the next heading change. */
+.source-heading-actions{position:relative}
+.workspace-project-quick-switch{position:absolute;top:calc(100% + 6px);right:0;z-index:40;display:grid;gap:4px;width:max-content;min-width:232px;max-width:min(320px,calc(100vw - 48px));max-height:min(320px,55vh);overflow:auto;padding:8px;border:1px solid #c8c1b0;border-radius:12px;background:#fbfaf6;}
 .workspace-project-quick-switch[hidden]{display:none!important}
 .workspace-project-quick-switch-title{padding:5px 7px 7px;color:var(--sf-muted);font-size:10px;font-weight:700;letter-spacing:.04em}
 .workspace-project-quick-switch-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:38px;padding:8px 10px;border:0;border-radius:9px;background:transparent;color:var(--denim-900,#221f1a);font-size:13px;font-weight:700;text-align:left}
@@ -201,7 +201,7 @@ body.sf-reading-open #workspaceView>.workspace-grid{display:none!important}
   .reading-view-controls{width:100%!important}
   .reading-view-controls .platform-select-field{flex:1 1 140px!important}
   .reading-flow{padding:15px 16px!important}
-  .source-panel{position:relative!important}.workspace-project-quick-switch{top:56px;left:12px;right:12px}.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:38px!important;font-size:13.5px!important}
+  .source-panel{position:relative!important}.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:38px!important;font-size:13.5px!important}
   .sidebar-connection-status{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 96px!important;gap:8px!important}
   .sidebar-connection-row{height:44px!important;min-height:44px!important;padding:0 10px!important;border-radius:12px!important}
   .sidebar-connection-copy{gap:7px!important}

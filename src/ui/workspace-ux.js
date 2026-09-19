@@ -118,6 +118,7 @@
   }
 
   function renderQuickSwitch() {
+    ensureQuickSwitch();
     const panel = document.querySelector('.source-panel');
     if (!panel) return null;
     let menu = document.getElementById('workspaceProjectQuickSwitch');
@@ -126,8 +127,11 @@
       menu.id = 'workspaceProjectQuickSwitch';
       menu.className = 'workspace-project-quick-switch';
       menu.hidden = true;
-      panel.appendChild(menu);
     }
+    // The menu is positioned against the button it belongs to, so it has to live beside
+    // it. Hanging it off the panel meant its offset had to restate the heading's height.
+    const host = panel.querySelector('.source-heading-actions') || panel;
+    if (menu.parentElement !== host) host.appendChild(menu);
 
     const projects = projectList();
     const activeId = activeProjectId();

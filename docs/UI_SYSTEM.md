@@ -193,8 +193,8 @@ is the same one a tightened threshold would consume.
 
 Chapters, works and the statistics strip are lists. Each row carries a `border-bottom`
 hairline and nothing else: no fill of its own, no radius, no border around it, and the list
-closes up to `gap: 0` so the hairlines are what separate one row from the next. The panel a
-list sits inside keeps its frame; the rows inside it do not get one each.
+closes up to `gap: 0` so the hairlines are what separate one row from the next. Where the
+panel a list sits inside still has a frame, the rows inside it do not get one each.
 
 Two rules make this work.
 
@@ -212,12 +212,42 @@ carries a badge naming the state — "目前作品" — the badge lifts to `--pa
 sits on does not swallow it. The badge is the half of that signal which does not depend on
 seeing colour.
 
+### A rail is a column, not a card
+
+Both workspaces show a list beside the thing it describes: chapters beside the split panel,
+entries beside the entry editor. Drawing each side as a card stated the boundary twice — the
+grid gap already puts them apart — and the rail's frame ended wherever its list ended, which
+left an edge partway down the page with nothing on the other side of it. That reads as a
+broken line rather than a drawn one.
+
+One hairline between the columns says it instead. The rail is transparent, carries
+`border-right` and no radius, and stretches to the height of the pairing so the line runs the
+whole way; the subject beside it drops its own frame for the same reason. Stacked below
+820px the two columns part along a horizontal edge, so the hairline moves to the rail's
+bottom. Publishing and the visual workspace arrived here first; longform followed, and
+`cascade-contract.spec.js` now asserts that the two rails resolve to the same shape rather
+than leaving it to a reading of two baselines.
+
+Flattening a panel exposes whatever was drawn inside it in the same paper. The Smart Split
+platform bar had carried a `--paper-1` fill from the theme layer while its own rule asked for
+transparent — invisible against a card of the same colour, a strip across the page without
+one. A local rule that a shared `!important` was overriding has to be restated at its own
+specificity, not left to be discovered by the next change of ground.
+
 ### Which hairline
 
 `--rule-1` is for lines drawn **on paper**. `--rule-2` is for lines drawn **on the page
 ground**, which is six lightness steps darker: `--rule-1` against it is 1.1:1, which is not a
-line anyone can see. The chapter list lives inside a `--paper-1` panel and uses `--rule-1`;
-the works list and the statistics strip sit on the ground and use `--rule-2`.
+line anyone can see. The works list and the statistics strip sit on the ground and use
+`--rule-2`.
+
+**Open, and deliberately left alone for now.** Both source rails used to be `--paper-1`
+panels, which is why their column divider and their row separators are `--rule-1`. Unframing
+them moved those lines onto the ground without changing their colour, so by the rule above
+they are now the weak pairing this section exists to prevent — in the visual rail since the
+rail was unframed, in longform since it followed. Correcting it is a colour change across
+both workspaces and their baselines, so it is recorded here rather than folded into the
+change that exposed it. `--rule-2` is the value it should take.
 
 ### Chapter progress
 

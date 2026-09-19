@@ -91,4 +91,41 @@ for (const script of scripts) {
   execFileSync(process.execPath, ['--check', script], { stdio: 'inherit' });
 }
 
-console.log(`Static validation passed: ${scripts.length} JavaScript files, ${manifestSources.length} ordered app modules and all local assets.`);
+// A stylesheet has no syntax error to report: a comment that is never closed simply
+// swallows everything after it until the next `*/`, and the browser loads the file without
+// complaint. That is not hypothetical — deleting a rule once took its comment's closing
+// marker with it and silently disabled 38 lines, including the ones that made the work
+// switcher an overlay, for four commits. Nothing caught it, because every test that could
+// have was reading markup rather than resolved style.
+//
+// Two shapes are findable from the text alone, and neither fires on this repository's
+// comments today: a `/*` with nothing closing it, and a comment holding a declaration
+// block — `{` … `prop:value; prop:value` … `}` — which is what a swallowed rule looks
+// like from the outside. Prose that quotes a selector (`.field-label{display:block}`)
+// carries one declaration and no `;`, so it stays quiet.
+const stylesheets = [...index.matchAll(/href="\.\/([^"?#]+\.css)/g)].map(match => match[1]);
+const DECLARATION_BLOCK = /\{[^{}]*:[^{}]*;[^{}]*:[^{}]*\}/;
+const commentProblems = [];
+for (const relative of stylesheets) {
+  const text = readFileSync(join(root, relative), 'utf8');
+  const lineOf = offset => text.slice(0, offset).split('\n').length;
+
+  const closed = /\/\*[\s\S]*?\*\//g;
+  let match;
+  let consumed = 0;
+  while ((match = closed.exec(text))) {
+    consumed = closed.lastIndex;
+    if (DECLARATION_BLOCK.test(match[0])) {
+      commentProblems.push(`${relative}:${lineOf(match.index)} comment holds a declaration block — rules look commented out by accident`);
+    }
+  }
+  const dangling = text.indexOf('/*', consumed);
+  if (dangling >= 0) {
+    commentProblems.push(`${relative}:${lineOf(dangling)} comment is never closed — everything after it is disabled`);
+  }
+}
+if (commentProblems.length) {
+  throw new Error(`Stylesheet comments disable rules:\n${commentProblems.join('\n')}`);
+}
+
+console.log(`Static validation passed: ${scripts.length} JavaScript files, ${manifestSources.length} ordered app modules, ${stylesheets.length} stylesheets and all local assets.`);

@@ -120,12 +120,15 @@ h3{letter-spacing:-.01em}
 
 
 .workspace-grid,.workspace-grid.imported-source-mode{grid-template-columns:270px minmax(0,1fr)!important;gap:18px}
+/* The rail sticks and scrolls its own list; it carries no padding here. Both workspaces
+   draw it as a column with one hairline down its edge rather than as a card, so its content
+   starts at the column's own left edge and the inset belongs to each layout's own rule. A
+   `padding:16px!important` here outranked both of them and put the card's inset back. */
 .source-panel{
   top:20px;
   max-height:calc(100dvh - 40px);
   overflow:auto;
   scrollbar-gutter:stable;
-  padding:16px!important;
 }
 .source-panel #loadSourceBtn{min-height:42px;border-radius:11px}
 .source-panel .project-switcher{margin-bottom:13px;padding-bottom:12px}
