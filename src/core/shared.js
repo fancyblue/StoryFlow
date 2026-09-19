@@ -36,5 +36,34 @@
     return Boolean(document.getElementById('folderDot')?.classList.contains('connected'));
   }
 
-  window.StoryFlowShared = { safeName, normalizeTitle, partKey, hasConnectedFolder };
+  // Every platform <select> in the app, built once.
+  //
+  // Five modules had their own copy of this, and the copies disagreed: the empty option
+  // read 預設格式 in three of them, 預設設定 in a fourth and StoryFlow 預設格式 in the
+  // fifth, so the same control showed different text depending on which module rebuilt it
+  // last. Two of them also read only the built-in `platforms`, missing any platform the
+  // user had added, and one restored the previous value against the wrong list.
+  //
+  // The globals are read at call time, not at load: this file is first in the manifest and
+  // neither exists yet when it runs.
+  function platformNames() {
+    const builtIn = typeof platforms === 'undefined' ? [] : platforms;
+    const added = typeof state === 'undefined' ? {} : (state?.formatting?.platforms || {});
+    return [...new Set([...builtIn, ...Object.keys(added)]
+      .map(name => String(name || '').trim())
+      .filter(Boolean))];
+  }
+
+  function fillPlatformSelect(select, { withDefault = true } = {}) {
+    if (!select) return;
+    const previous = select.value;
+    const names = platformNames();
+    select.innerHTML = '';
+    if (withDefault) select.add(new Option('預設格式', ''));
+    names.forEach(name => select.add(new Option(name, name)));
+    const values = [...select.options].map(option => option.value);
+    select.value = values.includes(previous) ? previous : (withDefault ? '' : (names[0] || ''));
+  }
+
+  window.StoryFlowShared = { safeName, normalizeTitle, partKey, hasConnectedFolder, platformNames, fillPlatformSelect };
 })();

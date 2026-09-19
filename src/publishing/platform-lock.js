@@ -43,20 +43,13 @@
     if (firstMigration) state.platformPresetVersion = PRESET_VERSION;
   }
 
-  function fillSelector(select) {
-    if (!select) return;
-    const current = select.value;
-    select.innerHTML = '';
-    select.add(new Option('預設設定', ''));
-    platforms.forEach(name => select.add(new Option(name, name)));
-    const values = [...select.options].map(option => option.value);
-    select.value = values.includes(current) ? current : '';
-  }
-
   function syncSelectors() {
-    fillSelector(document.getElementById('suggestionPlatformSelect'));
-    fillSelector(document.getElementById('readingPlatformSelect'));
-    document.querySelectorAll('.copy-platform').forEach(fillSelector);
+    const { fillPlatformSelect } = window.StoryFlowShared;
+    fillPlatformSelect(document.getElementById('suggestionPlatformSelect'));
+    fillPlatformSelect(document.getElementById('readingPlatformSelect'));
+    // A row's copy target is a platform, so it offers no "no platform" option.
+    document.querySelectorAll('.copy-platform')
+      .forEach(select => fillPlatformSelect(select, { withDefault: false }));
   }
 
   function updateSettingsCopy() {

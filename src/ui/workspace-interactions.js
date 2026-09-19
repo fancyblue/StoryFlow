@@ -98,10 +98,7 @@
     view.dataset.readingReady = '1';
 
     const select = $('readingPlatformSelect');
-    if (select && !select.options.length) {
-      select.add(new Option('StoryFlow 預設格式', ''));
-      platforms.forEach(platform => select.add(new Option(platform, platform)));
-    }
+    if (select && !select.options.length) window.StoryFlowShared.fillPlatformSelect(select);
     if (select) {
       select.value = suggestionPreviewPlatform;
       select.onchange = () => {
