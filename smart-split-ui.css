@@ -100,8 +100,8 @@
 }
 .preview-boundary-controls {
   position:absolute;
-  top:12px;
-  right:12px;
+  top:16px;
+  right:16px;
   z-index:2;
   margin:0 !important;
   display:flex !important;
@@ -243,8 +243,6 @@
 }
 .split-preview-shell .preview {
   border:1px solid #ded9cc !important;
-}
-.preview-boundary-controls {
 }
 
 @media (max-width:700px) {

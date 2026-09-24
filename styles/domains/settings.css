@@ -321,8 +321,10 @@
   justify-content:space-between;
   gap:18px;
 }
-.settings-backup-head h2{margin:2px 0 6px;font-size:19px}
-.settings-backup-head p:last-child{margin:0;color:var(--muted);line-height:1.65}
+/* Every settings section opens the same way — a 16px title over a muted line. This one had
+   an eyebrow and a 19px title of its own, so it read as a different kind of page. */
+.settings-backup-head h2{margin:0 0 5px!important;font-size:16px!important;line-height:1.5!important}
+.settings-backup-head p:last-child{margin:0;color:var(--muted);font-size:13px;line-height:1.65}
 .backup-center-disconnected{
   display:flex;
   align-items:center;
@@ -351,6 +353,8 @@
 .backup-import-preview small{color:var(--muted);line-height:1.6}
 .backup-import-actions{display:flex;gap:8px;flex:0 0 auto}
 .backup-center-message{min-height:1.5em;margin:12px 0 0;color:var(--muted);font-size:13px;font-weight:500}
+/* Silent, the live region keeps its place in the tree but not a blank band at the card's foot. */
+.backup-center-message:empty{min-height:0;margin:0}
 .backup-storage-panel{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
 .backup-storage-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .backup-storage-head h3{margin:0 0 5px;font-size:16px}
@@ -424,11 +428,10 @@
 .settings-view .platform-setting-row:first-child{
   border-top:1px solid var(--line)!important;
 }
+/* The default row is a row like the platforms under it. Pulled 10px wider with rounded
+   corners, its top rule bent down at both ends into a box that had no sides or bottom. */
 .settings-view .platform-default-row{
-  background:#fbfaf6;
-  margin-inline:-10px;
-  padding-inline:10px!important;
-  border-radius:10px;
+  background:transparent;
 }
 .settings-view .platform-default-name{
   color:var(--text);
@@ -499,10 +502,6 @@
     grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
     gap:9px 12px!important;
     padding:12px 0!important;
-  }
-  .settings-view .platform-default-row{
-    margin-inline:0;
-    padding-inline:10px!important;
   }
   .settings-view .platform-default-name,
   .settings-view .platform-name-input{grid-column:1}

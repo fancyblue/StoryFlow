@@ -287,8 +287,39 @@ function buildSuggestion(start, end, blocks = parseBlocks(activeChapter().draft)
   };
 }
 
+// With no suggestion, the empty panel used to keep whatever it last said — for a chapter
+// split to its last paragraph that was "這個作品還沒有可切篇的章節", which is the opposite of
+// what had happened. A finished chapter says it is finished; any other case gets its
+// previous copy back.
+function syncSuggestionEmptyCopy() {
+  const empty = els.suggestionEmpty;
+  const strong = empty?.querySelector('strong');
+  const detail = empty?.querySelector(':scope > span');
+  if (!strong || !detail) return;
+  const chapter = activeChapter();
+  const blocks = parseBlocks(chapter?.draft || '');
+  const finished = blocks.length > 0 && (chapter.confirmedBlockCount || 0) >= blocks.length;
+  if (finished) {
+    if (!empty.dataset.finishedCopy) {
+      empty.dataset.previousHeading = strong.textContent;
+      empty.dataset.previousDetail = detail.textContent;
+    }
+    empty.dataset.finishedCopy = 'true';
+    strong.textContent = '這一章已全部切完';
+    detail.textContent = '原稿增加內容後，這裡會接著建議下一篇；已建立的文章可到「發布」處理。';
+  } else if (empty.dataset.finishedCopy) {
+    // Only undo our own words: another layer may have rewritten the panel since.
+    if (strong.textContent === '這一章已全部切完') {
+      strong.textContent = empty.dataset.previousHeading || strong.textContent;
+      detail.textContent = empty.dataset.previousDetail || detail.textContent;
+    }
+    delete empty.dataset.finishedCopy;
+  }
+}
+
 function renderSuggestion() {
   if (!suggestion) {
+    syncSuggestionEmptyCopy();
     els.suggestionEmpty.classList.remove('hidden');
     els.suggestionCard.classList.add('hidden');
     return;

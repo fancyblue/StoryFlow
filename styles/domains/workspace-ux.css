@@ -99,6 +99,7 @@ body.sf-reading-open #workspaceView>.workspace-grid{display:none!important}
 .reading-flow .reading-block.is-done{color:var(--ink-3,#6f6759)!important}
 .reading-flow .reading-block.is-ahead{color:var(--ink-2,#6a6357)!important}
 .reading-flow .reading-block.is-current{color:var(--ink-1,#221f1a)!important}
+.reading-flow .reading-scene-separator{display:inline-block;width:100%;color:var(--ink-2,#6a6357);text-align:center}
 .reading-view-actions{
   display:flex!important;
   flex-wrap:wrap!important;
@@ -201,7 +202,8 @@ body.sf-reading-open #workspaceView>.workspace-grid{display:none!important}
   .reading-view-controls{width:100%!important}
   .reading-view-controls .platform-select-field{flex:1 1 140px!important}
   .reading-flow{padding:15px 16px!important}
-  .source-panel{position:relative!important}.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:38px!important;font-size:13.5px!important}
+  /* Relative, the sticky `top:20px` would shift the stacked rail 20px down onto SMART SPLIT. */
+  .source-panel{position:relative!important;top:0!important}.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:38px!important;font-size:13.5px!important}
   .sidebar-connection-status{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 96px!important;gap:8px!important}
   .sidebar-connection-row{height:44px!important;min-height:44px!important;padding:0 10px!important;border-radius:12px!important}
   .sidebar-connection-copy{gap:7px!important}

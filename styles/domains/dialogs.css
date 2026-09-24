@@ -19,7 +19,6 @@ dialog > form.dialog-card {
   overflow-y: auto !important;
   overflow-x: hidden !important;
   overscroll-behavior: contain;
-  scrollbar-gutter: stable;
 }
 
 dialog .dialog-card > .panel-head:first-child,
@@ -29,8 +28,10 @@ dialog form.dialog-card > .panel-head:first-child,
   top: 0 !important;
   z-index: 100 !important;
   margin-top: 0 !important;
-  background: rgba(255,255,255,.98) !important;
-  backdrop-filter: blur(10px);
+  /* The head is part of the card, not a band laid over it: same paper, and its rule runs to
+     the card's edge. A reserved scrollbar gutter used to stop that rule 15px short on every
+     dialog whose content did not scroll. */
+  background: var(--paper-1, #fbfaf6) !important;
   border-bottom: 1px solid var(--line);
 }
 

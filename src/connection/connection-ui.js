@@ -252,6 +252,8 @@
     if (switcher) switcher.hidden = noRealProject;
     if (projectLabel) projectLabel.hidden = noRealProject;
     if (projectInput) projectInput.hidden = noRealProject;
+    const listHead = document.getElementById('chapterListHead');
+    if (listHead) listHead.hidden = noRealProject;
 
     if (noContent && list) {
       list.querySelectorAll('.chapter-row,.chapter-item,.chapter-group-label').forEach(node => node.remove());
@@ -265,6 +267,20 @@
       list?.querySelector('.workspace-source-empty')?.remove();
     }
   }
+
+  // Several renderers rebuild the chapter list, so the head counts what is actually there
+  // rather than asking each of them to remember it.
+  function syncChapterListCount() {
+    const list = document.getElementById('chapterList');
+    const count = document.getElementById('chapterListCount');
+    if (!list || !count) return;
+    const chapters = list.querySelectorAll('.chapter-item').length;
+    const text = `${chapters.toLocaleString()} 章`;
+    if (count.textContent !== text) count.textContent = text;
+  }
+  const chapterListNode = document.getElementById('chapterList');
+  if (chapterListNode) new MutationObserver(syncChapterListCount).observe(chapterListNode, { childList: true });
+  syncChapterListCount();
 
   function syncWorkspaceEmptyState() {
     const noContent = !hasChapterContent();

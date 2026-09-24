@@ -47,9 +47,9 @@
   justify-content:space-between;
 }
 .publishing-filters,.content-type-filters{display:flex;gap:6px;flex-wrap:wrap}
-/* The divider belongs to the toolbar that sets a second group after these chips, not to
-   the chips themselves — Works reuses them with nothing on the other side of that edge. */
-#publishingContentTypeFilters{padding-right:8px;border-right:1px solid #ded9cc}
+/* The dividers between filter groups are drawn by the group that follows (see "Filter
+   groups" below). A right edge here drew a second one, and on a phone, where the groups
+   wrap, it was left standing at the end of a line with nothing after it. */
 .publishing-continue-btn{flex:0 0 auto;min-height:34px;padding:0 14px;white-space:nowrap}
 .publishing-filter,.content-type-filter{
   border:1px solid var(--line);
@@ -1054,18 +1054,7 @@ button.publish-delete-btn{
 .publishing-multi-project-group{gap:8px}
 .publishing-project-group-title{display:flex;align-items:center;gap:8px;min-width:0}
 .publishing-project-group-title>strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.publishing-project-current{
-  display:inline-flex;
-  align-items:center;
-  flex:0 0 auto;
-  min-height:22px;
-  padding:3px 7px;
-  border-radius:999px;
-  background:#f4f1e9;
-  color:var(--sf-primary)!important;
-  font-size:10px!important;
-  font-weight:700!important;
-}
+.publishing-project-current{flex:0 0 auto}
 .publishing-combined-row .publish-list-summary{cursor:default!important}
 .publishing-filter-empty{min-height:150px!important}
 
@@ -1469,6 +1458,17 @@ body #publishingView #publishingProjectFilterBtn strong{
 .publishing-filter-stack > #publishingFilters{
   padding-left:14px;
   border-left:1px solid #c8c1b0;
+}
+/* On a phone the groups wrap, and a divider on a group that starts a line is a stray mark
+   at the left edge. There each question takes its own line instead; the type chips still
+   follow the work picker, whose dropdown shape already sets it apart. */
+@media(max-width:680px){
+  .publishing-filter-stack > #publishingContentTypeFilters,
+  .publishing-filter-stack > #publishingFilters{
+    padding-left:0;
+    border-left:0;
+  }
+  .publishing-filter-stack > #publishingFilters{flex-basis:100%}
 }
 
 /* Publishing order.

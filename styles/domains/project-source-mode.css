@@ -178,12 +178,6 @@
   font-weight:700!important;
   letter-spacing:.01em!important;
 }
-.source-panel.project-source-mode #projectTitle{
-  min-height:44px!important;
-  height:44px!important;
-  font-size:15px!important;
-  font-weight:700!important;
-}
 .source-panel.project-source-mode #chapterList{
   margin-top:14px;
 }
