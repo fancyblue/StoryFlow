@@ -7,10 +7,6 @@
   font-weight:700;
   letter-spacing:.04em;
 }
-.source-panel #projectTitle{
-  min-height:42px;
-  font-weight:700;
-}
 .source-panel-actions{
   grid-template-columns:1fr 1fr!important;
 }

@@ -30,6 +30,9 @@
 #worksTypeFilters[hidden]{display:none!important}
 .projects-filter-empty{padding:28px 2px!important;margin:0!important;text-align:center!important}
 .projects-library{gap:0!important;border-top:1px solid #c8c1b0!important}
+/* The opening rule heads rows. With no rows, the empty state's own frame is the edge, and a
+   rule laid on top of it reads as the frame sticking out. */
+.projects-library:has(> .projects-empty-state){border-top:0!important}
 .project-library-card{
   position:relative!important;
   /* Identity, progress, actions. The middle column is what stopped the row being a

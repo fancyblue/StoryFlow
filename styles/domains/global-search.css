@@ -72,6 +72,21 @@
   font-weight:700;
 }
 #globalSearchInput::placeholder{color:#6f6759;font-weight:500}
+/* The head is the field: its rule and the close button already frame it. The shared input
+   rules were drawing a second box and a focus ring inside it, and the browser's own blue
+   clear cross sat next to the close cross — two ✕ one pixel row apart meaning different
+   things. Clearing is a select-all away; closing is the button. */
+.global-search-head #globalSearchInput{
+  height:auto!important;
+  min-height:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  outline:0!important;
+}
+#globalSearchInput::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;display:none}
 .global-search-close{
   display:grid;
   place-items:center;
@@ -125,9 +140,13 @@
   color:#221f1a;
   text-align:left;
 }
-.global-search-result:hover,.global-search-result.active{
-  border-color:#c8c1b0;
-  background:#fbfaf6;
+/* The selected result is marked the way every other list marks its current row — a tint —
+   rather than boxed while its neighbours are not. */
+.global-search-result:hover{
+  background:#f4f1e9;
+}
+.global-search-result.active{
+  background:#e8e5eb;
 }
 .global-search-result:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(34,31,26,.18)}
 .global-search-result-type{
@@ -143,9 +162,8 @@
   font-weight:700;
   white-space:nowrap;
 }
-.global-search-result-type.project{background:#f4f1e9;color:#4b4557}
-.global-search-result-type.chapter{background:#fbfaf6;color:#6a6357}
-.global-search-result-type.part{background:#eef0e4;color:#59703f}
+/* The kind of result is a label, so every kind wears the same one; green is kept for
+   "published", which none of these mean. */
 .global-search-result-copy{display:block;min-width:0}
 .global-search-result-copy strong,.global-search-result-copy span,.global-search-result-copy small{display:block}
 .global-search-result-copy strong{overflow:hidden;font-size:14px;line-height:1.4;text-overflow:ellipsis;white-space:nowrap}

@@ -228,7 +228,8 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .splitter-panel #suggestionChars{font-size:15px!important;font-weight:700!important;color:var(--denim-700,#4b4557)!important;white-space:nowrap!important}
 .splitter-panel .suggestion-title-row .pill{min-height:30px!important;padding:0 10px!important;background:#f4f1e9!important;color:var(--denim-800,#4b4557)!important;border:0!important;font-size:13px!important;font-weight:700!important;white-space:nowrap!important;word-break:keep-all!important}
 .split-preview-shell .preview{border-color:var(--sf-border)!important;border-radius:14px!important;background:#fbfaf6!important;font-size:16px!important;line-height:1.95!important;box-shadow:none!important}
-.preview-boundary-controls{border:1px solid var(--sf-border)!important;border-radius:10px!important;background:rgba(255,255,255,.96)!important;}
+/* The scene buttons sit inside the preview frame; a second frame around them was a box in a box. */
+.preview-boundary-controls{border:0!important;background:transparent!important;padding:0!important;}
 .preview-boundary-controls .button{height:34px!important;min-height:34px!important;font-size:13px!important}
 .format-summary-text{font-size:13px!important;line-height:1.45!important}
 
@@ -248,9 +249,6 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .publishing-filter{min-height:34px!important;padding:0 11px!important;border:1px solid var(--sf-border)!important;border-radius:999px!important;background:#fbfaf6!important;color:var(--sf-muted)!important;font-size:13px!important;font-weight:700!important}
 .publishing-filter:hover{border-color:#c8c1b0!important;background:var(--sf-surface-soft)!important}
 .publishing-filter.active{background:var(--sf-primary-soft)!important;border-color:#c8c1b0!important;color:var(--denim-800,#4b4557)!important}
-.publish-list-item{border-color:var(--sf-border)!important;border-radius:12px!important}
-.publish-list-item:hover{border-color:var(--sf-border-strong)!important}
-.publish-list-item.expanded{border-color:#c8c1b0!important;box-shadow:0 0 0 2px var(--sf-surface-active) inset!important}
 .publish-list-summary{min-height:70px!important;padding:12px 14px!important}
 .publish-chapter-name{font-size:12px!important;font-weight:700!important}
 .publish-list-title-row strong{font-size:16px!important;font-weight:700!important}

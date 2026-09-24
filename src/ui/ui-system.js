@@ -105,6 +105,20 @@
     items[index]?.focus();
   });
 
+  // While the switcher is open the rail stops clipping (workspace.css), and a rail that no
+  // longer scrolls no longer reserves its scrollbar gutter — so its content widened by a
+  // scrollbar's width every time the menu opened. The gutter is measured here, before the
+  // button's own handler opens the menu, and held as a variable the open-state rule pads by.
+  document.addEventListener('click', event => {
+    if (!event.target.closest?.('#quickSwitchProjectBtn')) return;
+    const rail = document.querySelector('.workspace-grid.workspace-hierarchy > .source-panel');
+    if (!rail || rail.querySelector('.workspace-project-quick-switch:not([hidden])')) return;
+    const style = getComputedStyle(rail);
+    const gutter = rail.offsetWidth - rail.clientWidth
+      - (parseFloat(style.borderLeftWidth) || 0) - (parseFloat(style.borderRightWidth) || 0);
+    rail.style.setProperty('--sf-rail-gutter', `${Math.max(0, gutter)}px`);
+  }, true);
+
   document.addEventListener('click', event => {
     if (event.target.closest?.('#quickSwitchProjectBtn')) {
       requestAnimationFrame(() => {

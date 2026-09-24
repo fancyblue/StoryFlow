@@ -350,6 +350,7 @@ function railShape(page, selector) {
 // carrying its own surface — and leaving the rail's own fields exactly where they were.
 async function switcherShape(page, { button, menu, fieldBelow }) {
   const fieldTopBefore = await page.locator(fieldBelow).evaluate(el => Math.round(el.getBoundingClientRect().top));
+  const fieldWidthBefore = await page.locator(fieldBelow).evaluate(el => Math.round(el.getBoundingClientRect().width));
   await page.locator(button).click();
   await expect(page.locator(menu)).toBeVisible();
   await expect(page.locator(`${menu} .workspace-project-quick-switch-new`)).toHaveText('＋新增作品');
@@ -366,7 +367,10 @@ async function switcherShape(page, { button, menu, fieldBelow }) {
     };
   }, { button, fieldBelow });
   const fieldTopAfter = await page.locator(fieldBelow).evaluate(el => Math.round(el.getBoundingClientRect().top));
-  return { ...shape, movedTheRail: fieldTopAfter - fieldTopBefore };
+  const fieldWidthAfter = await page.locator(fieldBelow).evaluate(el => Math.round(el.getBoundingClientRect().width));
+  // Opening the menu lets the longform rail stop clipping, which used to drop its scrollbar
+  // gutter and widen every field in it by a scrollbar's width.
+  return { ...shape, movedTheRail: fieldTopAfter - fieldTopBefore, widenedTheRail: fieldWidthAfter - fieldWidthBefore };
 }
 
 test('both content modes draw one SOURCE rail and open one work switcher over it', async ({ page }) => {
@@ -407,8 +411,108 @@ test('both content modes draw one SOURCE rail and open one work switcher over it
     belowTrigger: 6,
     alignedToTrigger: 0,
     overlaps: true,
-    movedTheRail: 0
+    movedTheRail: 0,
+    widenedTheRail: 0
   });
+});
+
+// The SOURCE and SMART SPLIT heads stand side by side, so their rules read as one line across
+// the workbench — or as two lines 11px apart, which is what they were: the source head carries
+// 切換作品 beside its title and stood taller. Both rails also head their list the same way.
+test('the workbench heads draw one rule and both rails head their list alike', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+
+  const heads = await page.evaluate(() => ['.workspace-grid.workspace-hierarchy > .source-panel > .panel-head', '.splitter-panel > .panel-head']
+    .map(selector => {
+      const head = document.querySelector(selector);
+      const eyebrow = head.querySelector('.eyebrow');
+      return {
+        rule: Math.round(head.getBoundingClientRect().bottom),
+        eyebrow: Math.round(eyebrow.getBoundingClientRect().top)
+      };
+    }));
+  expect(heads[0]).toEqual(heads[1]);
+
+  await expect(page.locator('#chapterListHead')).toBeVisible();
+  await expect(page.locator('#chapterListCount')).toHaveText('1 章');
+  const longformHead = await page.locator('#chapterListHead').evaluate(el => ({
+    rule: getComputedStyle(el).borderTopWidth,
+    padding: getComputedStyle(el).paddingTop,
+    title: getComputedStyle(el.querySelector('h3')).fontSize
+  }));
+
+  await visualWorkspace(page);
+  const visualHead = await page.locator('.visual-entry-section-head').evaluate(el => ({
+    rule: getComputedStyle(el).borderTopWidth,
+    padding: getComputedStyle(el).paddingTop,
+    title: getComputedStyle(el.querySelector('h3')).fontSize
+  }));
+  expect(longformHead).toEqual(visualHead);
+});
+
+// A dialog head is part of its card. It used to be a white band over warm paper, and a
+// reserved scrollbar gutter stopped its rule 15px short of the card's edge on every dialog
+// whose content did not scroll.
+test('a dialog head is the card\'s own paper and its rule reaches the card edge', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  await standInForConnectedFolder(page);
+  await page.goto('/?visual-regression=1');
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await page.locator('#createProjectManually').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
+  await expect(page.locator('#sourceDialog')).toBeVisible();
+
+  const head = await page.locator('#sourceDialog .sticky-dialog-head').evaluate(el => {
+    const card = el.closest('.dialog-card');
+    return {
+      shortOfEdge: Math.round(card.getBoundingClientRect().right - el.getBoundingClientRect().right),
+      // The card may leave its paper to the dialog under it; compare with whichever paints.
+      sameSurface: getComputedStyle(el).backgroundColor === [card, card.closest('dialog')]
+        .map(node => getComputedStyle(node).backgroundColor)
+        .find(color => color !== 'rgba(0, 0, 0, 0)')
+    };
+  });
+  expect(head).toEqual({ shortOfEdge: 0, sameSurface: true });
+});
+
+// Collapsed, a publishing article is a row: the shared layer used to give it a 12px radius
+// and colour its reserved marker gutter, so the row drew half a box — a left edge curving
+// into the rule under it. Expanded, it is the one frame between the queue and the manuscript,
+// and that frame used to lose its bottom edge to the last-row rule.
+test('a publishing article is a row until it opens, then one closed frame', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+  await page.evaluate(() => { window.StoryFlowIntegrations.savePart = async () => 'x.md'; });
+  await page.locator('#confirmBtn').click();
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  const row = page.locator('.publish-list-item').first();
+  await expect(row).toBeVisible();
+  await page.mouse.move(0, 0);
+
+  await expectStyle(page, '.publish-list-item:not(.expanded)', {
+    borderTopWidth: '0px',
+    borderRightWidth: '0px',
+    borderLeftWidth: '2px',
+    borderLeftColor: 'rgba(0, 0, 0, 0)',
+    borderTopLeftRadius: '0px',
+    borderBottomLeftRadius: '0px'
+  });
+
+  await row.locator('.publish-manage-btn').click();
+  await expect(row).toHaveClass(/expanded/);
+  await expectStyle(page, '.publish-list-item.expanded', {
+    borderTopWidth: '1px',
+    borderRightWidth: '1px',
+    borderBottomWidth: '1px',
+    borderLeftWidth: '1px',
+    borderBottomColor: 'rgb(222, 217, 204)',
+    borderTopLeftRadius: '14px',
+    boxShadow: 'none'
+  });
+  // Tint is how the expander says it is open; the 3px inset bar it also drew is gone.
+  await expectStyle(page, '.publish-list-item.expanded .publish-manage-btn', { boxShadow: 'none' });
 });
 
 // A work is a row in the works list. The stylesheets say so in works-library.css and said
@@ -508,7 +612,10 @@ test('works and publishing draw the same hierarchy', async ({ page }) => {
       indent: nestedStyle.paddingLeft,
       separator: rowStyle.borderBottomColor,
       separatorWidth: rowStyle.borderBottomWidth,
-      markerGutter: rowStyle.borderLeftWidth
+      markerGutter: rowStyle.borderLeftWidth,
+      // The gutter is reserved, not drawn, until a row is current.
+      markerGutterColor: rowStyle.borderLeftColor,
+      corner: rowStyle.borderTopLeftRadius
     };
   }, [nest, row]);
 
@@ -533,6 +640,8 @@ test('works and publishing draw the same hierarchy', async ({ page }) => {
   // One step, stated once, so a level cannot drift to "about the same depth".
   expect(works.indent).toBe('16px');
   expect(works.markerGutter).toBe('2px');
+  expect(works.markerGutterColor).toBe('rgba(0, 0, 0, 0)');
+  expect(works.corner).toBe('0px');
 
   // Both expanders say what they are; only whether they also carry a label differs, because
   // a work row's expander is a named action and a chapter group's is not.

@@ -161,6 +161,14 @@
     return 'is-ahead';
   }
 
+  // A scene marker sits centred in every other rendering of the manuscript — the split
+  // preview, the source preview, Publishing. The reading view is a <pre>, so the marker line
+  // is wrapped to be centred there too; inline-block keeps the surrounding newlines as plain
+  // text, so the spacing the break string asks for is unchanged.
+  function readingBreakHTML(text) {
+    return escapeHtml(text).replace(/^(\n+)([^\n]+)(\n+)$/, '$1<span class="reading-scene-separator">$2</span>$3');
+  }
+
   function formattedFullChapterHTML() {
     const blocks = sourceBlocks();
     if (!blocks.length) return '目前章節沒有內容。';
@@ -184,7 +192,7 @@
       // In the 接縫 view every paragraph boundary is already represented by a full-width
       // button. Literal newlines around block elements create large anonymous line boxes
       // inside the <pre>, so spacing belongs to CSS there.
-      if (!seam) out.push(escapeHtml(formattedBlockBreak(block, options)));
+      if (!seam) out.push(readingBreakHTML(formattedBlockBreak(block, options)));
     });
     return out.join('');
   }

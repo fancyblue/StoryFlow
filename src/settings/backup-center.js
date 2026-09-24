@@ -30,7 +30,6 @@
     section.innerHTML = `
       <div class="settings-backup-head">
         <div>
-          <p class="eyebrow">DATA &amp; BACKUP</p>
           <h2>備份與復原</h2>
           <p>StoryFlow 會保留上一版工作區、最多 3 份循環備份，並在刪除或覆寫前建立 Recovery。這些操作不會修改 Google Docs 原稿。</p>
         </div>

@@ -2862,3 +2862,52 @@ test('a visual work is not offered an order it has no chapters for', async ({ pa
 
   expect(pageErrors).toEqual([]);
 });
+
+// The reading view is a <pre>, so a scene marker sat at the left margin there while every other
+// rendering of the same manuscript — the split preview, the source preview, Publishing —
+// centred it. And once a chapter was split to its last paragraph, the empty split panel kept
+// whatever it had last said, which was "這個作品還沒有可切篇的章節": the opposite of what
+// had just happened.
+test('a finished chapter says so, and the reading view centres its scene markers', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await gotoWorkbench(page);
+  await page.locator('#createProjectManually').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).getByRole('button', { name: /長文作品/ }).click();
+  await page.locator('#sourceManualBtn').click();
+  await page.locator('#manualProjectTitle').fill('切完測試作品');
+  await page.locator('#manualSourceTitle').fill('一章');
+  await page.locator('#manualSourceText').fill('第一段。\n\n第二段。\n\n第三段。');
+  await page.locator('#previewManualSourceBtn').click();
+  await page.locator('#confirmSourcePreviewBtn').click();
+  await expect(page.locator('#suggestionCard')).toBeVisible();
+  await expect(page.locator('#chapterListCount')).toHaveText('1 章');
+
+  await page.locator('#openReadingViewBtn').click();
+  const separators = page.locator('#readingFlow .reading-scene-separator');
+  await expect(separators.first()).toBeVisible();
+  // The marker spans the text column and its ink sits in the middle of it.
+  const placement = await separators.first().evaluate(node => {
+    const box = node.getBoundingClientRect();
+    const text = document.createRange();
+    text.selectNodeContents(node);
+    const ink = text.getBoundingClientRect();
+    const flow = node.closest('#readingFlow');
+    const flowStyle = getComputedStyle(flow);
+    const column = flow.clientWidth - parseFloat(flowStyle.paddingLeft) - parseFloat(flowStyle.paddingRight);
+    return {
+      spansColumn: box.width >= column * 0.8,
+      centred: Math.abs((ink.left - box.left) - (box.right - ink.right)) <= 2
+    };
+  });
+  expect(placement).toEqual({ spansColumn: true, centred: true });
+  // The markup changed, not the text: copy and search still read the marker as written.
+  await expect(page.locator('#readingFlow')).toContainText('第一段。');
+  await page.locator('#readingView').getByRole('button', { name: '回到工作台' }).click();
+
+  await page.evaluate(() => { window.StoryFlowIntegrations.savePart = async () => 'x.md'; });
+  await page.locator('#confirmBtn').click();
+  const empty = page.locator('#suggestionEmpty');
+  await expect(empty).toBeVisible();
+  await expect(empty.locator('strong')).toHaveText('這一章已全部切完');
+  expect(pageErrors).toEqual([]);
+});

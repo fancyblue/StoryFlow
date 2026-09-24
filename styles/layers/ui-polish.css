@@ -145,9 +145,6 @@ h3{letter-spacing:-.01em}
   margin-bottom:14px;
   border-color:var(--line);
 }
-.preview-boundary-controls{
-  border-color:var(--line);
-}
 .workspace-publishing-summary{
   margin-top:18px;
   padding:17px 19px;
@@ -165,7 +162,6 @@ h3{letter-spacing:-.01em}
 .publishing-stats strong{font-size:21px}
 .publishing-filter{}
 .publishing-dashboard-panel>.panel-head{padding:15px 17px 13px}
-.publish-list-item{margin-bottom:7px;}
 .publish-overall-status{min-height:26px}
 .publish-platform-details{background:#fbfaf6}
 
@@ -179,8 +175,10 @@ h3{letter-spacing:-.01em}
 .settings-view .settings-section:has(#defaultIndent)>#defaultIndent{max-width:300px}
 .settings-view .default-format-checks{gap:18px}
 .settings-view .platform-manager{
-  margin-top:22px!important;
-  padding:20px 0 18px!important;
+  /* The intro above already ends with its own margin; stacking a 22px margin and a 20px
+     pad on it left a blank band between the explanation and the table it explains. */
+  margin-top:0!important;
+  padding:4px 0 18px!important;
   border-top-color:var(--line)!important;
   border-bottom-color:var(--line)!important;
 }

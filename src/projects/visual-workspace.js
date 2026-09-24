@@ -270,7 +270,7 @@
           </div>
           <label class="field-label" for="visualProjectTitle">作品名稱</label>
           <input id="visualProjectTitle" class="text-input visual-project-title-input" maxlength="160" />
-          <div class="visual-entry-section-head">
+          <div class="visual-entry-section-head rail-section-head">
             <div><p class="eyebrow">ENTRIES</p><h3>圖文清單</h3></div>
             <div class="visual-entry-list-actions"><span id="visualEntryCount" class="muted"></span></div>
           </div>

@@ -386,8 +386,8 @@
     titleWrap.append(title, typeBadge);
     if (project.id === window.StoryFlowProjects?.activeId?.()) {
       const current = document.createElement('span');
-      current.className = 'publishing-project-current';
-      current.textContent = '目前操作中';
+      current.className = 'publishing-project-current project-current-badge';
+      current.textContent = '目前作品';
       titleWrap.appendChild(current);
     }
     const count = document.createElement('span');

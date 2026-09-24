@@ -6,8 +6,7 @@
 .visual-project-panel-head { align-items: center; }
 .visual-project-panel-head h2 { margin-bottom: 0; }
 .visual-project-title-input { width: 100%; margin-bottom: 16px; }
-.visual-entry-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line, #c8c1b0); }
-.visual-entry-section-head h3 { margin: 2px 0 0; font-size: 18px; }
+/* The list head (`.rail-section-head`) is shared with the longform rail in workspace.css. */
 .visual-entry-list-actions { display: grid; justify-items: end; gap: 8px; }
 .visual-entry-add-button { margin-top: 10px; }
 .visual-mode-badge, .project-type-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 9px; border-radius: 999px; background: #f4f1e9; color: #4b4557; font-size: 12px; font-weight: 700; }
@@ -79,12 +78,14 @@
 .visual-cover-badge { position: absolute; top: 14px; left: 14px; padding: 3px 7px; border-radius: 999px; background: rgba(43,40,34,.9); color: #fbfaf6; font-size: 11px; font-weight: 700; }
 .visual-image-actions { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; }
 .visual-image-actions .button { min-width: 0; }
-.visual-preview { display: grid; gap: 14px; padding: 20px; border-radius: 14px; background: #f5eddc; border: 1px solid #e3d3b4; }
+/* A preview is manuscript on paper, the same surface the source and Publishing previews use;
+   the ochre it used to wear is the palette's warning pigment. */
+.visual-preview { display: grid; gap: 14px; padding: 20px; border-radius: 14px; background: var(--paper-1, #fbfaf6); border: 1px solid var(--rule-1, #ded9cc); }
 .visual-preview h2 { margin: 0; }
 .visual-preview-body { white-space: pre-wrap; line-height: 1.8; }
 .visual-preview-images { display: grid; gap: 14px; }
 .visual-preview figure { margin: 0; display: grid; gap: 6px; }
-.visual-preview img { max-width: 100%; max-height: 520px; object-fit: contain; border-radius: 10px; background: #ecdfc4; }
+.visual-preview img { max-width: 100%; max-height: 520px; object-fit: contain; border-radius: 10px; background: var(--paper-2, #f4f1e9); }
 .visual-preview figcaption { color: #3f3930; font-size: 13px; }
 /* The footer is not another field. It states what the whole entry amounts to and carries
    the action that leaves it, so it closes the editor rather than continuing it: one rule

@@ -36,16 +36,12 @@
   justify-content:space-between;
   gap:14px;
   min-height:54px;
-  margin:0 -12px 0!important;
-  padding:10px 14px!important;
+  /* The head's rule is the level's edge, so it spans exactly the rows it heads — no wider. */
+  margin:0!important;
+  padding:10px 2px!important;
   border-bottom:1px solid #ded9cc;
-  border-radius:17px 17px 0 0;
-  background:#fbfaf6;
-}
-#publishingView .publishing-project-group-current>.publishing-project-group-head,
-#publishingView .publishing-project-group:has(.publishing-project-current)>.publishing-project-group-head{
-  background:#fbfaf6;
-  border-bottom-color:#ded9cc;
+  border-radius:0;
+  background:transparent;
 }
 #publishingView .publishing-project-group-title{
   display:flex;
@@ -92,15 +88,6 @@
   font-weight:700!important;
   line-height:1;
 }
-#publishingView .publishing-project-current{
-  min-height:22px!important;
-  padding:3px 7px!important;
-  border:0!important;
-  background:#fbfaf6!important;
-  color:var(--sf-primary)!important;
-  font-size:10px!important;
-  font-weight:700!important;
-}
 
 /* Publishing rows stay scannable: management is tinted at rest and uses a stronger
    soft selection while expanded. Solid emphasis belongs to copy/save inside the task. */
@@ -139,7 +126,18 @@
   border-color:#968f80!important;
   background:#e8e5eb!important;
   color:var(--denim-900,#221f1a)!important;
-  box-shadow:inset 3px 0 0 var(--denim-700,#4b4557)!important;
+  box-shadow:none!important;
+}
+
+/* Expanded, a row holds a region that has to read as belonging to it, so it gets the one
+   frame between the queue and the manuscript — closed on all four sides, even as the last
+   row, and held off its neighbours' hairlines so no rule runs into it. */
+#publishingView .publish-list-item.expanded{
+  margin:8px 0!important;
+  border:1px solid var(--rule-1,#ded9cc)!important;
+  border-radius:14px!important;
+  background:var(--paper-1,#fbfaf6)!important;
+  box-shadow:none!important;
 }
 
 /* Chapters are a second-level container: lighter and inset under the work header. */
@@ -219,7 +217,7 @@ html body #publishingView .publish-delete-btn[hidden]{
 
 @media(max-width:680px){
   #publishingView .publishing-project-group{padding:0!important;margin-bottom:16px!important}
-  #publishingView .publishing-project-group-head{min-height:50px;margin:0 -9px!important;padding:9px 10px!important;border-radius:14px 14px 0 0}
+  #publishingView .publishing-project-group-head{min-height:50px;padding:9px 2px!important}
   #publishingView .publishing-project-group-title{gap:6px;flex-wrap:wrap}
   #publishingView .publishing-project-group-head strong{font-size:15px!important}
   #publishingView .publishing-project-group-title::before{font-size:9px}

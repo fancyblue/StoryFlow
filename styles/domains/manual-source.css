@@ -62,13 +62,10 @@
   box-sizing:border-box!important;
 }
 
+/* Two text fields stacked in one form read as the same kind of field: the chapter title is
+   not a heading here, so it takes the work name's size and weight rather than a bolder one. */
 #manualSourceDialog#manualSourceDialog #manualSourceTitle{
-  flex:0 0 44px!important;
-  min-height:44px!important;
-  height:44px!important;
-  padding:0 14px!important;
-  font-size:15px!important;
-  font-weight:700!important;
+  flex:0 0 auto!important;
 }
 
 #manualSourceDialog#manualSourceDialog #manualSourceText{

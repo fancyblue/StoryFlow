@@ -31,6 +31,40 @@
   background:transparent!important;
 }
 
+/* Both rails head their list the same way: an eyebrow, the list's name and its count, over
+   the rule the rows start under. The longform rail used to go straight from the work name to
+   its first chapter, so the same column read as two different layouts depending on the work. */
+.rail-section-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding-top:16px;
+  border-top:1px solid var(--line,#c8c1b0);
+}
+.rail-section-head[hidden]{display:none!important}
+.rail-section-head h3{margin:2px 0 0;font-size:18px}
+.workspace-grid.workspace-hierarchy > .source-panel #projectTitle{margin-bottom:16px}
+.workspace-grid.workspace-hierarchy > .source-panel .rail-section-head:not([hidden]) + #chapterList{
+  border-top:1px solid var(--rule-2,#c8c1b0);
+}
+
+/* The SOURCE and SMART SPLIT heads sit side by side, so their rules have to be one line
+   across the page. The source head carries 切換作品 beside its title and so stood taller;
+   the split head takes the same height rather than leaving its rule 11px higher. */
+.workspace-grid.workspace-hierarchy > .source-panel > .panel-head,
+.workspace-grid.workspace-hierarchy .splitter-panel > .panel-head{
+  box-sizing:border-box!important;
+  min-height:71px!important;
+  padding-bottom:16px!important;
+  align-items:flex-start!important;
+}
+/* …and within that height the eyebrows share a top line and the buttons sit beside the
+   title, where 切換作品 sits in the source head. */
+.workspace-grid.workspace-hierarchy .splitter-panel > .panel-head > .smart-split-header-actions{
+  align-self:flex-end!important;
+}
+
 .workspace-grid.workspace-hierarchy > .workspace-main-column{
   grid-column:2!important;
   grid-row:1!important;
@@ -92,6 +126,14 @@
 .workspace-grid.workspace-hierarchy > .source-panel:has(.workspace-project-quick-switch:not([hidden])){
   overflow:visible!important;
   z-index:90!important;
+}
+/* Hold the width the scrollbar gutter reserved (measured in ui-system.js), so opening the
+   menu does not widen the rail's content. Only beside the main column: stacked, the rail
+   has no right padding and no gutter to hold. */
+@media(min-width:821px){
+  .workspace-grid.workspace-hierarchy > .source-panel:has(.workspace-project-quick-switch:not([hidden])){
+    padding-right:calc(18px + var(--sf-rail-gutter, 0px))!important;
+  }
 }
 
 @media(max-width:1100px) and (min-width:821px){
@@ -178,4 +220,9 @@
   flex:0 0 auto;
   color:#6f6759;
   font-size:11.5px;
+}
+/* Narrow, the three figures cannot share a line with the bar, and wrapping them one at a
+   time left a separator dot hanging at a line end. The bar takes its own line instead. */
+@media(max-width:520px){
+  .chapter-progress-bar{flex-basis:100%}
 }
