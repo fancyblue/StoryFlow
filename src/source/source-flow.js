@@ -585,22 +585,6 @@
     showSourcePreview();
   };
 
-  const baseRenderParts = window.renderParts;
-  window.renderParts = function renderPartsSourceFlow() {
-    baseRenderParts();
-    if (!activeChapter().parts?.length) {
-      const empty = els.partsList.querySelector('.empty-state');
-      if (empty) empty.innerHTML = '<span>尚未建立已確認文章。完成來源確認後，直接在 SMART SPLIT 檢查並存成 Markdown。</span>';
-    }
-    syncSourceButtons();
-  };
-
-  const baseRenderChapters = window.renderChapters;
-  window.renderChapters = function renderChaptersSourceFlow() {
-    baseRenderChapters();
-    syncSourceButtons();
-  };
-
   function cleanLegacyInstructions() {
     const empty = document.getElementById('suggestionEmpty');
     if (empty) {
@@ -618,6 +602,6 @@
   ensureSourceDialogs();
   installSourceButton();
   cleanLegacyInstructions();
-  renderParts();
+  syncSourceButtons();
   window.StoryFlowSourceFlow = { openManualSourceDialog };
 })();

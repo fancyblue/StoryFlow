@@ -857,16 +857,7 @@
     }
   }
 
-  const baseRenderAll = window.renderAll;
-  if (typeof baseRenderAll === 'function' && !baseRenderAll.__projectSourceSync) {
-    const wrapped = function (...args) {
-      const result = baseRenderAll.apply(this, args);
-      queueMicrotask(syncUi);
-      return result;
-    };
-    wrapped.__projectSourceSync = true;
-    window.renderAll = wrapped;
-  }
+  StoryFlowRender.after('renderAll', 'project-source-sync', () => queueMicrotask(syncUi));
 
   window.addEventListener('storyflow:connection-changed', () => queueMicrotask(syncUi));
   window.addEventListener('storyflow:projects-changed', () => queueMicrotask(syncUi));

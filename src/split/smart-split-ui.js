@@ -132,9 +132,7 @@
     }
   }
 
-  const baseRender = window.renderSuggestion;
-  window.renderSuggestion = function renderSuggestionSmartSplit() {
-    baseRender();
+  StoryFlowRender.after('renderSuggestion', 'smart-split-ui', () => {
     syncAllFormatSelects();
     organizeSmartSplit();
     if (!suggestion) {
@@ -145,7 +143,7 @@
     syncEditableTitle();
     installPreviewOverlayControls();
     window.StoryFlowRefreshReviewFromSource?.(false);
-  };
+  });
 
   syncAllFormatSelects();
   organizeSmartSplit();

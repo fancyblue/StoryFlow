@@ -248,16 +248,7 @@
     childList:true, subtree:true, attributes:true, characterData:true
   }));
 
-  const baseRenderAll = window.renderAll;
-  if (typeof baseRenderAll === 'function' && !baseRenderAll.__storyflowWorkspaceUx) {
-    const refinedRenderAll = function (...args) {
-      const result = baseRenderAll.apply(this, args);
-      queueMicrotask(syncAll);
-      return result;
-    };
-    refinedRenderAll.__storyflowWorkspaceUx = true;
-    window.renderAll = refinedRenderAll;
-  }
+  StoryFlowRender.after('renderAll', 'workspace-ux', () => queueMicrotask(syncAll));
 
   syncAll();
 })();

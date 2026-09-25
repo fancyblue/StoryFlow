@@ -284,16 +284,7 @@
     ensureStyleLast();
   }
 
-  const baseRenderAll = window.renderAll;
-  if (typeof baseRenderAll === 'function' && !baseRenderAll.__sourceArticleUx) {
-    const wrapped = function (...args) {
-      const result = baseRenderAll.apply(this, args);
-      queueMicrotask(syncAll);
-      return result;
-    };
-    wrapped.__sourceArticleUx = true;
-    window.renderAll = wrapped;
-  }
+  StoryFlowRender.after('renderAll', 'source-article-ux', () => queueMicrotask(syncAll));
 
   window.addEventListener('storyflow:projects-changed', () => queueMicrotask(syncAll));
   window.addEventListener('storyflow:view-changed', () => queueMicrotask(syncAll));

@@ -32,11 +32,14 @@ All `workspace.json` writes must go through `StoryFlowIntegrations.saveWorkspace
 
 1. `src/persistence/integrations.js` provides file and Google adapters.
 2. `src/core/app.js` defines the base state and rendering helpers.
-3. `src/persistence/settings-sync.js` owns debounced persistence and truthful save status.
-4. `src/persistence/workspace-safety.js` owns recovery and conflict decisions.
-5. Domain folders under `src/` add projects, sources, splitting, publishing and responsive UI.
-6. `src/persistence/project-persistence-guard.js` accelerates critical structural saves through the same integration queue.
-7. `src/persistence/mobile-safe-mode.js` loads after the final persistence wrapper and blocks phone writes unless the current tab explicitly enables editing after a successful workspace reload.
+3. `src/core/render-pipeline.js` turns the four render functions into pipelines that later modules extend.
+4. `src/persistence/settings-sync.js` owns debounced persistence and truthful save status.
+5. `src/persistence/workspace-safety.js` owns recovery and conflict decisions.
+6. Domain folders under `src/` add projects, sources, splitting, publishing and responsive UI.
+7. `src/persistence/project-persistence-guard.js` accelerates critical structural saves through the same integration queue.
+8. `src/persistence/mobile-safe-mode.js` loads after the final persistence wrapper and blocks phone writes unless the current tab explicitly enables editing after a successful workspace reload.
+
+`renderAll`, `renderChapters`, `renderSuggestion` and `renderParts` each have one implementation and a list of hooks. A module that owns what one of them draws calls `StoryFlowRender.provide(name, impl)` — `app-ux.js` provides the chapter list and `publishing-flow.js` the publishing list; `app.js` still provides the other two. A module that only adjusts the result registers `StoryFlowRender.after(name, key, hook)`, or `before` when it must read the page before the rebuild (the chapter rail's scroll position). After-hooks run in load order, before-hooks in reverse, and a key registered twice replaces itself. The functions stay on `window` under their old names, so callers are unchanged. They used to be extended by reassigning `window.renderX`, and a module that replaced a function rather than wrapping it silently discarded every wrapper loaded before it; four hooks had been lost that way and ran only during page load. `scripts/check-static.mjs` now refuses a reassignment, and a browser test pins each chain, so changing one is a deliberate edit. `StoryFlowRender.describe(name)` reports what runs, in order.
 
 The Settings backup center uses the same persistence queue. Manual import and backup restore always preserve the current `workspace.json` in `Recovery/` before replacement.
 

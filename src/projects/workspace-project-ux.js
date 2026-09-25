@@ -246,16 +246,7 @@
   window.addEventListener('storyflow:projects-changed', () => queueMicrotask(syncHierarchy));
   window.addEventListener('storyflow:view-changed', () => queueMicrotask(syncHierarchy));
 
-  const baseRenderAll = window.renderAll;
-  if (typeof baseRenderAll === 'function' && !baseRenderAll.__storyflowHierarchy) {
-    const refinedRenderAll = function (...args) {
-      const result = baseRenderAll.apply(this, args);
-      queueMicrotask(syncHierarchy);
-      return result;
-    };
-    refinedRenderAll.__storyflowHierarchy = true;
-    window.renderAll = refinedRenderAll;
-  }
+  StoryFlowRender.after('renderAll', 'workspace-project-ux', () => queueMicrotask(syncHierarchy));
 
   const observer = new MutationObserver(() => queueMicrotask(syncHierarchy));
   const splitter = document.querySelector('.splitter-panel');

@@ -498,11 +498,7 @@
     }
   });
 
-  const previousRenderSuggestion = window.renderSuggestion;
-  window.renderSuggestion = function renderSuggestionWithSceneControls() {
-    previousRenderSuggestion();
-    syncControlState();
-  };
+  StoryFlowRender.after('renderSuggestion', 'boundary-engine', () => syncControlState());
 
   // Replace the legacy character-first suggestion generator. From now on,
   // automatic/default suggestions and manual +/- adjustments share the exact

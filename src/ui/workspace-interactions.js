@@ -220,16 +220,14 @@
     };
   };
 
-  const baseRenderSuggestion = window.renderSuggestion;
-  window.renderSuggestion = function renderSuggestionPatched() {
-    ensureSplitPreviewControls();
-    baseRenderSuggestion();
+  StoryFlowRender.before('renderSuggestion', 'workspace-interactions', () => ensureSplitPreviewControls());
+  StoryFlowRender.after('renderSuggestion', 'workspace-interactions', () => {
     const reviewBtn = $('openReadingViewBtn');
     if (reviewBtn) reviewBtn.disabled = !suggestion;
     renderSuggestionPlatformSettings();
     refreshSuggestionPreview();
     updateWorkspaceMode();
-  };
+  });
 
   function updateWorkspaceMode() {
     const workspace = document.querySelector('.workspace-grid');
@@ -268,43 +266,6 @@
     if (activeChapter().draft) suggestNextPart();
     if (tab.warnings?.length) alert(`StoryFlow 匯入提醒：\n\n${tab.warnings.join('\n')}`);
     notify(`已加入「${tab.title}」並直接產生切篇預覽。`);
-  };
-
-  window.renderChapters = function renderChapters() {
-    els.chapterList.innerHTML = '';
-    const groups = [];
-    const map = new Map();
-    for (const chapter of state.chapters) {
-      const source = chapter.source;
-      const key = source?.tabId ? `${source.id || 'doc'}::${source.tabId}` : '__manual__';
-      if (!map.has(key)) {
-        const group = { key, label: source?.tabTitle || '手動章節', docName: source?.name || '', chapters: [] };
-        map.set(key, group);
-        groups.push(group);
-      }
-      map.get(key).chapters.push(chapter);
-    }
-    for (const group of groups) {
-      if (groups.length > 1 || group.key !== '__manual__') {
-        const heading = document.createElement('div');
-        heading.className = 'chapter-group-label';
-        heading.innerHTML = `<strong>${escapeHtml(group.label)}</strong>${group.docName ? `<small>${escapeHtml(group.docName)}</small>` : ''}`;
-        els.chapterList.appendChild(heading);
-      }
-      for (const chapter of group.chapters) {
-        const button = document.createElement('button');
-        button.className = `chapter-item ${chapter.id === state.activeChapterId ? 'active' : ''}`;
-        button.innerHTML = `<span>${escapeHtml(chapter.title)}</span><small>${charCount(chapter.draft).toLocaleString()} 字</small>`;
-        button.onclick = () => {
-          state.activeChapterId = chapter.id;
-          suggestion = null;
-          saveState();
-          renderAll();
-          if (chapter.draft) suggestNextPart();
-        };
-        els.chapterList.appendChild(button);
-      }
-    }
   };
 
   if ($('generateBtn')) $('generateBtn').onclick = suggestNextPart;

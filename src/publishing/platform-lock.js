@@ -67,10 +67,7 @@
   }
 
   normalizePlatformState({ migrate: false });
-  const baseRenderSuggestion = window.renderSuggestion;
-  window.renderSuggestion = function () { baseRenderSuggestion(); syncSelectors(); };
-  const baseRenderParts = window.renderParts;
-  window.renderParts = function () { baseRenderParts(); syncSelectors(); };
+  StoryFlowRender.after('renderSuggestion', 'platform-lock', () => syncSelectors());
 
   const baseChooseOutputDirectory = StoryFlowIntegrations.chooseOutputDirectory;
   StoryFlowIntegrations.chooseOutputDirectory = async (...args) => {

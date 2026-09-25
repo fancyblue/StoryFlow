@@ -10,6 +10,7 @@
     { src: './src/projects/content-model.js?v=20260830-p47a', owner: 'projects' },
     { src: './src/persistence/integrations.js?v=20260912-a1', owner: 'persistence' },
     { src: './src/core/app.js?v=20260924-a1', owner: 'core' },
+    { src: './src/core/render-pipeline.js', owner: 'core' },
     { src: './src/connection/session-auth.js?v=20260817-1522', owner: 'connection' },
     { src: './src/connection/folder-session.js?v=20260825-p1e', owner: 'connection' },
     { src: './src/ui/ui-bootstrap.js?v=20260824-p1c', owner: 'ui' },

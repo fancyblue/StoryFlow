@@ -377,13 +377,59 @@ test('desktop pages stay bounded from laptop through extended-monitor widths', a
   expect(pageErrors).toEqual([]);
 });
 
+// The four render functions used to be extended by reassignment, and a module that replaced one
+// silently dropped every wrapper loaded before it. The pipeline makes the chain a list; this pins
+// it, so adding, dropping or reordering a hook is a visible change rather than a load-order
+// accident.
+test('render functions run one implementation and their hooks in load order', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await gotoWorkbench(page);
+
+  const chains = await page.evaluate(() => Object.fromEntries(
+    ['renderAll', 'renderChapters', 'renderSuggestion', 'renderParts'].map(name => [name, window.StoryFlowRender.describe(name)])
+  ));
+  expect(chains).toEqual({
+    renderAll: {
+      before: [],
+      impl: 'renderAll',
+      after: ['workspace-ux', 'project-source-sync', 'source-article-ux', 'chapter-management', 'workspace-project-ux']
+    },
+    renderChapters: {
+      before: ['chapter-management'],
+      impl: 'renderChaptersWithActions',
+      after: ['connection-ui', 'chapter-management', 'manual-chapter-edit']
+    },
+    renderSuggestion: {
+      before: ['workspace-interactions'],
+      impl: 'renderSuggestion',
+      after: ['workspace-interactions', 'smart-split-ui', 'platform-lock', 'boundary-engine', 'app-ux', 'connection-ui', 'smart-split-title']
+    },
+    renderParts: {
+      before: [],
+      impl: 'renderPublishingDashboard',
+      after: ['publishing-disclosure', 'publishing-project-switcher', 'publishing-project-filter']
+    }
+  });
+
+  // A hook registered again under its key replaces itself instead of running twice.
+  const calls = await page.evaluate(() => {
+    let count = 0;
+    window.StoryFlowRender.after('renderParts', 'test-probe', () => { count += 1; });
+    window.StoryFlowRender.after('renderParts', 'test-probe', () => { count += 1; });
+    renderParts();
+    return count;
+  });
+  expect(calls).toBe(1);
+  expect(pageErrors).toEqual([]);
+});
+
 test('manual project can reach workspace, works, publishing, and settings', async ({ page }) => {
   const pageErrors = await prepare(page);
   await gotoWorkbench(page);
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(54);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(55);
 
   await page.locator('#createProjectManually').click();
   await page.getByRole('dialog', { name: '選擇作品類型' }).getByRole('button', { name: /長文作品/ }).click();

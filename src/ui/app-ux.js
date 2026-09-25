@@ -403,18 +403,10 @@
     document.getElementById('resetWorkspaceBtn')?.remove();
   }
 
-  // Replace the older chapter renderer after all source-grouping patches are loaded,
-  // so delete actions always target the correct chapter even when several Docs tabs are interleaved.
-  window.renderChapters = renderChaptersWithActions;
-
-  const baseRenderSuggestion = window.renderSuggestion;
-  if (typeof baseRenderSuggestion === 'function') {
-    window.renderSuggestion = function renderSuggestionWithClearFormatSummary(...args) {
-      const result = baseRenderSuggestion.apply(this, args);
-      refreshFormatSummaries();
-      return result;
-    };
-  }
+  // The chapter list's one renderer: it groups chapters by source tab and gives every row its
+  // own actions, so delete targets the right chapter even when several Docs tabs interleave.
+  StoryFlowRender.provide('renderChapters', renderChaptersWithActions);
+  StoryFlowRender.after('renderSuggestion', 'app-ux', () => refreshFormatSummaries());
 
   document.addEventListener('change', event => {
     if (event.target?.id === 'suggestionPlatformSelect' || event.target?.id === 'readingPlatformSelect') {
@@ -445,7 +437,7 @@
 
   ensureProjectsView();
   renderProjectsView();
-  renderChaptersWithActions();
+  renderChapters();
   refreshFormatSummaries();
   syncSourceActionState();
   removeLegacyReset();

@@ -561,16 +561,7 @@
     refreshTimer = window.setTimeout(refreshWorkspaceSnapshot, delay);
   }
 
-  const baseRenderParts = window.renderParts;
-  if (typeof baseRenderParts === 'function' && !baseRenderParts.__publishingProjectFilter) {
-    const wrapped = function (...args) {
-      const result = baseRenderParts.apply(this, args);
-      renderCombinedPublishingList();
-      return result;
-    };
-    wrapped.__publishingProjectFilter = true;
-    window.renderParts = wrapped;
-  }
+  StoryFlowRender.after('renderParts', 'publishing-project-filter', () => renderCombinedPublishingList());
 
   document.addEventListener('click', event => {
     if (!event.target.closest?.('.publishing-project-filter-control')) closeProjectFilter();

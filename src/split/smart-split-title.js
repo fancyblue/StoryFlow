@@ -72,16 +72,7 @@
     if (suggestion) suggestion.name = event.target.value;
   }, true);
 
-  const previousRenderSuggestion = window.renderSuggestion;
-  if (typeof previousRenderSuggestion === 'function' && !previousRenderSuggestion.__titleRule) {
-    const wrapped = function (...args) {
-      const result = previousRenderSuggestion.apply(this, args);
-      syncTitle();
-      return result;
-    };
-    wrapped.__titleRule = true;
-    window.renderSuggestion = wrapped;
-  }
+  StoryFlowRender.after('renderSuggestion', 'smart-split-title', () => syncTitle());
 
   // Preference updates and scene +/- controls both eventually render the suggestion.
   // These hooks are only a final UI guard for any older handler that mutates the

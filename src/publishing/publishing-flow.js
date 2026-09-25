@@ -1555,7 +1555,7 @@
     }
   }
 
-  window.renderParts = function renderPublishingDashboard() {
+  StoryFlowRender.provide('renderParts', function renderPublishingDashboard() {
     const structure = ensureViewStructure();
     if (!structure || !els.partsList) return;
 
@@ -1592,7 +1592,7 @@
     }
 
     filtered.forEach(entry => els.partsList.appendChild(createArticleRow(entry)));
-  };
+  });
 
   window.StoryFlowPublishing = {
     sortKey: publishSortKey,

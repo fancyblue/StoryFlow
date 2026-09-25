@@ -130,16 +130,7 @@
     });
   }
 
-  const baseRenderParts = window.renderParts;
-  if (typeof baseRenderParts === 'function' && !baseRenderParts.__publishingDisclosure) {
-    const wrapped = function (...args) {
-      const result = baseRenderParts.apply(this, args);
-      decoratePublishingRows();
-      return result;
-    };
-    wrapped.__publishingDisclosure = true;
-    window.renderParts = wrapped;
-  }
+  StoryFlowRender.after('renderParts', 'publishing-disclosure', () => decoratePublishingRows());
 
   document.addEventListener('click', event => {
     if (!event.target.closest?.('.publish-more-btn, .publish-row-overflow-menu')) closeOverflowMenus();
