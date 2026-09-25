@@ -215,17 +215,14 @@
   border-radius:11px;
   background:#fbfaf6;
 }
+/* The tool dialog already names 後記 and says it is kept apart from the manuscript; the head
+   here carries only the one control the dialog does not. */
 .publish-afterword-head{
   display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
+  align-items:center;
   gap:16px;
   margin-bottom:10px;
 }
-.publish-afterword-head>div{min-width:0}
-.publish-afterword-head strong,.publish-afterword-head .muted{display:block}
-.publish-afterword-head strong{font-size:13px;color:var(--sf-text)}
-.publish-afterword-head .muted{margin-top:3px;font-size:10px;line-height:1.45}
 .publish-afterword-include{
   display:flex;
   align-items:center;
@@ -1179,6 +1176,7 @@ button.publish-delete-btn{
 .visual-upload-thumb .missing{color:#a8443a}
 .visual-upload-empty{display:block!important;color:var(--muted)}
 .visual-publish-copy{white-space:pre-wrap}
+.visual-publish-copy .visual-publish-scene{display:inline-block;width:100%;color:#6a6357;font-size:.88em;letter-spacing:.15em;text-align:center}
 
 .platform-preview-visual-extras{
   display:grid;
@@ -1480,8 +1478,8 @@ body #publishingView #publishingProjectFilterBtn strong{
 /* Publishing order.
 
    A sort is not a filter, so it does not take the chip shape: it sits with the page action
-   rather than in the run of chips, and it names itself. Hidden for a visual work, which has
-   no chapters to order by. */
+   rather than in the run of chips, and it names itself. Shown whenever longform articles are
+   listed (publishing-project-filter.js decides from the listing, not the active work). */
 .publishing-sort{
   display:flex;
   align-items:center;

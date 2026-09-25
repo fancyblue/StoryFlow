@@ -12,6 +12,7 @@
   let currentContentType = 'all';
   const collapsedProjectIds = new Set();
   let initializedSelection = false;
+  let knownProjectIds = new Set();
   let refreshTimer = null;
   let refreshEpoch = 0;
 
@@ -78,6 +79,14 @@
   function fallbackSnapshot() {
     const api = window.StoryFlowProjects;
     const activeId = api?.activeId?.() || 'active';
+    // Without a readable workspace.json (no folder yet, or its permission lapsed) the queue
+    // used to fall back to the active work alone, so every other work's articles vanished
+    // from Publishing while Works and search — which read the in-memory store — still showed
+    // them. The store is what workspace.json is written from; use all of it.
+    const everyWork = api?.searchSnapshot?.();
+    if (Array.isArray(everyWork) && everyWork.length) {
+      return { schemaVersion: 2, activeProjectId: activeId, projects: everyWork };
+    }
     const summaries = api?.list?.() || [];
     const activeSummary = summaries.find(project => project.id === activeId);
     return {
@@ -107,11 +116,20 @@
     const ids = projects.map(project => project.id).filter(Boolean);
     if (!initializedSelection) {
       selectedProjectIds = new Set(ids);
+      knownProjectIds = new Set(ids);
       initializedSelection = true;
       return;
     }
     const valid = new Set(ids);
+    // The selection was fixed the first time Publishing rendered, so a work created after
+    // that was left out of "全部" — its articles, the current work's included, missing from
+    // the queue until the writer went and ticked it. A new work joins the selection unless
+    // the writer has deliberately narrowed it to fewer than every work.
+    const narrowed = [...knownProjectIds].some(id => valid.has(id) && !selectedProjectIds.has(id));
+    const added = ids.filter(id => !knownProjectIds.has(id));
+    knownProjectIds = valid;
     selectedProjectIds = new Set([...selectedProjectIds].filter(id => valid.has(id)));
+    if (!narrowed) added.forEach(id => selectedProjectIds.add(id));
     // An empty project filter means "all works". This avoids a dead-end state
     // where every checkbox is cleared and the publishing list disappears.
     if (ids.length && !selectedProjectIds.size) selectedProjectIds = new Set(ids);
@@ -498,6 +516,20 @@
     return group;
   }
 
+  // The order control belongs to what is listed, not to which work happens to be active:
+  // chapter order means something whenever longform articles are in the queue, and nothing
+  // when none are. The note explaining the visual order stands in for it only when the
+  // queue is visual entries alone. Deciding by the active work hid the control over a queue
+  // of chapters whenever a visual work was current, and showed it over an empty queue.
+  function syncOrderControls(entries) {
+    const hasChapters = entries.some(entry => entry.contentMode === 'longform');
+    const onlyVisual = entries.length > 0 && !hasChapters;
+    const sort = document.getElementById('publishingSortControl');
+    const hint = document.querySelector('.publishing-toolbar-hint');
+    if (sort) sort.hidden = !hasChapters;
+    if (hint) hint.hidden = !onlyVisual;
+  }
+
   function renderCombinedPublishingList() {
     const list = document.getElementById('partsList');
     if (!list) return;
@@ -520,6 +552,7 @@
       : selectedEntries.filter(entry => entry.contentMode === currentContentType);
     updateStatusCounts(contentEntries);
     syncContinuePublishing(contentEntries);
+    syncOrderControls(contentEntries);
     const filter = activeStatusFilter();
     const filtered = filter === 'all' ? contentEntries : contentEntries.filter(entry => entry.status.key === filter);
 

@@ -37,6 +37,12 @@
 #manualSourceDialog[data-edit-chapter-id] #cancelManualChapterEditBtn{
   display:inline-flex!important;
 }
+/* Editing a chapter is not creating a work: there is no creation method to return to and no
+   work name to type. Both used to keep whatever the last creation left them showing. */
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] #backManualCreationBtn,
+#manualSourceDialog#manualSourceDialog[data-edit-chapter-id] .manual-project-title-field{
+  display:none!important;
+}
 #manualSourceDialog[data-edit-chapter-id] #previewManualSourceBtn{
   display:none!important;
 }
