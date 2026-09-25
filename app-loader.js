@@ -23,10 +23,10 @@
     { src: './src/source/source-flow.js?v=20260831-p48a', owner: 'source' },
     { src: './src/projects/projects.js?v=20260918-a2', owner: 'projects' },
     { src: './src/split/boundary-engine.js?v=20260924-a1', owner: 'split' },
-    { src: './src/publishing/publishing-flow.js?v=20260925-a2', owner: 'publishing' },
+    { src: './src/publishing/publishing-flow.js?v=20260925-a1', owner: 'publishing' },
     { id: 'storyflowPublishingDisclosureJs', src: './src/publishing/publishing-disclosure.js?v=20260828-p23a', owner: 'publishing' },
     { src: './src/publishing/publishing-project-switcher.js?v=20260825-p3a', owner: 'publishing' },
-    { id: 'storyflowPublishingProjectFilterJs', src: './src/publishing/publishing-project-filter.js?v=20260924-a1', owner: 'publishing' },
+    { id: 'storyflowPublishingProjectFilterJs', src: './src/publishing/publishing-project-filter.js?v=20260925-a1', owner: 'publishing' },
     { src: './src/ui/anchored-menu.js?v=20260911-a3', owner: 'ui' },
     { src: './src/ui/app-ux.js?v=20260919-a6', owner: 'ui' },
     { src: './src/source/source-relink.js?v=20260912-a1', owner: 'source' },
@@ -57,8 +57,8 @@
     { id: 'storyflowWorksLibraryUxJs', src: './src/projects/works-library-ux.js?v=20260919-a6', owner: 'projects' },
     { src: './src/projects/workspace-project-ux.js?v=20260918-a2', owner: 'projects' },
     { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260915-a2', owner: 'ui' },
-    { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260918-a1', owner: 'publishing' },
-    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260924-a1', owner: 'projects' }
+    { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260925-a1', owner: 'publishing' },
+    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260925-a1', owner: 'projects' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));
