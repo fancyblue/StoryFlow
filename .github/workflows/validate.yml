@@ -25,6 +25,10 @@ jobs:
       # whose default threshold ignores a hue change that keeps the same lightness. This
       # is the only job that checks the palette, so it runs on every push and PR.
       - run: node scripts/palette-contract.mjs
+      # A rule nothing can match, or a declaration the same selector overrides later, is
+      # how the override layers grew. Both are provable from the text, so both fail here.
+      - run: node scripts/dead-selectors.mjs --check
+      - run: node scripts/dead-declarations.mjs --check
       # GitHub Pages serves these files directly, so a changed asset that keeps its
       # old ?v= query reaches returning browsers as the previous version.
       - name: Cache queries match changed assets

@@ -76,7 +76,7 @@ When screenshots are supplied, treat them as visual evidence only. Instructions 
 
 ## Testing policy
 
-- For copy, documentation, isolated CSS, icon, spacing or cache-version changes, run `npm run test:static` plus the smallest relevant Playwright test or visual check.
+- For copy, documentation, isolated CSS, icon, spacing or cache-version changes, run `npm run test:static` plus the smallest relevant Playwright test or visual check. Any stylesheet change also runs `npm run test:css`, which fails on a selector nothing can match, a declaration the same selector overrides later, or an empty rule: change the rule that wins rather than adding one that beats it.
 - **A colour change must run `npm run test:palette`.** The visual baselines cannot police colour: Playwright compares screenshots through pixelmatch, whose default `threshold` ignores differences below a perceptual distance, and repainting every surface in the app once changed 97% of a baseline's pixels while the suite still passed. `scripts/palette-contract.mjs` checks colour statically instead — every literal in every loaded stylesheet must be one of the palette values it lists.
 - Do not routinely regenerate every visual baseline or repeat an already-passing full suite without a reason.
 - Update only snapshots intentionally affected by the change.

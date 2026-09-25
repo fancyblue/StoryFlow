@@ -10,10 +10,8 @@
     position:relative;
     gap:6px !important;
     margin-bottom:14px !important;
-    padding-right:76px;
   }
   .topbar .top-actions {
-    position:absolute;
     top:5px;
     right:0;
     min-height:0;
@@ -21,7 +19,6 @@
   }
   .topbar .save-state {
     color:#4b4557 !important;
-    font-size:12px !important;
     font-weight:700 !important;
   }
 
@@ -31,16 +28,12 @@
 .settings-view .settings-section{
     border-color:#ded9cc !important;
   }
-  .panel{border-radius:15px !important}
-  
-  
-  
+
   .button.primary{background:#5e5769!important;border-color:#968f80!important;box-shadow:none!important}
   .button.primary:hover:not(:disabled){background:#4b4557!important;border-color:#4b4557!important}
 
   /* Bottom navigation and connection utility stay deliberately dark. */
   .sidebar {
-    background:#2b2822 !important;
     border-top:0 !important;
     color:#fbfaf6 !important;
     backdrop-filter:none !important;
@@ -49,13 +42,10 @@
 
   .sidebar .nav-item {
     color:#c8c1b0 !important;
-    font-size:18px !important;
     font-weight:700 !important;
   }
   .sidebar .nav-item span {
     color:inherit !important;
-    font-size:13px !important;
-    font-weight:700 !important;
     line-height:1.2 !important;
   }
   .sidebar .nav-item:hover,
@@ -75,7 +65,6 @@
      piles up against the left edge. */
   .sidebar-connection-status {
     border-top:1px solid rgba(200,193,176,.24) !important;
-    padding-top:5px !important;
   }
   .sidebar-connection-row,
   .sidebar-connection-row.connected,
@@ -104,7 +93,6 @@
     display:flex !important;
     align-items:center !important;
     justify-content:center !important;
-    gap:5px !important;
     overflow:hidden !important;
     white-space:nowrap !important;
   }
@@ -120,8 +108,6 @@
     max-width:none !important;
     overflow:hidden !important;
     color:#fbfaf6 !important;
-    font-size:14px !important;
-    font-weight:700 !important;
     line-height:1.15 !important;
     text-overflow:ellipsis !important;
     white-space:nowrap !important;
@@ -147,11 +133,8 @@
      enough to read as destructive, without turning into a loud filled CTA. */
   .sidebar-utility-actions {
     display:grid !important;
-    grid-template-columns:repeat(2,40px) !important;
     align-items:center !important;
     justify-content:end !important;
-    gap:6px !important;
-    width:86px !important;
   }
   .sidebar-settings-button,
   .sidebar-logout {
@@ -214,9 +197,7 @@
 @media (max-width:390px) {
   .sidebar-connection-copy b { display:none !important; }
   .sidebar-utility-actions {
-    grid-template-columns:repeat(2,38px) !important;
     gap:4px !important;
-    width:82px !important;
   }
   .sidebar-settings-button,
   .sidebar-logout {

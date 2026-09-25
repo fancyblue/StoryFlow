@@ -1,5 +1,4 @@
 /* Private image-asset management for publishing articles. */
-.publish-image-manager-slot{padding:12px 14px 4px}
 .article-image-manager{
   padding:14px;
   border:1px solid #ded9cc;
@@ -146,7 +145,6 @@
   .article-image-fields select{grid-column:1/-1}
 }
 @media(max-width:600px){
-  .publish-image-manager-slot{padding:10px 10px 3px}
   .article-image-manager{padding:12px}
   .article-image-manager-head{align-items:stretch;flex-direction:column}
   .article-image-manager-actions{display:grid;grid-template-columns:1fr;flex:auto}

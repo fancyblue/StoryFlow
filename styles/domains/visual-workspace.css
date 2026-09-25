@@ -1,8 +1,6 @@
 .visual-workspace[hidden], .visual-workspace [hidden], .visual-workspace .hidden { display: none !important; }
 .visual-workspace-suppressed { display: none !important; }
 .visual-workspace { display: grid; gap: 16px; }
-.visual-workspace-head { margin-bottom: 0; padding: 0; }
-.visual-workspace-head h1 { margin: 2px 0 0; }
 .visual-project-panel-head { align-items: center; }
 .visual-project-panel-head h2 { margin-bottom: 0; }
 .visual-project-title-input { width: 100%; margin-bottom: 16px; }

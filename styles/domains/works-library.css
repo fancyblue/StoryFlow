@@ -68,21 +68,6 @@
   border-radius:999px!important;
   line-height:1!important;
 }
-.project-library-status-row{
-  display:flex;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:7px 10px;
-  margin-top:7px;
-}
-.project-library-status-row .project-library-meta{
-  display:inline-flex!important;
-  align-items:center!important;
-  margin:0!important;
-  color:#6a6357!important;
-  font-size:11.5px!important;
-  line-height:1.4!important;
-}
 .project-library-actions{
   position:relative!important;
   display:flex!important;
@@ -90,8 +75,7 @@
   justify-content:flex-end!important;
   flex-wrap:nowrap!important;
 }
-.project-library-actions > .button,
-.project-publishing-cluster > .button{
+.project-library-actions > .button{
   min-height:40px!important;
   height:40px!important;
   padding:0 12px!important;
@@ -127,8 +111,7 @@
   font-weight:700!important;
   box-shadow:none!important;
 }
-.project-library-card .project-library-actions > .project-publish-btn,
-.project-library-card .project-publishing-cluster > .project-publish-btn{
+.project-library-card .project-library-actions > .project-publish-btn{
   min-height:40px!important;
   height:40px!important;
   padding:0 14px!important;
@@ -149,9 +132,7 @@
   color:var(--denim-900,#221f1a)!important;
 }
 .project-library-card .project-library-actions > .project-publish-btn:hover,
-.project-library-card .project-library-actions > .project-publish-btn:focus-visible,
-.project-library-card .project-publishing-cluster > .project-publish-btn:hover,
-.project-library-card .project-publishing-cluster > .project-publish-btn:focus-visible{
+.project-library-card .project-library-actions > .project-publish-btn:focus-visible{
   border-color:#c8c1b0!important;
   background:var(--sf-primary-soft,#f4f1e9)!important;
   color:var(--denim-900,#221f1a)!important;
@@ -164,45 +145,6 @@
   box-shadow:none!important;
 }
 
-/* Publishing progress + its management action live together inside the metadata row.
-   This keeps the state and the next action close without moving the progress strip out
-   of project-library-main (which also keeps the renderer stable). */
-.project-publishing-cluster{
-  display:flex;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:6px;
-  min-width:0;
-  padding-left:10px;
-  border-left:1px solid #ded9cc;
-}
-.project-publishing-cluster .project-progress-badges{
-  display:flex!important;
-  align-items:center!important;
-  flex-wrap:wrap!important;
-  gap:5px!important;
-  margin:0!important;
-}
-.project-publishing-cluster .project-progress-badges[hidden]{display:none!important}
-.project-publishing-cluster .project-progress-badge{
-  min-height:24px!important;
-  padding:4px 8px!important;
-  border-radius:999px!important;
-  font-size:10.5px!important;
-  line-height:1!important;
-  font-weight:700!important;
-}
-.project-publishing-cluster .project-progress-badge.published{
-  order:-1;
-  border-color:#d7dec6!important;
-  background:#eef0e4!important;
-  color:#59703f!important;
-}
-.project-publishing-cluster .project-progress-badge.split{
-  border-color:#ded9cc!important;
-  background:#fbfaf6!important;
-  color:#4b4557!important;
-}
 .project-library-actions .project-library-delete{display:none!important}
 
 /* Overflow is always the final visible action. */
@@ -328,17 +270,9 @@
     align-items:stretch!important;
     gap:14px!important;
   }
-  .project-library-card{padding:14px!important}
   .project-library-actions > .project-open-btn,
   .project-library-actions > .project-manage-chapters-btn{
     flex:1 1 auto!important;
-  }
-  .project-publishing-cluster{
-    flex:1 1 100%;
-    margin-top:2px;
-    padding:8px 0 0;
-    border-left:0;
-    border-top:1px solid #ded9cc;
   }
   .project-library-more-btn{flex:0 0 36px!important}
 }
@@ -358,14 +292,6 @@
   .project-library-more-btn{
     grid-column:3!important;
     grid-row:1!important;
-  }
-  .project-library-status-row{
-    align-items:flex-start;
-    flex-direction:column;
-  }
-  .project-publishing-cluster{
-    width:100%;
-    justify-content:flex-start;
   }
 }
 

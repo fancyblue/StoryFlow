@@ -1,12 +1,12 @@
 # Browser smoke tests
 
-> 狀態：現行測試規範與覆蓋索引（持續維護；最後同步：2026-09-01）
+> 狀態：現行測試規範與覆蓋索引（持續維護；最後同步：2026-09-25）
 
 ## Proportional testing for this project
 
 StoryFlow is a private, single-user site whose primary working environment is desktop Chrome. Verification should therefore be risk-based instead of automatically running every test for every change.
 
-- Small copy, documentation, isolated style, icon, spacing, color or cache-version changes: run `npm run test:static`, one relevant Playwright test when available, and inspect the affected page at its normal desktop width.
+- Small copy, documentation, isolated style, icon, spacing, color or cache-version changes: run `npm run test:static` (and `npm run test:css` for any stylesheet change), one relevant Playwright test when available, and inspect the affected page at its normal desktop width.
 - Shared navigation/layout or responsive changes: run the related browser tests and only the visual baselines that can actually change.
 - Persistence, Google/Drive, folder/file, Recovery, destructive-action, source-sync, split/output or publishing-data changes: run the relevant safety tests and the full `npm test` suite when the impact crosses several flows.
 - A passing GitHub Actions run can be used as the full-suite result after push; avoid duplicating a full local run unless debugging.

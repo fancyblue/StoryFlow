@@ -1,8 +1,8 @@
 .source-flow-dialog { width:min(920px,calc(100vw - 28px)); max-width:920px; }
 .source-flow-card { max-width:none; padding:0; max-height:min(88vh,900px); overflow:auto; }
 .source-flow-card > :not(.sticky-dialog-head):not(.sticky-dialog-actions) { margin-left:22px; margin-right:22px; }
-.sticky-dialog-head { position:sticky; top:0; z-index:5; margin:0 !important; padding:18px 22px; background:#fbfaf6; border-bottom:1px solid var(--line); }
-.sticky-dialog-actions { position:sticky; bottom:0; z-index:5; margin:0 !important; padding:14px 22px; background:#fbfaf6; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:8px; }
+.sticky-dialog-head { position:sticky; top:0; z-index:5; margin:0 !important;background:#fbfaf6;}
+.sticky-dialog-actions { position:sticky; bottom:0; z-index:5; margin:0 !important;background:#fbfaf6;display:flex; justify-content:flex-end;}
 .source-flow-intro { padding-top:18px; line-height:1.6; }
 .source-choice-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:16px; margin-bottom:18px; }
 .source-choice { border:1px solid var(--line); background:#fbfaf6;padding:20px; text-align:left; }

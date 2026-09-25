@@ -14,8 +14,6 @@
 .source-panel-actions #loadSourceBtn{
   min-height:42px;
 }
-.source-panel-actions #refreshSourceBtn{
-}
 .source-panel-actions #refreshSourceBtn:focus-visible{
   border-color:#968f80;
   box-shadow:0 0 0 3px rgba(34,31,26,.14);

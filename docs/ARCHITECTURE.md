@@ -103,7 +103,7 @@ Run:
 npm test
 ```
 
-This runs the static architecture check, the palette contract (`scripts/palette-contract.mjs`, which is what actually guards colour — the pixel baselines cannot, see `docs/UI_SYSTEM.md`), the cache-query check, and the desktop Chromium smoke suite. The browser suite starts its own local server and uses fixture data only; setup and individual test pages are documented in `tests/README.md`.
+This runs the static architecture check, the palette contract (`scripts/palette-contract.mjs`, which is what actually guards colour — the pixel baselines cannot, see `docs/UI_SYSTEM.md`), the CSS checks (`npm run test:css`: selectors nothing can match, declarations that always lose and empty rules — see `docs/UI_SYSTEM.md`), the cache-query check, and the desktop Chromium smoke suite. The browser suite starts its own local server and uses fixture data only; setup and individual test pages are documented in `tests/README.md`.
 
 A visual entry's `summary` is authored in `src/projects/visual-workspace.js` alongside its title and body and rides the same entry autosave. Publishing reads it; it does not write it. A longform part's `summary` has no editor of its own and stays with the 摘要與 Hashtags tool in `publishing-flow.js`.
 
