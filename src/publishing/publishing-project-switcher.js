@@ -80,17 +80,10 @@
     renderMenu();
   }
 
-  const baseRenderParts = window.renderParts;
-  if (typeof baseRenderParts === 'function' && !baseRenderParts.__publishingProjectSwitcher) {
-    const wrapped = function renderPartsWithProjectSwitcher(...args) {
-      const result = baseRenderParts.apply(this, args);
-      ensurePublishingProjectSwitcher();
-      renderMenu();
-      return result;
-    };
-    wrapped.__publishingProjectSwitcher = true;
-    window.renderParts = wrapped;
-  }
+  StoryFlowRender.after('renderParts', 'publishing-project-switcher', () => {
+    ensurePublishingProjectSwitcher();
+    renderMenu();
+  });
 
   document.addEventListener('click', event => {
     if (!event.target.closest?.('.publishing-project-compact')) closeMenu();

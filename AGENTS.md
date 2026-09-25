@@ -45,7 +45,7 @@ Any operation that may delete, overwrite, replace or mis-associate user data mus
 - `docs/`: current architecture, UX/UI contracts, acceptance guidance and completed design records.
 - `AI_HANDOFF.md`: provider-neutral onboarding, identity confirmation and task handoff format.
 
-Keep `src/core/shared.js` first in the manifest and `src/projects/content-model.js` loaded before project consumers. Before adding a helper to a module, check whether `src/core/shared.js` already owns it; before copying one between modules, move it there instead. Admission is narrow — pure, stateless and identical in every copy — and `docs/ARCHITECTURE.md` records why `clone()` stays duplicated. Preserve workspace schema version 2 unless a real incompatible outer-workspace change requires migration.
+Keep `src/core/shared.js` first in the manifest, `src/core/render-pipeline.js` immediately after `src/core/app.js`, and `src/projects/content-model.js` loaded before project consumers. Extend `renderAll`, `renderChapters`, `renderSuggestion` and `renderParts` through `StoryFlowRender.provide/before/after`; never reassign them (`npm run test:static` refuses it). Before adding a helper to a module, check whether `src/core/shared.js` already owns it; before copying one between modules, move it there instead. Admission is narrow — pure, stateless and identical in every copy — and `docs/ARCHITECTURE.md` records why `clone()` stays duplicated. Preserve workspace schema version 2 unless a real incompatible outer-workspace change requires migration.
 
 ## UI and interaction contract
 

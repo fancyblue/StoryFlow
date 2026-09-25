@@ -329,23 +329,8 @@
   // this empty-workspace layer from intercepting the Works-page button before the
   // guarded onboarding flow can open the shared 「建立作品」 chooser.
 
-  const baseRenderChapters = window.renderChapters;
-  if (typeof baseRenderChapters === 'function') {
-    window.renderChapters = function renderChaptersWithoutSentinel(...args) {
-      const result = baseRenderChapters.apply(this, args);
-      syncWorkspaceEmptyState();
-      return result;
-    };
-  }
-
-  const baseRenderSuggestion = window.renderSuggestion;
-  if (typeof baseRenderSuggestion === 'function') {
-    window.renderSuggestion = function renderSuggestionWithEmptyWorkspace(...args) {
-      const result = baseRenderSuggestion.apply(this, args);
-      syncWorkspaceEmptyState();
-      return result;
-    };
-  }
+  StoryFlowRender.after('renderChapters', 'connection-ui', () => syncWorkspaceEmptyState());
+  StoryFlowRender.after('renderSuggestion', 'connection-ui', () => syncWorkspaceEmptyState());
 
   // Works is the landing page, so its empty state is the first thing a new user sees and it
   // carries the whole first run. It used to offer 建立第一個作品 unconditionally, which was

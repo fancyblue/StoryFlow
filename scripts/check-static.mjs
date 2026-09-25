@@ -91,6 +91,23 @@ for (const script of scripts) {
   execFileSync(process.execPath, ['--check', script], { stdio: 'inherit' });
 }
 
+// The four render functions are extended through src/core/render-pipeline.js. Reassigning one
+// is how the old wrapper chain grew: each module put a wrapper in place of the last, and a
+// module that replaced rather than wrapped silently discarded every hook before it.
+const RENDER_REASSIGNMENT = /\bwindow\.(renderAll|renderChapters|renderSuggestion|renderParts)\s*=(?!=)/;
+const renderReassignments = scripts
+  .filter(script => !script.endsWith(join('src', 'core', 'render-pipeline.js')))
+  .flatMap(script => readFileSync(script, 'utf8').split('\n')
+    .map((line, index) => RENDER_REASSIGNMENT.test(line) ? `${script.slice(root.length + 1)}:${index + 1}` : null)
+    .filter(Boolean));
+if (renderReassignments.length) {
+  throw new Error(`Render functions are extended with StoryFlowRender.provide/before/after, not reassigned:\n${renderReassignments.join('\n')}`);
+}
+const pipelineIndex = manifestSources.indexOf('src/core/render-pipeline.js');
+if (pipelineIndex !== manifestSources.indexOf('src/core/app.js') + 1) {
+  throw new Error('src/core/render-pipeline.js must load immediately after src/core/app.js.');
+}
+
 // A stylesheet has no syntax error to report: a comment that is never closed simply
 // swallows everything after it until the next `*/`, and the browser loads the file without
 // complaint. That is not hypothetical — deleting a rule once took its comment's closing

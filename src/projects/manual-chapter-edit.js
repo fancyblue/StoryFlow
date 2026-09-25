@@ -251,16 +251,7 @@
     window.setTimeout(resetDialogToAddMode, 0);
   }, true);
 
-  const baseRenderChapters = window.renderChapters;
-  if (typeof baseRenderChapters === 'function' && !baseRenderChapters.__manualChapterEdit) {
-    const wrapped = function (...args) {
-      const result = baseRenderChapters.apply(this, args);
-      queueMicrotask(decorateWorkspaceMenus);
-      return result;
-    };
-    wrapped.__manualChapterEdit = true;
-    window.renderChapters = wrapped;
-  }
+  StoryFlowRender.after('renderChapters', 'manual-chapter-edit', () => queueMicrotask(decorateWorkspaceMenus));
 
   window.addEventListener('storyflow:projects-changed', () => window.setTimeout(sync, 0));
   window.addEventListener('storyflow:view-changed', () => window.setTimeout(sync, 0));
