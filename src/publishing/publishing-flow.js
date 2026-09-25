@@ -648,7 +648,12 @@
       summaryText = String(part.summary || '').trim();
       summaryCard.disabled = !summaryText;
       panel.querySelector('#platformPreviewSummary').textContent = summaryText || '尚未設定';
-      summaryCard.querySelector('small').textContent = summaryText ? '點一下複製' : '在圖文編輯器設定';
+      // Each content type writes its summary in one place: a visual entry in its editor, a
+      // longform article in 摘要與 Hashtags. Pointing an article at the visual editor sent the
+      // writer somewhere its summary cannot be written.
+      summaryCard.querySelector('small').textContent = summaryText
+        ? '點一下複製'
+        : (visual ? '在圖文編輯器設定' : '在「摘要與 Hashtags」設定');
       summaryCard.onclick = async () => {
         if (!summaryText) return;
         try {
@@ -669,7 +674,8 @@
       visualExtras.hidden = !platformSpecific;
       visualExtras.classList.toggle('hidden', !platformSpecific);
       panel.querySelector('#platformPreviewHashtags').textContent = hashtagsText || '尚未設定';
-      hashtagsCard.querySelector('small').textContent = hashtagsText ? '點一下複製' : '尚未設定';
+      // Empty, the value already reads 尚未設定 and 編輯 sits beside it; a hint repeating it adds nothing.
+      hashtagsCard.querySelector('small').textContent = hashtagsText ? '點一下複製' : '';
       hashtagsInput.value = hashtagsText;
       hashtagsState.textContent = overridden
         ? (hashtagsText ? '此平台自訂' : '此平台不使用')
@@ -1255,12 +1261,9 @@
     const section = document.createElement('section');
     section.className = 'visual-publish-helpers';
     section.innerHTML = `
-      <div class='visual-publish-helpers-head'>
-        <div><strong>發布輔助資訊</strong><span>摘要與 Hashtags 都是選填，不會自動加入正文。</span></div>
-      </div>
       <label class='visual-publish-helper-field'>
         <span>摘要</span>
-        <textarea class='text-input visual-publish-summary-input' rows='3' maxlength='500' placeholder='簡短介紹這則圖文'></textarea>
+        <textarea class='text-input visual-publish-summary-input' rows='3' maxlength='500' placeholder='簡短介紹這篇文章'></textarea>
       </label>
       <label class='visual-publish-helper-field'>
         <span>Hashtags</span>
@@ -1344,7 +1347,7 @@
         <aside class="publish-platform-rail" aria-label="發布平台">
           <div class="publish-platform-details-head">
             <strong>發布平台</strong>
-            <span class="muted">選一個，左邊就換成它的版本</span>
+            <span class="muted">選一個，預覽就換成它的版本</span>
           </div>
           <div class="publish-platform-list"></div>
         </aside>

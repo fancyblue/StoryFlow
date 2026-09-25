@@ -648,3 +648,89 @@ test('works and publishing draw the same hierarchy', async ({ page }) => {
   expect(worksDisclosure).toBe('true');
   expect(publishingDisclosure).not.toBeNull();
 });
+
+// Round-two review of the same page family: what is left once the frames are right is whether
+// the pieces agree with each other. Each of these disagreed until it was measured.
+test('publishing groups by space, menus share one glyph, and the preview foot lines up', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+  await page.evaluate(() => { window.StoryFlowIntegrations.savePart = async () => 'x.md'; });
+  await page.locator('#confirmBtn').click();
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('.publish-list-item').first()).toBeVisible();
+  await page.mouse.move(0, 0);
+
+  // Filter groups are parted by space; a hairline on a group that wrapped to a new line stood
+  // at the left edge with nothing before it.
+  for (const group of ['#publishingContentTypeFilters', '#publishingFilters']) {
+    await expectStyle(page, group, { borderLeftWidth: '0px', borderRightWidth: '0px' });
+  }
+  await expectStyle(page, '.publishing-filter-stack', { columnGap: '20px' });
+
+  // Every row menu sets 刪除's glyph in the same box.
+  await page.locator('.publish-list-item .publish-more-btn').first().click();
+  const publishGlyph = await page.locator('.publish-row-overflow-menu:not([hidden]) button > span:first-child').first()
+    .evaluate(el => ({ width: getComputedStyle(el).width, fontSize: getComputedStyle(el).fontSize, label: getComputedStyle(el.parentElement).fontSize }));
+  await page.keyboard.press('Escape');
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await page.locator('#chapterList .chapter-more-button').first().click();
+  const chapterGlyph = await page.locator('.chapter-row-action-menu:not([hidden]) .chapter-row-delete-menu-item > span:first-child').first()
+    .evaluate(el => ({ width: getComputedStyle(el).width, fontSize: getComputedStyle(el).fontSize, label: getComputedStyle(el.parentElement).fontSize }));
+  await page.keyboard.press('Escape');
+  expect(publishGlyph).toEqual(chapterGlyph);
+
+  // The preview's actions start where the manuscript box does: the shared layer used to pad
+  // them 22px in as though they were still a dialog footer.
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  const row = page.locator('.publish-list-item').first();
+  await row.locator('.publish-manage-btn').click();
+  await expect(row.locator('.platform-preview-actions')).toBeVisible();
+  const foot = await row.evaluate(node => {
+    const box = node.querySelector('.platform-preview-content, .platform-preview-body pre, .platform-preview-body .sf-preview-surface');
+    const actions = node.querySelector('.platform-preview-actions');
+    return {
+      paddingLeft: getComputedStyle(actions).paddingLeft,
+      paddingRight: getComputedStyle(actions).paddingRight,
+      leftEdge: Math.round(actions.getBoundingClientRect().left - box.getBoundingClientRect().left),
+      rightEdge: Math.round(actions.getBoundingClientRect().right - box.getBoundingClientRect().right)
+    };
+  });
+  expect(foot).toEqual({ paddingLeft: '0px', paddingRight: '0px', leftEdge: 0, rightEdge: 0 });
+});
+
+test('on a phone the works row and the manual form keep their primary actions whole', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await longformWorkspace(page);
+  await page.locator('.nav-item[data-view="projects"]').click();
+  const card = page.locator('.project-library-card').first();
+  await expect(card).toBeVisible();
+  // 開啟 | 管理發布 | ⋯, then the chapter disclosure across the whole next line — it used to sit
+  // alone in the right half of that line.
+  const layout = await card.locator('.project-library-actions').evaluate(actions => {
+    const box = selector => actions.querySelector(selector).getBoundingClientRect();
+    const open = box('.project-open-btn');
+    const chapters = box('.project-manage-chapters-btn');
+    const more = box('.project-library-more-btn');
+    return {
+      disclosureBelow: chapters.top >= open.bottom,
+      disclosureSpans: Math.round(chapters.left) === Math.round(open.left) && Math.round(chapters.right) === Math.round(more.right)
+    };
+  });
+  expect(layout).toEqual({ disclosureBelow: true, disclosureSpans: true });
+
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await page.locator('#addChapterBtn').click();
+  const actions = page.locator('#manualSourceDialog .source-flow-actions');
+  await expect(actions).toBeVisible();
+  const primary = await actions.evaluate(bar => {
+    const button = bar.querySelector('.button.primary');
+    const style = getComputedStyle(bar);
+    const inner = bar.getBoundingClientRect().width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    const buttons = [...bar.querySelectorAll('.button')].filter(node => node.offsetParent !== null);
+    return {
+      fullWidth: Math.abs(button.getBoundingClientRect().width - inner) <= 1,
+      last: buttons[buttons.length - 1] === button || Math.max(...buttons.map(node => node.getBoundingClientRect().top)) === button.getBoundingClientRect().top
+    };
+  });
+  expect(primary).toEqual({ fullWidth: true, last: true });
+});

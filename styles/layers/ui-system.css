@@ -278,7 +278,10 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 dialog{border-radius:var(--sf-radius-lg)!important;box-shadow:var(--sf-shadow-pop)!important}
 dialog::backdrop{background:rgba(43,40,34,.38)!important}
 .sticky-dialog-head{padding:18px 22px!important;border-bottom:1px solid var(--sf-border)!important}
-.sticky-dialog-actions,.platform-preview-actions{padding:14px 22px!important;border-top:1px solid var(--sf-border)!important;gap:8px!important}
+/* The platform preview's actions used to be a dialog footer here too. They now sit at the foot
+   of the manuscript column, so their inset belongs to publishing.css: a 22px pad here held
+   them in from the column the preview box and its heading line up on. */
+.sticky-dialog-actions{padding:14px 22px!important;border-top:1px solid var(--sf-border)!important;gap:8px!important}
 .sticky-dialog-actions .button,.source-flow-actions.sticky-dialog-actions .button,.platform-preview-actions .button{height:40px!important;min-height:40px!important;font-size:14px!important}
 
 /* Toasts: concise system feedback, not another primary surface. */

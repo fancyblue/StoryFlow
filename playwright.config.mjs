@@ -5,7 +5,10 @@ export default defineConfig({
   snapshotPathTemplate: '{testDir}/__screenshots__/{arg}{ext}',
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
+  // CI keeps its one retry for the trace it records, but a test that only passes on that
+  // retry fails the run: a green check used to hide flaky tests, which then went unfixed.
   retries: process.env.CI ? 1 : 0,
+  failOnFlakyTests: Boolean(process.env.CI),
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI
     ? [['line'], ['html', { open: 'never' }]]
