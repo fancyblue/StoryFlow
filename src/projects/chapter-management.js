@@ -218,6 +218,10 @@
     startInlineRename(row, chapter);
   }
 
+  function managerSignature(projectId, visual) {
+    return JSON.stringify([projectId, visual, visual ? activeVisualMetadata() : activeChapterMetadata()]);
+  }
+
   function buildChapterManager(projectId, visual = false) {
     const manager = document.createElement('section');
     manager.className = 'project-chapter-manager';
@@ -481,8 +485,23 @@
         decorateProjectsView();
       };
 
-      card.querySelector(':scope > .project-chapter-manager')?.remove();
-      if (expanded) card.appendChild(buildChapterManager(project.id, visual));
+      // Decoration runs again on several delayed events (load, work changes, view changes).
+      // Rebuilding an open list that has not changed replaced the rows under the writer —
+      // closing a ⋯ menu they had just opened, and, with a layout forced while the list was
+      // momentarily gone, pulling the page's scroll back. An unchanged list is kept as it is;
+      // its buttons act by id, so nothing in it goes stale.
+      const existing = card.querySelector(':scope > .project-chapter-manager');
+      if (expanded) {
+        const signature = managerSignature(project.id, visual);
+        if (!existing || existing.dataset.signature !== signature) {
+          existing?.remove();
+          const manager = buildChapterManager(project.id, visual);
+          manager.dataset.signature = signature;
+          card.appendChild(manager);
+        }
+      } else {
+        existing?.remove();
+      }
       card.classList.toggle('chapters-expanded', expanded);
     });
   }

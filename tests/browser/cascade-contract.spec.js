@@ -669,15 +669,23 @@ test('publishing groups by space, menus share one glyph, and the preview foot li
 
   // Every row menu sets 刪除's glyph in the same box.
   await page.locator('.publish-list-item .publish-more-btn').first().click();
-  const publishGlyph = await page.locator('.publish-row-overflow-menu:not([hidden]) button > span:first-child').first()
-    .evaluate(el => ({ width: getComputedStyle(el).width, fontSize: getComputedStyle(el).fontSize, label: getComputedStyle(el.parentElement).fontSize }));
+  const publishGlyph = { width: '18px', fontSize: '17px', label: '12.5px' };
+  await expect.poll(() => page.evaluate(() => {
+    const glyph = document.querySelector('.publish-row-overflow-menu:not([hidden]) button > span:first-child');
+    if (!glyph) return null;
+    return { width: getComputedStyle(glyph).width, fontSize: getComputedStyle(glyph).fontSize, label: getComputedStyle(glyph.parentElement).fontSize };
+  })).toEqual(publishGlyph);
   await page.keyboard.press('Escape');
   await page.locator('.nav-item[data-view="workspace"]').click();
   await page.locator('#chapterList .chapter-more-button').first().click();
-  const chapterGlyph = await page.locator('.chapter-row-action-menu:not([hidden]) .chapter-row-delete-menu-item > span:first-child').first()
-    .evaluate(el => ({ width: getComputedStyle(el).width, fontSize: getComputedStyle(el).fontSize, label: getComputedStyle(el.parentElement).fontSize }));
+  // The rail decorates its rows on its own turn after the view changes; read the menu once it
+  // has settled rather than the first frame after the click.
+  await expect.poll(() => page.evaluate(() => {
+    const glyph = document.querySelector('.chapter-row-action-menu:not([hidden]) .chapter-row-delete-menu-item > span:first-child');
+    if (!glyph) return null;
+    return { width: getComputedStyle(glyph).width, fontSize: getComputedStyle(glyph).fontSize, label: getComputedStyle(glyph.parentElement).fontSize };
+  })).toEqual(publishGlyph);
   await page.keyboard.press('Escape');
-  expect(publishGlyph).toEqual(chapterGlyph);
 
   // The preview's actions start where the manuscript box does: the shared layer used to pad
   // them 22px in as though they were still a dialog footer.
