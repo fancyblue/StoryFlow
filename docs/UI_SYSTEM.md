@@ -28,10 +28,24 @@ property with each other, so nothing renders differently, but a future rule plac
 two of them would resolve differently depending on what the user had done. Keep them
 free of shared properties, or give them a fixed order instead of a race.
 
-`node scripts/dead-declarations.mjs` reports declarations that cannot affect anything —
-same selector text, same property, both unconditional, one overriding the other by the
-recorded order. Cross-file pairs involving that indeterminate tail are excluded.
-`--apply` removes them and the rules they empty.
+`npm run test:css` fails on CSS that cannot affect anything, in two forms that are provable from the
+text alone:
+
+- `scripts/dead-selectors.mjs` — a selector that names a class or id nothing in the app produces.
+  Names built at run time from a prefix (`'is-' + state`) count as produced, and names inside
+  `:not()`, `:is()`, `:where()` and `:has()` are not judged.
+- `scripts/dead-declarations.mjs` — a declaration the same selector overrides later under the same
+  conditions (none, or the same `@media`/`@supports` chain) by the recorded order, and a rule with
+  no declarations at all. Cross-file pairs involving the indeterminate tail are excluded.
+
+Both take `--list` to explain and `--apply` to remove. The header connection chip is what they were
+written against: its markup was gone, but its rules were still spread across six stylesheets, and
+each of them looked like one more layer a change had to beat. The first pass removed 93 selectors,
+191 declarations and 82 empty rules — about 500 lines — and a computed-style comparison of every
+element in 87 states at 1440, 820 and 390px found none whose resolved style changed.
+
+When a change has to beat an existing rule, change that rule. A second rule with the same selector
+that wins is exactly what the check refuses, because it is how these layers grew.
 
 ## Hiding elements
 
@@ -130,7 +144,7 @@ regardless of what it was trying to say.
 
 **One value per role.** Before this palette the loaded stylesheets held 408 distinct colours,
 most of them a few percent of lightness apart: fifteen pale blues for "a surface", a dozen for
-"a line". They are now 33, and `npm run test:palette` fails on the thirty-fourth. Adding one is
+"a line". They are now 32, and `npm run test:palette` fails on the thirty-third. Adding one is
 a deliberate act — put it in `PALETTE` in `scripts/palette-contract.mjs` with the role it
 serves, and the diff records the decision.
 
@@ -289,7 +303,7 @@ how deep a level sits and what separates one row from the next. Works indented a
 | `.sf-hier-nest` | One `--sf-hier-step` (16px) of indent. Two levels down is two steps, and nothing is ever half a step |
 | `.sf-hier-row` | The hairline under a row, none under the last, and the 2px left gutter the current marker lives in |
 | `.sf-hier-head` | A level's header line: what the level is, then its count or controls at the far end |
-| `.sf-disclosure-chevron` | The chevron, pointing the same way for the same state |
+| `.sf-chevron` (in `styles/layers/ui-system.css`) | The chevron, pointing the same way for the same state |
 
 What a row *contains* stays each page's business. A chapter row on Works carries 編輯章節; a
 part row on Publishing carries 預覽與複製; neither belongs in the shared file.

@@ -51,20 +51,7 @@
   margin-left:auto!important;
 }
 
-/* The disclosure chevron. Both pages point it the same way for the same state; whether the
-   control also carries a label is the page's decision — a work row's expander is a named
-   action ("管理章節"), a chapter group's is not. */
-.sf-disclosure-chevron{
-  display:inline-block;
-  flex:0 0 auto;
-  width:9px;
-  height:9px;
-  margin-left:2px;
-  border-right:1.6px solid currentColor;
-  border-bottom:1.6px solid currentColor;
-  transform:rotate(45deg);
-  transform-origin:center;
-}
-[aria-expanded="true"] > .sf-disclosure-chevron{
-  transform:rotate(-135deg);
-}
+/* The disclosure chevron is the shared `.sf-chevron` in styles/layers/ui-system.css. Both
+   pages point it the same way for the same state; whether the control also carries a label
+   is the page's decision — a work row's expander is a named action ("管理章節"), a chapter
+   group's is not. */

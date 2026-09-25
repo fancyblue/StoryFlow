@@ -9,9 +9,12 @@
 // A declaration is reported dead only when that is provable:
 //   * its selector text matches another rule's exactly, so specificity is identical
 //     and load order plus importance fully decide the winner;
-//   * neither rule sits inside an at-rule, because a conditional rule and an
-//     unconditional one do not compete — removing the unconditional one would change
-//     what happens outside the condition;
+//   * both rules sit under the same conditions: none, or the same chain of `@media` and
+//     `@supports` preludes. A conditional rule and an unconditional one do not compete —
+//     removing the unconditional one would change what happens outside the condition —
+//     but two rules under one condition compete exactly as two unconditional ones do.
+//     Anything under another at-rule (`@keyframes` replaces whole blocks rather than
+//     declarations) is left alone;
 //   * neither stylesheet's position is indeterminate. The cascade order is not the
 //     document order — `ensureThemeOrder()` re-appends seven stylesheets to <head> at
 //     startup — but that startup order is fixed, so it is captured in
@@ -21,6 +24,8 @@
 //     ordinary use. Measured: confirming a split moves chapter-management.css from
 //     last to third-last. Cross-file pairs involving that tail are left alone.
 //
+// A rule with no declarations at all is reported as well; it is the limit case.
+//
 // Everything else is left alone. This finds the subset that can be removed without
 // changing a single resolved value; it does not attempt the larger question of which
 // layer should own a property.
@@ -29,10 +34,12 @@
 //   node scripts/dead-declarations.mjs --list    # every dead declaration
 //   node scripts/dead-declarations.mjs --json    # machine-readable
 //   node scripts/dead-declarations.mjs --apply   # remove them
+//   node scripts/dead-declarations.mjs --check   # fail when there is one (npm run test:css)
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tidyJunction } from './css-edit.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -79,7 +86,7 @@ function indeterminateStylesheets(order) {
 function parse(text) {
   const rules = [];
   let index = 0;
-  let atDepth = 0;
+  const atRules = [];
   let selectorStart = 0;
 
   const skipTrivia = () => {
@@ -105,7 +112,7 @@ function parse(text) {
     const char = text[index];
 
     if (char === '}') {
-      if (atDepth > 0) atDepth -= 1;
+      atRules.pop();
       index += 1;
       selectorStart = index;
       continue;
@@ -120,7 +127,7 @@ function parse(text) {
     index += 1;
 
     if (selector.startsWith('@')) {
-      atDepth += 1;
+      atRules.push(selector);
       selectorStart = index;
       continue;
     }
@@ -153,7 +160,24 @@ function parse(text) {
       index += 1;
     }
 
-    rules.push({ selector, declarations, conditional: atDepth > 0 });
+    // Where the rule's own text starts, past any whitespace and comments before it.
+    let start = selectorStart;
+    for (;;) {
+      while (start < text.length && /\s/.test(text[start])) start += 1;
+      if (!text.startsWith('/*', start)) break;
+      const end = text.indexOf('*/', start + 2);
+      start = end === -1 ? text.length : end + 2;
+    }
+    rules.push({
+      selector,
+      declarations,
+      start,
+      close: index,
+      // Whitespace inside a prelude carries no meaning: `@media(max-width:820px)` and
+      // `@media (max-width: 820px)` are one condition.
+      context: atRules.map(prelude => prelude.replace(/\s+/g, '').toLowerCase()).join(' | '),
+      comparable: atRules.every(prelude => /^@(media|supports)\b/i.test(prelude))
+    });
     index += 1;
     selectorStart = index;
   }
@@ -164,6 +188,7 @@ function parse(text) {
 const order = stylesheetsInLoadOrder();
 const sources = new Map();
 const declarations = [];
+const emptyRules = [];
 
 order.forEach((file, fileIndex) => {
   let text = '';
@@ -174,7 +199,11 @@ order.forEach((file, fileIndex) => {
   }
   sources.set(file, text);
   parse(text).forEach((rule, ruleIndex) => {
-    if (rule.conditional || !rule.selector) return;
+    // An empty rule is the limit case: nothing in it can win anything.
+    if (rule.comparable && rule.selector && !rule.declarations.length) {
+      emptyRules.push({ file, selector: rule.selector, context: rule.context });
+    }
+    if (!rule.comparable || !rule.selector) return;
     rule.declarations.forEach(decl => {
       if (!decl.property || decl.property.startsWith('--')) return;
       declarations.push({
@@ -182,6 +211,7 @@ order.forEach((file, fileIndex) => {
         fileIndex,
         ruleIndex,
         selector: rule.selector,
+        context: rule.context,
         property: decl.property,
         text: decl.text,
         start: decl.start,
@@ -194,7 +224,7 @@ order.forEach((file, fileIndex) => {
 
 const groups = new Map();
 for (const decl of declarations) {
-  const key = `${decl.selector}||${decl.property}`;
+  const key = `${decl.context}||${decl.selector}||${decl.property}`;
   if (!groups.has(key)) groups.set(key, []);
   groups.get(key).push(decl);
 }
@@ -224,24 +254,15 @@ if (process.argv.includes('--json')) {
   process.exit(0);
 }
 
-// Locate a rule's selector text so an emptied block can be removed whole.
-function findSelector(text, selector) {
-  const compact = selector.replace(/\s+/g, ' ');
-  let index = text.indexOf(compact);
-  if (index !== -1) return index;
-  const first = compact.split(' ')[0];
-  index = text.indexOf(first);
-  return index === -1 ? 0 : index;
-}
-
 if (process.argv.includes('--apply')) {
   const byFile = new Map();
   for (const decl of dead) {
     if (!byFile.has(decl.file)) byFile.set(decl.file, []);
     byFile.get(decl.file).push(decl);
   }
+  for (const rule of emptyRules) if (!byFile.has(rule.file)) byFile.set(rule.file, []);
   let removed = 0;
-  let emptyRules = 0;
+  let rulesRemoved = 0;
   for (const [file, list] of byFile) {
     let text = sources.get(file);
     // Splice from the end so earlier offsets stay valid.
@@ -253,40 +274,33 @@ if (process.argv.includes('--apply')) {
       while (start > 0 && /[ \t]/.test(text[start - 1])) start -= 1;
       if (text[start - 1] === '\n' && /^[ \t]*$/.test(text.slice(start, decl.start))) start -= 1;
       while (end < text.length && /[ \t]/.test(text[end])) end += 1;
-      text = text.slice(0, start) + text.slice(end);
+      text = tidyJunction(text.slice(0, start) + text.slice(end), start);
       removed += 1;
     }
-    // A rule whose every declaration was dead is now an empty block. It had an
-    // effect before and has none now, so it goes too — but only when this pass is
-    // what emptied it, leaving pre-existing empty rules and their comments alone.
-    const emptied = parse(text)
-      .map((rule, index) => ({ rule, index }))
-      .filter(({ rule }) => rule.declarations.length === 0);
-    if (emptied.length) {
-      const before = parse(sources.get(file));
-      const ranges = [];
-      for (const { rule, index } of emptied) {
-        if (!before[index] || before[index].selector !== rule.selector) continue;
-        if (before[index].declarations.length === 0) continue;
-        const open = text.indexOf('{', findSelector(text, rule.selector));
-        if (open === -1) continue;
-        const close = text.indexOf('}', open);
-        if (close === -1 || text.slice(open + 1, close).trim()) continue;
-        let start = findSelector(text, rule.selector);
-        let end = close + 1;
-        while (start > 0 && /[ \t]/.test(text[start - 1])) start -= 1;
-        if (text[start - 1] === '\n') start -= 1;
-        while (end < text.length && /[ \t]/.test(text[end])) end += 1;
-        ranges.push([start, end]);
-      }
-      for (const [start, end] of ranges.sort((a, b) => b[0] - a[0])) {
-        text = text.slice(0, start) + text.slice(end);
-        emptyRules += 1;
-      }
+    // A rule whose every declaration was dead is now an empty block, and it goes with the
+    // empty rules that were already there. The comment above one is left for a person: it
+    // may introduce the rules after it as well.
+    const empties = parse(text).filter(rule => rule.comparable && rule.selector && !rule.declarations.length);
+    for (const rule of empties.reverse()) {
+      let start = rule.start;
+      let end = rule.close + 1;
+      while (start > 0 && /[ \t]/.test(text[start - 1])) start -= 1;
+      if (text[start - 1] === '\n') start -= 1;
+      while (end < text.length && /[ \t]/.test(text[end])) end += 1;
+      text = tidyJunction(text.slice(0, start) + text.slice(end), start);
+      rulesRemoved += 1;
+    }
+    // So does an @media or @supports block left with nothing inside.
+    for (const match of [...text.matchAll(/@(media|supports)[^{]*\{\s*\}/g)].reverse()) {
+      let start = match.index;
+      while (start > 0 && /[ \t]/.test(text[start - 1])) start -= 1;
+      if (text[start - 1] === '\n') start -= 1;
+      text = tidyJunction(text.slice(0, start) + text.slice(match.index + match[0].length), start);
+      rulesRemoved += 1;
     }
     writeFileSync(join(root, file), text);
   }
-  console.log(`Removed ${removed} dead declaration(s) and ${emptyRules} rule(s) they emptied, across ${byFile.size} stylesheet(s).`);
+  console.log(`Removed ${removed} dead declaration(s) and ${rulesRemoved} empty rule(s), across ${byFile.size} stylesheet(s).`);
   process.exit(0);
 }
 
@@ -294,8 +308,27 @@ const byFile = new Map();
 for (const decl of dead) byFile.set(decl.file, (byFile.get(decl.file) || 0) + 1);
 const deadImportant = dead.filter(decl => decl.important).length;
 
-console.log(`Declarations parsed (unconditional rules only): ${declarations.length}`);
+if (process.argv.includes('--check')) {
+  if (emptyRules.length) {
+    console.error(`Empty rules: ${emptyRules.length} rule(s) with no declarations.`);
+    for (const rule of emptyRules) console.error(`  ${rule.file} :: ${rule.selector}${rule.context ? ` inside ${rule.context}` : ''}`);
+  }
+  if (dead.length) {
+    console.error(`Dead declarations: ${dead.length} declaration(s) lose to the same selector setting the same property later.`);
+    for (const decl of dead) {
+      const where = decl.context ? ` inside ${decl.context}` : '';
+      console.error(`  ${decl.file} :: ${decl.selector}${where}\n      dead: ${decl.text}\n      wins: ${decl.winnerText}  (${decl.winnerFile})`);
+    }
+    console.error('Change the rule that wins instead of adding one that loses, or run `node scripts/dead-declarations.mjs --apply`.');
+  }
+  if (dead.length || emptyRules.length) process.exit(1);
+  console.log(`Dead declarations: none among ${declarations.length} declarations under comparable conditions.`);
+  process.exit(0);
+}
+
+console.log(`Declarations parsed (unconditional or under @media/@supports): ${declarations.length}`);
 console.log(`Provably dead: ${dead.length}, of which ${deadImportant} carry !important`);
+console.log(`Empty rules: ${emptyRules.length}`);
 console.log('\nBy file:');
 for (const [file, count] of [...byFile.entries()].sort((a, b) => b[1] - a[1])) {
   console.log(`  ${String(count).padStart(4)}  ${file}`);
@@ -304,7 +337,7 @@ for (const [file, count] of [...byFile.entries()].sort((a, b) => b[1] - a[1])) {
 if (process.argv.includes('--list')) {
   console.log('\nEvery dead declaration (overridden later at equal specificity):');
   for (const decl of dead) {
-    console.log(`  ${decl.file} :: ${decl.selector}`);
+    console.log(`  ${decl.file} :: ${decl.selector}${decl.context ? `  [${decl.context}]` : ''}`);
     console.log(`      dead: ${decl.text}`);
     console.log(`      wins: ${decl.winnerText}  (${decl.winnerFile})`);
   }

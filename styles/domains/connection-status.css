@@ -12,24 +12,6 @@
 }
 
 @media (min-width:821px){
-  /* Primary navigation should read before the utility strip. */
-  .sidebar .nav{
-    gap:10px!important;
-  }
-  .sidebar .nav-item{
-    min-height:48px!important;
-    padding:12px 14px!important;
-    gap:12px!important;
-    font-size:17px!important;
-    font-weight:700!important;
-    line-height:1!important;
-  }
-  .sidebar .nav-item span{
-    font-size:17px!important;
-    font-weight:700!important;
-    line-height:1!important;
-  }
-
   /* Keep Google / folder / settings / logout on one line in the 250px sidebar.
      The strip is the sidebar footer, so auto margin absorbs all remaining vertical
      space and keeps connection/session actions anchored to the bottom edge. */
@@ -148,101 +130,16 @@
   }
 }
 
-/* Header status should read like a compact utility control, not a primary CTA. */
-.topbar .top-connection-status{
-  gap:6px!important;
-  margin-right:6px!important;
-}
-.topbar .top-connection-status .connection-chip,
-.topbar .top-connection-status .connection-chip.connected,
-.topbar .top-connection-status .connection-chip.restoring{
-  min-height:36px!important;
-  height:36px!important;
-  padding:0 10px!important;
-  gap:7px!important;
-  border:1px solid #c8c1b0!important;
-  border-radius:10px!important;
-  background:#fbfaf6!important;
-  color:var(--denim-800,#4b4557)!important;
-  box-shadow:none!important;
-  font-size:13px!important;
-  line-height:1!important;
-}
-.topbar .top-connection-status .connection-chip:hover,
-.topbar .top-connection-status .connection-chip:focus-visible,
-.topbar .top-connection-status .connection-chip.connected:hover,
-.topbar .top-connection-status .connection-chip.connected:focus-visible{
-  border-color:#c8c1b0!important;
-  background:#f4f1e9!important;
-  color:var(--denim-900,#221f1a)!important;
-  outline:none!important;
-}
-.topbar .top-connection-status .connection-chip-label{
-  color:#6a6357!important;
-  font-size:13px!important;
-  font-weight:500!important;
-  line-height:1!important;
-}
-.topbar .top-connection-status .connection-chip-state,
-.topbar .top-connection-status .connection-chip.connected .connection-chip-state,
-.topbar .top-connection-status .connection-chip.restoring .connection-chip-state{
-  color:var(--denim-900,#221f1a)!important;
-  font-size:13px!important;
-  font-weight:700!important;
-  line-height:1!important;
-}
-.topbar .top-connection-status .connection-chip .connection-chip-dot{
-  width:8px!important;
-  height:8px!important;
-  flex:0 0 8px!important;
-  background:transparent!important;
-  box-shadow:inset 0 0 0 2px var(--connection-off),0 0 0 3px rgba(168,68,58,.13)!important;
-}
-.topbar .top-connection-status .connection-chip.connected .connection-chip-dot{
-  background:var(--connection-on)!important;
-  box-shadow:0 0 0 3px rgba(89,112,63,.13)!important;
-}
-.topbar .top-connection-status .connection-chip.restoring .connection-chip-dot{
-  background:var(--connection-restoring)!important;
-  box-shadow:0 0 0 3px rgba(138,101,38,.13)!important;
-}
-.topbar #storyflowLogoutBtn.connection-logout{
-  min-height:36px!important;
-  height:36px!important;
-  padding:0 11px!important;
-  border:1px solid #c8c1b0!important;
-  border-radius:10px!important;
-  background:#fbfaf6!important;
-  color:var(--danger,#a8443a)!important;
-  font-size:13px!important;
-  font-weight:700!important;
-  line-height:1!important;
-}
-.topbar #storyflowLogoutBtn.connection-logout[hidden],
 #sidebarConnectionStatus .sidebar-logout[hidden]{
   display:none!important;
-}
-.topbar #storyflowLogoutBtn.connection-logout:hover,
-.topbar #storyflowLogoutBtn.connection-logout:focus-visible{
-  border-color:#e6cdc7!important;
-  background:var(--danger-soft,#f6e9e6)!important;
-  color:#a8443a!important;
-  outline:none!important;
 }
 .topbar .save-state{
   font-weight:700!important;
   line-height:1.2!important;
 }
 
-/* On narrower desktop widths, keep the compact state/action text and let the
-   existing layout hide the service label when necessary. */
+/* On narrower desktop widths the save state steps down with the rest of the header. */
 @media (min-width:821px) and (max-width:1100px){
-  .topbar .top-connection-status .connection-chip{
-    padding-inline:8px!important;
-  }
-  .topbar .top-connection-status .connection-chip-label,
-  .topbar .top-connection-status .connection-chip-state,
-  .topbar #storyflowLogoutBtn.connection-logout,
   .topbar .save-state{
     font-size:12.5px!important;
   }

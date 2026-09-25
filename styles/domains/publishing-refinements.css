@@ -25,7 +25,6 @@
   overflow:visible!important;
 }
 #publishingView .publishing-project-group:last-child{margin-bottom:0!important}
-#publishingView .publishing-project-group-current,
 #publishingView .publishing-project-group:has(.publishing-project-current){
   border-color:#c8c1b0!important;
 }

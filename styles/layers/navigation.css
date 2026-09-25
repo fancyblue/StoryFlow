@@ -25,11 +25,8 @@
 @media(max-width:820px){
   /* Settings already has the dedicated gear below; do not duplicate it in the bottom primary nav. */
   .nav .nav-item[data-view="settings"]{display:none!important}
-  .sidebar .nav{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 
   .sidebar-settings-button{
-    border:0!important;
-    background:transparent!important;
     box-shadow:none!important;
   }
 }

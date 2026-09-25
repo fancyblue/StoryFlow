@@ -34,23 +34,21 @@ h3{letter-spacing:-.01em}
 .muted,.save-state{color:var(--muted)}
 
 /* One interaction language across the app. */
-.button,.icon-button,.nav-item,.connection-chip,.publishing-filter,.source-choice,.tab-choice{
+.button,.icon-button,.nav-item,.publishing-filter,.source-choice,.tab-choice{
   transition:background-color .14s ease,border-color .14s ease,color .14s ease,box-shadow .14s ease;
 }
 .button,.icon-button{
   border-radius:10px;
   box-shadow:none;
 }
-.button{}
 .button.primary:hover{background:var(--primary-hover);border-color:var(--primary-hover)}
 .button.ghost:hover{background:#fbfaf6;border-color:#c8c1b0}
-.button:focus-visible,.icon-button:focus-visible,.nav-item:focus-visible,.connection-chip:focus-visible,
+.button:focus-visible,.icon-button:focus-visible,.nav-item:focus-visible,
 .publishing-filter:focus-visible,.source-choice:focus-visible,.tab-choice:focus-visible,
 .chapter-main-button:focus-visible,.project-library-card button:focus-visible{
   outline:none;
   box-shadow:var(--focus);
 }
-.icon-button{}
 
 .text-input,.title-input,.range-grid input,select,textarea{
   border-color:var(--line-strong);
@@ -68,7 +66,6 @@ h3{letter-spacing:-.01em}
   border-color:var(--line);
   border-radius:var(--radius-card);
 }
-.panel{}
 
 /* Consistent page headers. */
 .topbar,.projects-page-head,.publishing-page-head,.settings-page-head{
@@ -152,21 +149,17 @@ h3{letter-spacing:-.01em}
 }
 
 /* Works library: title first, actions second, destructive action stays visually quiet. */
-.project-library-card{}
 .project-library-actions .button{min-height:36px}
 .project-library-delete{border-color:transparent!important;background:transparent!important}
 
 /* Publishing: scanning speed matters more than decorative chrome. */
-.publishing-stats{gap:9px;margin-bottom:14px}
-.publishing-stats article{padding:12px 14px;box-shadow:none}
-.publishing-stats strong{font-size:21px}
-.publishing-filter{}
+.publishing-stats{margin-bottom:14px}
+.publishing-stats article{box-shadow:none}
 .publishing-dashboard-panel>.panel-head{padding:15px 17px 13px}
 .publish-overall-status{min-height:26px}
 .publish-platform-details{background:#fbfaf6}
 
 /* Settings: integration cards first, publishing section full-width, no giant nested box. */
-.settings-view .settings-section{}
 .settings-view .settings-section>strong{letter-spacing:-.01em}
 .settings-view .settings-section p{max-width:720px;color:var(--muted)}
 .settings-view .settings-section:has(#googleClientIdInput),
@@ -231,44 +224,30 @@ dialog::backdrop{backdrop-filter:blur(2px)}
 }
 
 @media(max-width:820px){
-  .main{padding:16px 14px calc(88px + env(safe-area-inset-bottom))}
   .app-view{width:100%}
   h1{font-size:25px}
   .topbar,.projects-page-head,.publishing-page-head,.settings-page-head{min-height:0;margin-bottom:16px}
 
-  /* Desktop keeps Settings in the utility footer; mobile needs it in the persistent bottom navigation. */
-  .nav .nav-item[data-view="settings"]{display:flex!important}
-  .sidebar .nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-
   .workspace-grid,.workspace-grid.imported-source-mode{grid-template-columns:1fr!important;gap:12px}
-  .source-panel{position:static;max-height:none;overflow:visible}
-  .panel{padding:16px!important}
-  
-  
-  
+  .source-panel{max-height:none;overflow:visible}
+
   .projects-page-head,.publishing-page-head,.settings-page-head{flex-direction:column;gap:10px}
-  .project-library-card{padding:14px}
-  .publishing-stats{grid-template-columns:1fr 1fr}
   .settings-view .settings-page-form{grid-template-columns:1fr!important;gap:12px}
   .settings-view .settings-section,.settings-view .security-note{grid-column:1!important}
-  .settings-view .settings-section{padding:17px!important}
   .settings-view .settings-section:has(#defaultIndent){padding:18px!important}
   .settings-view .platform-add-row{grid-template-columns:1fr!important;width:100%!important}
   .settings-view .platform-add-row .button{width:100%}
   .settings-view .platform-format-controls{grid-template-columns:1fr!important;gap:10px!important}
-  .settings-view .platform-setting-row{grid-template-columns:1fr!important;gap:8px!important}
-  .settings-view .security-note{padding-left:42px!important}
 }
 
 @media(max-width:560px){
   .button{min-height:42px}
   .workspace-publishing-summary{align-items:stretch}
-  .project-library-actions{grid-template-columns:1fr 1fr!important}
   .project-library-actions .project-library-delete{grid-column:1/-1}
   .publishing-filters{width:100%}
   .publishing-filter{flex:1 1 auto;text-align:center}
 }
 
 @media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+  *,*::before,*::after{transition:none!important;animation:none!important}
 }

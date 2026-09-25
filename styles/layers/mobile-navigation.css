@@ -7,95 +7,30 @@
 
   .sidebar {
     display: grid !important;
-    grid-template-rows: 48px 40px;
-    gap: 5px !important;
-    padding: 6px max(10px, env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)) !important;
   }
 
-  .sidebar .nav {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 5px !important;
-  }
-
-  .sidebar .nav-item {
-    min-height: 48px !important;
-    padding: 6px 4px !important;
-    border-radius: 12px !important;
-  }
-
-  /* Two equal status columns + one deliberately sized utility group.
-     Giving Settings/Logout real width keeps the footer from feeling left-heavy. */
+  /* Two equal status columns + one deliberately sized utility group; the column sizes
+     are set in styles/layers/ui-system.css. */
   .sidebar-connection-status {
     display: grid !important;
-    grid-template-columns: minmax(0,1fr) minmax(0,1fr) 86px !important;
     align-items: center !important;
-    gap: 6px !important;
     margin: 0 !important;
     padding: 4px 0 0 !important;
-    border-top: 1px solid var(--line) !important;
   }
 
   .sidebar-connection-row {
     min-width: 0 !important;
-    min-height: 36px !important;
-    padding: 4px 6px !important;
-    border-radius: 8px !important;
   }
 
   .sidebar-connection-copy {
     min-width: 0 !important;
-    gap: 5px !important;
-  }
-
-  .sidebar-connection-copy small {
-    max-width: none !important;
-    overflow: hidden !important;
-    font-size: 11px !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-
-  .sidebar-status-dot {
-    width: 7px !important;
-    height: 7px !important;
   }
 
   .sidebar-utility-actions {
-    display: grid !important;
-    grid-template-columns: repeat(2, 40px) !important;
-    align-items: center !important;
-    justify-content: end !important;
     justify-self: end !important;
-    gap: 6px !important;
-    width: 86px !important;
     margin-left: 0 !important;
   }
 
-  .sidebar-settings-button,
-  .sidebar-logout {
-    width: 40px !important;
-    min-width: 40px !important;
-    min-height: 40px !important;
-  }
-
-  .sidebar-settings-button {
-    font-size: 19px !important;
-  }
-
-  .sidebar-logout {
-    font-size: 17px !important;
-  }
-
-  /* Reserve exactly the fixed footer footprint, without wasting a large blank band. */
-  .main {
-    padding-bottom: calc(var(--storyflow-mobile-nav-height) + 16px + env(safe-area-inset-bottom)) !important;
-  }
-
-  .storyflow-toast-stack {
-    bottom: calc(var(--storyflow-mobile-nav-height) + 8px + env(safe-area-inset-bottom)) !important;
-  }
 }
 
 @media (max-width: 390px) {
@@ -108,32 +43,10 @@
   }
 
   .sidebar-connection-status {
-    grid-template-columns: minmax(0,1fr) minmax(0,1fr) 82px !important;
     gap: 4px !important;
   }
 
   .sidebar-connection-row {
     padding-inline: 5px !important;
-  }
-
-  .sidebar-connection-copy b {
-    display: none !important;
-  }
-
-  .sidebar-connection-copy small {
-    font-size: 10px !important;
-  }
-
-  .sidebar-utility-actions {
-    grid-template-columns: repeat(2, 38px) !important;
-    gap: 4px !important;
-    width: 82px !important;
-  }
-
-  .sidebar-settings-button,
-  .sidebar-logout {
-    width: 38px !important;
-    min-width: 38px !important;
-    min-height: 38px !important;
   }
 }

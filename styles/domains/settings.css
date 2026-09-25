@@ -60,7 +60,6 @@
   border-radius:16px;
   background:#fbfaf6;
 }
-.settings-view .settings-section{}
 .settings-view .settings-section>strong{
   display:block;
 }
@@ -168,11 +167,6 @@
 }
 .sidebar-connection-row:hover,
 .sidebar-connection-row:focus-visible{background:rgba(255,255,255,.08)!important}
-.sidebar-status-dot{
-  width:6px!important;
-  height:6px!important;
-  flex:0 0 auto;
-}
 .sidebar-connection-copy{
   display:block!important;
   min-width:0;
@@ -200,8 +194,6 @@
   font:inherit;
   cursor:pointer;
 }
-.sidebar-settings-button{
-}
 .sidebar-settings-button:hover,
 .sidebar-settings-button:focus-visible,
 .sidebar-settings-button.active{
@@ -215,7 +207,6 @@
   min-height:30px!important;
   border:0;
   background:transparent!important;
-  color:#f6e9e6!important;
   font-size:13px!important;
 }
 .sidebar-settings-label,
@@ -304,7 +295,6 @@
 
 @media(max-width:620px){
   .settings-view .platform-add-row{grid-template-columns:1fr auto}
-  .settings-view .platform-setting-row{grid-template-columns:1fr!important;gap:8px!important}
 }
 
 /* --- backup-center.css --- */

@@ -179,9 +179,6 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 #sidebarConnectionStatus .sidebar-connection-copy small{font-size:12px!important;font-weight:700!important}
 #sidebarConnectionStatus .sidebar-settings-button,#sidebarConnectionStatus .sidebar-logout{width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;border-radius:9px!important}
 #sidebarConnectionStatus .sidebar-settings-button>.sidebar-utility-icon,#sidebarConnectionStatus .sidebar-logout>.sidebar-utility-icon,#sidebarConnectionStatus .sidebar-settings-button svg,#sidebarConnectionStatus .sidebar-logout svg{width:19px!important;height:19px!important}
-.topbar .top-connection-status .connection-chip,.topbar #storyflowLogoutBtn.connection-logout{height:36px!important;min-height:36px!important;border-radius:10px!important;font-size:13px!important}
-.topbar .top-connection-status .connection-chip{background:var(--sf-surface-soft)!important;border-color:#c8c1b0!important;color:var(--sf-text)!important}
-.topbar .top-connection-status .connection-chip-label,.topbar .top-connection-status .connection-chip-state{font-size:13px!important}
 .topbar .save-state{font-size:13px!important}
 
 /* Source workflow */
@@ -243,7 +240,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 
 /* Publishing */
 .publishing-project-badge{padding:10px 12px!important;border-radius:12px!important}
-.publishing-project-field>span,.publishing-project-badge>span{font-size:12px!important;font-weight:700!important;color:var(--sf-muted)!important}
+.publishing-project-badge>span{font-size:12px!important;font-weight:700!important;color:var(--sf-muted)!important}
 .publishing-toolbar{gap:12px!important;margin-bottom:14px!important}
 .publishing-filters{gap:7px!important}
 .publishing-filter{min-height:34px!important;padding:0 11px!important;border:1px solid var(--sf-border)!important;border-radius:999px!important;background:#fbfaf6!important;color:var(--sf-muted)!important;font-size:13px!important;font-weight:700!important}
@@ -300,15 +297,13 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .panel{padding:18px!important;border-radius:15px!important}
   .topbar{padding-right:0!important}
   .topbar .top-actions{position:static!important;width:100%!important;justify-content:flex-end!important}
-  .topbar .top-connection-status{display:none!important}
   .topbar .save-state{font-size:13px!important}
   .button{min-height:44px!important;font-size:14px!important}
   .button.tiny,.project-library-actions .button,.publish-list-actions .button,.source-linked-actions .button{height:40px!important;min-height:40px!important;font-size:13px!important}
   .text-input,.range-grid input,.compact-select,select.text-input,input.text-input{height:44px!important;min-height:44px!important;font-size:14px!important}
   .field-label{font-size:13px!important}
-  .sidebar{grid-template-rows:50px 34px!important;gap:4px!important;padding:5px max(8px,env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;background:var(--sf-text)!important}
-  .sidebar .nav{gap:5px!important}
-  .sidebar .nav-item{min-height:50px!important;padding:5px 4px!important;border-radius:11px!important;font-size:18px!important}
+  .sidebar{background:var(--sf-text)!important}
+  .sidebar .nav-item{border-radius:11px!important;font-size:18px!important}
   .sidebar .nav-item span{font-size:13.5px!important;font-weight:700!important}
   .sidebar-connection-status{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 74px!important;gap:4px!important;padding-top:3px!important}
   .sidebar-connection-row{height:32px!important;min-height:32px!important;padding:0 4px!important;border-radius:7px!important}
