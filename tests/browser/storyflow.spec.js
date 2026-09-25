@@ -221,7 +221,9 @@ test('primary action scale and navigation icon language stay consistent', async 
   expect(previewStyle.backgroundColor).toBe('rgb(251, 250, 246)');
   await rowManage.click();
   await expect(publishingRow.getByRole('button', { name: /收合.*發布平台/ })).toBeVisible();
-  expect(await controlStyle(publishingRow.locator('.publish-manage-btn'))).toMatchObject({
+  // The button transitions its fill, so read the value it settles on rather than whichever
+  // frame of the transition the first reading happens to catch.
+  await expect.poll(() => controlStyle(publishingRow.locator('.publish-manage-btn'))).toMatchObject({
     backgroundColor: 'rgb(232, 229, 235)',
     color: 'rgb(34, 31, 26)'
   });
@@ -350,7 +352,8 @@ test('desktop pages stay bounded from laptop through extended-monitor widths', a
     for (const view of ['projects', 'publishing']) {
       await page.locator(`.nav-item[data-view="${view}"]`).click();
       await expect(page.locator(`#${view}View`)).toBeVisible();
-      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(size.width);
+      // The view re-renders on its own turn after the switch; measure the page it settles into.
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(size.width);
     }
 
     await page.locator('#sidebarSettingsBtn').click();
@@ -636,7 +639,7 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   expect(newWorkStyle.height).toBeLessThanOrEqual(42);
   expect(newWorkStyle.fontSize).toBeGreaterThanOrEqual(14);
   expect(newWorkStyle.width / newWorkStyle.height).toBeLessThan(3.2);
-  expect(await page.locator('#projectsNewWorkBtn').evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(251, 250, 246)');
+  await expect.poll(() => page.locator('#projectsNewWorkBtn').evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(251, 250, 246)');
   expect(pageErrors).toEqual([]);
 });
 
@@ -1015,9 +1018,9 @@ test('mobile editing remains read-only when workspace reload fails', async ({ pa
 
   await page.getByRole('switch', { name: '允許本次手機編輯', exact: true }).click();
   await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'readonly');
-  expect(await page.evaluate(() => fixtureLastNotify)).toContain('無法從資料夾重新載入');
+  await expect.poll(() => page.evaluate(() => fixtureLastNotify)).toContain('無法從資料夾重新載入');
   await expect(page.locator('#projectTitle')).toHaveJSProperty('readOnly', true);
-  expect(await page.evaluate(() => fixtureCalls.rehydrate)).toBe(1);
+  await expect.poll(() => page.evaluate(() => fixtureCalls.rehydrate)).toBe(1);
   expect(pageErrors).toEqual([]);
 });
 
@@ -1032,8 +1035,8 @@ test('mobile editing stays enabled when returning to read-only cannot save', asy
 
   await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'editing');
   await expect(page.locator('#mobileSafeModeIndicator')).toHaveText('可編輯');
-  expect(await page.evaluate(() => fixtureLastNotify)).toContain('尚未切回唯讀');
-  expect(await page.evaluate(() => fixtureCalls.flush)).toBe(1);
+  await expect.poll(() => page.evaluate(() => fixtureLastNotify)).toContain('尚未切回唯讀');
+  await expect.poll(() => page.evaluate(() => fixtureCalls.flush)).toBe(1);
   expect(pageErrors).toEqual([]);
 });
 
@@ -1919,7 +1922,8 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(page.locator('#visualEntryTitle')).toBeFocused();
   await expect(page.locator('#visualNewEntryBtn')).toBeVisible();
   expect(await page.locator('#visualNewEntryBtn').evaluate(button => Boolean(button.closest('.visual-entry-list-panel')))).toBe(true);
-  expect(await page.locator('.visual-entry-list-panel').evaluate(panel => {
+  // Geometry after an edit re-renders the list: poll the settled layout, not one frame of it.
+  await expect.poll(() => page.locator('.visual-entry-list-panel').evaluate(panel => {
     const list = panel.querySelector('#visualEntryList').getBoundingClientRect();
     const button = panel.querySelector('#visualNewEntryBtn').getBoundingClientRect();
     return button.top >= list.bottom;
@@ -2909,5 +2913,16 @@ test('a finished chapter says so, and the reading view centres its scene markers
   const empty = page.locator('#suggestionEmpty');
   await expect(empty).toBeVisible();
   await expect(empty.locator('strong')).toHaveText('這一章已全部切完');
+
+  // A longform article's summary is written in 摘要與 Hashtags, so that is where an empty one
+  // points — not at the visual editor, which an article does not have — and the tool's own
+  // placeholder speaks of an article.
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  const row = page.locator('.publish-list-item').first();
+  await row.locator('.publish-manage-btn').click();
+  await row.locator('.publish-platform-choose').filter({ hasText: '巴哈小屋' }).click();
+  await expect(row.locator('#copyPlatformSummary small')).toHaveText('在「摘要與 Hashtags」設定');
+  await row.getByRole('button', { name: '摘要與 Hashtags', exact: true }).click();
+  await expect(page.locator('.visual-publish-summary-input')).toHaveAttribute('placeholder', '簡短介紹這篇文章');
   expect(pageErrors).toEqual([]);
 });

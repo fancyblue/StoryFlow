@@ -160,7 +160,8 @@
   border-color:#968f80!important;
   background:#e8e5eb!important;
   color:var(--denim-900,#221f1a)!important;
-  box-shadow:inset 3px 0 0 var(--denim-700,#4b4557)!important;
+  /* Open is shown by the tint, as on Publishing's 收合發布; no inset bar. */
+  box-shadow:none!important;
 }
 
 /* Publishing progress + its management action live together inside the metadata row.
@@ -238,18 +239,28 @@
   box-shadow:0 14px 34px rgba(34,31,26,.16);
 }
 .project-library-overflow-menu[hidden]{display:none!important}
+/* Every row menu sets its glyph in the same 18px box as the chapter and entry menus, so
+   刪除 reads the same size wherever the ⋯ that opened it sits. */
+.project-library-overflow-menu button > span:first-child{
+  display:grid;
+  place-items:center;
+  width:18px;
+  height:18px;
+  font-size:17px;
+  line-height:1;
+}
 .project-library-overflow-menu button{
   display:flex;
   align-items:center;
   gap:8px;
   width:100%;
   min-height:36px;
-  padding:7px 10px;
+  padding:7px 9px;
   border:0;
   border-radius:7px;
   background:transparent;
   color:#a8443a;
-  font-size:12px;
+  font-size:12.5px;
   font-weight:700;
   text-align:left;
 }
@@ -336,8 +347,14 @@
     display:grid!important;
     grid-template-columns:1fr 1fr 36px!important;
   }
-  .project-library-actions > .project-open-btn{grid-column:1!important;width:100%!important}
-  .project-library-actions > .project-manage-chapters-btn{grid-column:2!important;width:100%!important}
+  /* 開啟 | 管理發布 | ⋯ on the first line — the order Publishing's rows use — and the chapter
+     disclosure across the whole second line, directly above the list it opens. It used to
+     land alone in the right half of that line, leaving the left half empty. */
+  .project-library-actions > .project-open-btn{grid-column:1!important;grid-row:1!important;width:100%!important}
+  .project-library-actions > .project-publish-btn{grid-column:2!important;grid-row:1!important;width:100%!important}
+  /* 1 / 4, not 1 / -1: a shared layer redefines this grid as two explicit columns, so ⋯'s
+     column is implicit and -1 would stop short of it. */
+  .project-library-actions > .project-manage-chapters-btn{grid-column:1 / 4!important;grid-row:2!important;width:100%!important}
   .project-library-more-btn{
     grid-column:3!important;
     grid-row:1!important;

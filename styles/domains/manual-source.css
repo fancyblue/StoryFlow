@@ -135,13 +135,18 @@
     min-height:140px!important;
     height:auto!important;
   }
+  /* The secondary actions share the first line, however many of them are showing; the
+     primary takes the whole last line under the thumb. A two-column grid left 確定新增 alone
+     in the bottom-left half whenever three buttons were showing. */
   #manualSourceDialog#manualSourceDialog .source-flow-actions,
   #manualSourceDialog#manualSourceDialog .manual-source-actions{
-    display:grid!important;
-    grid-template-columns:1fr 1fr!important;
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:10px!important;
     width:100%!important;
     margin:14px 0 0!important;
     padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px))!important;
   }
-  #manualSourceDialog#manualSourceDialog .source-flow-actions .button{width:100%!important}
+  #manualSourceDialog#manualSourceDialog .source-flow-actions .button{flex:1 1 0!important;width:auto!important;min-width:0!important}
+  #manualSourceDialog#manualSourceDialog .source-flow-actions .button.primary{flex-basis:100%!important;order:99}
 }
