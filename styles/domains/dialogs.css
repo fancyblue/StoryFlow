@@ -43,6 +43,33 @@ dialog form.dialog-card > .panel-head:first-child .icon-button,
   background: #fbfaf6;
 }
 
+/* One dialog head. The flow dialogs, Settings and the publication record already run their
+   head's rule to the card's edges; the compact dialogs kept theirs inside the card's 24px
+   padding, so the same line was full-width in one dialog and inset in the next. They now
+   bleed the head (and the preview's action rule) to the edges the same way. */
+/* The head is sticky, and a sticky element is held inside its card's content box, so a
+   negative top margin was undone and the head slid down over the first field. The card
+   drops its top padding instead, and the head only reaches out sideways. */
+:is(.visual-type-dialog, .visual-entry-dialog, .visual-image-dialog) .dialog-card:has(> .panel-head:first-child),
+.visual-entry-preview-card:has(> .panel-head:first-child),
+.article-image-remove-card:has(> .panel-head:first-child),
+.workspace-recovery-card:has(> .panel-head:first-child),
+#tabDialog .tab-dialog:has(> .panel-head:first-child) {
+  padding-top: 0 !important;
+}
+:is(.visual-type-dialog, .visual-entry-dialog, .visual-image-dialog) .dialog-card > .panel-head:first-child,
+.visual-entry-preview-card > .panel-head:first-child,
+.article-image-remove-card > .panel-head:first-child,
+.workspace-recovery-card > .panel-head:first-child,
+#tabDialog .tab-dialog > .panel-head:first-child {
+  margin: 0 -24px 18px !important;
+  padding: 20px 24px 16px !important;
+}
+.visual-entry-preview-card .visual-dialog-actions {
+  margin-inline: -24px !important;
+  padding-inline: 24px !important;
+}
+
 #settingsDialog {
   width: min(760px, calc(100vw - 24px));
   height: min(88dvh, 900px);

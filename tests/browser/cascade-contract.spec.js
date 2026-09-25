@@ -742,3 +742,58 @@ test('on a phone the works row and the manual form keep their primary actions wh
   });
   expect(primary).toEqual({ fullWidth: true, last: true });
 });
+
+// Toasts sat in the bottom-right corner, which is where each page keeps its main action, and
+// covered 確認並存成 Markdown two or three deep after adding an article. On a desktop they
+// now sit at the top of the content column; phones keep them above the bottom navigation.
+test('toasts stay clear of the page actions', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+  await page.evaluate(() => window.notify?.('契約提示'));
+  const toast = page.locator('.storyflow-toast', { hasText: '契約提示' });
+  await expect(toast).toBeVisible();
+  const desktop = await toast.evaluate(node => {
+    const box = node.getBoundingClientRect();
+    const confirm = document.getElementById('confirmBtn').getBoundingClientRect();
+    const title = document.querySelector('#workspaceView h1').getBoundingClientRect();
+    const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+    // Earlier toasts from creating the work may still be stacked above this one.
+    const stack = node.closest('.storyflow-toast-stack').getBoundingClientRect();
+    return { nearTop: stack.top < 40, overConfirm: overlaps(box, confirm), overTitle: overlaps(box, title) };
+  });
+  expect(desktop).toEqual({ nearTop: true, overConfirm: false, overTitle: false });
+
+  await page.setViewportSize(PHONE);
+  await page.evaluate(() => window.notify?.('手機提示'));
+  const phoneToast = page.locator('.storyflow-toast', { hasText: '手機提示' });
+  await expect(phoneToast).toBeVisible();
+  const phone = await phoneToast.evaluate(node => {
+    const box = node.getBoundingClientRect();
+    const nav = document.querySelector('.sidebar .nav').getBoundingClientRect();
+    return { aboveNav: box.bottom <= nav.top + 1, lowerHalf: box.top > innerHeight / 2 };
+  });
+  expect(phone).toEqual({ aboveNav: true, lowerHalf: true });
+});
+
+// The compact dialogs kept their head's rule inside the card's padding while every other
+// dialog ran it to the edges. And the split preferences opened with a second 切篇偏好 under
+// the disclosure that already says it.
+test('compact dialog heads run to the edge, and split preferences do not repeat their name', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+  await page.locator('#splitPreferencesToggle').click();
+  await expect(page.locator('#smartSplitMiniSettings')).toBeVisible();
+  await expect(page.locator('#smartSplitMiniSettings .smart-split-settings-label')).toHaveCount(0);
+  await expect(page.locator('#smartSplitMiniSettings')).toHaveAttribute('aria-label', '切篇偏好');
+
+  await visualWorkspace(page);
+  await page.locator('#visualNewEntryBtn').click();
+  const head = page.locator('.visual-entry-dialog .dialog-card > .panel-head').first();
+  await expect(head).toBeVisible();
+  const edges = await head.evaluate(node => {
+    const card = node.closest('.dialog-card').getBoundingClientRect();
+    const box = node.getBoundingClientRect();
+    return { left: Math.round(box.left - card.left), right: Math.round(card.right - box.right), rule: getComputedStyle(node).borderBottomWidth };
+  });
+  expect(edges).toEqual({ left: 0, right: 0, rule: '1px' });
+});

@@ -1,11 +1,10 @@
 // Publishing project filter.
 // The publishing view can browse several works at once without repeatedly switching the app state.
-// It reads workspace.json only on explicit lifecycle events, then reuses the in-memory snapshot.
+// It reads every work from the in-memory project store — the same source Works and search read,
+// and the one workspace.json is written from. It used to re-read workspace.json from the folder
+// instead, so for the moment between an edit and its write the queue could show an older copy of
+// the other works than every other page did.
 (function () {
-  const DB_NAME = 'storyflow-connections-v1';
-  const STORE_NAME = 'handles';
-  const HANDLE_KEY = 'storyflow-output-directory';
-  const WORKSPACE_FILE = 'workspace.json';
 
   let workspaceSnapshot = null;
   let selectedProjectIds = new Set();
@@ -14,7 +13,6 @@
   let initializedSelection = false;
   let knownProjectIds = new Set();
   let refreshTimer = null;
-  let refreshEpoch = 0;
 
   function clone(value) {
     try { return structuredClone(value); }
@@ -36,53 +34,12 @@
     return { key: 'partial', label: '部分發布', published, total };
   }
 
-  function openConnectionDb() {
-    return new Promise((resolve, reject) => {
-      if (!('indexedDB' in window)) return resolve(null);
-      const request = indexedDB.open(DB_NAME, 1);
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async function readSavedDirectoryHandle() {
-    const db = await openConnectionDb();
-    if (!db) return null;
-    try {
-      return await new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, 'readonly');
-        const request = tx.objectStore(STORE_NAME).get(HANDLE_KEY);
-        request.onsuccess = () => resolve(request.result || null);
-        request.onerror = () => reject(request.error);
-      });
-    } finally {
-      db.close();
-    }
-  }
-
-  async function readWorkspaceFile() {
-    try {
-      const handle = await readSavedDirectoryHandle();
-      if (!handle) return null;
-      const permission = await handle.queryPermission({ mode: 'readwrite' });
-      if (permission !== 'granted') return null;
-      const fileHandle = await handle.getFileHandle(WORKSPACE_FILE, { create: false });
-      const file = await fileHandle.getFile();
-      const parsed = JSON.parse(await file.text());
-      return parsed?.schemaVersion >= 2 && Array.isArray(parsed.projects) ? parsed : null;
-    } catch (error) {
-      if (error?.name !== 'NotFoundError') console.warn('StoryFlow publishing project filter could not read workspace.json', error);
-      return null;
-    }
-  }
-
-  function fallbackSnapshot() {
+  function storeSnapshot() {
     const api = window.StoryFlowProjects;
     const activeId = api?.activeId?.() || 'active';
-    // Without a readable workspace.json (no folder yet, or its permission lapsed) the queue
-    // used to fall back to the active work alone, so every other work's articles vanished
-    // from Publishing while Works and search — which read the in-memory store — still showed
-    // them. The store is what workspace.json is written from; use all of it.
+    // Every work in the store, not only the active one: falling back to the active work alone
+    // made every other work's articles vanish from Publishing while Works and search still
+    // showed them.
     const everyWork = api?.searchSnapshot?.();
     if (Array.isArray(everyWork) && everyWork.length) {
       return { schemaVersion: 2, activeProjectId: activeId, projects: everyWork };
@@ -101,7 +58,7 @@
   }
 
   function mergeActiveState(snapshot) {
-    if (!snapshot?.projects?.length) return fallbackSnapshot();
+    if (!snapshot?.projects?.length) return storeSnapshot();
     const activeId = window.StoryFlowProjects?.activeId?.() || snapshot.activeProjectId;
     snapshot.activeProjectId = activeId;
     const active = snapshot.projects.find(project => project.id === activeId);
@@ -176,7 +133,7 @@
   }
 
   function selectedProjects() {
-    const snapshot = mergeActiveState(workspaceSnapshot || fallbackSnapshot());
+    const snapshot = mergeActiveState(workspaceSnapshot || storeSnapshot());
     const projects = snapshot.projects || [];
     const selected = selectedProjectIds.size
       ? selectedProjectIds
@@ -533,7 +490,7 @@
   function renderCombinedPublishingList() {
     const list = document.getElementById('partsList');
     if (!list) return;
-    const snapshot = mergeActiveState(workspaceSnapshot || fallbackSnapshot());
+    const snapshot = mergeActiveState(workspaceSnapshot || storeSnapshot());
     workspaceSnapshot = snapshot;
     syncSelection(snapshot.projects || []);
     ensureFilterUi();
@@ -593,11 +550,8 @@
     if (subtitle) subtitle.textContent = '依作品與發布狀態篩選，管理長文與圖文的各平台發布。';
   }
 
-  async function refreshWorkspaceSnapshot() {
-    const epoch = ++refreshEpoch;
-    const loaded = await readWorkspaceFile();
-    if (epoch !== refreshEpoch) return;
-    workspaceSnapshot = mergeActiveState(loaded || fallbackSnapshot());
+  function refreshWorkspaceSnapshot() {
+    workspaceSnapshot = mergeActiveState(storeSnapshot());
     syncSelection(workspaceSnapshot.projects || []);
     renderCombinedPublishingList();
   }

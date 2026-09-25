@@ -3018,3 +3018,65 @@ test('publishing lists every work, orders what it lists, and editing a chapter i
   await expect(visualRow.locator('.visual-publish-copy')).toContainText('＊＊＊');
   expect(pageErrors).toEqual([]);
 });
+
+// 完成 closed a tool and nothing else, so an afterword or a summary typed and not yet saved
+// with the button inside the dialog was dropped without a word — while "完成" read as "it is
+// done, it is kept". Every way out now keeps what is pending: 完成, ✕ and Esc.
+test('closing a publishing tool keeps what was typed in it', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await gotoWorkbench(page, '/?visual-regression=1');
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '關閉保存測試' }, { quiet: true });
+    state.chapters = [{
+      id: 'close-keeps-chapter', title: '第一章', draft: '正文原稿。', confirmedBlockCount: 1,
+      parts: [{
+        id: 'close-keeps-part', title: '關閉保存文章', chars: 5, startBlock: 0, endBlock: 1,
+        raw: '正文原稿。', formatted: '正文原稿。', published: false, platformStatus: {},
+        images: [{
+          id: 'close-keeps-image', fileName: 'kept.png', originalName: 'kept.png',
+          relativePath: './assets/close-keeps-part/kept.png', mimeType: 'image/png',
+          size: 100, width: 1, height: 1, alt: '原本的替代文字', caption: '', placement: 'after-body'
+        }]
+      }]
+    }];
+    state.activeChapterId = 'close-keeps-chapter';
+    renderAll();
+  });
+  const part = () => page.evaluate(() => state.chapters[0].parts[0]);
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  const card = page.locator('.publish-list-item', { hasText: '關閉保存文章' });
+  await card.getByRole('button', { name: /展開.*發布平台/ }).click();
+  const toolDialog = page.locator('#publishingArticleToolDialog');
+
+  // 完成 keeps an afterword nobody pressed 保存後記 for.
+  await card.getByRole('button', { name: '後記', exact: true }).click();
+  await toolDialog.locator('.publish-afterword-editor textarea').fill('寫給讀者的後記。');
+  await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
+  await expect(toolDialog).toBeHidden();
+  await expect.poll(async () => (await part()).afterword).toBe('寫給讀者的後記。');
+
+  // Esc keeps a summary and Hashtags.
+  await card.getByRole('button', { name: '摘要與 Hashtags', exact: true }).click();
+  await toolDialog.locator('.visual-publish-summary-input').fill('一句話的摘要');
+  await toolDialog.locator('.visual-publish-hashtags-input').fill('#關閉 #保存');
+  await page.keyboard.press('Escape');
+  await expect(toolDialog).toBeHidden();
+  await expect.poll(async () => {
+    const current = await part();
+    return [current.summary, current.hashtags];
+  }).toEqual(['一句話的摘要', '#關閉 #保存']);
+
+  // ✕ keeps an image's edited alt text.
+  await card.getByRole('button', { name: /^文章圖片/ }).click();
+  await toolDialog.getByRole('textbox', { name: 'kept.png 的替代文字' }).fill('改過的替代文字');
+  await toolDialog.getByRole('button', { name: '關閉', exact: true }).click();
+  await expect(toolDialog).toBeHidden();
+  await expect.poll(async () => (await part()).images[0].alt).toBe('改過的替代文字');
+
+  // Closing with nothing changed writes nothing and still closes.
+  await card.getByRole('button', { name: /^後記/ }).click();
+  await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
+  await expect(toolDialog).toBeHidden();
+  expect(pageErrors).toEqual([]);
+});
