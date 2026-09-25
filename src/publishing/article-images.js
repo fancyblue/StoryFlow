@@ -397,14 +397,13 @@
     const head = document.createElement('div');
     head.className = 'article-image-manager-head';
     const copy = document.createElement('div');
-    const title = document.createElement('strong');
-    title.textContent = `文章圖片${part.images.length ? ` · ${part.images.length} 張` : ''}`;
     const description = document.createElement('span');
     description.className = 'muted';
     // Standing statement, not a consequence of having images: someone arrives here to set
     // images up and has to know before doing the work that copying will not carry them.
-    description.textContent = '匯入後會複製到私人 StoryFlow 資料夾，不會上傳到 GitHub Pages。圖片也不會隨「複製內容」送出，發布時要依下面的順序逐張上傳。';
-    copy.append(title, description);
+    // No title of its own: the tool dialog names 文章圖片 and keeps the count current.
+    description.textContent = '圖片不會上傳到 GitHub Pages，也不會隨「複製內容」送出；發布時要依下面的順序逐張上傳。';
+    copy.append(description);
     const headActions = document.createElement('div');
     headActions.className = 'article-image-manager-actions';
     if (part.images.length) {

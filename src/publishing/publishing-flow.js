@@ -872,6 +872,19 @@
     return true;
   }
 
+  // A visual entry's copy is plain text rather than the Markdown preview a longform part
+  // gets, so its scene marker used to sit at the left margin while the same marker in an
+  // article above it was centred. Marker lines are centred here the way the Markdown preview
+  // centres them; every other line stays exactly the text that will be copied.
+  function visualCopyHTML(body) {
+    const marker = String(state?.sceneMarker || '').trim();
+    return String(body || '').split('\n').map(line => {
+      const value = line.trim();
+      const isMarker = value && ((marker && value === marker) || /^[＊*]{3,}$/.test(value));
+      return isMarker ? `<span class="visual-publish-scene">${escapeHtml(value)}</span>` : escapeHtml(line);
+    }).join('<br>');
+  }
+
   function renderVisualPublishPreview(container, entry, body, titleStyle, platform) {
     visualPreviewUrls.forEach(url => URL.revokeObjectURL(url));
     visualPreviewUrls = [];
@@ -879,7 +892,7 @@
     container.dataset.sfPreviewManaged = 'visual';
     container.innerHTML = `
       ${title ? `<${titleStyle === 'bold' ? 'strong' : 'h1'} class="platform-preview-included-title ${titleStyle}">${escapeHtml(title)}</${titleStyle === 'bold' ? 'strong' : 'h1'}>` : ''}
-      <div class="visual-publish-copy">${escapeHtml(body || '').replace(/\n/g, '<br>')}</div>
+      <div class="visual-publish-copy">${visualCopyHTML(body)}</div>
       <section class="visual-upload-order">
         <div><strong>圖片上傳順序</strong><span>圖片不會被複製或自動上傳，請依序手動選取。</span></div>
         <ol>${entry.images.length ? entry.images.map(image => `<li data-visual-publish-image="${escapeHtml(image.id)}"><div class="visual-upload-thumb"><span>載入中</span></div><div><strong>${escapeHtml(image.storedName)}</strong>${entry.coverImageId === image.id ? '<em>封面</em>' : ''}<small>${escapeHtml(image.alt || '尚未填寫替代文字')}${image.caption ? ` · ${escapeHtml(image.caption)}` : ''}</small></div></li>`).join('') : '<li class="visual-upload-empty">這則圖文沒有圖片。</li>'}</ol>
@@ -1032,16 +1045,12 @@
     section.className = 'publish-afterword-editor';
     section.innerHTML = `
       <div class="publish-afterword-head">
-        <div>
-          <strong>後記</strong>
-          <span class="muted">與來源正文分開保存，不計入正文篇幅</span>
-        </div>
         <label class="publish-afterword-include">
           <input type="checkbox" ${part.includeAfterword !== false ? 'checked' : ''} ${part.afterword.trim() ? '' : 'disabled'} />
           <span>分平台預覽與複製時附上</span>
         </label>
       </div>
-      <textarea class="publish-afterword-input" rows="5" aria-label="內容後記" placeholder="寫下完稿後想補充給讀者的話。後記會與來源正文分開保存。"></textarea>
+      <textarea class="publish-afterword-input" rows="5" aria-label="內容後記" placeholder="寫下完稿後想補充給讀者的話。"></textarea>
       <div class="publish-afterword-footer">
         <span class="muted publish-afterword-count">後記 ${afterwordChars(part).toLocaleString()} 字</span>
         <button class="button tiny primary publish-afterword-save" type="button">保存後記</button>
@@ -1066,9 +1075,22 @@
     return section;
   }
 
+  // The line under the dialog title is rebuilt with the body, so the image count follows
+  // imports and removals rather than staying at whatever it was when the dialog opened.
+  function syncArticleToolMeta(part, tool) {
+    const meta = articleToolDialog.querySelector('#publishingArticleToolMeta');
+    if (!meta) return;
+    meta.textContent = tool === 'publishing-helpers'
+      ? `${publishTitleFor(part)} · 兩者皆為選填，不會自動加入正文。`
+      : `${publishTitleFor(part)} · ${tool === 'images'
+        ? `${part.images.length.toLocaleString()} 張圖片，檔案保存在私人 StoryFlow 資料夾。`
+        : '與來源正文分開保存，不計入正文篇幅。'}`;
+  }
+
   function renderArticleToolBody() {
     if (!articleToolContext) return;
     const { chapter, part, tool } = articleToolContext;
+    syncArticleToolMeta(part, tool);
     const body = articleToolDialog.querySelector('#publishingArticleToolBody');
     body.replaceChildren();
     if (tool === 'publishing-helpers') {
@@ -1099,11 +1121,6 @@
     const isImages = tool === 'images';
     const isPublishingHelpers = tool === 'publishing-helpers';
     articleToolDialog.querySelector('#publishingArticleToolTitle').textContent = isPublishingHelpers ? '摘要與 Hashtags' : isImages ? '文章圖片' : '後記';
-    articleToolDialog.querySelector('#publishingArticleToolMeta').textContent = isPublishingHelpers
-      ? `${publishTitleFor(part)} · 兩者皆為選填，不會自動加入正文。`
-      : `${publishTitleFor(part)} · ${isImages
-        ? `${part.images.length.toLocaleString()} 張圖片，檔案保存在私人 StoryFlow 資料夾。`
-        : `${afterwordChars(part).toLocaleString()} 字，與來源正文分開保存。`}`;
     renderArticleToolBody();
     articleToolDialog.showModal();
   }

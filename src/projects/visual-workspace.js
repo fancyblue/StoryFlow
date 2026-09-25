@@ -363,7 +363,7 @@
         <div class="panel-head"><div><p class="eyebrow">IMAGE</p><h3 id="visualImageDialogTitle">編輯圖片資訊</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div>
         <img id="visualImageDialogPreview" class="visual-image-dialog-preview" alt="" hidden />
         <div class="visual-dialog-fields"><label class="visual-field"><span>替代文字</span><input id="visualImageAlt" class="text-input" maxlength="300" /></label><label class="visual-field"><span>圖說（選填）</span><textarea id="visualImageCaption" class="text-input" rows="3"></textarea></label><label class="format-check"><input id="visualImageCover" type="checkbox" /><span>設為這則圖文的封面</span></label></div>
-        <div class="visual-dialog-actions"><button id="visualRemoveImageAssociation" class="button ghost" type="button">移除關聯並保留檔案</button><button id="visualDeleteImageFile" class="button ghost" type="button">備份後刪除檔案</button><button id="visualSaveImageMeta" class="button primary" type="button">保存圖片資訊</button></div>
+        <div class="visual-dialog-actions"><button id="visualRemoveImageAssociation" class="button ghost" type="button">移除關聯並保留檔案</button><button id="visualDeleteImageFile" class="button ghost danger" type="button">備份後刪除檔案</button><button id="visualSaveImageMeta" class="button primary" type="button">保存圖片資訊</button></div>
       </form>`;
       document.body.appendChild(dialog);
       bindImageDialog(dialog);

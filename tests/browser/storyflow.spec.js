@@ -1592,6 +1592,8 @@ test('article images import private copies, preview, reorder, describe, and remo
 
   await expect(toolDialog.locator('.article-image-row')).toHaveCount(2);
   await expect(card.locator('.publish-image-badge')).toHaveText('附圖 2 張');
+  // The line under the dialog title follows the imports; it used to keep the count it opened with.
+  await expect(toolDialog.locator('#publishingArticleToolMeta')).toContainText('2 張圖片');
   // Copying never carries the files, and the manager says so before any image exists, not
   // as a consequence of having some.
   await expect(toolDialog.locator('.article-image-manager-head span')).toContainText('不會隨「複製內容」送出');
@@ -1994,6 +1996,16 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
 
   await page.locator('.visual-image-card').first().getByRole('button', { name: '編輯', exact: true }).click();
   const imageDialog = page.getByRole('dialog', { name: '編輯圖片資訊' });
+  // Deleting the file wears the destructive colour and stands apart from saving, on the left
+  // with the other way of removing the image.
+  await expect.poll(() => imageDialog.evaluate(dialog => {
+    const remove = dialog.querySelector('#visualDeleteImageFile').getBoundingClientRect();
+    const save = dialog.querySelector('#visualSaveImageMeta').getBoundingClientRect();
+    return {
+      color: getComputedStyle(dialog.querySelector('#visualDeleteImageFile')).color,
+      apart: save.left - remove.right > 24
+    };
+  })).toEqual({ color: 'rgb(168, 68, 58)', apart: true });
   await imageDialog.locator('#visualImageAlt').fill('月光下的城堡');
   await imageDialog.locator('#visualImageCaption').fill('夜色系列封面');
   await imageDialog.locator('#visualImageCover').check();
@@ -2938,5 +2950,71 @@ test('a finished chapter says so, and the reading view centres its scene markers
   await expect(row.locator('#copyPlatformSummary small')).toHaveText('在「摘要與 Hashtags」設定');
   await row.getByRole('button', { name: '摘要與 Hashtags', exact: true }).click();
   await expect(page.locator('.visual-publish-summary-input')).toHaveAttribute('placeholder', '簡短介紹這篇文章');
+  expect(pageErrors).toEqual([]);
+});
+
+// Third review pass. Publishing fixed its work selection the first time it rendered, so a work
+// created afterwards — the current one included — was left out of 全部 until it was ticked by
+// hand; its order control followed whichever work was active rather than what was listed; a
+// visual entry's scene marker sat at the left margin where an article's is centred; and editing
+// a chapter kept the creation flow's 返回建立方式.
+test('publishing lists every work, orders what it lists, and editing a chapter is not creating one', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await gotoWorkbench(page, '/?visual-regression=1');
+  await page.evaluate(() => {
+    StoryFlowIntegrations.savePart = async () => 'x.md';
+    StoryFlowIntegrations.saveVisualEntry = async payload => `W/${payload.entry.id}`;
+  });
+  await page.locator('#createProjectManually').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).getByRole('button', { name: /長文作品/ }).click();
+  await page.locator('#sourceManualBtn').click();
+  await expect(page.locator('#backManualCreationBtn')).toBeVisible();
+  await page.locator('#manualProjectTitle').fill('先建的長文');
+  await page.locator('#manualSourceTitle').fill('第一章');
+  await page.locator('#manualSourceText').fill('第一段。\n\n第二段。');
+  await page.locator('#previewManualSourceBtn').click();
+  await page.locator('#confirmSourcePreviewBtn').click();
+  await expect(page.locator('#suggestionCard')).toBeVisible();
+  await page.locator('#confirmBtn').click();
+
+  await page.locator('#chapterList .chapter-more-button').first().click();
+  await page.getByRole('menuitem', { name: /編輯章節/ }).first().click();
+  await expect(page.locator('#manualSourceDialog')).toHaveAttribute('data-edit-chapter-id', /.+/);
+  await expect(page.locator('#backManualCreationBtn')).toBeHidden();
+  await expect(page.locator('#manualProjectTitle')).toBeHidden();
+  await page.locator('#cancelManualChapterEditBtn').click();
+
+  // Publishing sees the one work first, then a visual work created after that visit.
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('.publishing-project-group')).toHaveCount(1);
+  await page.evaluate(() => StoryFlowProjects.createProject({ title: '後建的圖文', contentMode: 'visual' }, { quiet: true }));
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await page.locator('#visualNewEntryBtn').click();
+  await page.locator('#newVisualEntryTitle').fill('月下預告');
+  await page.locator('#confirmNewVisualEntry').click();
+  await page.locator('#visualEntryBody').fill('月光落在城牆上。\n\n第二段圖文內容。');
+  await expect(page.locator('#visualEditorSaveStatus')).toContainText('已儲存');
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('.publishing-project-group')).toHaveCount(2);
+  await expect(page.locator('#publishingProjectFilterSummary')).toHaveText('全部');
+  // A visual work is active, but chapters are listed, so chapter order means something.
+  await expect(page.locator('#publishingSortControl')).toBeVisible();
+  await expect(page.locator('.publishing-toolbar-hint')).toBeHidden();
+  await page.locator('#publishingContentTypeFilters [data-content-type="visual"]').click();
+  await expect(page.locator('#publishingSortControl')).toBeHidden();
+  await expect(page.locator('.publishing-toolbar-hint')).toBeVisible();
+  await page.locator('#publishingContentTypeFilters [data-content-type="all"]').click();
+
+  const visualRow = page.locator('.publish-list-item', { hasText: '月下預告' }).first();
+  await visualRow.locator('.publish-manage-btn').click();
+  const scene = visualRow.locator('.visual-publish-copy .visual-publish-scene').first();
+  await expect(scene).toBeVisible();
+  await expect.poll(() => scene.evaluate(node => ({
+    align: getComputedStyle(node).textAlign,
+    spans: Math.abs(node.getBoundingClientRect().width - node.parentElement.getBoundingClientRect().width) <= 1
+  }))).toEqual({ align: 'center', spans: true });
+  // Copy is unchanged: the marker is still the text the writer will paste.
+  await expect(visualRow.locator('.visual-publish-copy')).toContainText('＊＊＊');
   expect(pageErrors).toEqual([]);
 });
