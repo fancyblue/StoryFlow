@@ -52,7 +52,6 @@ const PALETTE = {
   '#e0a49a': 'vermilion on the dark rail, hover',
   '#d4796d': 'connection dot, disconnected',
   '#8a6526': 'ochre — warning',
-  '#e3d3b4': 'ochre line',
   '#ecdfc4': 'ochre fill',
   '#f5eddc': 'ochre soft',
   '#c9a45f': 'connection dot, restoring',

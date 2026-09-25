@@ -72,11 +72,22 @@ function changedSinceBase() {
 function nextVersion() {
   const now = new Date();
   const stamp = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(2, '0')}${String(now.getUTCDate()).padStart(2, '0')}`;
-  // Keep a suffix so several bumps on one day stay distinguishable.
-  const existing = HOSTS.map(hostText).join('\n');
-  let serial = 1;
-  while (existing.includes(`?v=${stamp}-a${serial}`)) serial += 1;
-  return `${stamp}-a${serial}`;
+  // Keep a suffix so several bumps on one day stay distinguishable, and only ever move it
+  // forward. Taking the lowest serial not currently written reused old ones: an asset
+  // bumped a1 → a2 left a1 unused, the next bump that day handed a1 out again, and a
+  // browser that had cached the earlier ?v=…-a1 would be served that older file. The
+  // highest serial for the day in either the working copy or the base ref, plus one, is
+  // never a query some browser already holds for different content.
+  const texts = [...HOSTS.map(hostText), ...HOSTS.map(host => {
+    try { return execFileSync('git', ['show', `${base}:${host}`], { cwd: root, encoding: 'utf8' }); }
+    catch (_) { return ''; }
+  })];
+  const pattern = new RegExp(`\\?v=${stamp}-a(\\d+)`, 'g');
+  let highest = 0;
+  for (const text of texts) {
+    for (const match of text.matchAll(pattern)) highest = Math.max(highest, Number(match[1]));
+  }
+  return `${stamp}-a${highest + 1}`;
 }
 
 // The query a host carried at the base ref, so --check can tell "changed and already

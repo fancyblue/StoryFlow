@@ -374,6 +374,14 @@
     const save = document.createElement('button');
     save.type = 'button'; save.className = 'button tiny primary'; save.textContent = '保存圖片資訊';
     save.dataset.mobileSafeWriteControl = 'true';
+    // Applies what the row's fields say to the image and reports whether that changed it, so
+    // closing the tool can keep edits nobody pressed 保存圖片資訊 for.
+    row.applyPendingEdits = () => {
+      const next = { alt: alt.value.trim(), caption: caption.value.trim(), placement: placement.value };
+      const changed = next.alt !== (image.alt || '') || next.caption !== (image.caption || '') || next.placement !== image.placement;
+      if (changed) Object.assign(image, next);
+      return changed;
+    };
     save.addEventListener('click', () => {
       image.alt = alt.value.trim();
       image.caption = caption.value.trim();
@@ -394,6 +402,15 @@
     normalizePublishingPart(part);
     const section = document.createElement('section');
     section.className = 'article-image-manager';
+    // The tool dialog calls this before it closes: every row's unsaved alt text, caption and
+    // placement are applied and written once, rather than dropped with the dialog.
+    section.flushPending = async () => {
+      const changed = [...section.querySelectorAll('.article-image-row')]
+        .map(row => typeof row.applyPendingEdits === 'function' && row.applyPendingEdits())
+        .some(Boolean);
+      if (changed) await persistImages(chapter, part, '圖片資訊與文章 Markdown 已更新', onChange);
+      return true;
+    };
     const head = document.createElement('div');
     head.className = 'article-image-manager-head';
     const copy = document.createElement('div');

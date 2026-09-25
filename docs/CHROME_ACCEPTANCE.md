@@ -111,7 +111,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Temporarily rename one disposable image outside StoryFlow and confirm the manager and preview show a missing-file warning; restore it afterward.
 - [ ] Confirm “複製內容” copies prose only and the preview reminds you to upload images separately; confirm individual and all-image Markdown copy actions work.
 - [ ] Remove one image from the article without deleting it and confirm the file remains. For another disposable image choose “備份後刪除檔案” and confirm a copy exists in `Recovery/Assets/` before the source disappears.
-- [ ] Open “後記” from the compact article-supplement row, add an afterword and confirm body/afterword counts are separate; verify the Markdown contains body, separator and afterword.
+- [ ] Open “後記” from the compact article-supplement row, add an afterword and confirm body/afterword counts are separate; verify the Markdown contains body, separator and afterword. Type a second change and close with “完成” without pressing “保存後記”; confirm the change is kept (and the same for ✕ and Esc, and for 摘要與 Hashtags).
 - [ ] In preview, turn off “附上後記”; confirm preview/copy output contains only the body and the article Markdown is rewritten consistently.
 - [ ] For one platform, choose “記錄發布”, correct the time if needed, enter a URL without `https://`, then save. Confirm the row shows the date, the URL can be opened safely and the platform becomes “已發布”.
 - [ ] Cancel that platform's published state, accept the warning and confirm both its time and URL are cleared. Existing legacy published rows without a record should instead remain readable as “未記錄發布時間”.

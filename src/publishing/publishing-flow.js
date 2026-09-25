@@ -450,8 +450,31 @@
         </div>
       </div>`;
     document.body.appendChild(dialog);
+    // 完成 used to close the dialog and nothing else, so an afterword or a summary typed and
+    // not yet saved with the button inside the body was dropped without a word — while the
+    // label read as "it's done, it's kept". Every way out (完成, ✕, Esc) now saves what is
+    // pending first, the way the visual editor autosaves, and stays open only if there was
+    // something to save and it could not be kept at all.
+    let closing = false;
+    const requestClose = async () => {
+      if (closing) return;
+      closing = true;
+      try {
+        const tool = dialog.querySelector('#publishingArticleToolBody > *');
+        // A read-only phone writes nothing, and closing must not become a way around that.
+        const readOnly = Boolean(window.StoryFlowMobileSafeMode?.isReadOnly?.());
+        const kept = !readOnly && typeof tool?.flushPending === 'function' ? await tool.flushPending() : true;
+        if (kept !== false && dialog.open) dialog.close();
+      } finally {
+        closing = false;
+      }
+    };
     dialog.querySelectorAll('[data-article-tool-close]').forEach(button => {
-      button.addEventListener('click', () => dialog.close());
+      button.addEventListener('click', requestClose);
+    });
+    dialog.addEventListener('cancel', event => {
+      event.preventDefault();
+      requestClose();
     });
     dialog.addEventListener('close', () => { articleToolContext = null; });
     return dialog;
@@ -1071,6 +1094,15 @@
       const saved = await saveAfterword(chapter, part, textarea, includeControl);
       onSaved?.(saved);
     });
+    // Closing the tool keeps what was typed. saveAfterword writes the workspace before the
+    // Markdown file, so the text is kept even when the file write fails (it says so).
+    section.flushPending = async () => {
+      const next = textarea.value.trim();
+      const include = next ? includeControl.checked : true;
+      if (next === (part.afterword || '').trim() && include === (part.includeAfterword !== false)) return true;
+      await saveAfterword(chapter, part, textarea, includeControl);
+      return true;
+    };
     section.addEventListener('click', event => event.stopPropagation());
     return section;
   }
@@ -1300,6 +1332,12 @@
       const saved = await savePublishingHelpers(chapter, entry, summaryInput, hashtagsInput);
       if (saved) onSaved?.();
     });
+    section.flushPending = async () => {
+      const unchanged = summaryInput.value.trim() === String(entry.summary || '').trim()
+        && hashtagsInput.value.trim() === String(entry.hashtags || '').trim();
+      if (unchanged) return true;
+      return savePublishingHelpers(chapter, entry, summaryInput, hashtagsInput);
+    };
     section.addEventListener('click', event => event.stopPropagation());
     return section;
   }
