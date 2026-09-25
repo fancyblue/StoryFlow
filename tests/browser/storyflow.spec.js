@@ -488,15 +488,26 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   await page.locator('#chapterList .chapter-main-button').last().click();
   await expect.poll(() => page.evaluate(() => state.activeChapterId)).toBe('long-chapter-24');
   // Selecting a chapter rebuilds the rail. The claim is about where it comes to rest, not
-  // about the frame mid-rerender, which drifts a few pixels under load.
-  const afterSelect = await panel.evaluate(element => ({ scrollTop: element.scrollTop, windowY: window.scrollY }));
-  expect(Math.abs(afterSelect.scrollTop - beforeSelect.scrollTop)).toBeLessThan(RAIL_ROW);
-  expect(Math.abs(afterSelect.windowY - beforeSelect.windowY)).toBeLessThan(RAIL_ROW);
+  // about the frame mid-rerender, which drifts under load — so poll the resting position
+  // rather than reading whichever frame the first evaluate lands on.
+  await expect.poll(() => panel.evaluate((element, before) => Math.max(
+    Math.abs(element.scrollTop - before.scrollTop),
+    Math.abs(window.scrollY - before.windowY)
+  ), beforeSelect), { message: 'the rail and the page come to rest where they were' }).toBeLessThan(RAIL_ROW);
 
   await page.locator('#chapterList .chapter-more-button').last().click();
   const menu = page.locator('#chapterList .chapter-row-action-menu:not([hidden])');
   await expect(menu).toBeVisible();
   await expect(menu).toHaveClass(/opens-up/);
+  // Opening the menu can still be followed by the tail of that rebuild; measure once the
+  // menu sits inside both the rail and the window, then check the rest of the layout.
+  await expect.poll(() => page.evaluate(() => {
+    const source = document.querySelector('.source-panel').getBoundingClientRect();
+    const open = document.querySelector('#chapterList .chapter-row-action-menu:not([hidden])');
+    if (!open) return 'closed';
+    const rect = open.getBoundingClientRect();
+    return rect.top >= 0 && rect.bottom <= Math.min(source.bottom, innerHeight) ? 'inside' : `${Math.round(rect.top)}–${Math.round(rect.bottom)}`;
+  }), { message: 'the row menu comes to rest inside the rail and the window' }).toBe('inside');
   const openLayout = await page.evaluate(() => {
     const source = document.querySelector('.source-panel');
     const actionMenu = document.querySelector('#chapterList .chapter-row-action-menu:not([hidden])');
@@ -2889,8 +2900,12 @@ test('a finished chapter says so, and the reading view centres its scene markers
   await page.locator('#openReadingViewBtn').click();
   const separators = page.locator('#readingFlow .reading-scene-separator');
   await expect(separators.first()).toBeVisible();
-  // The marker spans the text column and its ink sits in the middle of it.
-  const placement = await separators.first().evaluate(node => {
+  // The marker spans the text column and its ink sits in the middle of it. The flow re-renders
+  // as the view settles, so query it afresh on each reading rather than holding a node that
+  // the next render detaches.
+  await expect.poll(() => page.evaluate(() => {
+    const node = document.querySelector('#readingFlow .reading-scene-separator');
+    if (!node) return null;
     const box = node.getBoundingClientRect();
     const text = document.createRange();
     text.selectNodeContents(node);
@@ -2902,8 +2917,7 @@ test('a finished chapter says so, and the reading view centres its scene markers
       spansColumn: box.width >= column * 0.8,
       centred: Math.abs((ink.left - box.left) - (box.right - ink.right)) <= 2
     };
-  });
-  expect(placement).toEqual({ spansColumn: true, centred: true });
+  })).toEqual({ spansColumn: true, centred: true });
   // The markup changed, not the text: copy and search still read the marker as written.
   await expect(page.locator('#readingFlow')).toContainText('第一段。');
   await page.locator('#readingView').getByRole('button', { name: '回到工作台' }).click();

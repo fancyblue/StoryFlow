@@ -497,7 +497,12 @@
   if (typeof baseRenderChapters === 'function' && !baseRenderChapters.__chapterManagement) {
     const wrapped = function (...args) {
       const panel = document.querySelector('.source-panel');
-      const scrollTop = pendingChapterRailScroll;
+      // Every rebuild holds the rail where it is, not only the first one after a click.
+      // Selecting a chapter rebuilds the list more than once (the selection, then the split
+      // suggestion it starts); a layout forced while the list is momentarily empty clamps the
+      // rail's scroll, and with only the first rebuild restored, a later one left the rail
+      // resting 70–100px from where the writer was.
+      const scrollTop = pendingChapterRailScroll ?? panel?.scrollTop ?? null;
       pendingChapterRailScroll = null;
       const result = baseRenderChapters.apply(this, args);
       queueMicrotask(decorateWorkspaceChapterActions);
