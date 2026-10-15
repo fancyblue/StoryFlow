@@ -9,7 +9,7 @@
 順序不是照影響力排的，是照**相依性與風險**排的：
 
 1. **顏色改不動，除非先 token 化。** 但規模跟原本估的差很多，見階段 1 的實測。
-   （另外那些 `!important`——動工時 2,905 個，2026-10-15 重量為 2,581 個，B 類第一批後 2,191 個——是**不同**的問題，不擋換色——見下方「插曲」。）
+   （另外那些 `!important`——動工時 2,905 個，2026-10-15 重量為 2,581 個，B 類第一批後 2,191 個，A 類之後 2,101 個——是**不同**的問題，不擋換色——見下方「插曲」。）
 2. **cascade 不可靠。** `ensureThemeOrder()`（`src/settings/settings-page.js`）與兩個 `ensureStyleLast()`
    在 runtime 重排 stylesheet，所以「看起來在最後」的規則可能會輸。動任何 stylesheet 順序都要同步更新
    `scripts/cascade-order.json`，否則 `tests/browser/cascade-contract.spec.js` 會失敗。
@@ -153,7 +153,7 @@
 | 其餘 | ~1,555 | 1,385 | 54% |
 | **合計** | **2,905** | **2,581** | |
 
-（「2026-10-15」欄是 B 類第一批**之前**量的；第一批之後 `ui-system.css` 221、`layout-integrity.css` 55，合計 2,191。）
+（「2026-10-15」欄是 B 類第一批**之前**量的；第一批之後 `ui-system.css` 221、`layout-integrity.css` 55，合計 2,191；A 類之後 `theme.css` 46，合計 2,101。）
 
 減少的部分不是專門清 `!important` 的結果，主要是兩次移除時一併帶走的：
 #108（4-1／4-2，拆掉頁首連線膠囊等，−115）與 #122（移除不會生效的 CSS，−238）；
@@ -163,7 +163,7 @@
 
 分成三類處理，都不排進主線：
 
-### A. 原本預期換色後會自然消失的（`theme.css`，動工時 162 個，現在 136 個）
+### A. 原本預期換色後會自然消失的（`theme.css`，動工時 162 個，A 類處理前 136 個，現在 46 個）
 
 原本的判斷：`theme.css` 的角色是「用 `!important` 一條一條蓋掉 `foundation.css` 的紫色底稿」，
 階段 3 把正確的值寫進 token 之後，這些覆蓋就失去存在理由，整層可以大幅縮減，當成階段 3 的收尾。
@@ -171,6 +171,24 @@
 **實際結果**：紫色底稿確實在 3-1 移除了（repo 裡已經找不到 `#6d4aff`），`theme.css` 也改寫成
 紙墨色票的 token 定義；但檔案後段的元件覆蓋仍有 136 個 `!important`，預期的「大幅縮減」沒有發生。
 階段 3 已經完成，所以這一類**不再有可以搭便車的收尾**，仍待處理；要清的話比照 B 逐批實驗、逐批驗證。
+
+#### 處理結果（2026-10-15）：136 → 46
+
+用 B 類第一批的同一套 computed-style 比對（做法見下方 B 段），目標換成 `theme.css`，移除 90 個。
+`theme.css` 排在載入順序第 30，後面還有 9 個樣式表，所以留下的比例比 B 高。
+
+量測狀態比 B 多了一組，專門補 B 第一批「沒測到」的畫面：章節來自 Google Docs（依來源分組的章節列）、
+切篇偏好展開、讀稿畫面的 Markdown 引文與連結、部分發布與全部發布的狀態、設定頁 Google 已設定／已登入、
+沒有任何平台的設定頁。這一組**真的抓到一個**：已登入 Google 的設定頁讓一條原本看似可刪的宣告現出差異。
+最後一次以最終保留清單全部重跑：193 次量測零差異，要移除的 90 個**每一個**都至少在一個狀態裡套用到元素。
+
+**留下的 46 個**：
+
+- **34 個是真的在打仗**（移除後至少一個狀態的 computed style 會變）。
+- **12 個沒有證據**：`.button.primary:disabled`（沒有量測狀態出現停用的主要按鈕）、
+  `.project-source-diff-badge`（來源比對對話框，需要 Google Docs）、以及 `.source-panel-actions`
+  底下的 `#refreshSourceBtn`／`#loadSourceBtn`。最後這組只在**啟動的頭幾個畫格**存在，
+  量測時已經被移除——見 B 段第一批的補充。
 
 ### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，動工時 724 個，第一批前 666 個，現在 276 個）
 
@@ -209,7 +227,19 @@ computed style，再把兩個 `<link>` 換成移除 `!important` 的版本（位
 - **30 個是沒有證據**：沒有任何一個量測狀態套用到它們——主要是 Google Docs 來源面板
   （`.source-panel-actions`、`.source-change-status`、`.chapter-group-label`）、切篇偏好展開、
   設定頁的平台空狀態、`.publishing-project-badge`。不是證明需要，而是沒測到；
-  要清的話先補上能走到那些畫面的狀態。另外 1 個在 `::-webkit-` 類 pseudo-element 上，
+  要清的話先補上能走到那些畫面的狀態。
+  **補充（A 類處理時查證）**：其中多數不是哪個畫面沒走到，而是元素**只在啟動時短暫存在**，
+  每一次量測的當下都已經不在——
+  `#sourcePanelActions`／`#manualSourceSyncHint` 由 `source-flow.js`／`workspace-ux.js` 建立後，
+  被 `project-source-sync.js` 的 `ensureModeUi()` 移除；`.publishing-project-badge>span`
+  的內容被 `publishing-project-switcher.js` 整個換掉。在每個畫格與每次 DOM 變動上監看的結果：
+  三者都只出現在每次載入的頭 4–5 個畫格，其中 `#sourcePanelActions` 有 2–3 格**真的有版面框**，
+  另外兩者沒有。所以它們不是死規則，只是量測時刻抓不到。
+  真正從來不在 DOM 裡的是 `.smart-split-settings-label`（被 `smart-split-ui.js` 移除）與
+  `.publish-platform-state`（程式只產生 `publish-platform-state-line`），這兩條整條規則都失效，
+  `dead-selectors.mjs` 目前看不出這種情況。
+  只是沒走到的是 `.source-change-status`（Google Docs 更新來源的對話框）。
+  另外 1 個在 `::-webkit-` 類 pseudo-element 上，
   computed style 讀不到，直接保留。
 
 **驗證**：`test:static`、`test:palette`、`test:css`（沒有因此冒出新的失效宣告）、`test:assets` 全過；
