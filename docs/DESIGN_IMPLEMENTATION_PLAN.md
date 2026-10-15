@@ -9,7 +9,7 @@
 順序不是照影響力排的，是照**相依性與風險**排的：
 
 1. **顏色改不動，除非先 token 化。** 但規模跟原本估的差很多，見階段 1 的實測。
-   （另外那些 `!important`——動工時 2,905 個，2026-10-15 重量為 2,581 個——是**不同**的問題，不擋換色——見下方「插曲」。）
+   （另外那些 `!important`——動工時 2,905 個，2026-10-15 重量為 2,581 個，B 類第一批後 2,191 個——是**不同**的問題，不擋換色——見下方「插曲」。）
 2. **cascade 不可靠。** `ensureThemeOrder()`（`src/settings/settings-page.js`）與兩個 `ensureStyleLast()`
    在 runtime 重排 stylesheet，所以「看起來在最後」的規則可能會輸。動任何 stylesheet 順序都要同步更新
    `scripts/cascade-order.json`，否則 `tests/browser/cascade-contract.spec.js` 會失敗。
@@ -153,6 +153,8 @@
 | 其餘 | ~1,555 | 1,385 | 54% |
 | **合計** | **2,905** | **2,581** | |
 
+（「2026-10-15」欄是 B 類第一批**之前**量的；第一批之後 `ui-system.css` 221、`layout-integrity.css` 55，合計 2,191。）
+
 減少的部分不是專門清 `!important` 的結果，主要是兩次移除時一併帶走的：
 #108（4-1／4-2，拆掉頁首連線膠囊等，−115）與 #122（移除不會生效的 CSS，−238）；
 其間的介面 PR 有增有減，合計 +27。
@@ -170,18 +172,50 @@
 紙墨色票的 token 定義；但檔案後段的元件覆蓋仍有 136 個 `!important`，預期的「大幅縮減」沒有發生。
 階段 3 已經完成，所以這一類**不再有可以搭便車的收尾**，仍待處理；要清的話比照 B 逐批實驗、逐批驗證。
 
-### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，動工時 724 個，現在 666 個，26%）
+### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，動工時 724 個，第一批前 666 個，現在 276 個）
 
 這兩個檔案由 `ensureThemeOrder()` 在 runtime 重新附加到很後面，所以它們的 `!important`
 **多數可能是多餘的——它本來就贏**。這是可驗證的假設，不是推測：
 
-> 移除一批 `!important` → 跑視覺回歸 → 零差異就代表原本就贏，可以刪。
+> 移除一批 `!important` → 比對每個元素的 computed style → 零差異就代表原本就贏，可以刪。
+
+（原本這裡寫的是「跑視覺回歸」。那不夠：階段 3 已經查證視覺回歸對顏色是全盲的，
+而這兩個檔案的 `!important` 有一大半是顏色與字級。）
 
 但 `ui-system.css` 並非真正最後：兩個 `ensureStyleLast()` 會把
 `project-source-mode.css` 與 `source-article-ux.css` 移到它後面，而且那兩者的先後**在使用中會互換**
 （見 `docs/UI_SYSTEM.md`）。所以逐批實驗、逐批驗證，不要整檔一次移除。
 
-**可以排在階段 1 完成後的任何時候，與視覺工作平行。**
+#### 第一批（2026-10-15）：666 → 276
+
+`ui-system.css` 466 → 221、`layout-integrity.css` 200 → 55，共移除 390 個。
+
+**做法**：用 Playwright 把 app 帶到約 40 個狀態——冷啟動與已連資料夾的空狀態、長文工作台
+（含側欄收合、長章節列、列選單、編輯章節對話框）、讀稿與接縫、作品列表與管理章節、
+發布佇列／展開／平台預覽／後記工具、圖文工作台與預覽、兩種內容並存、搜尋、設定、
+手機（觸控、唯讀模式）、`prefers-reduced-motion`——每個狀態在 1440／900／700／390 各量一次。
+工作台、作品、發布、設定與圖文另外用 DevTools Protocol 的 `CSS.forcePseudoState`
+逐一強制 `:hover`、`:focus`＋`:focus-visible`、`:active`、`:focus-within` 再量。
+
+每次量測在**同一頁、同一批元素**上進行：先讀每個元素（含 `::before`／`::after`）的完整
+computed style，再把兩個 `<link>` 換成移除 `!important` 的版本（位置不變，cascade 順序因此不變），
+重讀、比對。有差異的「元素 × 屬性」反查回可能造成它的宣告，那些宣告留著，重跑到 159 次量測全部零差異為止。
+先用「什麼都不移除」空跑一次，確認比對本身沒有雜訊（存檔狀態的時鐘文字與 toast 計時器除外，已排除）。
+
+**留下的 275 個**（另有 1 個是註解裡的字）分兩種，意義不同：
+
+- **245 個是真的在打仗**：移除後至少一個狀態的 computed style 會變。它們不是多餘的，
+  要再減只能改「誰擁有這個屬性」，那是設計決策，不是清理。
+- **30 個是沒有證據**：沒有任何一個量測狀態套用到它們——主要是 Google Docs 來源面板
+  （`.source-panel-actions`、`.source-change-status`、`.chapter-group-label`）、切篇偏好展開、
+  設定頁的平台空狀態、`.publishing-project-badge`。不是證明需要，而是沒測到；
+  要清的話先補上能走到那些畫面的狀態。另外 1 個在 `::-webkit-` 類 pseudo-element 上，
+  computed style 讀不到，直接保留。
+
+**驗證**：`test:static`、`test:palette`、`test:css`（沒有因此冒出新的失效宣告）、`test:assets` 全過；
+瀏覽器測試除 `reading-view-read-1440` 外全過——那張在容器的 Chromium 1194 上
+**`main` 本身就差 4%**，而移除前後同一畫面的截圖差異（21 px）小於同一版本連跑兩次的差異（45–50 px），
+所以不是這一批造成的；CI 的 Chromium 才是那張基準的判準。
 
 ### C. 其餘約 1,780 個（動工時約 1,900 個）
 

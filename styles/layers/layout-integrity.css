@@ -10,7 +10,7 @@
 }
 
 /* The safety/storage explanation is available in Settings; persistent navigation stays task-focused. */
-.sidebar-note{display:none!important}
+.sidebar-note{display:none}
 
 
 
@@ -22,29 +22,29 @@
 .sidebar .nav-item{
   display:grid!important;
   grid-template-columns:24px minmax(0,1fr)!important;
-  align-items:center!important;
-  justify-items:start!important;
-  column-gap:12px!important;
+  align-items:center;
+  justify-items:start;
+  column-gap:12px;
 }
 .sidebar .nav-item .nav-icon{
-  display:grid!important;
-  place-items:center!important;
-  width:24px!important;
-  height:24px!important;
-  min-width:24px!important;
-  font-size:20px!important;
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  min-width:24px;
+  font-size:20px;
   line-height:1!important;
   color:inherit!important;
 }
 .sidebar .nav-item .nav-icon svg{
-  display:block!important;
-  width:21px!important;
-  height:21px!important;
-  fill:none!important;
+  display:block;
+  width:21px;
+  height:21px;
+  fill:none;
   stroke:currentColor!important;
-  stroke-width:1.9!important;
-  stroke-linecap:round!important;
-  stroke-linejoin:round!important;
+  stroke-width:1.9;
+  stroke-linecap:round;
+  stroke-linejoin:round;
 }
 .sidebar-toggle svg{
   display:block;
@@ -60,65 +60,65 @@
 .sidebar-toggle.points-right svg{transform:rotate(180deg)}
 .sidebar .nav-item .nav-label{
   display:block!important;
-  min-width:0!important;
-  margin:0!important;
-  font-size:17px!important;
-  font-weight:700!important;
+  min-width:0;
+  margin:0;
+  font-size:17px;
+  font-weight:700;
   line-height:1!important;
   color:inherit!important;
-  white-space:nowrap!important;
+  white-space:nowrap;
 }
 .app-shell.sidebar-collapsed .sidebar .nav-item{
   grid-template-columns:1fr!important;
-  justify-items:center!important;
-  padding-inline:8px!important;
+  justify-items:center;
+  padding-inline:8px;
 }
-.app-shell.sidebar-collapsed .sidebar .nav-item .nav-icon{display:grid!important}
+.app-shell.sidebar-collapsed .sidebar .nav-item .nav-icon{display:grid}
 .app-shell.sidebar-collapsed .sidebar .nav-item .nav-label{display:none!important}
 
 /* SOURCE: the narrow rail keeps one utility beside the title. */
 .source-panel > .panel-head{
-  display:block!important;
-  width:100%!important;
-  margin-bottom:16px!important;
-  padding-bottom:16px!important;
+  display:block;
+  width:100%;
+  margin-bottom:16px;
+  padding-bottom:16px;
 }
 .source-panel > .panel-head > div:first-child{
-  display:block!important;
-  width:100%!important;
-  min-width:0!important;
+  display:block;
+  width:100%;
+  min-width:0;
 }
 .source-heading-title-row{
-  display:grid!important;
+  display:grid;
   grid-template-columns:minmax(0,1fr) auto!important;
-  align-items:center!important;
-  gap:10px!important;
-  width:100%!important;
-  min-width:0!important;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  min-width:0;
 }
 .source-heading-title-row h2{
-  min-width:0!important;
-  margin:0!important;
-  white-space:nowrap!important;
+  min-width:0;
+  margin:0;
+  white-space:nowrap;
 }
 .source-heading-actions{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-end!important;
-  gap:0!important;
-  justify-self:end!important;
-  flex:0 0 auto!important;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:0;
+  justify-self:end;
+  flex:0 0 auto;
 }
 .source-heading-add-btn,
 .source-heading-actions #newChapterBtn{
-  display:none!important;
+  display:none;
 }
 .source-heading-actions .quick-switch-project-btn{
-  margin:0!important;
-  min-width:0!important;
-  max-width:112px!important;
+  margin:0;
+  min-width:0;
+  max-width:112px;
   padding-inline:10px!important;
-  white-space:nowrap!important;
+  white-space:nowrap;
 }
 .source-panel > .panel-head > .source-panel-actions,
 .source-panel .source-panel-actions{
@@ -129,83 +129,83 @@
 /* The full-width manual action actually exists in the DOM. A legacy UX layer hid it;
    keep it visible so the source card offers an explicit manual path. */
 .source-panel #addChapterBtn{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  width:100%!important;
-  min-height:40px!important;
-  margin-top:12px!important;
-  border:1px solid #c8c1b0!important;
-  border-radius:10px!important;
-  background:var(--sf-surface-soft)!important;
-  color:var(--denim-700,#4b4557)!important;
-  font-size:13px!important;
-  font-weight:700!important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:40px;
+  margin-top:12px;
+  border:1px solid #c8c1b0;
+  border-radius:10px;
+  background:var(--sf-surface-soft);
+  color:var(--denim-700,#4b4557);
+  font-size:13px;
+  font-weight:700;
 }
 .source-panel #addChapterBtn:hover,
 .source-panel #addChapterBtn:focus-visible{
-  border-color:#c8c1b0!important;
-  background:#f4f1e9!important;
-  color:var(--denim-900,#221f1a)!important;
+  border-color:#c8c1b0;
+  background:#f4f1e9;
+  color:var(--denim-900,#221f1a);
 }
 
 /* SMART SPLIT: use the exact same title/action alignment contract. */
 .splitter-panel > .panel-head{
-  display:grid!important;
+  display:grid;
   grid-template-columns:minmax(0,1fr) auto!important;
-  align-items:center!important;
-  gap:12px!important;
-  width:100%!important;
+  align-items:center;
+  gap:12px;
+  width:100%;
   margin-bottom:14px!important;
-  padding-bottom:14px!important;
+  padding-bottom:14px;
 }
 .splitter-panel > .panel-head > div:first-child{
-  min-width:0!important;
+  min-width:0;
 }
 .splitter-panel > .panel-head h2{
-  margin:0!important;
-  white-space:nowrap!important;
+  margin:0;
+  white-space:nowrap;
 }
 .splitter-panel .smart-split-header-actions{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-end!important;
-  justify-self:end!important;
-  gap:8px!important;
-  margin:0!important;
-  min-width:0!important;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  justify-self:end;
+  gap:8px;
+  margin:0;
+  min-width:0;
 }
 .splitter-panel .smart-split-header-actions #openReadingViewBtn,
 .splitter-panel .smart-split-header-actions #splitPreferencesToggle{
   margin:0!important;
-  white-space:nowrap!important;
+  white-space:nowrap;
 }
 .splitter-panel #splitPreferencesToggle{
   display:inline-flex!important;
-  align-items:center!important;
-  gap:6px!important;
-  min-height:34px!important;
-  padding:0 11px!important;
-  border:1px solid #c8c1b0!important;
-  border-radius:9px!important;
-  background:#fbfaf6!important;
-  color:var(--sf-muted,#6a6357)!important;
-  font-size:13px!important;
-  font-weight:700!important;
+  align-items:center;
+  gap:6px;
+  min-height:34px;
+  padding:0 11px;
+  border:1px solid #c8c1b0;
+  border-radius:9px;
+  background:#fbfaf6;
+  color:var(--sf-muted,#6a6357);
+  font-size:13px;
+  font-weight:700;
 }
 .splitter-panel #splitPreferencesToggle:hover,
 .splitter-panel #splitPreferencesToggle:focus-visible,
 .splitter-panel #splitPreferencesToggle[aria-expanded="true"]{
-  border-color:#c8c1b0!important;
-  background:#f4f1e9!important;
-  color:var(--sf-primary,#4b4557)!important;
+  border-color:#c8c1b0;
+  background:#f4f1e9;
+  color:var(--sf-primary,#4b4557);
 }
 .splitter-panel .smart-split-mini-settings{
-  width:100%!important;
-  clear:both!important;
+  width:100%;
+  clear:both;
 }
 .splitter-panel:not(.split-preferences-open) #smartSplitMiniSettings{
-  display:none!important;
+  display:none;
 }
 .splitter-panel.split-preferences-open #smartSplitMiniSettings{
   display:grid!important;
@@ -214,60 +214,60 @@
 /* Settings info note: reserve a real icon column. The late UI-system padding used to
    overwrite this and let the info dot sit on top of the first characters. */
 .settings-view .security-note{
-  position:relative!important;
-  padding:14px 16px 14px 48px!important;
+  position:relative;
+  padding:14px 16px 14px 48px;
 }
 .settings-view .security-note::before{
-  left:16px!important;
-  top:16px!important;
-  width:20px!important;
-  height:20px!important;
-  margin:0!important;
+  left:16px;
+  top:16px;
+  width:20px;
+  height:20px;
+  margin:0;
 }
 
 @media(min-width:821px){
   /* Collapsed sidebar: the footer is an anchored 2x2 utility cluster. Labels disappear,
      only state dots remain, and every control stays inside the 76px rail. */
   .app-shell.sidebar-collapsed .sidebar #sidebarConnectionStatus.sidebar-connection-status{
-    position:absolute!important;
-    left:8px!important;
-    right:8px!important;
-    bottom:18px!important;
+    position:absolute;
+    left:8px;
+    right:8px;
+    bottom:18px;
     display:grid!important;
-    grid-template-columns:28px 28px!important;
-    grid-auto-rows:28px!important;
-    justify-content:center!important;
-    align-items:center!important;
+    grid-template-columns:28px 28px;
+    grid-auto-rows:28px;
+    justify-content:center;
+    align-items:center;
     gap:6px 4px!important;
     width:auto!important;
-    min-width:0!important;
-    margin:0!important;
+    min-width:0;
+    margin:0;
     padding:10px 0 0!important;
-    border-top:1px solid rgba(200,193,176,.20)!important;
+    border-top:1px solid rgba(200,193,176,.20);
   }
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-connection-row,
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-connection-row.connected,
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-connection-row.restoring{
     display:grid!important;
-    place-items:center!important;
+    place-items:center;
     width:28px!important;
     min-width:28px!important;
     height:28px!important;
     min-height:28px!important;
     padding:0!important;
-    margin:0!important;
-    border:0!important;
-    border-radius:8px!important;
-    background:transparent!important;
+    margin:0;
+    border:0;
+    border-radius:8px;
+    background:transparent;
   }
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-connection-copy{
     display:none!important;
   }
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-status-dot{
-    width:8px!important;
-    height:8px!important;
-    flex:0 0 8px!important;
-    margin:0!important;
+    width:8px;
+    height:8px;
+    flex:0 0 8px;
+    margin:0;
   }
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-utility-actions{
     /* The wrapper steps out of layout so its three controls become grid items of the foot
@@ -283,8 +283,8 @@
     min-width:28px!important;
     height:28px!important;
     min-height:28px!important;
-    padding:0!important;
-    margin:0!important;
+    padding:0;
+    margin:0;
     border-radius:8px!important;
   }
   .app-shell.sidebar-collapsed #sidebarConnectionStatus .sidebar-settings-button svg,
@@ -302,13 +302,13 @@
   .sidebar{
     grid-template-rows:56px!important;
     gap:0!important;
-    padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;
+    padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
   }
   .sidebar .brand,
   .sidebar .sidebar-note,
   .sidebar #sidebarConnectionStatus{display:none!important}
   .sidebar .nav{
-    display:grid!important;
+    display:grid;
     grid-template-columns:repeat(4,minmax(0,1fr))!important;
     gap:5px!important;
   }
@@ -316,27 +316,27 @@
   .sidebar .nav-item{
     grid-template-columns:1fr!important;
     grid-template-rows:22px auto!important;
-    row-gap:3px!important;
+    row-gap:3px;
     min-height:56px!important;
-    padding:5px 3px!important;
-    justify-items:center!important;
+    padding:5px 3px;
+    justify-items:center;
   }
   .sidebar .nav-item .nav-icon{
-    width:22px!important;
-    height:22px!important;
-    min-width:22px!important;
-    font-size:18px!important;
+    width:22px;
+    height:22px;
+    min-width:22px;
+    font-size:18px;
   }
   .sidebar .nav-item .nav-label{
-    display:block!important;
-    font-size:12px!important;
+    display:block;
+    font-size:12px;
     line-height:1.15!important;
   }
   .main{
-    padding-bottom:calc(var(--storyflow-mobile-nav-height) + 14px + env(safe-area-inset-bottom))!important;
+    padding-bottom:calc(var(--storyflow-mobile-nav-height) + 14px + env(safe-area-inset-bottom));
   }
   .storyflow-toast-stack{
-    bottom:calc(var(--storyflow-mobile-nav-height) + 8px + env(safe-area-inset-bottom))!important;
+    bottom:calc(var(--storyflow-mobile-nav-height) + 8px + env(safe-area-inset-bottom));
   }
 
   
@@ -347,7 +347,7 @@
   .source-heading-title-row,
   .splitter-panel > .panel-head{
     grid-template-columns:minmax(0,1fr) auto!important;
-    gap:10px!important;
+    gap:10px;
   }
   .source-heading-actions .quick-switch-project-btn,
   .splitter-panel .smart-split-header-actions #openReadingViewBtn,
@@ -355,13 +355,13 @@
     min-height:40px!important;
     height:40px!important;
   }
-  .source-panel #addChapterBtn{min-height:44px!important;font-size:14px!important}
-  .settings-view .security-note{padding-left:48px!important}
+  .source-panel #addChapterBtn{min-height:44px;font-size:14px}
+  .settings-view .security-note{padding-left:48px}
 }
 
 @media(max-width:390px){
   .source-heading-title-row,
-  .splitter-panel > .panel-head{gap:8px!important}
+  .splitter-panel > .panel-head{gap:8px}
   .source-heading-actions .quick-switch-project-btn,
   .splitter-panel .smart-split-header-actions #openReadingViewBtn,
   .splitter-panel .smart-split-header-actions #splitPreferencesToggle{
