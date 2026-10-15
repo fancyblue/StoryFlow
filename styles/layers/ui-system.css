@@ -200,7 +200,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .source-panel-actions{gap:8px!important}
 .source-panel-actions .button,#sourcePanelActions #refreshSourceBtn,#sourcePanelActions #loadSourceBtn{height:var(--sf-control)!important;min-height:var(--sf-control)!important;font-size:14px!important;border-radius:10px!important}
 .source-panel-actions .manual-source-sync-hint{min-height:var(--sf-control)!important;color:var(--sf-muted)!important;font-size:13px!important;font-weight:500!important;line-height:1.4!important}
-.chapter-group-label{padding:7px 9px!important;border-radius:8px!important;font-size:12px!important}
+.chapter-group-label{padding:7px 9px;border-radius:8px;font-size:12px}
 .chapter-item{min-height:44px;padding:10px 11px;border-radius:0;font-size:14px;font-weight:700}
 .chapter-item small{font-size:12px}
 .chapter-delete-button{width:34px;min-width:34px;border-radius:9px}
@@ -209,7 +209,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .source-choice span{font-size:13px}
 .source-preview-tab{min-height:34px;padding:0 11px;border-radius:999px;font-size:13px;font-weight:700}
 .source-preview-tab.active{background:var(--sf-primary-soft);border-color:#c8c1b0;color:var(--denim-800,#4b4557)}
-.source-change-status{min-height:28px!important;padding:4px 9px!important;font-size:12px!important;font-weight:700!important}
+.source-change-status{min-height:28px;padding:4px 9px;font-size:12px;font-weight:700}
 
 /* Smart Split: controls are tools; preview content remains the strongest frame. */
 .splitter-panel .smart-split-mini-settings{gap:14px!important;padding:0 0 16px!important;margin:0 0 16px;border-bottom:1px solid var(--sf-border)!important}
@@ -251,7 +251,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .publish-list-title-row strong{font-size:16px;font-weight:700}
 .publish-list-title-row span{font-size:12px!important}
 .publish-overall-status,.publish-platform-status,.platform-badge{min-height:28px;padding:0 9px!important;border-radius:999px;font-size:12px;font-weight:700}
-.publish-platform-state strong{font-size:14px!important}
+.publish-platform-state strong{font-size:14px}
 .publish-platform-details-head strong{font-size:13px}
 .publish-platform-details-head .muted{font-size:12px}
 .platform-preview-content{font-size:16px;line-height:1.9;border-color:var(--sf-border);background:#fbfaf6}
@@ -268,7 +268,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .settings-view .platform-default-name{font-size:14px;font-weight:700}
 .settings-view .platform-inline-check span{font-size:13px}
 .settings-view .platform-row-delete{height:34px;min-height:34px!important;padding:0 9px!important;font-size:13px!important;font-weight:700}
-.settings-view .platform-settings-empty strong{font-size:13px!important}.settings-view .platform-settings-empty span{font-size:12.5px!important}
+.settings-view .platform-settings-empty strong{font-size:13px}.settings-view .platform-settings-empty span{font-size:12.5px}
 .settings-view .security-note{font-size:13px;line-height:1.6}
 
 /* Dialog contract */
@@ -315,7 +315,7 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .source-panel-actions .button,#sourcePanelActions #refreshSourceBtn,#sourcePanelActions #loadSourceBtn{height:44px!important;min-height:44px!important;font-size:14px!important}
   .quick-switch-project-btn,.splitter-panel .smart-split-header-actions #openReadingViewBtn{height:40px!important;min-height:40px!important;font-size:13px!important}
   .splitter-panel .smart-split-mini-settings{overflow-x:auto;flex-wrap:nowrap;gap:10px!important}
-  .splitter-panel .smart-split-settings-label{flex:0 0 auto!important}
+  .splitter-panel .smart-split-settings-label{flex:0 0 auto}
   .splitter-panel .smart-split-mini-settings .range-grid label,.splitter-panel .scene-marker-compact{font-size:12px!important}
   .splitter-panel .smart-split-mini-settings .range-grid input,.splitter-panel .scene-marker-compact #sceneMarker{height:42px!important;min-height:42px!important}
   .splitter-panel .suggestion-title-row{grid-template-columns:minmax(0,1fr) auto!important;row-gap:8px!important}
