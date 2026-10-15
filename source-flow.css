@@ -40,22 +40,6 @@
 }
 .source-panel > .panel-head .eyebrow { margin-bottom:5px; }
 .source-panel > .panel-head h2 { line-height:1.3; }
-.source-panel-actions {
-  display:grid;
-  width:100%;
-}
-.source-panel-actions .button {
-  width:100%;
-  min-width:0;
-  justify-content:center;
-  white-space:nowrap;
-  padding:8px 10px;
-}
-.source-panel #loadSourceBtn,.source-panel #refreshSourceBtn { white-space:nowrap; }
-.source-panel #refreshSourceBtn[hidden] { display:none !important; }
-.source-panel #refreshSourceBtn[hidden] + #loadSourceBtn { grid-column:1 / -1; }
-.source-panel .source-undo-update{grid-column:1 / -1;color:#4b4557}
-.source-panel .source-undo-update[hidden]{display:none!important}
 
 @media (max-width:700px) {
   .source-choice-grid { grid-template-columns:1fr; }

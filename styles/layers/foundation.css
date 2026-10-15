@@ -5,6 +5,21 @@
    Declaring it once here removes the need for per-component `[hidden]` patches. */
 [hidden] { display: none !important; }
 
+/* index.html contains the workbench, but Works is the landing page, and the switch only
+   happens once the modules app-loader.js writes in have run. Until then the main column is
+   kept out of sight, so a slow load shows the sidebar beside an empty page instead of the
+   workbench under a sidebar that already says 作品. visibility keeps the layout in place.
+   app-loader.js removes the class at DOMContentLoaded; if it never runs, the animation
+   reveals the page anyway rather than leaving it blank. */
+.storyflow-booting .main {
+  visibility: hidden;
+  animation: storyflow-boot-reveal 0s 4s forwards;
+}
+
+@keyframes storyflow-boot-reveal {
+  to { visibility: visible; }
+}
+
 :root {
   color-scheme: light;
   /* Shadowed by theme.css, which owns the palette; kept in step for the same reason as the

@@ -120,11 +120,6 @@
   padding-inline:10px!important;
   white-space:nowrap;
 }
-.source-panel > .panel-head > .source-panel-actions,
-.source-panel .source-panel-actions{
-  width:100%!important;
-  margin-top:14px!important;
-}
 
 /* The full-width manual action actually exists in the DOM. A legacy UX layer hid it;
    keep it visible so the source card offers an explicit manual path. */

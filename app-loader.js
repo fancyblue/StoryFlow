@@ -21,7 +21,7 @@
     { src: './src/publishing/platform-lock.js?v=20260925-a5', owner: 'publishing' },
     { src: './src/source/source-diff.js?v=20260912-a1', owner: 'source' },
     { src: './src/source/source-sync-history.js?v=20260825-p1', owner: 'source' },
-    { src: './src/source/source-flow.js?v=20260925-a5', owner: 'source' },
+    { src: './src/source/source-flow.js?v=20261015-a4', owner: 'source' },
     { src: './src/projects/projects.js?v=20260918-a2', owner: 'projects' },
     { src: './src/split/boundary-engine.js?v=20260925-a5', owner: 'split' },
     { src: './src/publishing/publishing-flow.js?v=20260925-a5', owner: 'publishing' },
@@ -29,9 +29,9 @@
     { src: './src/publishing/publishing-project-switcher.js?v=20260925-a5', owner: 'publishing' },
     { id: 'storyflowPublishingProjectFilterJs', src: './src/publishing/publishing-project-filter.js?v=20260925-a5', owner: 'publishing' },
     { src: './src/ui/anchored-menu.js?v=20260911-a3', owner: 'ui' },
-    { src: './src/ui/app-ux.js?v=20260925-a5', owner: 'ui' },
+    { src: './src/ui/app-ux.js?v=20261015-a4', owner: 'ui' },
     { src: './src/source/source-relink.js?v=20260912-a1', owner: 'source' },
-    { src: './src/connection/connection-ui.js?v=20260925-a5', owner: 'connection' },
+    { src: './src/connection/connection-ui.js?v=20261015-a4', owner: 'connection' },
     { src: './src/connection/logout-unload-settings.js?v=20260915-a2', owner: 'connection' },
     { src: './src/settings/settings-page.js?v=20260912-a1', owner: 'settings' },
     { id: 'storyflowPlatformSettingsJs', src: './src/settings/platform-settings.js?v=20260919-a2', owner: 'settings' },
@@ -44,19 +44,19 @@
     { src: './src/ui/preview-mode.js?v=20260918-a1', owner: 'ui' },
     { src: './src/connection/google-auth.js?v=20260825-p2b', owner: 'connection' },
     { src: './src/connection/mobile-google-auth.js?v=20260817-1858', owner: 'connection' },
-    { src: './src/ui/workspace-ux.js?v=20260925-a5', owner: 'ui' },
+    { src: './src/ui/workspace-ux.js?v=20261015-a4', owner: 'ui' },
     { src: './src/ui/ui-system.js?v=20260924-a1', owner: 'ui' },
     { id: 'storyflowPublishingDeleteJs', src: './src/publishing/publishing-delete.js?v=20260912-a1', owner: 'publishing' },
     { id: 'storyflowProjectPersistenceGuardJs', src: './src/persistence/project-persistence-guard.js?v=20260826-p7a', owner: 'persistence' },
-    { id: 'storyflowMobileSafeModeJs', src: './src/persistence/mobile-safe-mode.js?v=20260906-a2', owner: 'persistence' },
-    { id: 'storyflowProjectSourceSyncJs', src: './src/source/project-source-sync.js?v=20260925-a5', owner: 'source', attributes: { 'data-storyflow-project-source-sync': '' } },
+    { id: 'storyflowMobileSafeModeJs', src: './src/persistence/mobile-safe-mode.js?v=20261015-a4', owner: 'persistence' },
+    { id: 'storyflowProjectSourceSyncJs', src: './src/source/project-source-sync.js?v=20261015-a4', owner: 'source', attributes: { 'data-storyflow-project-source-sync': '' } },
     { id: 'storyflowSourceArticleUxJs', src: './src/source/source-article-ux.js?v=20260925-a5', owner: 'source' },
     { id: 'storyflowChapterManagementJs', src: './src/projects/chapter-management.js?v=20260925-a5', owner: 'projects' },
     { id: 'storyflowManualChapterEditJs', src: './src/projects/manual-chapter-edit.js?v=20260925-a5', owner: 'projects' },
     { id: 'storyflowSmartSplitPreferencesJs', src: './src/split/smart-split-preferences.js?v=20260825-p2b', owner: 'split' },
     { id: 'storyflowSmartSplitTitleJs', src: './src/split/smart-split-title.js?v=20260925-a5', owner: 'split' },
     { id: 'storyflowWorksLibraryUxJs', src: './src/projects/works-library-ux.js?v=20260919-a6', owner: 'projects' },
-    { src: './src/projects/workspace-project-ux.js?v=20260925-a5', owner: 'projects' },
+    { src: './src/projects/workspace-project-ux.js?v=20261015-a4', owner: 'projects' },
     { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20260915-a2', owner: 'ui' },
     { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20260925-a4', owner: 'publishing' },
     { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20260925-a3', owner: 'projects' }
@@ -73,7 +73,15 @@
     return values.join(' ');
   }
 
+  // index.html marks <html> as booting so the workbench it contains is not painted before
+  // the landing view replaces it (styles/layers/foundation.css). The written scripts are
+  // parser-blocking, so DOMContentLoaded follows the last of them, failed ones included.
+  function finishBooting() {
+    document.documentElement.classList.remove('storyflow-booting');
+  }
+
   if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', finishBooting, { once: true });
     document.write(scripts.map(entry => `<script ${attributes(entry)}><\/script>`).join(''));
     return;
   }
@@ -96,5 +104,5 @@
   })().catch(error => {
     console.error(error);
     document.body.dataset.storyflowLoadError = 'true';
-  });
+  }).finally(finishBooting);
 })();

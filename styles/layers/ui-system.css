@@ -197,9 +197,6 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 }
 .quick-switch-project-btn .sf-chevron{margin-left:2px}
 .quick-switch-project-btn:hover,.quick-switch-project-btn:focus-visible,.quick-switch-project-btn[aria-expanded="true"],.splitter-panel .smart-split-header-actions #openReadingViewBtn:hover,.splitter-panel .smart-split-header-actions #openReadingViewBtn:focus-visible{background:#f4f1e9;border-color:#c8c1b0;color:var(--denim-800,#4b4557)}
-.source-panel-actions{gap:8px!important}
-.source-panel-actions .button,#sourcePanelActions #refreshSourceBtn,#sourcePanelActions #loadSourceBtn{height:var(--sf-control)!important;min-height:var(--sf-control)!important;font-size:14px!important;border-radius:10px!important}
-.source-panel-actions .manual-source-sync-hint{min-height:var(--sf-control)!important;color:var(--sf-muted)!important;font-size:13px!important;font-weight:500!important;line-height:1.4!important}
 .chapter-group-label{padding:7px 9px;border-radius:8px;font-size:12px}
 .chapter-item{min-height:44px;padding:10px 11px;border-radius:0;font-size:14px;font-weight:700}
 .chapter-item small{font-size:12px}
@@ -312,7 +309,6 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .sidebar-utility-actions{grid-template-columns:repeat(2,34px)!important;gap:3px!important;width:71px}
   .sidebar-settings-button,.sidebar-logout{width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;border-radius:8px!important}
   .sidebar-settings-button>.sidebar-utility-icon,.sidebar-logout>.sidebar-utility-icon,.sidebar-settings-button svg,.sidebar-logout svg{width:18px!important;height:18px!important}
-  .source-panel-actions .button,#sourcePanelActions #refreshSourceBtn,#sourcePanelActions #loadSourceBtn{height:44px!important;min-height:44px!important;font-size:14px!important}
   .quick-switch-project-btn,.splitter-panel .smart-split-header-actions #openReadingViewBtn{height:40px!important;min-height:40px!important;font-size:13px!important}
   .splitter-panel .smart-split-mini-settings{overflow-x:auto;flex-wrap:nowrap;gap:10px!important}
   .splitter-panel .smart-split-settings-label{flex:0 0 auto}

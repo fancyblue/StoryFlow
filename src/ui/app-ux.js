@@ -315,16 +315,6 @@
     return groups;
   }
 
-  function syncSourceActionState() {
-    const chapter = activeChapter?.();
-    const hasGoogleSource = Boolean(chapter?.source?.id && chapter?.source?.tabId);
-    const refresh = document.getElementById('refreshSourceBtn');
-    if (refresh) {
-      refresh.hidden = !hasGoogleSource;
-      refresh.disabled = !hasGoogleSource;
-    }
-  }
-
   function renderChaptersWithActions() {
     const list = document.getElementById('chapterList');
     if (!list) return;
@@ -367,7 +357,6 @@
         list.appendChild(row);
       });
     });
-    syncSourceActionState();
   }
 
   function formatSummary(platform) {
@@ -419,7 +408,6 @@
 
   window.addEventListener('storyflow:projects-changed', () => {
     renderProjectsView();
-    syncSourceActionState();
   });
   // Connecting a folder opens work creation, so the page has to re-render rather than
   // leave a stale disabled button behind.
@@ -439,7 +427,6 @@
   renderProjectsView();
   renderChapters();
   refreshFormatSummaries();
-  syncSourceActionState();
   removeLegacyReset();
   labelCloseButtons();
 })();

@@ -74,23 +74,6 @@ input.text-input:focus{
 
 /* SOURCE panel: 更新作品來源 / 載入來源 are peers. Same size, equal width;
    only fill color communicates which action is primary. */
-.source-panel-actions{
-  align-items:stretch!important;
-}
-.source-panel-actions .button,
-#sourcePanelActions #refreshSourceBtn,
-#sourcePanelActions #loadSourceBtn{
-  height:36px!important;
-  min-height:36px!important;
-  padding:0 12px!important;
-  border-radius:10px!important;
-  font-size:12px!important;
-  line-height:1!important;
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  white-space:nowrap!important;
-}
 
 /* Dialog footer actions are one decision set, so cancel/confirm stay aligned. */
 .sticky-dialog-actions .button,
@@ -236,15 +219,6 @@ input.text-input:focus{
     width:18px!important;
     height:18px!important;
     flex-basis:18px;
-  }
-
-  .source-panel-actions .button,
-  #sourcePanelActions #refreshSourceBtn,
-  #sourcePanelActions #loadSourceBtn{
-    height:42px!important;
-    min-height:42px!important;
-    padding:0 12px!important;
-    font-size:13px!important;
   }
 
   .sticky-dialog-actions .button,

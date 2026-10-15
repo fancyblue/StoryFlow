@@ -126,7 +126,6 @@ h3{letter-spacing:-.01em}
   overflow:auto;
   scrollbar-gutter:stable;
 }
-.source-panel #loadSourceBtn{min-height:42px;border-radius:11px}
 .source-panel .project-switcher{margin-bottom:13px;padding-bottom:12px}
 .source-panel .project-switcher-field .text-input{min-height:42px}
 .source-panel .field-label{margin-top:12px}
