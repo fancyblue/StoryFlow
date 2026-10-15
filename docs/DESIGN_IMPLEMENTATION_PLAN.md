@@ -187,8 +187,8 @@
 - **34 個是真的在打仗**（移除後至少一個狀態的 computed style 會變）。
 - **12 個沒有證據**：`.button.primary:disabled`（沒有量測狀態出現停用的主要按鈕）、
   `.project-source-diff-badge`（來源比對對話框，需要 Google Docs）、以及 `.source-panel-actions`
-  底下的 `#refreshSourceBtn`／`#loadSourceBtn`。最後這組不是沒測到，而是**執行期不存在**——
-  見 B 段第一批的補充。
+  底下的 `#refreshSourceBtn`／`#loadSourceBtn`。最後這組只在**啟動的頭幾個畫格**存在，
+  量測時已經被移除——見 B 段第一批的補充。
 
 ### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，動工時 724 個，第一批前 666 個，現在 276 個）
 
@@ -228,13 +228,17 @@ computed style，再把兩個 `<link>` 換成移除 `!important` 的版本（位
   （`.source-panel-actions`、`.source-change-status`、`.chapter-group-label`）、切篇偏好展開、
   設定頁的平台空狀態、`.publishing-project-badge`。不是證明需要，而是沒測到；
   要清的話先補上能走到那些畫面的狀態。
-  **補充（A 類處理時查證）**：其中多數其實是**執行期不存在**的元素，補狀態也走不到——
+  **補充（A 類處理時查證）**：其中多數不是哪個畫面沒走到，而是元素**只在啟動時短暫存在**，
+  每一次量測的當下都已經不在——
   `#sourcePanelActions`／`#manualSourceSyncHint` 由 `source-flow.js`／`workspace-ux.js` 建立後，
-  立刻被 `project-source-sync.js` 的 `ensureModeUi()` 移除；`.publishing-project-badge>span`
-  的內容被 `publishing-project-switcher.js` 整個換掉；`.smart-split-settings-label` 被 `smart-split-ui.js` 移除；
-  `.publish-platform-state` 這個 class 程式從來不產生（只有 `publish-platform-state-line`）。
-  這些是整條規則失效，不只是 `!important`，該做的是刪規則，`dead-selectors.mjs` 目前看不出這種情況。
-  真正只是沒測到的是 `.source-change-status`（Google Docs 更新來源的對話框）。
+  被 `project-source-sync.js` 的 `ensureModeUi()` 移除；`.publishing-project-badge>span`
+  的內容被 `publishing-project-switcher.js` 整個換掉。在每個畫格與每次 DOM 變動上監看的結果：
+  三者都只出現在每次載入的頭 4–5 個畫格，其中 `#sourcePanelActions` 有 2–3 格**真的有版面框**，
+  另外兩者沒有。所以它們不是死規則，只是量測時刻抓不到。
+  真正從來不在 DOM 裡的是 `.smart-split-settings-label`（被 `smart-split-ui.js` 移除）與
+  `.publish-platform-state`（程式只產生 `publish-platform-state-line`），這兩條整條規則都失效，
+  `dead-selectors.mjs` 目前看不出這種情況。
+  只是沒走到的是 `.source-change-status`（Google Docs 更新來源的對話框）。
   另外 1 個在 `::-webkit-` 類 pseudo-element 上，
   computed style 讀不到，直接保留。
 
