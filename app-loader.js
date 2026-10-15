@@ -73,7 +73,15 @@
     return values.join(' ');
   }
 
+  // index.html marks <html> as booting so the workbench it contains is not painted before
+  // the landing view replaces it (styles/layers/foundation.css). The written scripts are
+  // parser-blocking, so DOMContentLoaded follows the last of them, failed ones included.
+  function finishBooting() {
+    document.documentElement.classList.remove('storyflow-booting');
+  }
+
   if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', finishBooting, { once: true });
     document.write(scripts.map(entry => `<script ${attributes(entry)}><\/script>`).join(''));
     return;
   }
@@ -96,5 +104,5 @@
   })().catch(error => {
     console.error(error);
     document.body.dataset.storyflowLoadError = 'true';
-  });
+  }).finally(finishBooting);
 })();

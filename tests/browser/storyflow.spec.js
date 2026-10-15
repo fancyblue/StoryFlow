@@ -68,6 +68,50 @@ test('startup and legacy compatibility API preserve browser data', async ({ page
   expect(pageErrors).toEqual([]);
 });
 
+// Works is the landing page, but the workbench is what index.html contains, and it used to
+// be painted for as long as the 55 modules took to load: the topbar, the source panel and
+// the split preview, under a sidebar that already said 作品. Each frame is sampled until
+// DOMContentLoaded, by which point every module has run and the landing view is in place.
+test('startup paints no workbench before the landing view is ready', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.addInitScript(() => {
+    const frames = window.__startupFrames = [];
+    let loaded = false;
+    document.addEventListener('DOMContentLoaded', () => { loaded = true; }, { once: true });
+    const sample = () => {
+      if (loaded) return;
+      const heading = [...document.querySelectorAll('.topbar h1')]
+        .find(node => node.textContent.includes('內容發布工作台'));
+      if (heading) {
+        const box = heading.getBoundingClientRect();
+        frames.push(box.width > 0 && box.height > 0 && getComputedStyle(heading).visibility === 'visible');
+      }
+      requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+  await page.goto('/');
+
+  const frames = await page.evaluate(() => window.__startupFrames);
+  expect(frames.length).toBeGreaterThan(0);
+  expect(frames.filter(Boolean)).toEqual([]);
+  await expect(page.getByRole('heading', { name: '作品', exact: true })).toBeVisible();
+  await expect(page.locator('.main')).toHaveCSS('visibility', 'visible');
+  expect(pageErrors).toEqual([]);
+});
+
+// The class that hides the main column is removed by app-loader.js. If that file never
+// arrives, a blank page would be worse than the flash the class prevents, so the stylesheet
+// reveals the column on its own after a few seconds.
+test('startup still shows the page when the module loader never arrives', async ({ page }) => {
+  await prepare(page);
+  await page.route(/\/app-loader\.js/, route => route.abort());
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveClass(/storyflow-booting/);
+  await expect(page.locator('.main')).toHaveCSS('visibility', 'hidden');
+  await expect(page.locator('.main')).toHaveCSS('visibility', 'visible', { timeout: 8000 });
+});
+
 test('visual metadata stores afterword and its platform-output preference', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.goto('/');
