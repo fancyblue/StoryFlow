@@ -48,7 +48,7 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-00 | Give StoryFlow somewhere to save | 連接 StoryFlow 資料夾 | — | The single enabled action while no folder is connected; the creation options stay visible but disabled, so the page offers one next step rather than two competing ones |
 | WS-01 | Start an empty work, chapter or visual entry | 從 Google Docs 建立／手動建立／新增第一篇文章／新增圖文 | 切換作品 | Emphasize the source-choice stage; keep alternative creation actions at the same level |
 | WS-02 | Select the work and chapter or visual entry to process | 切換作品／章節列／圖文列 | Add, edit or delete the matching content type | Selection and disclosure styling, never primary CTA styling |
-| WS-03 | Refresh a linked Google Docs chapter | 更新來源 | 復原來源更新 | Tinted action that opens comparison; only “套用所選變更” is solid after review |
+| WS-03 | Refresh a work's linked Google Docs source | 更新作品來源 | 復原上次來源更新 | Tinted action that opens comparison; only “套用所選變更” is solid after review |
 | WS-04 | Adjust an automatic split suggestion | 少一個場景／多一個場景 | 切篇偏好 | Outlined directional and disclosure controls |
 | WS-05 | Move the ending within a long scene | 接縫檢視 | Drag or choose a paragraph boundary | A view of the reading surface, not a mode; boundary targets are not buttons competing for primary emphasis |
 | WS-06 | Read the chapter around the cut | 讀稿檢視 | `[讀稿｜接縫]`、預覽格式、回到工作台 | A page that replaces the workbench rails, not a dialog over them |

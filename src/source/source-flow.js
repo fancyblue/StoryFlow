@@ -2,7 +2,6 @@
 // Existing Google Docs sources can be refreshed and reviewed before the workspace is changed.
 (function () {
   let pendingSourcePreview = null;
-  let lastSourceUndo = null;
 
   function closeForHandoff(dialog) {
     if (!dialog) return;
@@ -164,40 +163,6 @@
       document.getElementById('confirmSourcePreviewBtn').onclick = confirmSourcePreview;
       cancelNewWorkOnClose(dialog);
     }
-  }
-
-  function sourceLabel(chapter) {
-    if (!chapter?.source) return '';
-    const source = chapter.source;
-    return `${source.name || 'Google Docs'}${source.tabTitle ? ` › ${source.tabTitle}` : ''}`;
-  }
-
-  function syncSourceButtons() {
-    ensureSourceDialogs();
-    const hasGoogleSource = Boolean(activeChapter()?.source?.id && activeChapter()?.source?.tabId);
-    const refresh = document.getElementById('refreshSourceBtn');
-    if (refresh) {
-      refresh.hidden = !hasGoogleSource;
-      refresh.disabled = !hasGoogleSource;
-    }
-    const undo = document.getElementById('undoSourceUpdateBtn');
-    if (undo) {
-      const sameProject = !lastSourceUndo?.projectId || lastSourceUndo.projectId === window.StoryFlowProjects?.activeId?.();
-      const canUndo = Boolean(lastSourceUndo?.chapterId === activeChapter()?.id && sameProject);
-      undo.hidden = !canUndo;
-      undo.disabled = !canUndo;
-    }
-  }
-
-  function openSourceDialog() {
-    ensureSourceDialogs();
-    const chapter = activeChapter();
-    const area = document.getElementById('detachSourceArea');
-    const label = document.getElementById('detachSourceLabel');
-    const hasSource = Boolean(chapter?.source?.id && chapter?.source?.tabId);
-    area.classList.toggle('hidden', !hasSource);
-    if (label) label.textContent = hasSource ? sourceLabel(chapter) : '';
-    document.getElementById('sourceDialog').showModal();
   }
 
   function openManualSourceDialog({ creation = false } = {}) {
@@ -395,7 +360,6 @@
       pendingSourcePreview = null;
       document.getElementById('sourcePreviewDialog').close();
       renderAll();
-      syncSourceButtons();
       notify('Google Docs 已檢查，目前沒有內容變更');
       return;
     }
@@ -416,12 +380,6 @@
       return;
     }
 
-    lastSourceUndo = {
-      projectId: window.StoryFlowProjects?.activeId?.() || null,
-      chapterId: chapter.id,
-      chapter: structuredClone(chapter)
-    };
-
     chapter.title = incoming.title || chapter.title;
     chapter.draft = incoming.draft;
     chapter.source = incoming.source;
@@ -430,7 +388,6 @@
     saveState('來源已更新');
     document.getElementById('sourcePreviewDialog').close();
     renderAll();
-    syncSourceButtons();
     if (activeChapter()?.id === chapter.id && chapter.draft) suggestNextPart();
     const backupNote = recoveryCreated ? '，並已建立 Recovery 安全副本' : '';
     notify(preview.confirmedChanged
@@ -475,7 +432,6 @@
     saveState('來源已加入');
     document.getElementById('sourcePreviewDialog').close();
     renderAll();
-    syncSourceButtons();
     if (activeChapter().draft) suggestNextPart();
     notify('來源已確認，已進入切篇預覽');
   }
@@ -487,88 +443,23 @@
     saveState('來源連結已解除');
     document.getElementById('sourceDialog').close();
     renderAll();
-    syncSourceButtons();
     if (chapter.draft) suggestNextPart();
     notify('已解除來源連結，現有內容保留為手動文章');
   }
 
-  function undoLastSourceUpdate() {
-    if (!lastSourceUndo) return;
-    if (lastSourceUndo.projectId && lastSourceUndo.projectId !== window.StoryFlowProjects?.activeId?.()) {
-      window.StoryFlowProjects?.switchProject?.(lastSourceUndo.projectId, { quiet: true });
-    }
-    const chapter = state.chapters.find(item => item.id === lastSourceUndo.chapterId);
-    if (!chapter) {
-      notify('找不到可復原的章節', true);
-      lastSourceUndo = null;
-      syncSourceButtons();
-      return;
-    }
-    const restored = structuredClone(lastSourceUndo.chapter);
-    Object.keys(chapter).forEach(key => delete chapter[key]);
-    Object.assign(chapter, restored);
-    state.activeChapterId = chapter.id;
-    lastSourceUndo = null;
-    suggestion = null;
-    saveState('已復原來源更新');
-    renderAll();
-    syncSourceButtons();
-    if (chapter.draft) suggestNextPart();
-    notify('已復原上一次來源更新');
-  }
-
-  function installSourceButton() {
-    const panel = document.querySelector('.source-panel');
-    const head = panel?.querySelector('.panel-head');
-    if (!panel || !head) return;
+  // The source panel's own action row (更新來源 / 載入來源 / 復原來源更新) used to be built
+  // here, and project-source-sync.js removed it on its first render: the project source
+  // controller owns that area, with 更新作品來源 and its own undo. Building it only for it to
+  // be removed painted it for the first frames of every load, so only the add button is
+  // wired here now.
+  function wireAddChapterButton() {
     const oldPlus = document.getElementById('newChapterBtn');
     if (oldPlus) oldPlus.classList.add('hidden');
-
-    let actions = document.getElementById('sourcePanelActions');
-    if (!actions) {
-      actions = document.createElement('div');
-      actions.id = 'sourcePanelActions';
-      actions.className = 'source-panel-actions';
-      head.appendChild(actions);
-    }
-
-    if (!document.getElementById('refreshSourceBtn')) {
-      const refresh = document.createElement('button');
-      refresh.id = 'refreshSourceBtn';
-      refresh.type = 'button';
-      refresh.className = 'button tiny ghost';
-      refresh.textContent = '更新來源';
-      refresh.onclick = refreshActiveSource;
-      actions.appendChild(refresh);
-    }
-
-    if (!document.getElementById('loadSourceBtn')) {
-      const button = document.createElement('button');
-      button.id = 'loadSourceBtn';
-      button.type = 'button';
-      button.className = 'button tiny primary';
-      button.textContent = '載入來源';
-      button.onclick = openSourceDialog;
-      actions.appendChild(button);
-    }
-
-    if (!document.getElementById('undoSourceUpdateBtn')) {
-      const undo = document.createElement('button');
-      undo.id = 'undoSourceUpdateBtn';
-      undo.type = 'button';
-      undo.className = 'button tiny ghost source-undo-update';
-      undo.textContent = '復原來源更新';
-      undo.hidden = true;
-      undo.onclick = undoLastSourceUpdate;
-      actions.appendChild(undo);
-    }
-
     const add = document.getElementById('addChapterBtn');
     if (add) {
       add.textContent = '＋ 手動新增文章';
       add.onclick = openManualSourceDialog;
     }
-    syncSourceButtons();
   }
 
   // Google tab selection previews first; it does not immediately mutate the workspace.
@@ -600,8 +491,7 @@
   }
 
   ensureSourceDialogs();
-  installSourceButton();
+  wireAddChapterButton();
   cleanLegacyInstructions();
-  syncSourceButtons();
   window.StoryFlowSourceFlow = { openManualSourceDialog };
 })();

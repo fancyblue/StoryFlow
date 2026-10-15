@@ -2636,6 +2636,23 @@ test('works cards report publishing progress per content type using publishing r
   expect(pageErrors).toEqual([]);
 });
 
+// This button used to forward its click to #loadSourceBtn, a control in a source action row
+// that project-source-sync.js removed on its first render. The capture handler in
+// workspace-project-ux.js was already what opened the chooser; with the row gone, it is the
+// only path, so it is pinned here.
+test('an empty work offers its first article from the workbench', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await page.evaluate(() => StoryFlowProjects.createProject({ title: '空白作品' }, { quiet: true }));
+  await page.locator('.nav-item[data-view="workspace"]').click();
+
+  await page.getByRole('button', { name: '新增第一篇文章', exact: true }).click();
+  await expect(page.locator('#sourceDialog')).toBeVisible();
+  await expect(page.locator('#sourcePanelActions')).toHaveCount(0);
+  expect(pageErrors).toEqual([]);
+});
+
 test('work creation waits for a connected folder and opens once there is one', async ({ page }) => {
   // No folder stand-in: this test is about the state before one exists.
   const pageErrors = await prepare(page, { connectedFolder: false });

@@ -66,19 +66,9 @@
     }
 
     const dialog = configureSourceDialog({ creation });
-    if (dialog) {
-      if (!dialog.open) dialog.showModal();
-      return true;
-    }
-
-    // source-flow normally creates the dialog at boot. Keep a defensive fallback for
-    // slower script loading, but never depend on this button as the primary path.
-    const legacy = document.getElementById('loadSourceBtn');
-    if (legacy) {
-      legacy.click();
-      return true;
-    }
-    return false;
+    if (!dialog) return false;
+    if (!dialog.open) dialog.showModal();
+    return true;
   }
 
   function openManualCreation() {
@@ -136,10 +126,8 @@
     ensureNewProjectAction();
   }
 
-  // Empty workspace CTA used to click #loadSourceBtn, but the project source controller
-  // intentionally removes that legacy action row. Intercept the real user action and
-  // invoke the source chooser directly. Without integration settings, this CTA routes
-  // to Settings as the user expects.
+  // The empty workspace CTA opens the source chooser directly. Without integration
+  // settings, this CTA routes to Settings as the user expects.
   document.addEventListener('click', event => {
     const target = event.target.closest?.('button');
     if (!target) return;
@@ -150,13 +138,6 @@
       // Manual work must remain usable without Google integration settings. The
       // Google choice itself is guarded below and routes to Settings when needed.
       openSourceChooser({ allowManualBeforeSettings: true });
-      return;
-    }
-
-    if (target.id === 'loadSourceBtn' && !hasIntegrationSettings()) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      showSettings();
       return;
     }
 

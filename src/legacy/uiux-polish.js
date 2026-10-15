@@ -69,7 +69,6 @@
   }
 
   polishSourceDialogs();
-  document.getElementById('loadSourceBtn')?.addEventListener('click', () => setTimeout(polishSourceDialogs, 0));
   document.getElementById('sourceManualBtn')?.addEventListener('click', () => setTimeout(polishSourceDialogs, 0));
   document.getElementById('previewManualSourceBtn')?.addEventListener('click', () => setTimeout(polishSourceDialogs, 0));
 

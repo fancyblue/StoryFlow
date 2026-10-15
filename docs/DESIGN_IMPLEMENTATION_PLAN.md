@@ -9,7 +9,7 @@
 順序不是照影響力排的，是照**相依性與風險**排的：
 
 1. **顏色改不動，除非先 token 化。** 但規模跟原本估的差很多，見階段 1 的實測。
-   （另外那些 `!important`——動工時 2,905 個，2026-10-15 重量為 2,581 個，B 類第一批後 2,191 個，A 類之後 2,101 個，B 類第二批後 2,089 個——是**不同**的問題，不擋換色——見下方「插曲」。）
+   （另外那些 `!important`——動工時 2,905 個，2026-10-15 重量為 2,581 個，B 類第一批後 2,191 個，A 類之後 2,101 個，B 類第二批後 2,089 個，移除舊來源按鈕列後 2,015 個——是**不同**的問題，不擋換色——見下方「插曲」。）
 2. **cascade 不可靠。** `ensureThemeOrder()`（`src/settings/settings-page.js`）與兩個 `ensureStyleLast()`
    在 runtime 重排 stylesheet，所以「看起來在最後」的規則可能會輸。動任何 stylesheet 順序都要同步更新
    `scripts/cascade-order.json`，否則 `tests/browser/cascade-contract.spec.js` 會失敗。
@@ -153,7 +153,7 @@
 | 其餘 | ~1,555 | 1,385 | 54% |
 | **合計** | **2,905** | **2,581** | |
 
-（「2026-10-15」欄是 B 類第一批**之前**量的；第一批之後 `ui-system.css` 221、`layout-integrity.css` 55，合計 2,191；A 類之後 `theme.css` 46，合計 2,101；B 類第二批之後 `ui-system.css` 210、`layout-integrity.css` 54，合計 2,089。）
+（「2026-10-15」欄是 B 類第一批**之前**量的；第一批之後 `ui-system.css` 221、`layout-integrity.css` 55，合計 2,191；A 類之後 `theme.css` 46，合計 2,101；B 類第二批之後 `ui-system.css` 210、`layout-integrity.css` 54，合計 2,089；移除舊來源按鈕列的整條規則之後 `theme.css` 39、`ui-system.css` 197、`layout-integrity.css` 52，合計 2,015。）
 
 減少的部分不是專門清 `!important` 的結果，主要是兩次移除時一併帶走的：
 #108（4-1／4-2，拆掉頁首連線膠囊等，−115）與 #122（移除不會生效的 CSS，−238）；
@@ -163,7 +163,7 @@
 
 分成三類處理，都不排進主線：
 
-### A. 原本預期換色後會自然消失的（`theme.css`，動工時 162 個，A 類處理前 136 個，現在 46 個）
+### A. 原本預期換色後會自然消失的（`theme.css`，動工時 162 個，A 類處理前 136 個，處理後 46 個，現在 39 個）
 
 原本的判斷：`theme.css` 的角色是「用 `!important` 一條一條蓋掉 `foundation.css` 的紫色底稿」，
 階段 3 把正確的值寫進 token 之後，這些覆蓋就失去存在理由，整層可以大幅縮減，當成階段 3 的收尾。
@@ -188,9 +188,10 @@
 - **12 個沒有證據**：`.button.primary:disabled`（沒有量測狀態出現停用的主要按鈕）、
   `.project-source-diff-badge`（來源比對對話框，需要 Google Docs）、以及 `.source-panel-actions`
   底下的 `#refreshSourceBtn`／`#loadSourceBtn`。最後這組只在**啟動的頭幾個畫格**存在，
-  量測時已經被移除——見 B 段第一批的補充。
+  量測時已經被移除——見 B 段第一批的補充。之後連同整條規則刪除（見 B 段「之後」），
+  現在留在 `theme.css` 的沒有證據項只剩前兩組 5 個。
 
-### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，動工時 724 個，第一批前 666 個，第二批前 276 個，現在 264 個）
+### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，動工時 724 個，第一批前 666 個，第二批前 276 個，第二批後 264 個，現在 249 個）
 
 這兩個檔案由 `ensureThemeOrder()` 在 runtime 重新附加到很後面，所以它們的 `!important`
 **多數可能是多餘的——它本來就贏**。這是可驗證的假設，不是推測：
@@ -263,6 +264,27 @@ computed style，再把兩個 `<link>` 換成移除 `!important` 的版本（位
   量測時刻抓不到，拿掉可能改變那幾格；`#manualSourceSyncHint` 5 個與 `.publishing-project-badge>span` 3 個——
   觀察到的畫格都沒有版面框，但與上一組同一個生命週期，時序上無法排除，一併保留。
   要再處理這 18 個，該做的是查清楚為什麼這些元素在啟動時被建立又移除（是否造成啟動閃動），而不是在 CSS 上動手。
+
+#### 之後：查清楚那 18 個，連帶修掉啟動閃動
+
+查下去發現閃的不只是按鈕列，而是**整個工作台**：`index.html` 裡寫的是工作台，首頁卻從 4-1 起是作品頁，
+而切換要等 `app-loader.js` 寫入的 55 個模組跑完。每次載入都先畫出工作台（頁首、來源欄、切篇預覽），
+旁邊的側欄卻已經標著「作品」——本機 14–16 格，在 GitHub Pages 上則是模組載入要多久就閃多久。
+現在 `<html>` 以 `storyflow-booting` 開場，主欄先以 `visibility: hidden` 藏住（版面不位移），
+`app-loader.js` 在 `DOMContentLoaded`（最後一個同步模組跑完、失敗的也算）時移除；
+若 `app-loader.js` 根本沒載到，`foundation.css` 的動畫在 4 秒後自己把主欄顯示出來，不會留白。
+兩個瀏覽器測試各自先在舊程式上失敗過。
+
+按鈕列本身：`source-flow.js` 建它、`project-source-sync.js` 一渲染就把它移除，來源控制器早已用
+「更新作品來源」與「復原上次來源更新」取代它。所以不再建立它，連同只為它存在的
+`openSourceDialog()`、`undoLastSourceUpdate()`（本來就按不到）、提示文字與各處防禦路徑一起移除；
+JS 不再產生這些名稱後，`dead-selectors.mjs --apply` 在 8 個樣式表裡刪掉 35 條整條規則——
+18 個裡的 15 個（`.source-panel-actions` 10、`.manual-source-sync-hint` 5）隨之消失，
+`theme.css` 的同組 7 個也是。全站 `!important` 2,089 → 2,015。
+
+剩下 `.publishing-project-badge>span` 3 個：發布頁徽章整個被
+`.publishing-page-head .publishing-project-badge{display:none!important}` 隱藏，這 3 個不影響任何畫面。
+徽章（與裡面的作品切換器）該不該存在是發布頁的產品問題，沒有在這裡決定。
 
 ### C. 其餘約 1,780 個（動工時約 1,900 個）
 

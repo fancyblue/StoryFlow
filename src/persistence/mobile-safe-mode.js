@@ -15,9 +15,6 @@
     '#createProjectManually',
     '#createProjectFromGoogle',
     '#workspaceLoadSourceBtn',
-    '#loadSourceBtn',
-    '#refreshSourceBtn',
-    '#undoSourceUpdateBtn',
     '#resetWorkspaceBtn'
   ].join(',');
   const SAFE_READ_CONTROL_SELECTOR = [

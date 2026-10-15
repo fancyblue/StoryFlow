@@ -173,10 +173,6 @@
     if (!panel) return null;
     panel.classList.add('project-source-mode');
 
-    // Remove the older mixed-purpose action row. The source controller owns this area.
-    document.getElementById('sourcePanelActions')?.remove();
-    document.getElementById('manualSourceSyncHint')?.remove();
-
     const head = panel.querySelector(':scope > .panel-head');
     const titleLabel = panel.querySelector('label[for="projectTitle"]');
     const titleInput = document.getElementById('projectTitle');

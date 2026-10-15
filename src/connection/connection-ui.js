@@ -212,7 +212,6 @@
     actions.innerHTML = `
       <button id="workspaceLoadSourceBtn" class="button primary" type="button">新增第一篇文章</button>
       <button id="workspaceChooseWorkBtn" class="button ghost" type="button">切換作品</button>`;
-    actions.querySelector('#workspaceLoadSourceBtn').addEventListener('click', () => document.getElementById('loadSourceBtn')?.click());
     actions.querySelector('#workspaceChooseWorkBtn').addEventListener('click', () => window.StoryFlowNavigate?.('projects'));
   }
 

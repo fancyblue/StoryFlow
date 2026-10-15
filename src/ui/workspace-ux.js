@@ -176,35 +176,6 @@
     button?.setAttribute('aria-expanded', 'false');
   }
 
-  function syncSourceActionHint() {
-    const actions = document.getElementById('sourcePanelActions');
-    const refresh = document.getElementById('refreshSourceBtn');
-    if (!actions || !refresh) return;
-
-    const linked = hasGoogleSource();
-    let hint = document.getElementById('manualSourceSyncHint');
-    actions.classList.toggle('has-linked-source', linked);
-    actions.classList.toggle('manual-only-source', !linked);
-
-    if (!linked) {
-      refresh.hidden = true;
-      refresh.disabled = true;
-      if (!hint) {
-        hint = document.createElement('span');
-        hint.id = 'manualSourceSyncHint';
-        hint.className = 'manual-source-sync-hint';
-        hint.textContent = '手動文章沒有可同步來源';
-        hint.title = '手動新增的文章沒有連結 Google Docs，因此不需要「更新作品來源」。';
-        actions.insertBefore(hint, actions.firstChild);
-      }
-      hint.hidden = false;
-    } else {
-      hint?.remove();
-      refresh.hidden = false;
-      refresh.title = '比較整個作品與已連結 Google Docs 的差異';
-    }
-  }
-
   function tidyReviewToolbar() {
     const view = document.getElementById('readingView');
     if (!view) return;
@@ -224,7 +195,6 @@
     ensureSidebarUtilityIcons();
     syncSidebarConnectionLabels();
     ensureQuickSwitch();
-    syncSourceActionHint();
     tidyReviewToolbar();
   }
 
