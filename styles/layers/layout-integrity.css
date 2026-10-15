@@ -208,7 +208,7 @@
   display:none;
 }
 .splitter-panel.split-preferences-open #smartSplitMiniSettings{
-  display:grid!important;
+  display:grid;
 }
 
 /* Settings info note: reserve a real icon column. The late UI-system padding used to

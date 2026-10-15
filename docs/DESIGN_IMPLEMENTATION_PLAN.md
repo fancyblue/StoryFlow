@@ -9,7 +9,7 @@
 順序不是照影響力排的，是照**相依性與風險**排的：
 
 1. **顏色改不動，除非先 token 化。** 但規模跟原本估的差很多，見階段 1 的實測。
-   （另外那些 `!important`——動工時 2,905 個，2026-10-15 重量為 2,581 個，B 類第一批後 2,191 個，A 類之後 2,101 個——是**不同**的問題，不擋換色——見下方「插曲」。）
+   （另外那些 `!important`——動工時 2,905 個，2026-10-15 重量為 2,581 個，B 類第一批後 2,191 個，A 類之後 2,101 個，B 類第二批後 2,089 個——是**不同**的問題，不擋換色——見下方「插曲」。）
 2. **cascade 不可靠。** `ensureThemeOrder()`（`src/settings/settings-page.js`）與兩個 `ensureStyleLast()`
    在 runtime 重排 stylesheet，所以「看起來在最後」的規則可能會輸。動任何 stylesheet 順序都要同步更新
    `scripts/cascade-order.json`，否則 `tests/browser/cascade-contract.spec.js` 會失敗。
@@ -153,7 +153,7 @@
 | 其餘 | ~1,555 | 1,385 | 54% |
 | **合計** | **2,905** | **2,581** | |
 
-（「2026-10-15」欄是 B 類第一批**之前**量的；第一批之後 `ui-system.css` 221、`layout-integrity.css` 55，合計 2,191；A 類之後 `theme.css` 46，合計 2,101。）
+（「2026-10-15」欄是 B 類第一批**之前**量的；第一批之後 `ui-system.css` 221、`layout-integrity.css` 55，合計 2,191；A 類之後 `theme.css` 46，合計 2,101；B 類第二批之後 `ui-system.css` 210、`layout-integrity.css` 54，合計 2,089。）
 
 減少的部分不是專門清 `!important` 的結果，主要是兩次移除時一併帶走的：
 #108（4-1／4-2，拆掉頁首連線膠囊等，−115）與 #122（移除不會生效的 CSS，−238）；
@@ -190,7 +190,7 @@
   底下的 `#refreshSourceBtn`／`#loadSourceBtn`。最後這組只在**啟動的頭幾個畫格**存在，
   量測時已經被移除——見 B 段第一批的補充。
 
-### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，動工時 724 個，第一批前 666 個，現在 276 個）
+### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，動工時 724 個，第一批前 666 個，第二批前 276 個，現在 264 個）
 
 這兩個檔案由 `ensureThemeOrder()` 在 runtime 重新附加到很後面，所以它們的 `!important`
 **多數可能是多餘的——它本來就贏**。這是可驗證的假設，不是推測：
@@ -239,6 +239,7 @@ computed style，再把兩個 `<link>` 換成移除 `!important` 的版本（位
   `.publish-platform-state`（程式只產生 `publish-platform-state-line`），這兩條整條規則都失效，
   `dead-selectors.mjs` 目前看不出這種情況。
   只是沒走到的是 `.source-change-status`（Google Docs 更新來源的對話框）。
+  處理結果見下方「第二批」。
   另外 1 個在 `::-webkit-` 類 pseudo-element 上，
   computed style 讀不到，直接保留。
 
@@ -246,6 +247,22 @@ computed style，再把兩個 `<link>` 換成移除 `!important` 的版本（位
 瀏覽器測試除 `reading-view-read-1440` 外全過——那張在容器的 Chromium 1194 上
 **`main` 本身就差 4%**，而移除前後同一畫面的截圖差異（21 px）小於同一版本連跑兩次的差異（45–50 px），
 所以不是這一批造成的；CI 的 Chromium 才是那張基準的判準。
+
+#### 第二批（2026-10-15）：第一批沒驗證的 30 個 → 拿掉 12、留 18
+
+量測狀態再補兩樣：A 類處理時加的那組（Google Docs 來源、切篇偏好展開、已發布狀態、Google 設定頁、
+無平台設定頁），以及「更新已連結來源」——走 app 真正的 `refreshActiveSource()`，
+只把向 Google 取文件那一步換成假資料，`.source-change-status` 有變更／無變更兩種都量到。
+另外在每個畫格與每次 DOM 變動上監看那幾個「量不到」的選擇器，分辨「沒走到」與「只短暫存在」。
+
+- **拿掉 12 個**：10 個這次量到且零差異（`.chapter-group-label` 3、`.platform-settings-empty` 2、
+  `.split-preferences-open #smartSplitMiniSettings` 1、`.source-change-status` 4）；
+  2 個在整個過程中從未出現在 DOM（`.smart-split-settings-label`、`.publish-platform-state strong`），
+  旗標不可能有作用。以最終清單全部重跑：197 次量測零差異。
+- **留 18 個**：`.source-panel-actions` 一組 10 個——元素在每次載入的頭幾格**有版面框**，
+  量測時刻抓不到，拿掉可能改變那幾格；`#manualSourceSyncHint` 5 個與 `.publishing-project-badge>span` 3 個——
+  觀察到的畫格都沒有版面框，但與上一組同一個生命週期，時序上無法排除，一併保留。
+  要再處理這 18 個，該做的是查清楚為什麼這些元素在啟動時被建立又移除（是否造成啟動閃動），而不是在 CSS 上動手。
 
 ### C. 其餘約 1,780 個（動工時約 1,900 個）
 
