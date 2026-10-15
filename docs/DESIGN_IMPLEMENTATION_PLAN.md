@@ -9,7 +9,7 @@
 順序不是照影響力排的，是照**相依性與風險**排的：
 
 1. **顏色改不動，除非先 token 化。** 但規模跟原本估的差很多，見階段 1 的實測。
-   （另外那 2,905 個 `!important` 是**不同**的問題，不擋換色——見下方「插曲」。）
+   （另外那些 `!important`——動工時 2,905 個，2026-10-15 重量為 2,581 個——是**不同**的問題，不擋換色——見下方「插曲」。）
 2. **cascade 不可靠。** `ensureThemeOrder()`（`src/settings/settings-page.js`）與兩個 `ensureStyleLast()`
    在 runtime 重排 stylesheet，所以「看起來在最後」的規則可能會輸。動任何 stylesheet 順序都要同步更新
    `scripts/cascade-order.json`，否則 `tests/browser/cascade-contract.spec.js` 會失敗。
@@ -26,11 +26,16 @@
 
 與設計提案無關，各自獨立，做完即有價值。
 
-### 0-1　側欄收合狀態持久化
-- **問題**：收合功能已存在（250px → 76px），但 `src/ui/navigation.js:169` 只 toggle 一個 class，
-  重整就回到展開。等於這個功能每次都要重按。
-- **做法**：沿用既有寫法（`src/core/app.js:83` 已有 `localStorage` 模式）保存收合狀態，啟動時還原。
-- **風險**：極低。**驗證**：手動重整一次即可；順帶確認 `sidebar-collapsed` 在行動版斷點下不生效。
+### 0-1　側欄收合狀態持久化　✅ 已完成
+- **原本的問題**：收合功能已存在（250px → 76px），但只 toggle 一個 class，重整就回到展開。
+- **做了什麼**：`src/ui/navigation.js` 的 `readSidebarCollapsed()`／`rememberSidebarCollapsed()`
+  把狀態存在 `localStorage` 的 `storyflow.ui.sidebarCollapsed`，啟動時還原。
+  刻意**不放進 `state.ui`**：`switchProject()` 會整個換掉 `state`，放在那裡每次切作品都會重新展開。
+  儲存空間不可用時（私密視窗、封鎖網站資料）只會失去記憶，按鈕照常運作。
+- **行動版**：不需要額外判斷——所有 `.sidebar-collapsed` 規則都在 `sidebar-layout.css` 的
+  `@media (min-width: 821px)` 裡，窄版面還原這個 class 不會有作用。
+- **規範**：寫在 `docs/UI_SYSTEM.md` 的側欄收合段落。目前沒有瀏覽器測試覆蓋重整後的還原，
+  靠 `docs/CHROME_ACCEPTANCE.md` 的側欄收合項目人工驗收。
 
 ### 0-2　~~修正「最新確認的文章顯示在最上面」~~ · 查證後不需要做
 
@@ -54,10 +59,12 @@
 圖文工作台只在 1440 取一張，不是三個寬度各一張——迴圈本來就已經在每個桌面寬度驗過版面，
 多兩張只是拉長執行時間，證據並沒有變多。
 
-> **待確認**：這三張是用容器內的 Chromium **1194** 產生的，而專案釘的
-> `@playwright/test@1.62.1` 在 CI 會抓 **1234**。既有四張基準在 1194 下通過，
-> 顯示 `maxDiffPixelRatio: 0.025` 的容差吸收得掉版本差異，但「1194 產生、1234 驗證」
-> 這個組合尚未實測。CI 第一次跑到時要確認。
+> **已確認**：這三張是用容器內的 Chromium **1194** 產生的，而專案釘的
+> `@playwright/test@1.62.1` 在 CI 會抓 **1234**。「容器產生、CI 驗證」這個組合之後已經實測：
+> CI 的 `chromium-smoke` 每次都對全部基準跑 `npm run test:browser`，`main` 上 #103 到 #122
+> 每一次都通過，包括 #117、#118 重新產生基準之後。
+> `maxDiffPixelRatio: 0.025` 吸收得掉版本差異，而且這個容差是刻意保留的（理由見階段 3 的說明，
+> 精確度改由 `tests/browser/cascade-contract.spec.js` 負責）。
 
 ---
 
@@ -126,7 +133,7 @@
 
 ## 插曲 · `!important` 為什麼不是一個階段
 
-2,905 個 `!important` 是這份 CSS 最刺眼的數字，但它**不擋任何一件事**，所以它不在上面的順序裡。
+`!important` 是這份 CSS 最刺眼的數字（動工時 2,905 個），但它**不擋任何一件事**，所以它不在上面的順序裡。
 原因是它和「顏色硬寫」是兩個不同的問題，只是住在同一批檔案裡：
 
 | 問題 | 數量 | 修法 | 是換色的前置嗎 |
@@ -134,26 +141,36 @@
 | 硬寫色碼 | 1,110 處 / 422 種 | 值換成 `var(--sf-*)` | **是**。不做就換不了色 |
 | `!important` | 2,905 個 | 移除宣告且不改變計算結果 | **否**。帶著 `!important` 的 `var()` 一樣生效 |
 
-分布（實際出現次數，非行數）：
+分布（實際出現次數，非行數；`git ls-files '*.css'` 逐檔 `grep -o '!important'`）：
 
-| 檔案 | 數量 | 佔比 |
-| --- | --- | --- |
-| `styles/layers/ui-system.css` | 493 | 17% |
-| `styles/domains/workspace-ux.css` | 283 | 10% |
-| `styles/layers/layout-integrity.css` | 231 | 8% |
-| `styles/domains/publishing.css` | 181 | 6% |
-| `styles/layers/theme.css` | 162 | 6% |
-| 其餘 | ~1,555 | 53% |
+| 檔案 | 動工時 | 2026-10-15 | 佔比（現在） |
+| --- | --- | --- | --- |
+| `styles/layers/ui-system.css` | 493 | 466 | 18% |
+| `styles/domains/workspace-ux.css` | 283 | 242 | 9% |
+| `styles/layers/layout-integrity.css` | 231 | 200 | 8% |
+| `styles/domains/publishing.css` | 181 | 152 | 6% |
+| `styles/layers/theme.css` | 162 | 136 | 5% |
+| 其餘 | ~1,555 | 1,385 | 54% |
+| **合計** | **2,905** | **2,581** | |
+
+減少的部分不是專門清 `!important` 的結果，主要是兩次移除時一併帶走的：
+#108（4-1／4-2，拆掉頁首連線膠囊等，−115）與 #122（移除不會生效的 CSS，−238）；
+其間的介面 PR 有增有減，合計 +27。
+**重新量的時候用 `grep -o … | wc -l`，不要用 `grep -c`**——後者算的是行數，
+`theme.css` 這種一行塞多條規則的檔案會低估好幾倍（`grep -c` 得 22，實際 136）。
 
 分成三類處理，都不排進主線：
 
-### A. 換色後會自然消失的（`theme.css`，162 個）
+### A. 原本預期換色後會自然消失的（`theme.css`，動工時 162 個，現在 136 個）
 
-`theme.css` 現在的角色是「用 `!important` 一條一條蓋掉 `foundation.css` 的紫色底稿」
-（`--primary:#6d4aff` 那層還在）。階段 3 把正確的值寫進 token 之後，這些覆蓋就失去存在理由，
-整層可以大幅縮減。**當成階段 3 的收尾，不另外排。**
+原本的判斷：`theme.css` 的角色是「用 `!important` 一條一條蓋掉 `foundation.css` 的紫色底稿」，
+階段 3 把正確的值寫進 token 之後，這些覆蓋就失去存在理由，整層可以大幅縮減，當成階段 3 的收尾。
 
-### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，724 個，25%）
+**實際結果**：紫色底稿確實在 3-1 移除了（repo 裡已經找不到 `#6d4aff`），`theme.css` 也改寫成
+紙墨色票的 token 定義；但檔案後段的元件覆蓋仍有 136 個 `!important`，預期的「大幅縮減」沒有發生。
+階段 3 已經完成，所以這一類**不再有可以搭便車的收尾**，仍待處理；要清的話比照 B 逐批實驗、逐批驗證。
+
+### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，動工時 724 個，現在 666 個，26%）
 
 這兩個檔案由 `ensureThemeOrder()` 在 runtime 重新附加到很後面，所以它們的 `!important`
 **多數可能是多餘的——它本來就贏**。這是可驗證的假設，不是推測：
@@ -166,7 +183,7 @@
 
 **可以排在階段 1 完成後的任何時候，與視覺工作平行。**
 
-### C. 其餘約 1,900 個
+### C. 其餘約 1,780 個（動工時約 1,900 個）
 
 不排期。改到哪個檔案，順手清那個檔案的。硬排一個「清完 `!important`」的大 PR
 沒有使用者可見價值，而且風險與工作量都不成比例。
