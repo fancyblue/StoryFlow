@@ -118,7 +118,6 @@
     dialog.innerHTML = `
       <div class="storyflow-recovery-card">
         <div class="storyflow-recovery-mark" aria-hidden="true">S</div>
-        <p class="eyebrow">DEVICE PRIVACY</p>
         <h1>已離開此裝置</h1>
         <p>這個瀏覽器中的 Google 登入、暫存設定與 StoryFlow 資料夾連線已清除。資料夾內的作品與設定檔仍完整保留。</p>
         <div class="storyflow-recovery-actions">

@@ -2002,7 +2002,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   })).toBeLessThan(80);
   await expect(page.locator('#workspaceView > .topbar')).toBeVisible();
   await expect(page.locator('#workspaceView > .topbar').getByRole('heading', { name: '圖文工作台', exact: true })).toBeVisible();
-  await expect(page.locator('#workspaceView > .topbar .eyebrow')).toHaveCount(0);
+  await expect(page.locator('.eyebrow')).toHaveCount(0);
   await expect(page.locator('#visualWorkspace > .visual-workspace-head')).toHaveCount(0);
   await expect(page.locator('#saveState')).toBeHidden();
   await expect(page.locator('#saveBtn')).toBeHidden();

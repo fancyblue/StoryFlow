@@ -3,7 +3,6 @@
   justify-content:space-between;
   border-bottom:1px solid var(--line);
 }
-.splitter-panel > .panel-head .eyebrow { margin:0 0 5px; font-size:11px; }
 .splitter-panel > .panel-head h2 {font-size:18px; line-height:1.35; }
 .smart-split-header-actions {
   display:flex;

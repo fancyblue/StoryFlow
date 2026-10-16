@@ -29,7 +29,7 @@
       dialog.innerHTML = `
         <div class="dialog-card workspace-recovery-card">
           <div class="panel-head">
-            <div><p class="eyebrow">WORKSPACE SAFETY</p><h3 id="workspaceRecoveryTitle">工作資料需要處理</h3></div>
+            <div><h3 id="workspaceRecoveryTitle">工作資料需要處理</h3></div>
             <button id="closeWorkspaceRecovery" class="icon-button" type="button" aria-label="稍後處理">×</button>
           </div>
           <p id="workspaceRecoveryMessage" class="workspace-recovery-message"></p>

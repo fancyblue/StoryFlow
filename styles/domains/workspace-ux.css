@@ -75,10 +75,8 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
   padding:0 0 8px!important;
   border-bottom:1px solid var(--rule-1,#ded9cc)!important;
 }
-/* Title and progress share one line: the page is already the reading page, so the READING
-   eyebrow above them only cost a line of text below. */
+/* Title and progress share one line, so the head costs one line of text. */
 .reading-view-heading{flex:1 1 320px!important;min-width:0!important;display:flex!important;align-items:baseline!important;gap:10px!important}
-.reading-view-heading .eyebrow{display:none!important}
 .reading-view-head #closeReadingViewBtn{flex:0 0 auto!important;order:1!important}
 .reading-view-heading h2{flex:0 1 auto!important;min-width:0!important;margin:0!important;overflow:hidden!important;font-size:18px!important;line-height:1.35!important;text-overflow:ellipsis!important;white-space:nowrap!important}
 .reading-view-progress{flex:0 1 auto!important;min-width:0!important;margin:0!important;overflow:hidden!important;color:var(--ink-2,#6a6357)!important;font-size:12.5px!important;font-weight:500!important;line-height:1.4!important;text-overflow:ellipsis!important;white-space:nowrap!important}

@@ -337,7 +337,6 @@
     panel.setAttribute('aria-live', 'polite');
     panel.innerHTML = `
       <div class="publish-preview-panel-head">
-        <p class="eyebrow">PREVIEW & COPY</p>
         <h3 id="platformPreviewTitle">預覽與複製</h3>
       </div>
       <div class="platform-preview-body">
@@ -437,7 +436,7 @@
     dialog.innerHTML = `
       <div class="dialog-card publishing-article-tool-card">
         <div class="panel-head">
-          <div><p class="eyebrow">ARTICLE TOOL</p><h3 id="publishingArticleToolTitle"></h3></div>
+          <div><h3 id="publishingArticleToolTitle"></h3></div>
           <button class="icon-button" type="button" data-article-tool-close aria-label="關閉">×</button>
         </div>
         <p id="publishingArticleToolMeta" class="muted publishing-article-tool-meta"></p>
@@ -487,7 +486,7 @@
     dialog.innerHTML = `
       <form class="dialog-card publication-record-card" method="dialog">
         <div class="panel-head">
-          <div><p class="eyebrow">PUBLICATION RECORD</p><h3 id="publicationRecordTitle">發布紀錄</h3></div>
+          <div><h3 id="publicationRecordTitle">發布紀錄</h3></div>
           <button id="closePublicationRecord" class="icon-button" type="button" aria-label="關閉">×</button>
         </div>
         <p id="publicationRecordMeta" class="muted publication-record-meta"></p>

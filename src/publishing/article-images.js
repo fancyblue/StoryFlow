@@ -214,7 +214,7 @@
     dialog.innerHTML = `
       <div class="dialog-card article-image-remove-card">
         <div class="panel-head">
-          <div><p class="eyebrow">IMAGE ASSET</p><h3>移除圖片</h3></div>
+          <div><h3>移除圖片</h3></div>
           <button class="icon-button" type="button" data-image-remove-cancel aria-label="關閉">×</button>
         </div>
         <p id="articleImageRemoveMessage"></p>

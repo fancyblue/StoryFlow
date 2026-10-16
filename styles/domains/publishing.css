@@ -66,7 +66,6 @@
   margin:0;
   border-bottom:1px solid var(--line);
 }
-.publishing-dashboard-panel>.panel-head .eyebrow{margin-bottom:4px}
 .publishing-dashboard-panel>.panel-head h2{line-height:1.3}
 .publishing-dashboard-panel>.panel-head .muted{display:block;margin-top:6px;line-height:1.5;max-width:760px}
 
@@ -361,10 +360,8 @@
   background:transparent;
   overflow:visible;
 }
-/* One line, not an eyebrow over a heading: the rail already says which version is showing
-   and marks it as current. */
+/* One quiet line: the rail already says which version is showing and marks it as current. */
 .publish-preview-panel-head{padding:10px 0 0}
-.publish-preview-panel-head .eyebrow{display:none}
 .publish-preview-panel-head h3{margin:0;line-height:1.35;font-size:13px;color:var(--ink-2,#6a6357);font-weight:700}
 .platform-preview-body{display:grid;grid-auto-rows:max-content;align-content:start;gap:11px;min-height:0;overflow:visible;padding:9px 0 12px}
 .platform-preview-meta{margin:0!important;color:#6a6357;font-size:12px;line-height:1.45}
@@ -540,7 +537,6 @@
   padding:18px 24px 15px!important;
 }
 .publication-record-card>.panel-head h3{margin:0;font-size:19px;line-height:1.35}
-.publication-record-card>.panel-head .eyebrow{margin-bottom:5px}
 .publication-record-meta{margin:0 0 12px;font-size:12px;line-height:1.6}
 .publication-record-card .text-input{box-sizing:border-box;min-height:42px}
 .publication-record-error{

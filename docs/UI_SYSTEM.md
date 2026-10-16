@@ -369,9 +369,14 @@ A page head is its title alone. Works, the workbench, Publishing and Settings on
 English eyebrow (`STORYFLOW / WORKSPACE`) above a 30 px Chinese title, which restated the
 navigation in a second language and spent two lines on a label. The title is now one line at
 `--sf-font-page` — 22 px on desktop, 20 px at 820 px and below — with the page's subtitle, if
-it has one, under it. Section eyebrows (`SOURCE`, `SMART SPLIT`, `CHAPTERS`) are a separate
-matter: they name a region within a page and are unchanged. `cascade-contract.spec.js` pins the
-rail's active item, its width and the head's size.
+it has one, under it.
+
+The same goes for every other head. Sections, rail lists and dialogs once carried their own
+English eyebrow (`SOURCE`, `SMART SPLIT`, `CHAPTERS`, `MANUAL SOURCE`, `PUBLICATION RECORD` and
+two dozen more), each a translation of the Chinese title under it. They are gone, `.eyebrow`
+with them; a head is its title, and a region that needs a name has a Chinese one.
+`cascade-contract.spec.js` pins the rail's active item, its width, the page head's size and
+that no `.eyebrow` is rendered.
 
 ## Reading measure
 
@@ -524,7 +529,7 @@ A control is built in one place. Five modules each filled the platform `<select>
 
 A value is authored in one place. A visual entry's summary is written about the entry, so it is written in the visual editor beside its title and body and autosaves with them; publishing shows and copies it but does not edit it. Hashtags are not the same case — a platform may override them — so they stay with publishing. The article-level 摘要與 Hashtags tool remains the home for a longform part's summary, which has no editor of its own.
 
-Surfaces that sit side by side agree on their lines. The SOURCE and SMART SPLIT heads share one height, so their rules read as one line across the workbench and their eyebrows share one top edge; the split head's buttons sit beside its title, where 切換作品 sits in the source head. Both rails head their list the same way — eyebrow, name and count over the rule the rows start under: “CHAPTERS 章節清單 N 章” in longform, “ENTRIES 圖文清單 N 則” in visual — and the work name above them is an ordinary field in both, not a bold heading in one. Opening 切換作品 changes nothing in the rail: the rail stops clipping so the menu can hang past it, and holds the width its scrollbar gutter reserved so its fields do not widen.
+Surfaces that sit side by side agree on their lines. The 作品與章節 and 切篇預覽 heads share one height, so their rules read as one line across the workbench, and both titles sit centred in a row as tall as 切換作品, so they share one top edge too; the split head's buttons sit beside its title, where 切換作品 sits in the source head. Both rails head their list the same way — name and count over the rule the rows start under: “章節清單 N 章” in longform, “圖文清單 N 則” in visual — and the work name above them is an ordinary field in both, not a bold heading in one. Opening 切換作品 changes nothing in the rail: the rail stops clipping so the menu can hang past it, and holds the width its scrollbar gutter reserved so its fields do not widen.
 
 A dialog's head is part of its card: the same paper, and a rule that reaches the card's edge. It was a white band, and a scrollbar gutter the card reserved whether or not it scrolled stopped the rule 15px short. A preview box inside a dialog stops short of the pinned action bar's rule rather than sitting on it. Two text fields stacked in one form read as one kind of field, so 手動建立's chapter title takes the work name's size and weight. The global search head is its own field — no second box or focus ring inside it, and no browser clear cross beside the close cross; its selected result is tinted like any current row rather than boxed, and every result kind wears the same neutral label (green means published, which none of them do).
 
