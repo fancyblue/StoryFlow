@@ -29,7 +29,9 @@
 #worksTypeFilters{margin:0 0 14px!important}
 #worksTypeFilters[hidden]{display:none!important}
 .projects-filter-empty{padding:28px 2px!important;margin:0!important;text-align:center!important}
-.projects-library{gap:0!important;border-top:1px solid #c8c1b0!important}
+/* The list sits on the page's paper on desktop and on paper below 820px, so its rules are the
+   paper's hairline (--rule-1), like the Publishing list's. */
+.projects-library{gap:0!important;border-top:1px solid #ded9cc!important}
 /* The opening rule heads rows. With no rows, the empty state's own frame is the edge, and a
    rule laid on top of it reads as the frame sticking out. */
 .projects-library:has(> .projects-empty-state){border-top:0!important}
@@ -44,7 +46,7 @@
      from the next; the 2px left gutter is reserved on every row so marking one current does
      not shift the others. */
   border:0!important;
-  border-bottom:1px solid #c8c1b0!important;
+  border-bottom:1px solid #ded9cc!important;
   border-left:2px solid transparent!important;
   border-radius:0!important;
   background:transparent!important;

@@ -1,7 +1,7 @@
 /* Project source-mode UX: creation method first, then a stable manual/Google work layout. */
 
 .source-panel.project-source-mode > .panel-head{
-  margin-bottom:18px!important;
+  margin-bottom:0!important;
 }
 
 .project-creation-chooser{

@@ -729,8 +729,10 @@
 }
 
 /* The page heading, stats and filters already establish context. Do not wrap the article
-   rows in another large titled panel; the rows themselves are the content. */
-.publishing-dashboard-panel{
+   rows in another large titled panel; the rows themselves are the content. The selector
+   names both classes because the shared `.panel` card rule in ui-system.css loads later at
+   one class: with one class here, the frame this rule removes was drawn regardless. */
+.publishing-panel.publishing-dashboard-panel{
   margin:0!important;
   padding:0!important;
   border:0!important;
@@ -741,8 +743,7 @@
 }
 .publishing-dashboard-panel > .panel-head{display:none!important}
 .publishing-dashboard-panel .parts-list{display:block!important;padding:0!important}
-/* The queue's panel is already the frame; an empty queue says so inside it rather than in a
-   second box of the same paper 20px in. */
+/* An empty queue says so in the page's own paper rather than in a box of the same paper. */
 .publishing-dashboard-panel .publishing-empty{
   box-sizing:border-box;
   min-height:180px!important;

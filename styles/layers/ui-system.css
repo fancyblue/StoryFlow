@@ -166,14 +166,34 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 /* Universal focus: visible, consistent, never purple. */
 :where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:none!important;box-shadow:var(--sf-focus)!important}
 
-/* Desktop primary navigation: a quiet, flat rail. The active item is the one fill in it. */
+/* Desktop primary navigation: a quiet, flat rail on the page ground. It was the darkest thing
+   on every screen for the control used least; now it is the first and quietest step of a page
+   that brightens towards what you are working on (desktop-responsive.css). The active item is
+   the one fill in it, the same rounded --dai-soft fill the chapter and entry rails use. The
+   phone's bottom bar keeps its dark ground (theme.css, layout-integrity.css). */
 @media(min-width:821px){
+  .sidebar{background:var(--paper-0,#ece9e0);border-right:1px solid var(--rule-1,#ded9cc);color:var(--ink-1,#221f1a)}
+  .sidebar .brand span{color:var(--ink-2,#6a6357)}
   .sidebar .nav{gap:2px!important}
-  .sidebar .nav-item{min-height:36px!important;padding:0 10px;gap:10px;border-radius:8px;font-size:14px;font-weight:500;line-height:1}
-  .sidebar .nav-item.active{background:var(--denim-800,#4b4557)!important}
-  .sidebar .nav-item:hover{background:rgba(222,217,204,.12)!important}
+  .sidebar .nav-item{min-height:36px!important;padding:0 10px;gap:10px;border-radius:8px;color:var(--ink-1-soft,#3f3930);font-size:14px;font-weight:500;line-height:1}
+  .sidebar .nav-item.active{background:var(--dai-soft,#e8e5eb)!important;color:var(--dai-800,#3a3544)}
+  .sidebar .nav-item:hover{background:var(--paper-2,#f4f1e9)!important;color:var(--ink-1,#221f1a)}
+  .sidebar .nav-item.active:hover{background:var(--dai-soft,#e8e5eb)!important}
   .sidebar-note{font-size:12.5px!important;line-height:1.6!important}
-  .sidebar-toggle{width:28px;height:28px;border-radius:8px;background:transparent;border-color:transparent;box-shadow:none}
+  .sidebar-toggle{width:28px;height:28px;border-radius:8px;background:transparent;border-color:transparent;box-shadow:none;color:var(--ink-2,#6a6357)!important}
+  .sidebar-toggle:hover,.sidebar-toggle:focus-visible{background:var(--paper-2,#f4f1e9)}
+  .sidebar-settings-button{color:var(--ink-2,#6a6357)}
+  .sidebar-settings-button:hover{background:var(--paper-2,#f4f1e9)!important;color:var(--ink-1,#221f1a)}
+  .sidebar-settings-button.active{background:var(--dai-soft,#e8e5eb)!important;color:var(--dai-800,#3a3544)}
+  .sidebar-logout{color:var(--vermilion,#a8443a)!important}
+  .sidebar-logout:hover,.sidebar-logout:focus-visible{color:var(--vermilion,#a8443a)!important}
+  .sidebar-connection-status{border-top-color:var(--rule-1,#ded9cc)}
+  .sidebar-connection-copy b{color:var(--ink-2,#6a6357)}
+  #sidebarConnectionStatus .sidebar-connection-copy small,
+  #sidebarConnectionStatus .sidebar-connection-row.connected .sidebar-connection-copy small,
+  #sidebarConnectionStatus .sidebar-connection-row.restoring .sidebar-connection-copy small{color:var(--ink-1-soft,#3f3930)!important}
+  .sidebar-connection-row:focus-visible{background:var(--paper-2,#f4f1e9)!important}
+  .nav-search-trigger kbd{border-color:var(--rule-1,#ded9cc);background:var(--paper-1,#fbfaf6);color:var(--ink-2,#6a6357)}
 }
 
 /* Connection/status utilities: state is secondary; dots carry meaning. */

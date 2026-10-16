@@ -80,8 +80,6 @@
 .source-panel > .panel-head{
   display:block;
   width:100%;
-  margin-bottom:16px;
-  padding-bottom:16px;
 }
 .source-panel > .panel-head > div:first-child{
   display:block;

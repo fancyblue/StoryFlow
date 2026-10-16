@@ -152,12 +152,14 @@ test('shared controls keep their resolved appearance', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
 
-  // Navigation: a flat rail. The active item owns the one fill, with no edge bar; nothing
-  // else in the sidebar may claim it, which is what made the collapse toggle read as a
-  // destination.
+  // Navigation: a flat rail on the page ground, the first and quietest step of a page that
+  // brightens towards the work. The active item owns the one fill — the rounded --dai-soft the
+  // chapter rail uses — with no edge bar; nothing else in the sidebar may claim it, which is
+  // what made the collapse toggle read as a destination.
+  await expectStyle(page, '.sidebar', { backgroundColor: 'rgb(236, 233, 224)' });
   await expectStyle(page, '.sidebar .nav-item.active', {
-    backgroundColor: 'rgb(58, 53, 68)',
-    color: 'rgb(251, 250, 246)',
+    backgroundColor: 'rgb(232, 229, 235)',
+    color: 'rgb(58, 53, 68)',
     boxShadow: 'none',
     minHeight: '36px',
     fontSize: '14px'
@@ -433,15 +435,15 @@ test('both content modes draw one SOURCE rail and open one work switcher over it
     fieldBelow: '#visualProjectTitle'
   });
 
-  // One rail, drawn by one hairline between the columns rather than a frame around each.
+  // One rail, the same in both modes: unframed, on the ground, with no line of its own — the
+  // page turns from ground to paper where it ends (the view's background, checked below).
   expect(longformRail).toEqual(visualRail);
   expect(longformRail).toMatchObject({
     backgroundColor: 'rgba(0, 0, 0, 0)',
     borderTopWidth: '0px',
-    borderRightWidth: '1px',
-    borderRightColor: 'rgb(222, 217, 204)',
+    borderRightWidth: '0px',
     borderTopLeftRadius: '0px',
-    padding: '0px 18px 0px 0px'
+    padding: '0px 28px 0px 0px'
   });
 
   expect(longformSwitcher).toEqual(visualSwitcher);
@@ -456,9 +458,10 @@ test('both content modes draw one SOURCE rail and open one work switcher over it
   });
 });
 
-// The 作品與章節 and 切篇預覽 heads stand side by side, so their titles read as one line across the
+// The 作品與章節 and 切篇預覽 heads stand side by side, so they read as one line across the
 // workbench — or as two lines 11px apart, which is what they were: the source head carries 切換作品
-// beside its title and stood taller. Both rails also head their list the same way.
+// beside its title and stood taller. The rail's head is now a small label and the split head a
+// title, so they share a centre line rather than a top. Both rails also head their list the same way.
 test('the workbench heads share one line and both rails head their list alike', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
@@ -467,12 +470,14 @@ test('the workbench heads share one line and both rails head their list alike', 
     .map(selector => {
       const head = document.querySelector(selector);
       const title = head.querySelector('h2');
+      const box = title.getBoundingClientRect();
       return {
         rule: Math.round(head.getBoundingClientRect().bottom),
-        title: Math.round(title.getBoundingClientRect().top)
+        centre: Math.round((box.top + box.bottom) / 2)
       };
     }));
-  expect(heads[0]).toEqual(heads[1]);
+  expect(heads[0].rule).toBe(heads[1].rule);
+  expect(Math.abs(heads[0].centre - heads[1].centre)).toBeLessThanOrEqual(2);
 
   await expect(page.locator('#chapterListHead')).toBeVisible();
   await expect(page.locator('#chapterListCount')).toHaveText('1 章');
@@ -570,7 +575,9 @@ test('the chapter rail marks each chapter\'s progress and keeps rare actions qui
   await expect(row.locator('.chapter-mark')).toHaveText('✓');
   await expect(page.locator('#chapterListCount')).toHaveText('1 章 · 已切完 1 章');
 
-  await expectStyle(page, '#projectTitle', { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(0, 0, 0, 0)', fontSize: '16px' });
+  await expectStyle(page, '#projectTitle', { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(0, 0, 0, 0)', fontSize: '19px' });
+  // A row is drawn like the menu's items: no rule under it, a rounded fill when it is current.
+  await expectStyle(page, '#chapterList .chapter-row.active', { borderBottomWidth: '0px', borderLeftWidth: '0px', borderTopLeftRadius: '8px', backgroundColor: 'rgb(232, 229, 235)' });
   await expect(page.locator('#projectTitle')).toHaveAccessibleName('作品名稱');
   await expect(page.locator('#projectTitle')).toHaveValue('契約測試');
   await expectStyle(page, '#addChapterBtn', { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(0, 0, 0, 0)', height: '34px' });
@@ -581,6 +588,42 @@ test('the chapter rail marks each chapter\'s progress and keeps rare actions qui
   // A row's ⋯ waits for the row where a pointer can find it, and the current row shows it.
   await page.locator('#addChapterBtn').hover();
   await expectStyle(page, '#chapterList .chapter-row.active .chapter-more-button', { opacity: '1' });
+});
+
+// Left to right the page unfolds: the menu and the rail on the ground, the work on one sheet of
+// paper that meets the window's top, right and bottom edges. The paper used to stop 35px short
+// of the right edge and below the page title, so it read as one more box among the others.
+test('each view is one sheet of paper that meets the window edges, and the workbench turns to it where the rail ends', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+
+  const sheet = await page.evaluate(() => {
+    const view = document.getElementById('workspaceView').getBoundingClientRect();
+    const rail = document.querySelector('.workspace-grid.workspace-hierarchy > .source-panel').getBoundingClientRect();
+    const sidebar = document.querySelector('.sidebar').getBoundingClientRect();
+    const style = getComputedStyle(document.getElementById('workspaceView'));
+    // The gradient's first stop is where ground turns to paper, measured from the view's left.
+    const stop = Number(/\) ([\d.]+)px/.exec(style.backgroundImage)?.[1]);
+    return {
+      top: Math.round(view.top), right: Math.round(view.right), left: Math.round(view.left),
+      sidebarRight: Math.round(sidebar.right), innerWidth,
+      turn: Math.round(view.left + stop), railRight: Math.round(rail.right)
+    };
+  });
+  expect(sheet.top).toBe(0);
+  expect(sheet.right).toBe(sheet.innerWidth);
+  expect(sheet.left).toBe(sheet.sidebarRight);
+  expect(sheet.turn).toBe(sheet.railRight);
+  // The manuscript is text on that paper, not a card on it.
+  await expectStyle(page, '#preview', { borderTopWidth: '0px', paddingLeft: '0px' });
+
+  for (const view of ['projects', 'publishing']) {
+    await page.locator(`.nav-item[data-view="${view}"]`).click();
+    await expectStyle(page, `#${view}View`, { backgroundColor: 'rgb(251, 250, 246)', marginTop: '-28px' });
+  }
+  // The publishing queue is rows on the page, not a frame on it: its unframed rule now outranks
+  // the shared card rule that used to draw the frame anyway.
+  await expectStyle(page, '.publishing-dashboard-panel', { borderTopWidth: '0px', backgroundColor: 'rgba(0, 0, 0, 0)' });
 });
 
 // A dialog head is part of its card. It used to be a white band over warm paper, and a

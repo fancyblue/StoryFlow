@@ -211,6 +211,11 @@
 @media (max-width:820px) {
   .split-preview-shell .preview { border:1px solid #ded9cc !important; }
 }
+/* On desktop the work column is itself the sheet of paper, so the manuscript is text on it,
+   not a card on it: no inset of its own, its left edge on the head's. */
+@media (min-width:821px) {
+  .split-preview-shell .preview { padding-inline:0 !important; border-radius:0 !important; }
+}
 
 @media (max-width:700px) {
   .splitter-panel .smart-split-mini-settings {
