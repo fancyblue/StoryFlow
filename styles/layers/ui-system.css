@@ -211,7 +211,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .source-change-status{min-height:28px;padding:4px 9px;font-size:12px;font-weight:700}
 
 /* Smart Split: controls are tools; preview content remains the strongest frame. */
-.splitter-panel .smart-split-mini-settings{gap:14px!important;padding:0 0 16px!important;margin:0 0 16px;border-bottom:1px solid var(--sf-border)!important}
+.splitter-panel .smart-split-mini-settings{gap:12px!important;padding:0!important;margin:0;border-bottom:0!important}
 .splitter-panel .smart-split-mini-settings .range-grid label,.splitter-panel .scene-marker-compact,.splitter-panel .suggestion-platform-bar .platform-select-field>span{color:var(--sf-muted);font-size:13px!important;font-weight:700!important;line-height:1.2!important}
 .splitter-panel .smart-split-mini-settings .range-grid input,.splitter-panel .scene-marker-compact #sceneMarker{height:40px!important;min-height:40px!important;border:1px solid var(--sf-border)!important;background:#fbfaf6;color:var(--sf-text);font-size:14px!important;border-radius:9px!important}
 .splitter-panel .smart-split-mini-settings .range-grid input:focus,.splitter-panel .scene-marker-compact #sceneMarker:focus{border-color:var(--sf-primary)!important;background:#fbfaf6;box-shadow:var(--sf-focus)!important}
@@ -228,6 +228,17 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 /* The scene buttons end the article's title row; they carry no frame of their own. */
 .preview-boundary-controls{border:0;background:transparent;padding:0;}
 .preview-boundary-controls .button{height:var(--sf-control-sm);min-height:var(--sf-control-sm)!important;font-size:var(--sf-font-control)!important}
+/* Two actions that are one decision — 少一個場景／多一個場景 move the same cut point in opposite
+   directions — are one control: the segment's fill, with neither half raised, because neither
+   is a current state. The halves are parted by a hairline instead of each drawing a frame. */
+.sf-button-group{display:inline-flex!important;align-items:center!important;gap:2px!important;height:var(--sf-control-sm);padding:3px!important;border-radius:8px;background:#f4f1e9}
+.sf-button-group>.button.tiny{position:relative;height:calc(var(--sf-control-sm) - 6px)!important;min-height:calc(var(--sf-control-sm) - 6px)!important;padding:0 10px!important;border:0!important;border-radius:6px!important;background:transparent!important;box-shadow:none!important}
+.sf-button-group>.button.tiny:hover:not(:disabled){background:#fbfaf6!important}
+.sf-button-group>.button.tiny+.button.tiny::before{content:"";position:absolute;left:-2px;top:6px;bottom:6px;width:1px;background:#c8c1b0}
+/* The third tier: a control that is used rarely enough to sit as text until it is pointed at,
+   so the row's one framed control is the one that leaves or advances the task. */
+.button.sf-quiet,.icon-button.sf-quiet{border-color:transparent!important;background:transparent!important;box-shadow:none!important}
+.button.sf-quiet:hover:not(:disabled),.icon-button.sf-quiet:hover:not(:disabled),.button.sf-quiet[aria-expanded="true"],.icon-button.sf-quiet[aria-expanded="true"]{border-color:transparent!important;background:#f4f1e9!important}
 .format-summary-text{font-size:13px;line-height:1.45!important}
 
 /* Works library */

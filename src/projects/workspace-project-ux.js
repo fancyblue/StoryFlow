@@ -165,8 +165,11 @@
   };
 })();
 
-// Final hierarchy pass: keep context compact and move infrequent Smart Split preferences
-// behind an explicit disclosure instead of competing with the article preview.
+// Final hierarchy pass: the split panel's infrequent settings — 閱讀設定 and 切篇偏好 — sit behind
+// one 設定 disclosure instead of a 閱讀設定 icon and a 切篇偏好 button of their own. Two settings
+// controls beside the format select and 讀稿檢視 made five controls of equal weight in one row,
+// and both are changed far less often than the preview is read. The panel opens as a layer
+// under the panel's actions, never in the panel's flow, so opening it moves nothing.
 (function () {
   function hasSplitContent() {
     try {
@@ -176,11 +179,49 @@
     }
   }
 
-  function ensureSplitPreferencesToggle() {
+  function isOpen() {
+    const sheet = document.getElementById('splitSettingsPanel');
+    return Boolean(sheet && !sheet.hidden);
+  }
+
+  function setOpen(open, { restoreFocus = false } = {}) {
+    const toggle = document.getElementById('splitSettingsToggle');
+    const sheet = document.getElementById('splitSettingsPanel');
+    if (!toggle || !sheet) return;
+    sheet.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    if (open) sheet.querySelector('button:not(:disabled), input')?.focus({ preventScroll: true });
+    else if (restoreFocus) toggle.focus({ preventScroll: true });
+  }
+
+  function buildSheet() {
+    const sheet = document.createElement('div');
+    sheet.id = 'splitSettingsPanel';
+    sheet.className = 'split-settings-panel';
+    sheet.setAttribute('role', 'dialog');
+    sheet.setAttribute('aria-label', '設定');
+    sheet.hidden = true;
+    sheet.innerHTML = `
+      <section class="split-settings-section">
+        <h3 id="splitSettingsReadingTitle">閱讀設定</h3>
+        <div id="splitSettingsReading" class="split-settings-reading" role="group" aria-labelledby="splitSettingsReadingTitle"></div>
+      </section>
+      <section class="split-settings-section">
+        <h3 id="splitSettingsSplitTitle">切篇偏好</h3>
+      </section>`;
+    sheet.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      event.stopPropagation();
+      setOpen(false, { restoreFocus: true });
+    });
+    return sheet;
+  }
+
+  function ensureSplitSettings() {
     const panel = document.querySelector('.splitter-panel');
     const head = panel?.querySelector(':scope > .panel-head');
-    const settings = document.getElementById('smartSplitMiniSettings');
-    if (!panel || !head || !settings) return;
+    const preferences = document.getElementById('smartSplitMiniSettings');
+    if (!panel || !head || !preferences) return;
 
     let actions = head.querySelector('.smart-split-header-actions');
     if (!actions) {
@@ -189,39 +230,53 @@
       head.appendChild(actions);
     }
 
-    let toggle = document.getElementById('splitPreferencesToggle');
+    let toggle = document.getElementById('splitSettingsToggle');
     if (!toggle) {
       toggle = document.createElement('button');
-      toggle.id = 'splitPreferencesToggle';
+      toggle.id = 'splitSettingsToggle';
       toggle.type = 'button';
-      toggle.innerHTML = '<span>切篇偏好</span><span class="sf-chevron" aria-hidden="true"></span>';
-      toggle.setAttribute('aria-controls', 'smartSplitMiniSettings');
+      toggle.className = 'button tiny ghost sf-quiet';
+      toggle.innerHTML = '<span>設定</span><span class="sf-chevron" aria-hidden="true"></span>';
+      toggle.setAttribute('aria-haspopup', 'dialog');
+      toggle.setAttribute('aria-controls', 'splitSettingsPanel');
       toggle.setAttribute('aria-expanded', 'false');
-      toggle.addEventListener('click', () => {
-        const open = !panel.classList.contains('split-preferences-open');
-        panel.classList.toggle('split-preferences-open', open);
-        toggle.setAttribute('aria-expanded', String(open));
-      });
+      toggle.addEventListener('click', () => setOpen(!isOpen()));
     }
 
+    let sheet = document.getElementById('splitSettingsPanel');
+    if (!sheet) sheet = buildSheet();
+
+    // 設定 sits immediately before 讀稿檢視; the panel is the actions' last child, so it lays out
+    // against the actions box rather than taking a place in the row.
     const review = document.getElementById('openReadingViewBtn');
-    if (toggle.parentElement !== actions) {
-      if (review?.parentElement === actions) actions.insertBefore(toggle, review);
-      else actions.prepend(toggle);
-    } else if (review?.parentElement === actions && toggle.nextElementSibling !== review) {
-      actions.insertBefore(toggle, review);
+    if (review?.parentElement === actions) {
+      if (toggle.nextElementSibling !== review) actions.insertBefore(toggle, review);
+    } else if (toggle.parentElement !== actions) {
+      actions.appendChild(toggle);
+    }
+    if (sheet.parentElement !== actions || sheet.nextElementSibling) actions.appendChild(sheet);
+
+    window.StoryFlowReadingSettings?.mount(document.getElementById('splitSettingsReading'));
+    const splitSection = sheet.querySelector('#splitSettingsSplitTitle').parentElement;
+    if (preferences.parentElement !== splitSection) splitSection.appendChild(preferences);
+    if (preferences.getAttribute('aria-labelledby') !== 'splitSettingsSplitTitle') {
+      preferences.setAttribute('role', 'group');
+      preferences.setAttribute('aria-labelledby', 'splitSettingsSplitTitle');
     }
 
     const available = hasSplitContent();
     toggle.hidden = !available;
-    if (!available) {
-      panel.classList.remove('split-preferences-open');
-      toggle.setAttribute('aria-expanded', 'false');
-    }
+    if (!available && isOpen()) setOpen(false);
   }
 
+  document.addEventListener('click', event => {
+    if (!isOpen() || event.target.closest('#splitSettingsPanel, #splitSettingsToggle')) return;
+    setOpen(false);
+  });
+  window.addEventListener('storyflow:view-changed', () => setOpen(false));
+
   function syncHierarchy() {
-    ensureSplitPreferencesToggle();
+    ensureSplitSettings();
   }
 
   window.addEventListener('storyflow:projects-changed', () => queueMicrotask(syncHierarchy));

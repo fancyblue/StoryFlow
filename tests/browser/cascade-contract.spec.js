@@ -499,18 +499,24 @@ test('a toolbar row resolves to one control height, label size and radius', asyn
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
 
-  const row = ['#suggestionPlatformSelect', '.splitter-panel .sf-preview-mode-segment', '.sf-reading-settings-toggle',
-    '#splitPreferencesToggle', '#openReadingViewBtn', '#quickSwitchProjectBtn', '#shrinkBtn', '#expandBtn'];
+  const row = ['#suggestionPlatformSelect', '.splitter-panel .sf-preview-mode-segment', '#splitSettingsToggle',
+    '#openReadingViewBtn', '#quickSwitchProjectBtn', '.splitter-panel .preview-boundary-controls'];
   const boxes = await page.evaluate(selectors => selectors.map(selector => {
     const el = document.querySelector(selector);
     return { selector, height: Math.round(el.getBoundingClientRect().height), radius: getComputedStyle(el).borderTopLeftRadius };
   }), row);
   for (const box of boxes) expect(box, box.selector).toEqual({ selector: box.selector, height: 34, radius: '8px' });
 
-  for (const selector of ['#suggestionPlatformSelect', '.splitter-panel .sf-preview-mode-segment button', '#splitPreferencesToggle',
+  for (const selector of ['#suggestionPlatformSelect', '.splitter-panel .sf-preview-mode-segment button', '#splitSettingsToggle',
     '#openReadingViewBtn', '#quickSwitchProjectBtn', '#shrinkBtn']) {
     await expectStyle(page, selector, { fontSize: '14px' });
   }
+  // One framed control per row: 讀稿檢視 leaves the surface, so it keeps its frame; 設定 is used
+  // rarely and rests as text. The scene buttons are one control, so neither half draws a frame.
+  await expectStyle(page, '#openReadingViewBtn', { borderTopColor: 'rgb(200, 193, 176)' });
+  await expectStyle(page, '#splitSettingsToggle', { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(0, 0, 0, 0)' });
+  await expectStyle(page, '#shrinkBtn', { borderTopWidth: '0px', backgroundColor: 'rgba(0, 0, 0, 0)' });
+  await expectStyle(page, '.splitter-panel .preview-boundary-controls', { backgroundColor: 'rgb(244, 241, 233)' });
   // The select is drawn on the page ground like the buttons beside it, so it takes their edge.
   await expectStyle(page, '#suggestionPlatformSelect', { borderTopColor: 'rgb(200, 193, 176)' });
 
@@ -526,7 +532,7 @@ test('a toolbar row resolves to one control height, label size and radius', asyn
   // the manuscript draws its edge again.
   await page.setViewportSize({ width: 820, height: 900 });
   const tablet = await page.evaluate(selectors => selectors.map(selector =>
-    Math.round(document.querySelector(selector).getBoundingClientRect().height)), row.slice(0, 5));
+    Math.round(document.querySelector(selector).getBoundingClientRect().height)), row.slice(0, 4));
   expect(new Set(tablet)).toEqual(new Set([40]));
   await expectStyle(page, '#preview', { borderTopWidth: '1px' });
 });
@@ -856,15 +862,23 @@ test('toasts stay clear of the page actions', async ({ page }) => {
 });
 
 // The compact dialogs kept their head's rule inside the card's padding while every other
-// dialog ran it to the edges. And the split preferences opened with a second 切篇偏好 under
-// the disclosure that already says it.
-test('compact dialog heads run to the edge, and split preferences do not repeat their name', async ({ page }) => {
+// dialog ran it to the edges. And the split preferences once opened with a second 切篇偏好 under
+// the disclosure that already said it; inside 設定 the section heading names them exactly once.
+test('compact dialog heads run to the edge, and split preferences are named once', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
-  await page.locator('#splitPreferencesToggle').click();
-  await expect(page.locator('#smartSplitMiniSettings')).toBeVisible();
+  const previewTop = () => page.locator('#preview').evaluate(node => Math.round(node.getBoundingClientRect().top));
+  const closedTop = await previewTop();
+  await page.locator('#splitSettingsToggle').click();
+  const sheet = page.getByRole('dialog', { name: '設定' });
+  await expect(sheet.getByRole('group', { name: '切篇偏好' })).toBeVisible();
+  await expect(sheet.getByRole('group', { name: '閱讀設定' })).toBeVisible();
+  await expect(sheet.getByText('切篇偏好', { exact: true })).toHaveCount(1);
   await expect(page.locator('#smartSplitMiniSettings .smart-split-settings-label')).toHaveCount(0);
-  await expect(page.locator('#smartSplitMiniSettings')).toHaveAttribute('aria-label', '切篇偏好');
+  // Opening it is a layer over the preview: nothing below the head moves.
+  expect(await previewTop()).toBe(closedTop);
+  await page.keyboard.press('Escape');
+  await expect(sheet).toBeHidden();
 
   await visualWorkspace(page);
   await page.locator('#visualNewEntryBtn').click();
