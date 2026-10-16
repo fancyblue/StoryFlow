@@ -529,6 +529,27 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
   expect(pageErrors).toEqual([]);
 });
 
+// The privacy policy is the page a Google OAuth consent screen links to, so it has to be served
+// beside the app and reachable from it. Its claims are the app's behaviour: the one scope it
+// requests is the one config.js asks for.
+test('settings links to a privacy policy that states the scope the app requests', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+  await page.locator('#sidebarSettingsBtn').click();
+  const link = page.locator('#storyflowDevicePrivacySection').getByRole('link', { name: '隱私權政策' });
+  await expect(link).toHaveAttribute('href', './privacy.html');
+  await expect(link).toHaveAttribute('target', '_blank');
+  const scopes = await page.evaluate(() => window.STORYFLOW_CONFIG.googleScopes);
+
+  await page.goto('/privacy.html');
+  await expect(page.getByRole('heading', { level: 1, name: 'StoryFlow 隱私權政策' })).toBeVisible();
+  for (const scope of scopes) await expect(page.locator('main')).toContainText(scope);
+  await expect(page.getByRole('link', { name: 'github.com/fancyblue/StoryFlow/issues' }).first())
+    .toHaveAttribute('href', 'https://github.com/fancyblue/StoryFlow/issues');
+  await expect(page.getByRole('link', { name: '← 回到 StoryFlow' })).toHaveAttribute('href', './');
+  expect(pageErrors).toEqual([]);
+});
+
 // What "stays stable" protects is that working in a 24-chapter rail does not cost you your
 // place in it — CHROME_ACCEPTANCE states it as "neither the page nor chapter rail jumps to
 // the top". This was written as pixel-exact equality instead, a stricter claim than that

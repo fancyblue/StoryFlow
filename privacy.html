@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StoryFlow 隱私權政策</title>
+  <meta name="description" content="StoryFlow 如何使用 Google 資料、在哪裡保存你的作品，以及如何撤銷存取權。" />
+  <style>
+    /* A standalone page: it loads none of the app's stylesheets, so it carries the app's
+       palette values itself (paper, ink, rule and the 黛 accent from styles/layers/theme.css). */
+    :root{
+      --paper-0:#ece9e0; --paper-1:#fbfaf6; --paper-2:#f4f1e9;
+      --ink-1:#221f1a; --ink-2:#6a6357; --rule-1:#ded9cc; --dai-700:#4b4557;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper-0);color:var(--ink-1);font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;font-size:16px;line-height:1.8}
+    main{max-width:44em;margin:0 auto;padding:48px 20px 72px}
+    .card{background:var(--paper-1);border-radius:14px;padding:32px clamp(20px,5vw,44px)}
+    h1{margin:0 0 4px;font-size:26px;line-height:1.35}
+    h2{margin:36px 0 8px;font-size:19px;line-height:1.4}
+    h3{margin:20px 0 4px;font-size:16px}
+    p,ul{margin:0 0 12px}
+    ul{padding-left:1.3em}
+    li{margin:4px 0}
+    a{color:var(--dai-700);text-underline-offset:3px}
+    code{padding:1px 6px;border-radius:6px;background:var(--paper-2);font-size:14px;overflow-wrap:anywhere}
+    a{overflow-wrap:anywhere}
+    .meta{color:var(--ink-2);font-size:14px}
+    .back{display:inline-block;margin-bottom:20px;font-size:14px;font-weight:700}
+    hr{margin:44px 0 0;border:0;border-top:1px solid var(--rule-1)}
+  </style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← 回到 StoryFlow</a>
+  <article class="card">
+    <h1>StoryFlow 隱私權政策</h1>
+    <p class="meta">最後更新：2026 年 10 月 16 日</p>
+
+    <p>StoryFlow 是在你的瀏覽器中執行的個人寫作工作台，用來把長篇原稿切成適合發布的篇幅，並整理各平台的發布稿。網站只是一組由 GitHub Pages 提供的靜態檔案：StoryFlow 沒有自己的伺服器、帳號系統、分析工具或廣告追蹤，也不使用 Cookie 追蹤你。</p>
+
+    <h2>StoryFlow 會存取哪些 Google 資料</h2>
+    <p>連接 Google 時，StoryFlow 只申請一項權限：<code>https://www.googleapis.com/auth/drive.file</code>。這項權限只能存取你透過 Google 檔案選擇器（Google Picker）<strong>主動選取</strong>的檔案，看不到你雲端硬碟裡的其他檔案。</p>
+    <ul>
+      <li>StoryFlow 用它讀取你選的 Google 文件內容，轉成可以切篇的文字。</li>
+      <li>StoryFlow <strong>不會修改或刪除</strong>你的 Google 文件；Google 文件永遠只是來源。</li>
+      <li>讀取到的內容只在你的瀏覽器裡處理，接著寫進你選擇的 StoryFlow 資料夾（見下一節），不會傳送到 StoryFlow 或任何第三方的伺服器。</li>
+    </ul>
+
+    <h2>你的作品保存在哪裡</h2>
+    <p>原稿內容、切篇進度、產出的文章與圖片，以及你的設定（包括你自己填入的 Google OAuth Client ID 與 Picker API Key），都寫進你在電腦上選擇的 <strong>StoryFlow 資料夾</strong>。這是透過瀏覽器的檔案系統存取功能完成的，資料只存在你的裝置上，或你自己選擇同步這個資料夾的雲端服務中。</p>
+    <p>StoryFlow 的程式碼公開在 GitHub，但 GitHub 上<strong>只有程式</strong>，不會有你的原稿、圖片或設定。</p>
+
+    <h2>瀏覽器裡暫存的資料</h2>
+    <p>為了讓你重新整理頁面時不必每次重來，StoryFlow 會在你的瀏覽器中保存少量資料：</p>
+    <ul>
+      <li><strong>這次工作階段（關閉分頁或瀏覽器後消失）</strong>：Google 存取權杖與到期時間、從 <code>settings.json</code> 匯入的整合設定、資料夾與手機編輯模式的連線狀態。</li>
+      <li><strong>這個瀏覽器（保留到你清除網站資料）</strong>：介面偏好，例如側欄是否收合、閱讀設定的字級與行高；以及你上次選擇的資料夾位置（只記得是哪個資料夾，不包含其中的內容）。</li>
+    </ul>
+    <p>到「設定 → 裝置與隱私」按「離開此裝置」，可以清除這個瀏覽器中的 Google 登入、暫存設定與資料夾連線；StoryFlow 資料夾裡的作品不會被刪除。介面偏好可以透過瀏覽器的「清除網站資料」移除。</p>
+
+    <h2>第三方服務</h2>
+    <ul>
+      <li><strong>Google</strong>：登入使用 Google Identity Services，選檔使用 Google Picker，讀取文件使用 Google Docs API。這些請求由你的瀏覽器直接連到 Google，適用 <a href="https://policies.google.com/privacy" rel="noopener">Google 隱私權政策</a>。</li>
+      <li><strong>GitHub Pages</strong>：提供網站的靜態檔案。GitHub 可能依其 <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">隱私權聲明</a> 記錄一般的連線紀錄（例如 IP 位址）；StoryFlow 本身不讀取這些紀錄。</li>
+    </ul>
+
+    <h2>資料的使用與分享</h2>
+    <p>StoryFlow 不出售、不出租、不分享你的資料，也不將其用於廣告、分析或訓練人工智慧模型。</p>
+    <p>StoryFlow 對透過 Google API 取得之資訊的使用與傳輸，遵守 <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>，包括其中的 Limited Use（有限使用）規定。</p>
+
+    <h2>撤銷存取權與刪除資料</h2>
+    <ul>
+      <li>隨時可到 Google 帳戶的 <a href="https://myaccount.google.com/permissions" rel="noopener">第三方應用程式存取權</a> 移除 StoryFlow 的授權。</li>
+      <li>在 StoryFlow 的「設定 → 裝置與隱私」按「離開此裝置」，清除這個瀏覽器中的登入與暫存資料。</li>
+      <li>你的作品都在你自己的 StoryFlow 資料夾裡，刪除那個資料夾就會刪除所有作品資料。</li>
+    </ul>
+
+    <h2>政策變更</h2>
+    <p>如果 StoryFlow 處理資料的方式改變，會更新這一頁並修改上方的「最後更新」日期。每次修改都記錄在 GitHub 的版本歷史中。</p>
+
+    <h2>聯絡方式</h2>
+    <p>有任何隱私相關的問題，請到 GitHub 開一則 Issue：<a href="https://github.com/fancyblue/StoryFlow/issues" rel="noopener">github.com/fancyblue/StoryFlow/issues</a>。Issue 是公開的，請不要在裡面貼原稿內容、存取權杖、Client ID 或 API Key。</p>
+
+    <hr />
+
+    <h2 lang="en">Privacy Policy (English summary)</h2>
+    <div lang="en">
+      <p class="meta">Last updated: October 16, 2026</p>
+      <p>StoryFlow is a personal writing workbench that runs entirely in your browser. It is served as static files from GitHub Pages and has no server, accounts, analytics or advertising trackers of its own.</p>
+      <h3>Google data</h3>
+      <p>StoryFlow requests a single OAuth scope, <code>https://www.googleapis.com/auth/drive.file</code>, which only grants access to files you explicitly pick in the Google Picker. It reads the content of the Google Docs you select so it can split them into publishable parts. It never modifies or deletes your Google Docs, and the content is processed in your browser and written only to a folder on your device that you choose. It is never sent to StoryFlow or any third-party server.</p>
+      <h3>Where your data is stored</h3>
+      <p>Manuscripts, progress, generated articles, images and settings (including the Google OAuth Client ID and Picker API Key you provide) are stored in the StoryFlow folder you select, through the browser's File System Access API. The browser itself keeps only session data (the Google access token and its expiry, imported integration settings, connection state), interface preferences, and a handle to the folder you chose. “Leave this device” in Settings clears the sign-in, cached settings and folder connection.</p>
+      <h3>Sharing and use</h3>
+      <p>StoryFlow does not sell, rent or share your data, and does not use it for advertising, analytics or training AI models. StoryFlow's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+      <h3>Revoking access</h3>
+      <p>You can remove StoryFlow's access at any time from your Google Account's <a href="https://myaccount.google.com/permissions" rel="noopener">third-party access</a> page. Deleting your StoryFlow folder deletes all of your work data.</p>
+      <h3>Contact</h3>
+      <p>Open an issue at <a href="https://github.com/fancyblue/StoryFlow/issues" rel="noopener">github.com/fancyblue/StoryFlow/issues</a>. Issues are public, so please do not include manuscript text, tokens or credentials.</p>
+    </div>
+  </article>
+</main>
+</body>
+</html>
