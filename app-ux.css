@@ -102,7 +102,7 @@
     top:16px;
     right:auto;
     bottom:auto;
-    left:calc(250px + (100vw - 250px) / 2);
+    left:calc(208px + (100vw - 208px) / 2);
     transform:translateX(-50%);
   }
   body:has(.app-shell.sidebar-collapsed) .storyflow-toast-stack{

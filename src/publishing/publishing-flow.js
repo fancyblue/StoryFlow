@@ -271,7 +271,6 @@
       publishingView.innerHTML = `
         <header class="publishing-page-head">
           <div>
-            <p class="eyebrow">STORYFLOW / PUBLISHING</p>
             <h1>發布</h1>
             <p class="publishing-page-subtitle">快速找到要發布的文章，再展開管理各平台。</p>
           </div>

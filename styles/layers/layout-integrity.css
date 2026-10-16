@@ -21,7 +21,7 @@
 /* PRIMARY NAV: icon and label get fixed columns so every item starts on the same axis. */
 .sidebar .nav-item{
   display:grid!important;
-  grid-template-columns:24px minmax(0,1fr)!important;
+  grid-template-columns:20px minmax(0,1fr)!important;
   align-items:center;
   justify-items:start;
   column-gap:12px;
@@ -29,17 +29,17 @@
 .sidebar .nav-item .nav-icon{
   display:grid;
   place-items:center;
-  width:24px;
-  height:24px;
-  min-width:24px;
+  width:20px;
+  height:20px;
+  min-width:20px;
   font-size:20px;
   line-height:1!important;
   color:inherit!important;
 }
 .sidebar .nav-item .nav-icon svg{
   display:block;
-  width:21px;
-  height:21px;
+  width:18px;
+  height:18px;
   fill:none;
   stroke:currentColor!important;
   stroke-width:1.9;
@@ -62,8 +62,8 @@
   display:block!important;
   min-width:0;
   margin:0;
-  font-size:17px;
-  font-weight:700;
+  font-size:14px;
+  font-weight:500;
   line-height:1!important;
   color:inherit!important;
   white-space:nowrap;
@@ -322,9 +322,14 @@
     min-width:22px;
     font-size:18px;
   }
+  .sidebar .nav-item .nav-icon svg{
+    width:21px;
+    height:21px;
+  }
   .sidebar .nav-item .nav-label{
     display:block;
     font-size:12px;
+    font-weight:700;
     line-height:1.15!important;
   }
   .main{

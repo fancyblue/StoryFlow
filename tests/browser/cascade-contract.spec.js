@@ -121,19 +121,28 @@ test('shared controls keep their resolved appearance', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
 
-  // Navigation: the active item owns the strong fill; nothing else in the sidebar
-  // may claim it, which is what made the collapse toggle read as a destination.
+  // Navigation: a flat rail. The active item owns the one fill, with no edge bar; nothing
+  // else in the sidebar may claim it, which is what made the collapse toggle read as a
+  // destination.
   await expectStyle(page, '.sidebar .nav-item.active', {
     backgroundColor: 'rgb(58, 53, 68)',
     color: 'rgb(251, 250, 246)',
-    minHeight: '48px'
+    boxShadow: 'none',
+    minHeight: '36px',
+    fontSize: '14px'
   });
   await expectStyle(page, '.sidebar .nav-item:not(.active)', {
     backgroundColor: 'rgba(0, 0, 0, 0)'
   });
   await expectStyle(page, '.sidebar-toggle', {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)'
+    backgroundColor: 'rgba(0, 0, 0, 0)'
   });
+  await expectStyle(page, '.sidebar', { width: '208px' });
+
+  // A page head is its title alone: no English eyebrow above it, and a size that leaves the
+  // section heads below it room to read as sections.
+  await expectStyle(page, '#workspaceView > .topbar h1', { fontSize: '22px' });
+  await expect(page.locator('#workspaceView > .topbar .eyebrow')).toHaveCount(0);
 
   // The single solid action of the split review stage.
   await expectStyle(page, '#confirmBtn', {

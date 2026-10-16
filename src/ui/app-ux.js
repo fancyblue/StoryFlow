@@ -62,7 +62,6 @@
     view.innerHTML = `
       <header class="projects-page-head">
         <div>
-          <p class="eyebrow">STORYFLOW / WORKS</p>
           <h1>作品</h1>
           <p class="projects-page-subtitle">每個故事都有獨立的章節、切篇與發布進度。先選作品，再進入工作台或發布。</p>
         </div>
