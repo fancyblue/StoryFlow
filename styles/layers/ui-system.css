@@ -174,6 +174,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 @media(min-width:821px){
   .sidebar{background:var(--paper-0,#ece9e0);border-right:1px solid var(--rule-1,#ded9cc);color:var(--ink-1,#221f1a)}
   .sidebar .brand span{color:var(--ink-2,#6a6357)}
+  .sidebar .brand-mark{color:var(--paper-1,#fbfaf6)}
   .sidebar .nav{gap:2px!important}
   .sidebar .nav-item{min-height:36px!important;padding:0 10px;gap:10px;border-radius:8px;color:var(--ink-1-soft,#3f3930);font-size:14px;font-weight:500;line-height:1}
   .sidebar .nav-item.active{background:var(--dai-soft,#e8e5eb)!important;color:var(--dai-800,#3a3544)}

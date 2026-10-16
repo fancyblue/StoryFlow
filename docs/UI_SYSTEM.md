@@ -338,6 +338,23 @@ text on it, the Publishing queue is rows on it (its unframed rule now names both
 because the shared `.panel` card rule loaded later at one class and drew the frame anyway), and
 Settings keeps its cards only because they group form fields.
 
+In longform the split preview is one **page** on that sheet: the toolbar, the progress line and
+the prose share one width — the reading measure, or 600px (the toolbar's own width) when the
+measure is narrower — and the page sits in the middle of what the paper has. A toolbar running
+the sheet's full width over prose held to its measure left a blank strip down the right; centred,
+what is left of the paper is an even margin. 閱讀設定's measure widens the page with the prose.
+
+**The rail's edge can be dragged.** A handle (`.sf-rail-resizer`, `src/ui/rail-resize.js`) sits
+on the line where ground turns to paper in both workspaces; it shows a line only under the
+pointer, while dragging or with keyboard focus (←／→ move 16px, Shift ×4, Home restores), and a
+double click restores the default. The choice is this browser's, in `localStorage`
+(`storyflow.ui.railWidth`) like the sidebar collapse and 閱讀設定 — never work data. The script
+only sets the wish (`--sf-rail-user` and `[data-rail-width]` on `<html>`, 240–640px);
+`desktop-responsive.css` turns it into `--sf-rail-width` and stops it where the work column would
+drop under 600px (or at the breakpoint's default, where even that leaves less), so a width chosen
+on a wide screen never squeezes a narrower window. The breakpoint widths are `--sf-rail-default`.
+Stacked (≤820px) there is no edge and no handle.
+
 A view arriving unfolds rather than appears: the page fades in over 220ms and the work column
 follows 60ms later. It is opacity only, so nothing moves under the pointer and no measured
 position changes, and it is off under `prefers-reduced-motion`.

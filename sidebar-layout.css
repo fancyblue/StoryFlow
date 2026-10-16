@@ -67,14 +67,6 @@
     z-index: 210;
   }
 
-  .sidebar-toggle:hover,
-  .sidebar-toggle:focus-visible {
-    background: #2b2822;
-    color: #fbfaf6;
-    outline: 2px solid rgba(255,255,255,.35);
-    outline-offset: 2px;
-  }
-
   .app-shell.sidebar-collapsed .sidebar {
     width: 76px;
     padding-left: 12px;

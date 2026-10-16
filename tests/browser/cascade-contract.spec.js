@@ -170,6 +170,12 @@ test('shared controls keep their resolved appearance', async ({ page }) => {
   await expectStyle(page, '.sidebar-toggle', {
     backgroundColor: 'rgba(0, 0, 0, 0)'
   });
+  // The mark keeps its light letter on the dark accent; it used to inherit the menu's ink. A
+  // hovered toggle takes a fill only: the white outline it had on the dark menu read as a grey ring.
+  await expectStyle(page, '.sidebar .brand-mark', { color: 'rgb(251, 250, 246)', backgroundColor: 'rgb(75, 69, 87)' });
+  await page.locator('.sidebar-toggle').hover();
+  await expectStyle(page, '.sidebar-toggle', { outlineStyle: 'none', backgroundColor: 'rgb(244, 241, 233)' });
+  await page.mouse.move(0, 0);
   await expectStyle(page, '.sidebar', { width: '208px' });
 
   // A head is its title alone: no English eyebrow above a page, a section or a list, and a page
@@ -624,6 +630,93 @@ test('each view is one sheet of paper that meets the window edges, and the workb
   // The publishing queue is rows on the page, not a frame on it: its unframed rule now outranks
   // the shared card rule that used to draw the frame anyway.
   await expectStyle(page, '.publishing-dashboard-panel', { borderTopWidth: '0px', backgroundColor: 'rgba(0, 0, 0, 0)' });
+});
+
+// A full-width toolbar over prose held to its reading measure left a blank strip down the right
+// of the sheet. The split preview is one page instead: toolbar and prose share a width, and the
+// page sits in the middle of what the paper has, so the rest is an even margin.
+test('the split preview is one page in the middle of the sheet', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+
+  const layout = await page.evaluate(() => {
+    const column = document.querySelector('.workspace-main-column');
+    const box = column.getBoundingClientRect();
+    const inner = { left: box.left + parseFloat(getComputedStyle(column).paddingLeft), right: box.right - parseFloat(getComputedStyle(column).paddingRight) };
+    const pageBox = document.querySelector('.workspace-main-column > .splitter-panel').getBoundingClientRect();
+    const actions = document.getElementById('smartSplitHeaderActions').getBoundingClientRect();
+    const prose = document.querySelector('#preview .sf-preview-rendered-root').getBoundingClientRect();
+    return {
+      width: Math.round(pageBox.width),
+      margins: [Math.round(pageBox.left - inner.left), Math.round(inner.right - pageBox.right)],
+      toolbarToPage: Math.round(pageBox.right - actions.right),
+      proseLeft: Math.round(prose.left - pageBox.left)
+    };
+  });
+  // 36 characters of 16px prose is 576px, under the toolbar's own 600px.
+  expect(layout.width).toBe(600);
+  expect(Math.abs(layout.margins[0] - layout.margins[1])).toBeLessThanOrEqual(1);
+  expect(layout.margins[0]).toBeGreaterThan(0);
+  expect(layout.toolbarToPage).toBe(0);
+  expect(layout.proseLeft).toBe(0);
+});
+
+// The rail's edge can be dragged. The width belongs to this browser (localStorage), is shared by
+// both workspaces, never leaves the work column under 600px, and a double click restores it.
+test('the rail edge can be dragged, is remembered, and goes back to its default', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+
+  const measure = () => page.evaluate(() => {
+    const view = document.getElementById('workspaceView');
+    const grid = [...document.querySelectorAll('.workspace-grid.workspace-hierarchy, .visual-workspace-layout')]
+      .find(el => el.getBoundingClientRect().width);
+    const rail = grid.querySelector(':scope > .source-panel').getBoundingClientRect();
+    const work = grid.querySelector(':scope > .workspace-main-column, :scope > .visual-editor-panel').getBoundingClientRect();
+    const handle = grid.querySelector(':scope > .sf-rail-resizer');
+    const stop = Number(/\) ([\d.]+)px/.exec(getComputedStyle(view).backgroundImage)?.[1]);
+    return {
+      rail: Math.round(rail.width), work: Math.round(work.width),
+      turnAtRail: Math.round(view.getBoundingClientRect().left + stop) === Math.round(rail.right),
+      handleAtRail: Math.abs(handle.getBoundingClientRect().left + 6 - rail.right) < 1,
+      valuenow: handle.getAttribute('aria-valuenow'),
+      stored: localStorage.getItem('storyflow.ui.railWidth')
+    };
+  });
+
+  const before = await measure();
+  expect(before).toMatchObject({ rail: 320, turnAtRail: true, handleAtRail: true, stored: null });
+
+  const handle = page.locator('.workspace-grid .sf-rail-resizer');
+  const box = await handle.boundingBox();
+  await page.mouse.move(box.x + 6, 400);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 6 + 80, 420, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(measure).toMatchObject({ rail: 400, turnAtRail: true, handleAtRail: true, valuenow: '400', stored: '400' });
+
+  await handle.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(measure).toMatchObject({ rail: 416, stored: '416' });
+
+  // A width far past what the window has stops where the work column would drop under 600px.
+  await page.evaluate(() => StoryFlowRailWidth.set(640));
+  const capped = await measure();
+  expect(capped.work).toBeGreaterThanOrEqual(600);
+  expect(capped.work).toBeLessThanOrEqual(601);
+
+  // Both workspaces draw the one width, and a reload keeps it.
+  await page.evaluate(() => StoryFlowRailWidth.set(380));
+  await page.reload();
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await visualWorkspace(page);
+  await expect.poll(measure).toMatchObject({ rail: 380, turnAtRail: true, handleAtRail: true, stored: '380' });
+
+  await page.locator('#visualWorkspace .sf-rail-resizer').dblclick();
+  await expect.poll(measure).toMatchObject({ rail: 320, stored: null });
+
+  await page.setViewportSize(PHONE);
+  await expect(page.locator('#visualWorkspace .sf-rail-resizer')).toBeHidden();
 });
 
 // A dialog head is part of its card. It used to be a white band over warm paper, and a

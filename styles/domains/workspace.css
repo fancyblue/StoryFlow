@@ -4,8 +4,11 @@
 
 :root{
   /* One rail width, named, because two things depend on it: the grid track of both
-     workspaces and, on desktop, where the page turns from ground to paper (desktop-responsive). */
-  --sf-rail-width:320px;
+     workspaces and, on desktop, where the page turns from ground to paper (desktop-responsive).
+     --sf-rail-default is the width per breakpoint; on desktop the rail can be dragged wider or
+     narrower, and desktop-responsive.css turns that choice into --sf-rail-width. */
+  --sf-rail-default:320px;
+  --sf-rail-width:var(--sf-rail-default);
   --sf-workspace-source-columns:var(--sf-rail-width) minmax(0,1fr);
   --sf-workspace-column-gap:0px;
 }
@@ -171,7 +174,7 @@
 }
 
 @media(max-width:1100px) and (min-width:821px){
-  :root{--sf-rail-width:280px}
+  :root{--sf-rail-default:280px}
 
   .workspace-grid.workspace-hierarchy{
     grid-template-columns:var(--sf-workspace-source-columns)!important;
@@ -257,4 +260,21 @@
    time left a separator dot hanging at a line end. The bar takes its own line instead. */
 @media(max-width:520px){
   .chapter-progress-bar{flex-basis:100%}
+}
+
+/* The rail's edge is a handle (src/ui/rail-resize.js): it sits on the line where the ground
+   turns to paper and shows itself only under the pointer, while dragging or with focus. Desktop
+   only; stacked, there is no edge to drag. */
+.sf-rail-resizer{display:none}
+@media(min-width:821px){
+  .workspace-grid.workspace-hierarchy,
+  .visual-workspace-layout{position:relative}
+  .sf-rail-resizer{position:absolute;top:0;bottom:0;left:var(--sf-rail-width);z-index:3;display:block;width:12px;margin-left:-6px;cursor:col-resize;touch-action:none}
+  .sf-rail-resizer::after{content:"";position:absolute;top:0;bottom:0;left:5px;width:2px;border-radius:2px;background:transparent;transition:background-color .15s ease}
+  .sf-rail-resizer:hover::after{background:var(--rule-2,#c8c1b0)}
+  .sf-rail-resizer:focus-visible::after,
+  body.sf-rail-resizing .sf-rail-resizer::after{background:var(--dai-700,#4b4557)}
+  .sf-rail-resizer:focus-visible{box-shadow:none!important}
+  body.sf-rail-resizing{cursor:col-resize;user-select:none}
+  body.sf-reading-open .sf-rail-resizer{display:none}
 }
