@@ -338,9 +338,10 @@ text on it, the Publishing queue is rows on it (its unframed rule now names both
 because the shared `.panel` card rule loaded later at one class and drew the frame anyway), and
 Settings keeps its cards only because they group form fields.
 
-In longform the split preview is one **page** on that sheet: the toolbar, the progress line and
-the prose share one width — the reading measure, or 600px (the toolbar's own width) when the
-measure is narrower — and the page sits in the middle of what the paper has. A toolbar running
+What you work on is one **page** on that sheet, in both content modes: in longform the split
+preview's toolbar, progress line and prose, in visual the editor's fields (and its empty state),
+share one width — `--sf-page-width`, the reading measure, or 600px (the toolbar's own width) when
+the measure is narrower — and the page sits in the middle of what the paper has. A toolbar running
 the sheet's full width over prose held to its measure left a blank strip down the right; centred,
 what is left of the paper is an even margin. 閱讀設定's measure widens the page with the prose.
 
@@ -651,7 +652,7 @@ A tool dialog says each thing once. 後記 and 文章圖片 used to repeat the d
 
 Every dialog head runs its rule to the card's edges — the compact dialogs (新增圖文, the visual preview and image dialogs, image removal, recovery) included, which kept theirs inside the card's padding. Closing a publishing tool never drops what was typed in it: 完成, ✕ and Esc all save pending edits to the afterword, the summary and Hashtags, or an image's alt text, caption and placement before the dialog closes, the way the visual editor autosaves; a read-only phone saves nothing on close. The split preferences open under their 切篇偏好 disclosure without repeating the name as a first line.
 
-The visual editor and its entry rail both carry no card. One framed column beside an unframed one is the worst of the two: the framed one ends partway down the page, leaving an edge with nothing on the other side of it. On desktop the rail sits on the ground and the editor on the work column's paper, the same turn the longform workbench makes. The workspace grid already separates the entry rail from the editor, and the editor's fields carry its structure; a frame there would draw a boundary that is drawn twice. The longform workbench keeps its panels, because there the frames separate three different tools rather than enclosing one. Entry rows are drawn like chapter rows: the row owns the hover fill and the rounded current fill, with no separator, and the button inside it owns neither.
+The visual editor and its entry rail both carry no card. One framed column beside an unframed one is the worst of the two: the framed one ends partway down the page, leaving an edge with nothing on the other side of it. On desktop the rail sits on the ground and the editor on the work column's paper, the same turn the longform workbench makes, and its fields are a page centred on that paper, the width of the split preview's page. The workspace grid already separates the entry rail from the editor, and the editor's fields carry its structure; a frame there would draw a boundary that is drawn twice. The longform workbench keeps its panels, because there the frames separate three different tools rather than enclosing one. Entry rows are drawn like chapter rows: the row owns the hover fill and the rounded current fill, with no separator, and the button inside it owns neither.
 
 The image manager is grouped the way the output is: one group per placement (正文前 / 正文後、後記前 / 後記後), each with its own heading and count, and empty groups are not drawn. Ordering is only meaningful between neighbours that land in the same place, so “上移／下移” move within a group and are disabled at its ends. A row is identified by its stored id, not by the filename it displays — two imports of the same file share one original name. The manager states that copying never carries the image files, permanently and before any image exists, rather than only once there are images to warn about.
 

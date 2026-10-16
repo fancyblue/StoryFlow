@@ -634,8 +634,9 @@ test('each view is one sheet of paper that meets the window edges, and the workb
 
 // A full-width toolbar over prose held to its reading measure left a blank strip down the right
 // of the sheet. The split preview is one page instead: toolbar and prose share a width, and the
-// page sits in the middle of what the paper has, so the rest is an even margin.
-test('the split preview is one page in the middle of the sheet', async ({ page }) => {
+// page sits in the middle of what the paper has, so the rest is an even margin. The visual
+// editor's fields are the same page.
+test('in both content modes the work is one page in the middle of the sheet', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
 
@@ -659,6 +660,18 @@ test('the split preview is one page in the middle of the sheet', async ({ page }
   expect(layout.margins[0]).toBeGreaterThan(0);
   expect(layout.toolbarToPage).toBe(0);
   expect(layout.proseLeft).toBe(0);
+
+  await visualWorkspace(page);
+  const visual = await page.evaluate(() => {
+    const panel = document.querySelector('.visual-editor-panel');
+    const box = panel.getBoundingClientRect();
+    const left = box.left + parseFloat(getComputedStyle(panel).paddingLeft);
+    const pageBox = [...panel.children].find(child => !child.hidden).getBoundingClientRect();
+    return { width: Math.round(pageBox.width), margins: [Math.round(pageBox.left - left), Math.round(box.right - pageBox.right)] };
+  });
+  expect(visual.width).toBe(layout.width);
+  expect(Math.abs(visual.margins[0] - visual.margins[1])).toBeLessThanOrEqual(1);
+  expect(visual.margins[0]).toBeGreaterThan(0);
 });
 
 // The rail's edge can be dragged. The width belongs to this browser (localStorage), is shared by
