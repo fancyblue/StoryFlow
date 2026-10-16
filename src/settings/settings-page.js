@@ -60,7 +60,7 @@
       privacy.innerHTML = `
         <div>
           <strong>裝置與隱私</strong>
-          <p>清除這個瀏覽器中的 Google 登入、暫存設定與資料夾連線。StoryFlow 資料夾內的作品與設定檔不會被刪除。</p>
+          <p>清除這個瀏覽器中的 Google 登入、暫存設定與資料夾連線。StoryFlow 資料夾內的作品與設定檔不會被刪除。<a href="./privacy.html" target="_blank" rel="noopener">隱私權政策</a></p>
         </div>
         <button id="settingsLeaveDeviceBtn" class="button danger" type="button">離開此裝置</button>`;
       privacy.querySelector('#settingsLeaveDeviceBtn').addEventListener('click', () => {

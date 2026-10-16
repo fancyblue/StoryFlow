@@ -65,6 +65,7 @@
 }
 .settings-device-privacy strong{font-size:16px}
 .settings-device-privacy p{max-width:720px;margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.65}
+.settings-device-privacy p a{margin-left:6px;color:var(--dai-700,#4b4557);font-weight:700;text-underline-offset:3px}
 .settings-device-privacy .button{flex:0 0 auto}
 
 /* Sidebar connection status is the persistent footer: two status chips plus the

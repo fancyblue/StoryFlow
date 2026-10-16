@@ -53,6 +53,8 @@ Repo **不包含任何人的 Google OAuth Client ID 或 Picker API Key**。每�
 
 OAuth Client ID 對 Web 應用本身不是 client secret，但把它從 repo 設定移出去可以讓 fork / clone 的使用者更容易帶入自己的 Google Cloud 專案，也避免不同部署共用同一組 OAuth 設定。
 
+隱私權政策在 [`privacy.html`](privacy.html)（部署後為 `<StoryFlow 網址>/privacy.html`，設定頁「裝置與隱私」也有連結），可填入 Google Cloud OAuth 同意畫面的「應用程式隱私權政策連結」。它描述 StoryFlow 程式本身怎麼處理資料：只申請 `drive.file`、不修改 Google 文件、作品只寫進使用者選的資料夾、沒有伺服器與追蹤。StoryFlow 處理資料的方式改變時，這一頁要在同一個 PR 更新。fork 後自己部署的人，請把頁面上的聯絡方式改成自己的。
+
 ## 手機 / 新裝置
 
 Google OAuth 在取得 Drive / Docs 存取權之前就必須知道 Web OAuth Client ID，所以 StoryFlow 不能「先登入 Google，再從私人 Drive 讀取包含 Client ID 的 settings.json」。
