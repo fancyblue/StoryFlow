@@ -169,7 +169,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 /* Desktop primary navigation: a quiet, flat rail on the page ground. It was the darkest thing
    on every screen for the control used least; now it is the first and quietest step of a page
    that brightens towards what you are working on (desktop-responsive.css). The active item is
-   the one fill in it, the same rounded --dai-soft fill the chapter and entry rails use. The
+   the one fill in it, the same rounded paper fill the chapter and entry rails use. The
    phone's bottom bar keeps its dark ground (theme.css, layout-integrity.css). */
 @media(min-width:821px){
   .sidebar{background:var(--paper-0,#ece9e0);border-right:1px solid var(--rule-1,#ded9cc);color:var(--ink-1,#221f1a)}
@@ -177,15 +177,15 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
   .sidebar .brand-mark{color:var(--paper-1,#fbfaf6)}
   .sidebar .nav{gap:2px!important}
   .sidebar .nav-item{min-height:36px!important;padding:0 10px;gap:10px;border-radius:8px;color:var(--ink-1-soft,#3f3930);font-size:14px;font-weight:500;line-height:1}
-  .sidebar .nav-item.active{background:var(--dai-soft,#e8e5eb)!important;color:var(--dai-800,#3a3544)}
+  .sidebar .nav-item.active{background:var(--paper-1,#fbfaf6)!important;color:var(--ink-1,#221f1a)}
   .sidebar .nav-item:hover{background:var(--paper-2,#f4f1e9)!important;color:var(--ink-1,#221f1a)}
-  .sidebar .nav-item.active:hover{background:var(--dai-soft,#e8e5eb)!important}
+  .sidebar .nav-item.active:hover{background:var(--paper-1,#fbfaf6)!important}
   .sidebar-note{font-size:12.5px!important;line-height:1.6!important}
   .sidebar-toggle{width:28px;height:28px;border-radius:8px;background:transparent;border-color:transparent;box-shadow:none;color:var(--ink-2,#6a6357)!important}
   .sidebar-toggle:hover,.sidebar-toggle:focus-visible{background:var(--paper-2,#f4f1e9)}
   .sidebar-settings-button{color:var(--ink-2,#6a6357)}
   .sidebar-settings-button:hover{background:var(--paper-2,#f4f1e9)!important;color:var(--ink-1,#221f1a)}
-  .sidebar-settings-button.active{background:var(--dai-soft,#e8e5eb)!important;color:var(--dai-800,#3a3544)}
+  .sidebar-settings-button.active{background:var(--paper-1,#fbfaf6)!important;color:var(--ink-1,#221f1a)}
   .sidebar-logout{color:var(--vermilion,#a8443a)!important}
   .sidebar-logout:hover,.sidebar-logout:focus-visible{color:var(--vermilion,#a8443a)!important}
   .sidebar-connection-status{border-top-color:var(--rule-1,#ded9cc)}

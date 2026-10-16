@@ -153,13 +153,13 @@ test('shared controls keep their resolved appearance', async ({ page }) => {
   await longformWorkspace(page);
 
   // Navigation: a flat rail on the page ground, the first and quietest step of a page that
-  // brightens towards the work. The active item owns the one fill — the rounded --dai-soft the
-  // chapter rail uses — with no edge bar; nothing else in the sidebar may claim it, which is
-  // what made the collapse toggle read as a destination.
+  // brightens towards the work. The active item owns the one fill — the rounded paper fill the
+  // chapter rail uses, lighter than hover — with no edge bar; nothing else in the sidebar may
+  // claim it, which is what made the collapse toggle read as a destination.
   await expectStyle(page, '.sidebar', { backgroundColor: 'rgb(236, 233, 224)' });
   await expectStyle(page, '.sidebar .nav-item.active', {
-    backgroundColor: 'rgb(232, 229, 235)',
-    color: 'rgb(58, 53, 68)',
+    backgroundColor: 'rgb(251, 250, 246)',
+    color: 'rgb(34, 31, 26)',
     boxShadow: 'none',
     minHeight: '36px',
     fontSize: '14px'
@@ -583,7 +583,7 @@ test('the chapter rail marks each chapter\'s progress and keeps rare actions qui
 
   await expectStyle(page, '#projectTitle', { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(0, 0, 0, 0)', fontSize: '19px' });
   // A row is drawn like the menu's items: no rule under it, a rounded fill when it is current.
-  await expectStyle(page, '#chapterList .chapter-row.active', { borderBottomWidth: '0px', borderLeftWidth: '0px', borderTopLeftRadius: '8px', backgroundColor: 'rgb(232, 229, 235)' });
+  await expectStyle(page, '#chapterList .chapter-row.active', { borderBottomWidth: '0px', borderLeftWidth: '0px', borderTopLeftRadius: '8px', backgroundColor: 'rgb(251, 250, 246)' });
   await expect(page.locator('#projectTitle')).toHaveAccessibleName('作品名稱');
   await expect(page.locator('#projectTitle')).toHaveValue('契約測試');
   await expectStyle(page, '#addChapterBtn', { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(0, 0, 0, 0)', height: '34px' });

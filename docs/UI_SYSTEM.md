@@ -306,7 +306,11 @@ line anyone can see.
 The weak pairing this section warned about — both source rails drawing `--rule-1` row
 separators and a `--rule-1` column divider on the ground — is gone rather than recoloured: the
 rails draw no lines at all now. Their rows are separated the way the menu's items are, and the
-current one is a rounded `--dai-soft` fill (see [What a chapter row says](#what-a-chapter-row-says)).
+current one is a rounded `--paper-1` fill — a piece of the paper the work column is drawn on,
+and the one fill on the ground lighter than the `--paper-2` hover (see [What a chapter row says](#what-a-chapter-row-says)).
+`--dai-soft` was used there first: a cool grey on the warm ground, darker than the hover fill, it
+was the least visible thing in the rail. On paper (Works, Publishing) the active fill stays
+`--dai-soft`, which does read against white.
 The Works and Publishing lists keep the row contract above, with its hairlines and marker gutter.
 
 ### Space before lines
@@ -468,8 +472,8 @@ The desktop rail (`min-width: 821px`) is a quiet, flat column: 208 px wide (76 p
 shadow or gradient anywhere in it — the brand mark is a flat `--denim-700` square. It sits on
 the page ground with a `--rule-1` hairline at its edge: it was the darkest thing on every screen
 for the control used least. The active item is the rail's one fill, the same rounded
-`--dai-soft` the chapter and entry rails use, and it does not change weight: the fill and the
-ink colour already say where you are, and a bolder label would only shift the text. These
+`--paper-1` the chapter and entry rails use, and it does not change weight: the fill already
+says where you are, and a bolder label would only shift the text. These
 colours are desktop-only (ui-system.css's desktop navigation block); the phone's bottom bar
 keeps its dark ground. The rail's
 width lives in `sidebar-layout.css`, `--sf-sidebar-width` in `desktop-responsive.css` and the
