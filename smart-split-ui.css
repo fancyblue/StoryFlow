@@ -19,15 +19,6 @@
   display:flex;
   flex-wrap:wrap;
 }
-.smart-split-settings-label {
-  align-self:center;
-  margin-right:4px;
-  color:var(--muted);
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:.04em;
-  white-space:nowrap;
-}
 .splitter-panel .smart-split-mini-settings .range-grid {
   display:flex;
   align-items:flex-end;
@@ -111,7 +102,6 @@
     align-items:stretch;
     padding:9px 10px;
   }
-  .smart-split-settings-label { width:100%; margin:0 0 2px; }
   .suggestion-title-input { width:100%; font-size:17px; }
   .split-preview-shell .preview { min-height:220px; padding:var(--sf-preview-pad-narrow, 20px 18px) !important; font-size:15px; }
 }
@@ -125,14 +115,6 @@
   border-radius:0 !important;
   background:transparent !important;
   box-shadow:none !important;
-}
-.splitter-panel .smart-split-settings-label {
-  align-self:center !important;
-  margin:0 5px 0 0 !important;
-  color:#6a6357 !important;
-  font-size:11px !important;
-  font-weight:700 !important;
-  letter-spacing:0 !important;
 }
 .splitter-panel .smart-split-mini-settings .range-grid { gap:10px !important; }
 .splitter-panel .smart-split-mini-settings .range-grid label,
@@ -233,7 +215,6 @@
     overflow-x:auto;
     flex-wrap:nowrap !important;
   }
-  .splitter-panel .smart-split-settings-label { flex:0 0 auto; width:auto !important; margin-bottom:0 !important; }
   .splitter-panel .smart-split-mini-settings .range-grid { flex:0 0 auto !important; }
   .splitter-panel .smart-split-mini-settings .range-grid label,
   .splitter-panel .scene-marker-compact {

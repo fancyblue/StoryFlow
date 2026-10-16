@@ -123,8 +123,8 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
 .reading-view-actions #readingConfirmBtn{margin-left:auto!important}
 #readingCurrentChars.reading-current-chars{color:var(--ink-2,#6a6357)!important;font-size:12.5px!important;font-weight:700!important;line-height:1.2!important;white-space:nowrap!important}
 
-/* Keep 切篇偏好 / 預覽格式 on one typographic level. */
-.splitter-panel .smart-split-settings-label,.splitter-panel .suggestion-platform-bar .platform-select-field>span{color:var(--sf-muted)!important;font-size:12px!important;font-weight:700!important;line-height:1.2!important}
+/* 預覽格式's label stays at the small-label level beside 切篇偏好. */
+.splitter-panel .suggestion-platform-bar .platform-select-field>span{color:var(--sf-muted)!important;font-size:12px!important;font-weight:700!important;line-height:1.2!important}
 .splitter-panel .suggestion-platform-bar{align-items:center!important;}
 
 /* Small metrics and status pills need to remain readable at a glance. */

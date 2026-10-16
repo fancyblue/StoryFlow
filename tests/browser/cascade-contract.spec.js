@@ -10,7 +10,9 @@
 // further than intended: confirm the new value is wanted, then update the expectation
 // in the same commit so the diff records the decision.
 
-import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { standInForConnectedFolder } from './support/folder.js';
 
@@ -93,6 +95,35 @@ test('the cascade order matches the list the tooling reasons from', async ({ pag
   const fixed = list => list.filter(href => !tail.has(href));
   expect(fixed(live)).toEqual(fixed(manifest.order));
   expect([...live].sort()).toEqual([...manifest.order].sort());
+});
+
+// dead-selectors.mjs treated a class as produced when it appeared anywhere in the source,
+// so `publish-platform-state-line` kept a `.publish-platform-state` rule alive that nothing
+// could match. This runs the script on a small tree that holds that case next to the ones
+// it must keep: an exact name, a prefix completed at run time, and src/legacy/, which is
+// never loaded.
+test('dead-selectors judges whole names, not pieces of longer ones', () => {
+  const root = test.info().outputPath('dead-selectors');
+  mkdirSync(join(root, 'src', 'legacy'), { recursive: true });
+  writeFileSync(join(root, 'index.html'), '<link rel="stylesheet" href="./style.css">\n<div id="panel" class="state-line"></div>\n');
+  writeFileSync(join(root, 'app-loader.js'), "panel.className = 'is-' + mode;\n");
+  writeFileSync(join(root, 'src', 'flow.js'), 'row.classList.add(`status-${key}`);\n');
+  writeFileSync(join(root, 'src', 'legacy', 'old.js'), "row.className = 'legacy-only';\n");
+  writeFileSync(join(root, 'style.css'), [
+    '.state-line{gap:4px}',
+    '.state strong{font-size:14px}',
+    '.is-open{display:block}',
+    '.status-done{color:inherit}',
+    '#panel{margin:0}',
+    '.legacy-only{margin:0}',
+    '.state-line,.state{padding:0}'
+  ].join('\n') + '\n');
+
+  const run = spawnSync(process.execPath, ['scripts/dead-selectors.mjs', '--check', '--root', root], { encoding: 'utf8' });
+  expect(run.status).toBe(1);
+  const reported = run.stderr.split('\n').filter(line => line.startsWith('  style.css:')).map(line => line.replace(/^\s*style\.css:\d+\s+/, ''));
+  expect(reported).toEqual(['.state strong', '.legacy-only', '.state']);
+  expect(run.stderr).toContain('Names: legacy-only state\n');
 });
 
 test('only the ensureStyleLast tail changes order while the app is used', async ({ page }) => {
