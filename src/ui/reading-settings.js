@@ -25,6 +25,9 @@
   let settings = read();
   let panel = null;
   let openedFrom = null;
+  // Every place the controls are drawn: the floating panel in the reading view and the 閱讀設定
+  // group inside the workbench's 設定 panel. All of them show the one current choice.
+  const hosts = new Set();
 
   function clampStep(value, { min, max, step }, fallback) {
     const number = Number(value);
@@ -85,23 +88,14 @@
       </span>`;
   }
 
-  function ensurePanel() {
-    if (panel) return panel;
-    panel = document.createElement('div');
-    panel.id = 'readingSettingsPanel';
-    panel.className = 'sf-reading-settings';
-    panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-label', '閱讀設定');
-    panel.hidden = true;
-    panel.innerHTML = `
+  function fillControls(host) {
+    host.innerHTML = `
       <div class="sf-reading-settings-row"><span>字級</span>${stepper('size', 'px', SIZE, ['縮小字級', '放大字級'])}</div>
       <div class="sf-reading-settings-row"><span>行高</span>${segment('leading', LEADINGS, '行高')}</div>
       <div class="sf-reading-settings-row"><span>每行字數</span>${stepper('chars', '字', CHARS, ['減少每行字數', '增加每行字數'])}</div>
       <div class="sf-reading-settings-row"><span>介面密度</span>${segment('density', DENSITIES, '介面密度')}</div>
       <div class="sf-reading-settings-foot"><button type="button" class="button tiny ghost" data-reset>還原預設</button></div>`;
-    document.body.appendChild(panel);
-
-    panel.addEventListener('click', event => {
+    host.addEventListener('click', event => {
       const stepButton = event.target.closest('[data-step]');
       if (stepButton) {
         const key = stepButton.closest('[data-setting]').dataset.setting;
@@ -117,6 +111,26 @@
       }
       if (event.target.closest('[data-reset]')) update({ ...DEFAULTS });
     });
+    hosts.add(host);
+  }
+
+  // Draws the controls into a container another surface owns, which opens and closes it.
+  function mount(container) {
+    if (!container || hosts.has(container)) return;
+    fillControls(container);
+    syncPanel();
+  }
+
+  function ensurePanel() {
+    if (panel) return panel;
+    panel = document.createElement('div');
+    panel.id = 'readingSettingsPanel';
+    panel.className = 'sf-reading-settings';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', '閱讀設定');
+    panel.hidden = true;
+    fillControls(panel);
+    document.body.appendChild(panel);
     panel.addEventListener('keydown', event => {
       if (event.key !== 'Escape') return;
       event.stopPropagation();
@@ -126,8 +140,11 @@
   }
 
   function syncPanel() {
-    if (!panel) return;
-    panel.querySelectorAll('.sf-reading-settings-stepper').forEach(group => {
+    hosts.forEach(syncHost);
+  }
+
+  function syncHost(host) {
+    host.querySelectorAll('.sf-reading-settings-stepper').forEach(group => {
       const key = group.dataset.setting;
       const output = group.querySelector('output');
       const value = settings[key];
@@ -135,7 +152,7 @@
       group.querySelector('[data-step="-1"]').disabled = value <= Number(output.dataset.min);
       group.querySelector('[data-step="1"]').disabled = value >= Number(output.dataset.max);
     });
-    panel.querySelectorAll('.sf-preview-mode-segment').forEach(group => {
+    host.querySelectorAll('.sf-preview-mode-segment').forEach(group => {
       const current = String(settings[group.dataset.setting]);
       group.querySelectorAll('[data-value]').forEach(button => {
         const active = button.dataset.value === current;
@@ -143,7 +160,7 @@
         button.setAttribute('aria-pressed', String(active));
       });
     });
-    panel.querySelector('[data-reset]').disabled = isDefault();
+    host.querySelector('[data-reset]').disabled = isDefault();
   }
 
   function place(toggle) {
@@ -176,13 +193,14 @@
     openedFrom = null;
   }
 
-  // The toggle sits immediately before the control that leaves its surface — 讀稿檢視 in the
-  // split panel, 回到工作台 in the reading view — so it is in the same place on both.
+  // The reading view's toggle sits immediately before 回到工作台, the control that leaves the
+  // surface. In the workbench the same controls live in the 設定 panel beside 讀稿檢視
+  // (src/projects/workspace-project-ux.js), which mounts them; it has no toggle of its own.
   function ensureToggle(container, before) {
     if (!container || container.querySelector(':scope > .sf-reading-settings-toggle')) return;
     const toggle = document.createElement('button');
     toggle.type = 'button';
-    toggle.className = 'icon-button sf-reading-settings-toggle';
+    toggle.className = 'icon-button sf-reading-settings-toggle sf-quiet';
     toggle.setAttribute('aria-label', '閱讀設定');
     toggle.setAttribute('aria-haspopup', 'dialog');
     toggle.setAttribute('aria-expanded', 'false');
@@ -197,7 +215,6 @@
   }
 
   function installToggles() {
-    ensureToggle(document.getElementById('smartSplitHeaderActions'), document.getElementById('openReadingViewBtn'));
     ensureToggle(document.querySelector('#readingView .reading-view-head'), document.getElementById('closeReadingViewBtn'));
   }
 
@@ -219,6 +236,7 @@
   window.StoryFlowReadingSettings = Object.freeze({
     get: () => ({ ...settings }),
     defaults: () => ({ ...DEFAULTS }),
+    mount,
     close
   });
 })();

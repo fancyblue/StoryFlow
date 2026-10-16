@@ -996,7 +996,7 @@ test('canceling a new manual work does not create an empty project', async ({ pa
   expect(afterConfirm).toEqual({ count: original.count + 1, pending: false });
   await expect(page.locator('#projectTitle')).toHaveValue('第二作品');
 
-  const preferences = page.locator('#splitPreferencesToggle');
+  const preferences = page.locator('#splitSettingsToggle');
   await expect(preferences.locator('.sf-chevron')).toHaveCount(1);
   await preferences.click();
   await expect(preferences).toHaveAttribute('aria-expanded', 'true');

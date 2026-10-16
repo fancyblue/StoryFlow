@@ -69,7 +69,7 @@ Use disclosure only when the same control opens and closes adjacent content or a
 
 ```html
 <button type="button" aria-expanded="false">
-  <span>切篇偏好</span>
+  <span>設定</span>
   <span class="sf-chevron" aria-hidden="true"></span>
 </button>
 ```
@@ -83,14 +83,26 @@ Rules:
 - Keep chevron size, stroke and motion shared. Page CSS may change only color or spacing.
 - “更多” actions use the ellipsis pattern and do not use a chevron. Navigation arrows and directional actions are not disclosures.
 
-Current shared disclosures include workspace work switching, Smart Split preferences, publishing project switching, publishing project filtering and Publishing work-group collapse.
+Current shared disclosures include workspace work switching, the split head's 設定 (閱讀設定 and 切篇偏好), publishing project switching, publishing project filtering and Publishing work-group collapse.
 
 ## Action hierarchy
 
 - Primary: the single action that advances or confirms the current task.
 - Ghost/secondary: preview, return, cancel or supporting actions.
+- Quiet (`.sf-quiet`): a control used rarely enough to rest as text, taking the hover fill only under the pointer or while its disclosure is open. The split head's 設定 and the reading view's 閱讀設定 icon are quiet.
 - Overflow (`⋯`): infrequent row management and destructive actions.
 - Close (`×`): dismisses a dialog; in pending creation it also cancels the transaction.
+
+A row carries at most one framed secondary control. The 切篇預覽 head once framed five — the format
+select, 閱讀設定, 切篇偏好, 讀稿檢視 and, below them, both scene buttons — and a row where everything
+is outlined has no order to read in. Now the select keeps its field edge, 讀稿檢視 is the row's one
+framed action, and 閱讀設定 and 切篇偏好 sit together behind one quiet 設定 disclosure. It opens a
+panel anchored under the head's actions, laid over the preview rather than pushing it down, with
+閱讀設定 above 切篇偏好; both are changed far less often than the preview is read.
+
+Two actions that are one decision in opposite directions are one control. `.sf-button-group`
+draws 少一個場景／多一個場景 as the segment's fill with neither half raised (neither is a current
+state) and a hairline between them, in the split panel's title row and the reading view's foot.
 
 Page-level task order and the resulting primary action are defined in [UX_FLOW.md](UX_FLOW.md). Frequency alone does not justify a solid fill, and a page may change its primary action as the current workflow stage changes.
 
@@ -117,7 +129,7 @@ label in the row look undersized.
 | Segmented control | outer box `--sf-control-sm`; inner buttons `calc(var(--sf-control-sm) - 6px)` |
 
 `.button.tiny` is this tier, so it applies wherever that class is used, and the select, the
-segment, 閱讀設定, 切篇偏好, 讀稿檢視, 切換作品, 更新作品來源 and the scene buttons all resolve to it.
+segment, 設定, 讀稿檢視, 切換作品, 更新作品來源 and the scene button group all resolve to it.
 A control that needs a different height belongs on a different row. `cascade-contract.spec.js`
 measures the split head and the source head together and fails if any of them drifts.
 
@@ -447,9 +459,9 @@ rules owning those gaps already read. Nothing is added to outrank them.
 
 The choice belongs to the browser, not to a work: how much prose fits depends on the screen.
 It is kept in `localStorage` under `storyflow.ui.readingSettings`, like the sidebar collapse,
-and lasts only the session where storage is refused. The toggle, an icon button at the toolbar control height labelled
-閱讀設定, sits immediately before the control that leaves its surface: before 讀稿檢視 in the
-split panel head, before 回到工作台 in the reading view.
+and lasts only the session where storage is refused. In the workbench the controls are the first group of the split head's 設定 panel. In the reading
+view they open from a quiet icon button labelled 閱讀設定, immediately before 回到工作台. Both draw
+the same controls from `reading-settings.js` and show the one current choice.
 
 Raw mode is deliberately exempt from all of this. `.sf-preview-raw-root` stays monospace and
 uncapped because it exists to show the exact Markdown that will be pasted; re-wrapping it at a

@@ -94,7 +94,6 @@
   function organizeSmartSplit() {
     const panel = document.querySelector('.splitter-panel');
     const head = panel?.querySelector('.panel-head');
-    const mini = document.getElementById('smartSplitMiniSettings');
     const reviewBtn = document.getElementById('openReadingViewBtn');
     const formatBar = document.getElementById('splitPlatformBar');
     if (!panel || !head) return;
@@ -119,15 +118,8 @@
       reviewBtn.disabled = !suggestion;
     }
 
-    if (mini) {
-      // The disclosure that opens this region is already labelled 切篇偏好 directly above it,
-      // so the region has no visible heading of its own: a second 切篇偏好 as its first line
-      // read as a heading for nothing. The name stays for assistive technology, which does
-      // not see the two side by side.
-      mini.setAttribute('role', 'group');
-      mini.setAttribute('aria-label', '切篇偏好');
-      if (head.nextElementSibling !== mini) head.insertAdjacentElement('afterend', mini);
-    }
+    // 切篇偏好 (#smartSplitMiniSettings) lives in the 設定 panel, which places and names it
+    // (src/projects/workspace-project-ux.js).
 
     // The format choice applies to the whole preview, so it joins the panel's own actions
     // rather than taking a row of its own above the article.

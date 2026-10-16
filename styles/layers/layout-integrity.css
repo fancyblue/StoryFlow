@@ -162,6 +162,7 @@
   white-space:nowrap;
 }
 .splitter-panel .smart-split-header-actions{
+  position:relative;
   display:flex;
   align-items:center;
   justify-content:flex-end;
@@ -171,39 +172,14 @@
   min-width:0;
 }
 .splitter-panel .smart-split-header-actions #openReadingViewBtn,
-.splitter-panel .smart-split-header-actions #splitPreferencesToggle{
+.splitter-panel .smart-split-header-actions #splitSettingsToggle{
   margin:0!important;
   white-space:nowrap;
 }
-.splitter-panel #splitPreferencesToggle{
-  display:inline-flex!important;
-  align-items:center;
-  gap:6px;
-  min-height:var(--sf-control-sm);
-  padding:0 11px;
-  border:1px solid #c8c1b0;
-  border-radius:8px;
-  background:#fbfaf6;
-  color:var(--sf-muted,#6a6357);
-  font-size:var(--sf-font-control);
-  font-weight:700;
-}
-.splitter-panel #splitPreferencesToggle:hover,
-.splitter-panel #splitPreferencesToggle:focus-visible,
-.splitter-panel #splitPreferencesToggle[aria-expanded="true"]{
-  border-color:#c8c1b0;
-  background:#f4f1e9;
-  color:var(--sf-primary,#4b4557);
-}
+.splitter-panel #splitSettingsToggle .sf-chevron{margin-left:6px}
 .splitter-panel .smart-split-mini-settings{
   width:100%;
   clear:both;
-}
-.splitter-panel:not(.split-preferences-open) #smartSplitMiniSettings{
-  display:none;
-}
-.splitter-panel.split-preferences-open #smartSplitMiniSettings{
-  display:grid;
 }
 
 /* Settings info note: reserve a real icon column. The late UI-system padding used to
@@ -351,7 +327,7 @@
   }
   .source-heading-actions .quick-switch-project-btn,
   .splitter-panel .smart-split-header-actions #openReadingViewBtn,
-  .splitter-panel .smart-split-header-actions #splitPreferencesToggle{
+  .splitter-panel .smart-split-header-actions #splitSettingsToggle{
     min-height:40px!important;
     height:40px!important;
   }
@@ -364,7 +340,7 @@
   .splitter-panel > .panel-head{gap:8px}
   .source-heading-actions .quick-switch-project-btn,
   .splitter-panel .smart-split-header-actions #openReadingViewBtn,
-  .splitter-panel .smart-split-header-actions #splitPreferencesToggle{
+  .splitter-panel .smart-split-header-actions #splitSettingsToggle{
     min-height:36px!important;
     height:36px!important;
     padding-inline:9px!important;

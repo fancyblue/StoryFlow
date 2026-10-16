@@ -219,8 +219,24 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
   .splitter-panel .suggestion-title-row .preview-boundary-controls{grid-column:2!important;justify-self:end!important}
 }
 
-/* 閱讀設定 (src/ui/reading-settings.js). The toggle takes the 34px height of the controls it
-   sits between; the panel floats against it, framed by a rule rather than a shadow. */
+/* 設定 (src/projects/workspace-project-ux.js): 閱讀設定 and 切篇偏好 behind one disclosure in the
+   split head. It opens as a layer under the head's actions, so opening it moves nothing; it
+   floats over the preview, which is paper of its own colour, so it takes the overlay elevation. */
+.split-settings-panel{position:absolute;top:calc(100% + 6px);right:0;z-index:40;display:grid;gap:14px;width:min(340px,calc(100vw - 32px));padding:14px 16px 16px;border:1px solid var(--rule-1,#ded9cc);border-radius:12px;background:var(--paper-1,#fbfaf6);box-shadow:var(--sf-shadow-pop)}
+.split-settings-section{display:grid;gap:10px;min-width:0}
+.split-settings-section+.split-settings-section{padding-top:14px;border-top:1px solid var(--rule-1,#ded9cc)}
+.split-settings-section h3{margin:0;color:var(--ink-2,#6a6357);font-size:13px;font-weight:700}
+.split-settings-reading{display:grid;gap:10px}
+/* The section rule below already closes the group; a second rule over 還原預設 would draw two. */
+.split-settings-reading .sf-reading-settings-foot{border-top:0}
+/* The preference fields were drawn on the page ground with no edge; on the panel's paper they
+   need one to read as fields at all. */
+.splitter-panel .split-settings-panel .smart-split-mini-settings .range-grid input,
+.splitter-panel .split-settings-panel .scene-marker-compact #sceneMarker{border-color:var(--rule-2,#c8c1b0)!important}
+
+/* 閱讀設定 (src/ui/reading-settings.js). In the reading view its toggle takes the toolbar height
+   of the controls it sits between; the panel floats against it, framed by a rule rather than a
+   shadow. In the workbench the same controls are drawn inside 設定 above. */
 .icon-button.sf-reading-settings-toggle{width:var(--sf-control-sm);min-width:var(--sf-control-sm);height:var(--sf-control-sm);min-height:var(--sf-control-sm);border-radius:8px}
 /* In the reading head it travels with 回到工作台 when the line wraps, instead of starting the row. */
 .reading-view-head .sf-reading-settings-toggle{order:1;margin-left:auto}

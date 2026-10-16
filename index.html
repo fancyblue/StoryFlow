@@ -27,10 +27,10 @@
   <link id="storyflowMobileNavigationCss" rel="stylesheet" href="./styles/layers/mobile-navigation.css?v=20260925-a6" />
   <link id="storyflowBlueThemeCss" rel="stylesheet" href="./styles/layers/theme.css?v=20261016-a4" />
   <link id="storyflowMobileVisualPolishCss" rel="stylesheet" href="./styles/layers/mobile-visual.css?v=20260925-a6" />
-  <link id="storyflowWorkspaceUxCss" rel="stylesheet" href="./styles/domains/workspace-ux.css?v=20261016-a8" />
+  <link id="storyflowWorkspaceUxCss" rel="stylesheet" href="./styles/domains/workspace-ux.css?v=20261016-a9" />
   <link id="storyflowConnectionStatusCss" rel="stylesheet" href="./styles/domains/connection-status.css?v=20261016-a4" />
-  <link id="storyflowUiSystemCss" rel="stylesheet" href="./styles/layers/ui-system.css?v=20261016-a8" />
-  <link id="storyflowUiLayoutIntegrityCss" rel="stylesheet" href="./styles/layers/layout-integrity.css?v=20261016-a8" />
+  <link id="storyflowUiSystemCss" rel="stylesheet" href="./styles/layers/ui-system.css?v=20261016-a9" />
+  <link id="storyflowUiLayoutIntegrityCss" rel="stylesheet" href="./styles/layers/layout-integrity.css?v=20261016-a9" />
   <link id="storyflowProjectSourceModeCss" rel="stylesheet" href="./styles/domains/project-source-mode.css?v=20261016-a8" />
   <link id="storyflowSourceArticleUxCss" rel="stylesheet" href="./styles/domains/source-article-ux.css?v=20261016-a8" />
   <link id="storyflowChapterManagementCss" rel="stylesheet" href="./styles/domains/chapter-management.css?v=20260919-a2" />
@@ -110,7 +110,7 @@
           <div id="suggestionEmpty" class="empty-state"><div class="empty-icon">✂</div><strong>尚未有可切篇內容</strong><span>請先從「作品與章節」載入 Google Docs 或手動新增文章；確認來源內容後會直接顯示切篇預覽。</span></div>
           <div id="suggestionCard" class="suggestion hidden">
             <div class="suggestion-title-row"><div><span id="suggestionName">第一章（1）</span><strong id="suggestionChars">0 字</strong></div><span id="suggestionStatus" class="pill">建議</span></div>
-            <div class="boundary-control"><button id="shrinkBtn" class="button ghost tiny">← 少一個場景</button><button id="expandBtn" class="button ghost tiny">多一個場景 →</button></div>
+            <div class="boundary-control sf-button-group" role="group" aria-label="調整這一篇的結尾"><button id="shrinkBtn" class="button ghost tiny">← 少一個場景</button><button id="expandBtn" class="button ghost tiny">多一個場景 →</button></div>
             <div id="suggestionReason" class="reason"></div><div id="preview" class="preview"></div><button id="confirmBtn" class="button primary full">確認並存成 Markdown</button>
           </div>
         </aside>
@@ -142,8 +142,10 @@
         <pre id="readingFlow" class="reading-flow"></pre>
         <div class="reading-view-actions">
           <span id="readingCurrentChars" class="reading-current-chars"></span>
-          <button id="readingShrinkBtn" class="button ghost tiny" type="button">← 少一個場景</button>
-          <button id="readingExpandBtn" class="button ghost tiny" type="button">多一個場景 →</button>
+          <div class="sf-button-group" role="group" aria-label="調整這一篇的結尾">
+            <button id="readingShrinkBtn" class="button ghost tiny" type="button">← 少一個場景</button>
+            <button id="readingExpandBtn" class="button ghost tiny" type="button">多一個場景 →</button>
+          </div>
           <button id="readingConfirmBtn" class="button primary" type="button">確認並存成 Markdown</button>
         </div>
       </section>
@@ -164,6 +166,6 @@
 
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://apis.google.com/js/api.js" async defer></script>
-  <script src="./app-loader.js?v=20261016-a7"></script>
+  <script src="./app-loader.js?v=20261016-a9"></script>
 </body>
 </html>

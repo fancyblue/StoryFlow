@@ -35,7 +35,7 @@ capability, which is exactly what CI cannot exercise.
 - [ ] Open the manual source and search dialogs. Confirm each dialog is announced by its visible heading and every `×` button is announced as “關閉”. Open Settings and confirm global search still opens above the page region.
 - [ ] Create a manual work and add one test chapter.
 - [ ] Confirm the new work appears only after “確定新增” or preview confirmation.
-- [ ] Check that “切換作品”, “切篇偏好” and publishing work filters use the same down/up chevron behavior.
+- [ ] Check that “切換作品”, the split head's “設定” and publishing work filters use the same down/up chevron behavior.
 - [ ] Open global search from the sidebar and with `⌘K` / `Ctrl+K`; search another work or chapter by name, use the arrow keys and Enter, and confirm StoryFlow switches to the correct location.
 - [ ] Search for a phrase that exists only in prose. Confirm it is absent by default, then enable “同時搜尋正文” and confirm the chapter/article result includes a useful excerpt.
 - [ ] Confirm the header changes from “保存中…” to “已保存 HH:mm”.
@@ -60,8 +60,8 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] At a desktop viewport around 760 CSS px high, open “讀稿檢視”. Confirm “確認並存成 Markdown” is fully visible immediately, the page itself does not need to scroll, and only the chapter flow scrolls.
 - [ ] In 讀稿, confirm the already-confirmed text, this part and the text still ahead are distinguishable by ink depth, and that the head, the text and the action row share one left edge.
 - [ ] With 讀稿檢視 open, confirm the workbench title “內容發布工作台” is gone, the save state is still shown at the top right, and the title, progress and format controls take two short lines above the text.
-- [ ] In the split panel, confirm 預覽格式 and 預覽／原始 MD sit in the panel head beside 切篇偏好, and “少一個場景／多一個場景” end the article's title row instead of floating over the text.
-- [ ] Open 閱讀設定 from the split panel, change 字級, 行高, 每行字數 and 介面密度, and confirm the split preview, the reading view and the platform preview all follow. Reload and confirm the choice is kept; use 還原預設 and confirm everything returns to 16px, 標準 and 36 字.
+- [ ] In the split panel, confirm the head reads 預覽格式, 預覽／原始 MD, 設定, 讀稿檢視, with 讀稿檢視 the only framed button and 設定 resting as text. Open 設定 and confirm it lays a panel over the preview without moving it, with 閱讀設定 above 切篇偏好, and that Escape or a click outside closes it. Confirm “少一個場景／多一個場景” end the article's title row as one control with a hairline between the halves, and that the reading view's foot draws them the same way.
+- [ ] Open 設定 → 閱讀設定 from the split panel, change 字級, 行高, 每行字數 and 介面密度, and confirm the split preview, the reading view and the platform preview all follow. Reload and confirm the choice is kept; use 還原預設 and confirm everything returns to 16px, 標準 and 36 字.
 - [ ] Switch to “接縫”. Confirm the flow shows one selectable boundary after each eligible paragraph and the current “本篇結尾” line is visibly draggable.
 - [ ] Drag the ending to another paragraph, then use a different paragraph's click target. Confirm “本篇／後續” counts, ink depth and the split panel's preview update immediately.
 - [ ] Confirm candidate endings are thin lines whose labels appear on hover/focus, that the current ending stays visible without creating large gaps between paragraphs, and that the “顯示 預覽／原始 MD” switch is absent while 接縫 is showing.

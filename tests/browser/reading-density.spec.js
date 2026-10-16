@@ -129,9 +129,11 @@ test('reading settings change every prose surface and stay with this browser', a
   const pageErrors = await openLongChapter(page);
   await expect.poll(() => proseOf(page, '#preview')).toEqual({ fontSize: '16px', lineHeight: '28.8px', maxWidth: '576px' });
 
-  const toggle = page.locator('#smartSplitHeaderActions .sf-reading-settings-toggle');
+  // In the workbench 閱讀設定 is one group of the split head's 設定 panel.
+  const toggle = page.locator('#splitSettingsToggle');
   await toggle.click();
-  const panel = page.getByRole('dialog', { name: '閱讀設定' });
+  const sheet = page.getByRole('dialog', { name: '設定' });
+  const panel = sheet.getByRole('group', { name: '閱讀設定' });
   await expect(panel).toBeVisible();
   await expect(panel.getByRole('button', { name: '還原預設' })).toBeDisabled();
   await panel.getByRole('button', { name: '放大字級' }).click();
@@ -147,7 +149,7 @@ test('reading settings change every prose surface and stay with this browser', a
   await expect(page.locator('#preview')).toHaveCSS('padding-top', '16px');
 
   await page.keyboard.press('Escape');
-  await expect(panel).toBeHidden();
+  await expect(sheet).toBeHidden();
   await expect(toggle).toBeFocused();
 
   // The reading view reads the same settings, and its column grows with the measure.
@@ -155,17 +157,22 @@ test('reading settings change every prose surface and stay with this browser', a
   await expect.poll(() => proseOf(page, '#readingFlow')).toEqual({ fontSize: '18px', lineHeight: '36px', maxWidth: '612px' });
   await expect(page.locator('#readingFlow')).toHaveCSS('width', `${34 * 18 + 84}px`);
 
-  // A browser's choice survives a reload; it is not part of the work.
-  await page.reload();
-  await page.locator('.nav-item[data-view="workspace"]').click();
-  await expect(page.locator('html')).toHaveAttribute('data-sf-reading-density', 'compact');
-  await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--sf-reading-size').trim())).toBe('18px');
-
-  await page.locator('.sf-reading-settings-toggle').first().click();
-  await page.getByRole('dialog', { name: '閱讀設定' }).getByRole('button', { name: '還原預設' }).click();
+  // The reading view's own 閱讀設定 is the same choice, not a second copy of it: it opens on
+  // the values set in the workbench's 設定, and 還原預設 there resets both.
+  await page.locator('#readingView .sf-reading-settings-toggle').click();
+  const readingPanel = page.getByRole('dialog', { name: '閱讀設定' });
+  await expect(readingPanel.locator('output').first()).toHaveText('18 px');
+  await readingPanel.getByRole('button', { name: '還原預設' }).click();
   await expect(page.locator('html')).not.toHaveAttribute('data-sf-reading-density', /./);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('storyflow.ui.readingSettings'))))
     .toEqual({ size: 16, leading: 1.8, chars: 36, density: 'comfortable' });
+  await readingPanel.getByRole('button', { name: '放大字級' }).click();
+
+  // A browser's choice survives a reload; it is not part of the work.
+  await page.reload();
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--sf-reading-size').trim())).toBe('17px');
+  await expect(page.locator('html')).not.toHaveAttribute('data-sf-reading-density', /./);
   expect(pageErrors).toEqual([]);
 });
 
@@ -173,8 +180,8 @@ test('reading settings still apply when this browser refuses to store them', asy
   await page.setViewportSize({ width: 1440, height: 900 });
   const pageErrors = await openLongChapter(page, { blockStorage: true });
 
-  await page.locator('#smartSplitHeaderActions .sf-reading-settings-toggle').click();
-  await page.getByRole('dialog', { name: '閱讀設定' }).getByRole('button', { name: '放大字級' }).click();
+  await page.locator('#splitSettingsToggle').click();
+  await page.getByRole('dialog', { name: '設定' }).getByRole('button', { name: '放大字級' }).click();
   await expect.poll(async () => (await proseOf(page, '#preview'))?.fontSize).toBe('17px');
   expect(pageErrors).toEqual([]);
 });
