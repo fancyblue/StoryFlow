@@ -373,6 +373,25 @@ Size and leading (16px / 1.8) live on that same element rather than on each surf
 surfaces used to repeat `15px/1.9` while `ui-system.css` set their containers to 16px, so the
 container declared one size and the text rendered another.
 
+Those three values are **defaults**, not fixed values. **閱讀設定** (`src/ui/reading-settings.js`) lets
+each browser choose a size from 14 to 20px, leading 1.6 / 1.8 / 2.0 (緊湊／標準／寬鬆) and a
+measure of 28 to 44 characters. It sets `--sf-reading-size`, `--sf-reading-leading` and
+`--sf-reading-chars` on `<html>`, and `.sf-preview-rendered-root` reads them, so all three surfaces
+follow one choice. The measure stays a character count: the cap is
+`calc(var(--sf-reading-chars) * 1em)`, a measure at whatever size is chosen, and the reading
+view's one column grows with it (`--sf-reading-column` is the measure plus the flow's padding).
+
+The same panel chooses an interface density, 舒適 or 緊湊. 緊湊 sets
+`html[data-sf-reading-density="compact"]`, which only changes custom properties
+(`--sf-reading-flow-pad`, `--sf-preview-pad`, `--sf-split-gap`, `--sf-split-title-gap`) that the
+rules owning those gaps already read. Nothing is added to outrank them.
+
+The choice belongs to the browser, not to a work: how much prose fits depends on the screen.
+It is kept in `localStorage` under `storyflow.ui.readingSettings`, like the sidebar collapse,
+and lasts only the session where storage is refused. The toggle, a 34px icon button labelled
+閱讀設定, sits immediately before the control that leaves its surface: before 讀稿檢視 in the
+split panel head, before 回到工作台 in the reading view.
+
 Raw mode is deliberately exempt from all of this. `.sf-preview-raw-root` stays monospace and
 uncapped because it exists to show the exact Markdown that will be pasted; re-wrapping it at a
 reading measure would misrepresent the output.

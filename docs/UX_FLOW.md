@@ -53,6 +53,7 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-05 | Move the ending within a long scene | 接縫檢視 | Drag or choose a paragraph boundary | A view of the reading surface, not a mode; boundary targets are not buttons competing for primary emphasis |
 | WS-06 | Read the chapter around the cut | 讀稿檢視 | `[讀稿｜接縫]`、預覽格式、回到工作台 | A page that replaces the workbench rails, not a dialog over them |
 | WS-06b | Commit the reviewed article | 確認並存成 Markdown | 少一個場景／多一個場景 | The single solid action, identical in both reading views |
+| WS-07 | Fit more of the prose on this screen | 閱讀設定 | 字級、行高、每行字數、介面密度、還原預設 | An icon toggle beside the control that leaves the surface; a choice for this browser, never a primary action |
 | WS-07 | Continue processing the remaining chapter | 產生下一篇 | Review the current ending again | Solid only when a valid next suggestion is ready |
 | WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | The row keeps a persistent `⋯`; edit is first and delete is second |
 | WS-10 | Maintain a visual entry | 編輯即自動儲存 | 預覽圖文、`⋯ → 刪除圖文` | Title, body and summary are all written here and autosave together. Preview opens in a separate dialog; use the same direct-edit plus persistent-overflow pattern and Recovery flow as manual chapters. The editor carries no card of its own, and entry rows follow the shared list contract |

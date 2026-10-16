@@ -59,6 +59,9 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Open “讀稿檢視” and confirm the workbench rails are gone rather than covered, and that “少一個場景／多一個場景” still perform coarse scene-level movement.
 - [ ] At a desktop viewport around 760 CSS px high, open “讀稿檢視”. Confirm “確認並存成 Markdown” is fully visible immediately, the page itself does not need to scroll, and only the chapter flow scrolls.
 - [ ] In 讀稿, confirm the already-confirmed text, this part and the text still ahead are distinguishable by ink depth, and that the head, the text and the action row share one left edge.
+- [ ] With 讀稿檢視 open, confirm the workbench title “內容發布工作台” is gone, the save state is still shown at the top right, and the title, progress and format controls take two short lines above the text.
+- [ ] In the split panel, confirm 預覽格式 and 預覽／原始 MD sit in the panel head beside 切篇偏好, and “少一個場景／多一個場景” end the article's title row instead of floating over the text.
+- [ ] Open 閱讀設定 from the split panel, change 字級, 行高, 每行字數 and 介面密度, and confirm the split preview, the reading view and the platform preview all follow. Reload and confirm the choice is kept; use 還原預設 and confirm everything returns to 16px, 標準 and 36 字.
 - [ ] Switch to “接縫”. Confirm the flow shows one selectable boundary after each eligible paragraph and the current “本篇結尾” line is visibly draggable.
 - [ ] Drag the ending to another paragraph, then use a different paragraph's click target. Confirm “本篇／後續” counts, ink depth and the split panel's preview update immediately.
 - [ ] Confirm candidate endings are thin lines whose labels appear on hover/focus, that the current ending stays visible without creating large gaps between paragraphs, and that the “顯示 預覽／原始 MD” switch is absent while 接縫 is showing.

@@ -68,10 +68,14 @@
     if (document.activeElement !== input) input.value = customTitle;
   }
 
+  // 少一個場景 / 多一個場景 belong to the article, so they sit at the end of its title row.
+  // They used to float over the top of the preview, which then had to reserve 62px of
+  // padding above the first line of text for them.
   function installPreviewOverlayControls() {
     const preview = document.getElementById('preview');
     const controls = document.querySelector('.splitter-panel .boundary-control');
-    if (!preview || !controls) return;
+    const titleRow = document.querySelector('.splitter-panel .suggestion-title-row');
+    if (!preview || !controls || !titleRow) return;
 
     let shell = document.getElementById('splitPreviewShell');
     if (!shell) {
@@ -82,7 +86,7 @@
       shell.appendChild(preview);
     }
     controls.classList.add('preview-boundary-controls');
-    shell.appendChild(controls);
+    if (controls.parentElement !== titleRow) titleRow.appendChild(controls);
     document.getElementById('shrinkBtn').onclick = () => preserveTitleAdjust(-1);
     document.getElementById('expandBtn').onclick = () => preserveTitleAdjust(1);
   }
@@ -92,8 +96,6 @@
     const head = panel?.querySelector('.panel-head');
     const mini = document.getElementById('smartSplitMiniSettings');
     const reviewBtn = document.getElementById('openReadingViewBtn');
-    const card = document.getElementById('suggestionCard');
-    const titleRow = panel?.querySelector('.suggestion-title-row');
     const formatBar = document.getElementById('splitPlatformBar');
     if (!panel || !head) return;
 
@@ -127,9 +129,11 @@
       if (head.nextElementSibling !== mini) head.insertAdjacentElement('afterend', mini);
     }
 
-    if (card && titleRow && formatBar && formatBar.nextElementSibling !== titleRow) {
-      card.insertBefore(formatBar, titleRow);
-    }
+    // The format choice applies to the whole preview, so it joins the panel's own actions
+    // rather than taking a row of its own above the article.
+    if (formatBar && formatBar.parentElement !== actions) actions.insertBefore(formatBar, actions.firstChild);
+    // Outside the card it no longer hides with it, so it follows the preview it formats.
+    if (formatBar) formatBar.hidden = !suggestion;
   }
 
   StoryFlowRender.after('renderSuggestion', 'smart-split-ui', () => {
