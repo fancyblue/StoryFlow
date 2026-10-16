@@ -186,8 +186,8 @@
   flex-wrap:wrap;
   align-items:center;
   gap:6px 11px;
-  margin:0 0 16px;
-  padding:0 0 13px;
+  margin:0 0 var(--sf-split-gap, 16px);
+  padding:0 0 var(--sf-split-gap, 13px);
   border-bottom:1px solid #ded9cc;
 }
 .chapter-progress[hidden]{display:none!important}

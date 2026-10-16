@@ -34,10 +34,9 @@
   box-shadow:0 0 0 3px rgba(34,31,26,.16);
 }
 
-/* Main Smart Split: the format selector and display mode form one compact utility row. */
+/* Main Smart Split: the format selector and display mode sit together in the panel head. */
 #splitPlatformBar .sf-preview-mode-control{
-  align-self:flex-end;
-  padding-bottom:1px;
+  align-self:center;
 }
 .reading-view-controls .sf-preview-mode-control{
   align-self:center;
@@ -74,12 +73,16 @@
    the containers declared one size and the text rendered another. One declaration on the
    element that actually holds the text removes that contradiction. Raw mode is deliberately
    excluded: it exists to show the exact Markdown that will be pasted, and re-wrapping it at a
-   reading measure would misrepresent the output. */
+   reading measure would misrepresent the output.
+
+   閱讀設定 (src/ui/reading-settings.js) can change all three per browser. It sets the custom
+   properties below on <html>; the values here are the defaults it falls back to. The measure
+   is a character count, so it stays a measure whatever size is chosen. */
 .sf-preview-rendered-root{
-  max-width:36em;
+  max-width:calc(var(--sf-reading-chars, 36) * 1em);
   font-family:inherit;
-  font-size:16px;
-  line-height:1.8;
+  font-size:var(--sf-reading-size, 16px);
+  line-height:var(--sf-reading-leading, 1.8);
 }
 .sf-md-block{
   display:block;

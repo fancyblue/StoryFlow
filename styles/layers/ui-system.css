@@ -213,16 +213,17 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .splitter-panel .smart-split-settings-label,.splitter-panel .smart-split-mini-settings .range-grid label,.splitter-panel .scene-marker-compact,.splitter-panel .suggestion-platform-bar .platform-select-field>span{color:var(--sf-muted);font-size:13px!important;font-weight:700!important;line-height:1.2!important}
 .splitter-panel .smart-split-mini-settings .range-grid input,.splitter-panel .scene-marker-compact #sceneMarker{height:40px!important;min-height:40px!important;border:1px solid var(--sf-border)!important;background:#fbfaf6;color:var(--sf-text);font-size:14px!important;border-radius:9px!important}
 .splitter-panel .smart-split-mini-settings .range-grid input:focus,.splitter-panel .scene-marker-compact #sceneMarker:focus{border-color:var(--sf-primary)!important;background:#fbfaf6;box-shadow:var(--sf-focus)!important}
-.splitter-panel .suggestion-platform-bar{min-height:40px;margin-bottom:16px!important;gap:12px!important}
-.splitter-panel .suggestion-platform-bar select.text-input{height:40px;min-height:40px!important;border:1px solid var(--sf-border)!important;background:#fbfaf6;font-size:14px!important;border-radius:9px!important}
+/* The format bar sits in the panel head's actions, beside 切篇偏好, at the head's 34px height. */
+.splitter-panel .suggestion-platform-bar{margin:0!important;gap:8px!important}
+.splitter-panel .suggestion-platform-bar select.text-input{height:34px;min-height:34px!important;border:1px solid var(--sf-border)!important;background:#fbfaf6;font-size:14px!important;border-radius:9px!important}
 #splitPlatformBar .sf-preview-mode-segment,.sf-preview-mode-segment{padding:3px!important;border:0;border-radius:9px!important;background:#f4f1e9!important}
 #splitPlatformBar .sf-preview-mode-segment button,.sf-preview-mode-segment button{min-height:34px!important;padding:0 11px;border-radius:7px;font-size:13px!important;font-weight:700;color:var(--sf-muted-strong,#3f3930)!important;white-space:nowrap}
 #splitPlatformBar .sf-preview-mode-segment button.active,.sf-preview-mode-segment button.active{background:#fbfaf6;color:var(--denim-700,#4b4557);}
-.splitter-panel .suggestion-title-row{min-height:40px;margin:4px 0 14px}
+.splitter-panel .suggestion-title-row{min-height:40px;margin:4px 0 var(--sf-split-title-gap, 14px)}
 .splitter-panel #suggestionChars{font-size:15px;font-weight:700;color:var(--denim-700,#4b4557);white-space:nowrap}
 .splitter-panel .suggestion-title-row .pill{min-height:30px;padding:0 10px;background:#f4f1e9;color:var(--denim-800,#4b4557)!important;border:0!important;font-size:13px;font-weight:700;white-space:nowrap;word-break:keep-all}
 .split-preview-shell .preview{border-color:var(--sf-border);border-radius:14px;background:#fbfaf6;font-size:16px;line-height:1.95;box-shadow:none}
-/* The scene buttons sit inside the preview frame; a second frame around them was a box in a box. */
+/* The scene buttons end the article's title row; they carry no frame of their own. */
 .preview-boundary-controls{border:0;background:transparent;padding:0;}
 .preview-boundary-controls .button{height:34px;min-height:34px!important;font-size:13px!important}
 .format-summary-text{font-size:13px;line-height:1.45!important}
@@ -315,7 +316,8 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .splitter-panel .smart-split-mini-settings .range-grid label,.splitter-panel .scene-marker-compact{font-size:12px!important}
   .splitter-panel .smart-split-mini-settings .range-grid input,.splitter-panel .scene-marker-compact #sceneMarker{height:42px!important;min-height:42px!important}
   .splitter-panel .suggestion-title-row{grid-template-columns:minmax(0,1fr) auto!important;row-gap:8px!important}
-  .splitter-panel .suggestion-title-row #suggestionStatus{grid-column:1 / -1!important;justify-self:start!important}
+  .splitter-panel .suggestion-title-row #suggestionStatus{grid-column:1!important;justify-self:start!important}
+  .splitter-panel .suggestion-title-row .preview-boundary-controls{grid-column:2!important;justify-self:end!important}
   .project-library-card{padding:16px}
   .project-library-actions{display:grid!important;grid-template-columns:1fr 1fr!important;width:100%}
   .project-library-actions .project-library-delete{grid-column:1/-1}

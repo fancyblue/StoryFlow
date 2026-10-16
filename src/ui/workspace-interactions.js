@@ -67,10 +67,12 @@
     const bar = document.createElement('div');
     bar.id = 'splitPlatformBar';
     bar.className = 'suggestion-platform-bar compact-format-bar';
+    // The bar sits in the panel head beside 切篇偏好 (smart-split-ui.js puts it there), so a
+    // visible 預覽格式 would read as a second heading; the name stays on the select, as it
+    // does in the reading view.
     bar.innerHTML = `
       <label class="platform-select-field">
-        <span>預覽格式</span>
-        <select id="suggestionPlatformSelect" class="text-input"></select>
+        <select id="suggestionPlatformSelect" class="text-input" aria-label="預覽格式"></select>
       </label>
       <div id="suggestionPlatformSettings" class="suggestion-platform-settings"></div>`;
     preview.insertAdjacentElement('beforebegin', bar);

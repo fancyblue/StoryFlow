@@ -69,7 +69,7 @@ test('startup and legacy compatibility API preserve browser data', async ({ page
 });
 
 // Works is the landing page, but the workbench is what index.html contains, and it used to
-// be painted for as long as the 55 modules took to load: the topbar, the source panel and
+// be painted for as long as the modules took to load: the topbar, the source panel and
 // the split preview, under a sidebar that already said 作品. Each frame is sampled until
 // DOMContentLoaded, by which point every module has run and the landing view is in place.
 test('startup paints no workbench before the landing view is ready', async ({ page }) => {
@@ -436,7 +436,7 @@ test('render functions run one implementation and their hooks in load order', as
     renderAll: {
       before: [],
       impl: 'renderAll',
-      after: ['workspace-ux', 'project-source-sync', 'source-article-ux', 'chapter-management', 'workspace-project-ux']
+      after: ['reading-settings', 'workspace-ux', 'project-source-sync', 'source-article-ux', 'chapter-management', 'workspace-project-ux']
     },
     renderChapters: {
       before: ['chapter-management'],
@@ -446,7 +446,7 @@ test('render functions run one implementation and their hooks in load order', as
     renderSuggestion: {
       before: ['workspace-interactions'],
       impl: 'renderSuggestion',
-      after: ['workspace-interactions', 'smart-split-ui', 'platform-lock', 'boundary-engine', 'app-ux', 'connection-ui', 'smart-split-title']
+      after: ['workspace-interactions', 'smart-split-ui', 'platform-lock', 'boundary-engine', 'app-ux', 'connection-ui', 'reading-settings', 'smart-split-title']
     },
     renderParts: {
       before: [],
@@ -473,7 +473,7 @@ test('manual project can reach workspace, works, publishing, and settings', asyn
 
   await expect(page.getByRole('heading', { name: '內容發布工作台' })).toBeVisible();
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-load-error', 'true');
-  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(55);
+  await expect(page.locator('script[data-storyflow-owner]')).toHaveCount(56);
 
   await page.locator('#createProjectManually').click();
   await page.getByRole('dialog', { name: '選擇作品類型' }).getByRole('button', { name: /長文作品/ }).click();

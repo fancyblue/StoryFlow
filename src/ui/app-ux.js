@@ -372,14 +372,21 @@
     return `${label} · ${indent} · ${spacing} · ${scenes}`;
   }
 
+  // The reading view sets the summary on its toolbar line and cuts it short when the line is
+  // full, so the whole sentence is also its title.
+  function summaryMarkup(platform) {
+    const text = escapeHtml(formatSummary(platform || ''));
+    return `<span class="format-summary-text" title="${text}">${text}</span>`;
+  }
+
   function refreshFormatSummaries() {
     const suggestionBox = document.getElementById('suggestionPlatformSettings');
     const suggestionSelect = document.getElementById('suggestionPlatformSelect');
-    if (suggestionBox) suggestionBox.innerHTML = `<span class="format-summary-text">${escapeHtml(formatSummary(suggestionSelect?.value || ''))}</span>`;
+    if (suggestionBox) suggestionBox.innerHTML = summaryMarkup(suggestionSelect?.value);
 
     const reviewBox = document.getElementById('readingPlatformSettings');
     const reviewSelect = document.getElementById('readingPlatformSelect');
-    if (reviewBox) reviewBox.innerHTML = `<span class="format-summary-text">${escapeHtml(formatSummary(reviewSelect?.value || ''))}</span>`;
+    if (reviewBox) reviewBox.innerHTML = summaryMarkup(reviewSelect?.value);
   }
 
   function labelCloseButtons() {

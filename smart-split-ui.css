@@ -96,13 +96,9 @@
   min-height:280px;
   max-height:none;
   margin-bottom:0;
-  padding:62px 28px 28px !important;
+  padding:var(--sf-preview-pad, 28px) !important;
 }
 .preview-boundary-controls {
-  position:absolute;
-  top:16px;
-  right:16px;
-  z-index:2;
   margin:0 !important;
   display:flex !important;
   gap:6px !important;
@@ -118,8 +114,7 @@
   }
   .smart-split-settings-label { width:100%; margin:0 0 2px; }
   .suggestion-title-input { width:100%; font-size:17px; }
-  .preview-boundary-controls { top:8px; right:8px; }
-  .split-preview-shell .preview { min-height:220px; padding:54px 18px 20px !important; font-size:15px; }
+  .split-preview-shell .preview { min-height:220px; padding:var(--sf-preview-pad-narrow, 20px 18px) !important; font-size:15px; }
 }
 
 /* 2026-08: visual simplification. Keep only the content preview as a strong frame;
@@ -174,9 +169,6 @@
   box-shadow:0 0 0 3px rgba(34,31,26,.12) !important;
 }
 
-.splitter-panel .suggestion-platform-bar {
-  margin:0 0 14px !important;
-}
 .splitter-panel .suggestion-platform-bar .platform-select-field {
   display:flex !important;
   align-items:center !important;
@@ -191,9 +183,11 @@
   font-weight:500 !important;
   white-space:nowrap !important;
 }
+/* It shares the panel head with the title and three buttons, so it is as wide as its longest
+   option rather than a fixed 178px that squeezed SMART SPLIT onto two lines at 1280px. */
 .splitter-panel .suggestion-platform-bar select.text-input {
-  width:178px !important;
-  min-width:150px !important;
+  width:136px !important;
+  min-width:120px !important;
   padding:0 30px 0 10px !important;
   box-shadow:none !important;
   font-weight:500 !important;
@@ -205,7 +199,7 @@
   box-shadow:0 0 0 3px rgba(34,31,26,.12) !important;
 }
 #splitPlatformBar .sf-preview-mode-control {
-  margin-left:auto !important;
+  margin-left:0 !important;
   padding:0 !important;
   gap:5px !important;
 }
