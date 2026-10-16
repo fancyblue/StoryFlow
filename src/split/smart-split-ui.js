@@ -120,10 +120,10 @@
     }
 
     if (mini) {
-      // The disclosure that opens this region is already labelled 切篇偏好 directly above it;
-      // a second 切篇偏好 as the region's first line read as a heading for nothing. The name
-      // stays for assistive technology, which does not see the two side by side.
-      mini.querySelector('.smart-split-settings-label')?.remove();
+      // The disclosure that opens this region is already labelled 切篇偏好 directly above it,
+      // so the region has no visible heading of its own: a second 切篇偏好 as its first line
+      // read as a heading for nothing. The name stays for assistive technology, which does
+      // not see the two side by side.
       mini.setAttribute('role', 'group');
       mini.setAttribute('aria-label', '切篇偏好');
       if (head.nextElementSibling !== mini) head.insertAdjacentElement('afterend', mini);

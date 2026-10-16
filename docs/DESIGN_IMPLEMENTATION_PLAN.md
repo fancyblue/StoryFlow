@@ -9,7 +9,7 @@
 順序不是照影響力排的，是照**相依性與風險**排的：
 
 1. **顏色改不動，除非先 token 化。** 但規模跟原本估的差很多，見階段 1 的實測。
-   （另外那些 `!important`——動工時 2,905 個，2026-10-15 重量為 2,581 個，B 類第一批後 2,191 個，A 類之後 2,101 個，B 類第二批後 2,089 個，移除舊來源按鈕列後 2,015 個——是**不同**的問題，不擋換色——見下方「插曲」。）
+   （另外那些 `!important`——動工時 2,905 個，2026-10-15 重量為 2,581 個，B 類第一批後 2,191 個，A 類之後 2,101 個，B 類第二批後 2,089 個，移除舊來源按鈕列後 2,015 個，移除執行期不存在的元素的規則再少 11 個——是**不同**的問題，不擋換色——見下方「插曲」。）
 2. **cascade 不可靠。** `ensureThemeOrder()`（`src/settings/settings-page.js`）與兩個 `ensureStyleLast()`
    在 runtime 重排 stylesheet，所以「看起來在最後」的規則可能會輸。動任何 stylesheet 順序都要同步更新
    `scripts/cascade-order.json`，否則 `tests/browser/cascade-contract.spec.js` 會失敗。
@@ -153,7 +153,7 @@
 | 其餘 | ~1,555 | 1,385 | 54% |
 | **合計** | **2,905** | **2,581** | |
 
-（「2026-10-15」欄是 B 類第一批**之前**量的；第一批之後 `ui-system.css` 221、`layout-integrity.css` 55，合計 2,191；A 類之後 `theme.css` 46，合計 2,101；B 類第二批之後 `ui-system.css` 210、`layout-integrity.css` 54，合計 2,089；移除舊來源按鈕列的整條規則之後 `theme.css` 39、`ui-system.css` 197、`layout-integrity.css` 52，合計 2,015。）
+（「2026-10-15」欄是 B 類第一批**之前**量的；第一批之後 `ui-system.css` 221、`layout-integrity.css` 55，合計 2,191；A 類之後 `theme.css` 46，合計 2,101；B 類第二批之後 `ui-system.css` 210、`layout-integrity.css` 54，合計 2,089；移除舊來源按鈕列的整條規則之後 `theme.css` 39、`ui-system.css` 197、`layout-integrity.css` 52，合計 2,015；移除執行期不存在的元素的規則之後（2026-10-16，以載入的樣式表計 2,019 → 2,008，前者含 #128 新增的）`ui-system.css` 196。）
 
 減少的部分不是專門清 `!important` 的結果，主要是兩次移除時一併帶走的：
 #108（4-1／4-2，拆掉頁首連線膠囊等，−115）與 #122（移除不會生效的 CSS，−238）；
@@ -191,7 +191,7 @@
   量測時已經被移除——見 B 段第一批的補充。之後連同整條規則刪除（見 B 段「之後」），
   現在留在 `theme.css` 的沒有證據項只剩前兩組 5 個。
 
-### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，動工時 724 個，第一批前 666 個，第二批前 276 個，第二批後 264 個，現在 249 個）
+### B. 可以用實驗清掉的（`ui-system.css` + `layout-integrity.css`，動工時 724 個，第一批前 666 個，第二批前 276 個，第二批後 264 個，現在 248 個）
 
 這兩個檔案由 `ensureThemeOrder()` 在 runtime 重新附加到很後面，所以它們的 `!important`
 **多數可能是多餘的——它本來就贏**。這是可驗證的假設，不是推測：
@@ -229,16 +229,23 @@ computed style，再把兩個 `<link>` 換成移除 `!important` 的版本（位
   （`.source-panel-actions`、`.source-change-status`、`.chapter-group-label`）、切篇偏好展開、
   設定頁的平台空狀態、`.publishing-project-badge`。不是證明需要，而是沒測到；
   要清的話先補上能走到那些畫面的狀態。
+  （後來查清：其中來源按鈕列、`.publishing-project-badge>span`、`.smart-split-settings-label`、
+  `.publish-platform-state` 這幾組**執行期就不可能套用**——元素不存在，或只存在於永遠
+  `display:none` 的容器裡——不是量測沒走到。規則都已刪除，見下方「之後」兩段。）
   **補充（A 類處理時查證）**：其中多數不是哪個畫面沒走到，而是元素**只在啟動時短暫存在**，
   每一次量測的當下都已經不在——
   `#sourcePanelActions`／`#manualSourceSyncHint` 由 `source-flow.js`／`workspace-ux.js` 建立後，
   被 `project-source-sync.js` 的 `ensureModeUi()` 移除；`.publishing-project-badge>span`
   的內容被 `publishing-project-switcher.js` 整個換掉。在每個畫格與每次 DOM 變動上監看的結果：
   三者都只出現在每次載入的頭 4–5 個畫格，其中 `#sourcePanelActions` 有 2–3 格**真的有版面框**，
-  另外兩者沒有。所以它們不是死規則，只是量測時刻抓不到。
-  真正從來不在 DOM 裡的是 `.smart-split-settings-label`（被 `smart-split-ui.js` 移除）與
-  `.publish-platform-state`（程式只產生 `publish-platform-state-line`），這兩條整條規則都失效，
-  `dead-selectors.mjs` 目前看不出這種情況。
+  另外兩者沒有。當時的結論是「不是死規則，只是量測時刻抓不到」；這只對 `#sourcePanelActions`
+  那幾格成立，而那幾格本身就是不該出現的啟動閃動。`.publishing-project-badge>span` 存在的那一刻，
+  它所在的徽章正被 `display:none` 藏住，規則從來沒有可畫的東西。
+  真正從來不在 DOM 裡的是 `.smart-split-settings-label`（自 #120 起沒有程式建立它，
+  `smart-split-ui.js` 只剩一行移除它的防禦程式）與
+  `.publish-platform-state`（程式只產生 `publish-platform-state-line`），這兩條整條規則都失效。
+  `dead-selectors.mjs` 當時看不出來：前者的名字出現在那行移除程式裡，後者是更長 class 名稱的
+  一段——腳本把任何子字串都算成「有產生」。三組都已處理，見下方「之後（二）」。
   只是沒走到的是 `.source-change-status`（Google Docs 更新來源的對話框）。
   處理結果見下方「第二批」。
   另外 1 個在 `::-webkit-` 類 pseudo-element 上，
@@ -284,7 +291,38 @@ JS 不再產生這些名稱後，`dead-selectors.mjs --apply` 在 8 個樣式表
 
 剩下 `.publishing-project-badge>span` 3 個：發布頁徽章整個被
 `.publishing-page-head .publishing-project-badge{display:none!important}` 隱藏，這 3 個不影響任何畫面。
-徽章（與裡面的作品切換器）該不該存在是發布頁的產品問題，沒有在這裡決定。
+徽章（與裡面的作品切換器）該不該存在是發布頁的產品問題，沒有在這裡決定。處理結果見下一段。
+
+#### 之後（二）：執行期不存在的元素的規則（2026-10-16）
+
+用 MutationObserver 從文件開始就監看每一次 DOM 變動，走過冷啟動、已連資料夾、建立長文作品、
+切篇偏好展開、確認切篇、發布頁「管理發布」與平台列、新增圖文作品、切換作品、重新載入，
+每條路徑在 1440／900／700／390 各一次，另加觸控手機（唯讀安全模式）。同一支探測在 `main` 上跑作為對照：
+
+- `#sourcePanelActions`、`.source-panel-actions`、`#manualSourceSyncHint`、`.manual-source-sync-hint`：
+  兩邊都**一次也沒出現**（#127 已不再建立）。
+- `.smart-split-settings-label`、`.publish-platform-state`：兩邊都一次也沒出現；
+  同一段時間 `.publish-platform-state-line` 出現 21 次，探測確實看得到平台列。
+- `.publishing-project-badge > span`：`main` 上每次載入出現一次（`publishing-flow.js` 寫入、
+  `publishing-project-switcher.js` 隨即整個換掉，而且一直在 `display:none` 的徽章裡）；這個分支上零次。
+
+處理：
+
+- `publishing-flow.js` 不再在徽章裡寫入 `<span>目前作品</span>` 與 `#publishingProjectTitle`
+  （切換器一跑就把它們換掉，更新標題的那兩行也隨之移除）；`ui-system.css` 的
+  `.publishing-project-badge>span` 手動刪除——名稱都還有人產生，腳本判斷不了這種情況。
+- `smart-split-ui.js` 移除那行 `.smart-split-settings-label` 的 `remove()`；之後
+  `dead-selectors.mjs --apply` 在 3 個樣式表刪掉 8 個選擇器（6 條整條規則），
+  包含 `ui-system.css` 的 `.publish-platform-state strong`。
+- `dead-selectors.mjs` 改成比對**完整名稱**（前後不能接 `[\w-]`），執行期以前綴組字的判斷不變。
+  `cascade-contract.spec.js` 用一個小 fixture 執行腳本，鎖住子字串、完整名稱、前綴組字與 `src/legacy/`
+  四種情況；改回子字串比對時這個測試會失敗。新的比對在整個 repo 只多抓到 `.publish-platform-state` 一個，
+  沒有誤報。
+
+`!important`：`smart-split-ui.css` 少 8 個、`ui-system.css` 少 3 個。
+
+這個方法有一個仍然看不到的情況：名稱只出現在**查詢或移除**它的程式裡（`querySelector`、`remove()`），
+腳本仍會當成有產生。要分辨「建立」與「查詢」得讀懂程式，不是字串比對做得到的；遇到時以執行期監看為準。
 
 ### C. 其餘約 1,780 個（動工時約 1,900 個）
 

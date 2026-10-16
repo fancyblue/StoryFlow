@@ -7,7 +7,8 @@
 //
 // A selector is reported dead only when that is provable from the source text:
 //   * it names a class or id, outside any functional pseudo-class, that appears nowhere in
-//     index.html, app-loader.js or the loaded modules under src/ (src/legacy/ is not loaded);
+//     index.html, app-loader.js or the loaded modules under src/ (src/legacy/ is not loaded)
+//     as a whole name — `publish-platform-state-line` does not produce `publish-platform-state`;
 //   * the name is not built at run time either. A class assembled from a prefix —
 //     `'is-' + state`, `status-${key}` — keeps every class sharing that prefix alive.
 // Names inside `:not()`, `:is()`, `:where()` and `:has()` are ignored rather than judged:
@@ -19,13 +20,17 @@
 //   node scripts/dead-selectors.mjs --list    # every dead selector
 //   node scripts/dead-selectors.mjs --apply   # remove them
 //   node scripts/dead-selectors.mjs --check   # fail when there is one (npm run test:css)
+//   ... --root <dir>                          # judge another tree (the browser suite's fixture)
 
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tidyJunction } from './css-edit.mjs';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const rootFlag = process.argv.indexOf('--root');
+const root = rootFlag === -1
+  ? resolve(dirname(fileURLToPath(import.meta.url)), '..')
+  : resolve(process.argv[rootFlag + 1]);
 const index = readFileSync(join(root, 'index.html'), 'utf8');
 const stylesheets = [...index.matchAll(/href="\.\/([^"?#]+\.css)/g)].map(match => match[1]);
 
@@ -48,7 +53,8 @@ const escapeRegExp = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const alive = new Map();
 function isAlive(name) {
   if (alive.has(name)) return alive.get(name);
-  let found = sources.includes(name);
+  // The whole name, not a piece of a longer one (see above).
+  let found = new RegExp(`(?<![\\w-])${escapeRegExp(name)}(?![\\w-])`).test(sources);
   // A prefix that code completes at run time: 'is-' + state, `status-${key}`.
   const parts = name.split('-');
   for (let cut = parts.length - 1; cut >= 1 && !found; cut -= 1) {

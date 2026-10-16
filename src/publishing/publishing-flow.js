@@ -268,16 +268,14 @@
       publishingView.id = 'publishingView';
       publishingView.className = 'app-view publishing-view';
       publishingView.hidden = true;
+      // publishing-project-switcher.js fills .publishing-project-badge.
       publishingView.innerHTML = `
         <header class="publishing-page-head">
           <div>
             <h1>發布</h1>
             <p class="publishing-page-subtitle">快速找到要發布的文章，再展開管理各平台。</p>
           </div>
-          <div class="publishing-project-badge">
-            <span>目前作品</span>
-            <strong id="publishingProjectTitle"></strong>
-          </div>
+          <div class="publishing-project-badge"></div>
         </header>
         <section class="publishing-stats" aria-label="發布統計">
           <article><span>已確認文章</span><strong id="publishingTotalCount">0</strong></article>
@@ -1513,8 +1511,6 @@
       });
     }
     if (toolbarHint) toolbarHint.hidden = !visualMode;
-    const projectTitle = document.getElementById('publishingProjectTitle');
-    if (projectTitle) projectTitle.textContent = state.projectTitle || '未命名作品';
     const values = {
       publishingTotalCount: counts.total,
       publishingPendingCount: counts.pending,
