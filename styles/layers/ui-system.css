@@ -25,7 +25,10 @@
      palette rather than a second, competing set of hex values. */
   --sf-surface:var(--paper-1);
   --sf-surface-soft:var(--paper-2);
-  --sf-surface-active:var(--dai-soft);
+  /* Selected is the other surface: on the ground it is a piece of paper (the rails, the menu),
+     on paper it is a piece of the ground. --dai-soft, a cool grey, was the one colour on either
+     surface from outside the warm paper family. */
+  --sf-surface-active:var(--paper-0);
   --sf-border:var(--rule-1);
   --sf-border-strong:var(--rule-2);
   --sf-text:var(--ink-1);
@@ -34,7 +37,7 @@
   --sf-muted-strong:var(--ink-1-soft);
   --sf-primary:var(--dai-700);
   --sf-primary-hover:var(--dai-800);
-  --sf-primary-soft:var(--dai-soft);
+  --sf-primary-soft:var(--paper-0);
   --sf-danger:var(--vermilion);
   --sf-danger-soft:var(--vermilion-soft);
   --sf-success:var(--moss);

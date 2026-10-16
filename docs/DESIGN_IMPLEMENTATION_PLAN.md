@@ -477,6 +477,7 @@ token 就位後，這一步是改幾十行的事。
 | 4-14 ✅ | 左欄可拖拉調寬、切篇預覽成為置中的一頁 | `src/ui/rail-resize.js`、`desktop-responsive.css`、`workspace.css`、`index.html`、`visual-workspace.js` | 已完成（2026-10-16）。底色轉白紙的那條邊可以拖拉（兩種作品共用一個寬度，240–640px，存在這個瀏覽器的 `localStorage`，按兩下或 Home 還原；工作欄永遠留至少 600px）。切篇預覽的工具列、進度與正文共用閱讀寬度（不足 600px 時用 600px）並置中在白紙上，右邊不再留一條空白。主選單的「S」改回淺色字，收合鈕滑過時不再出現灰色外框。見 UI_SYSTEM〈Left to right〉 |
 | 4-15 ✅ | 圖文編輯表單也成為置中的一頁 | `desktop-responsive.css` | 已完成（2026-10-16）。圖文的編輯欄位（與尚未選擇圖文時的空狀態）和切篇預覽共用同一個頁寬 `--sf-page-width`（閱讀寬度，不足 600px 時用 600px），置中在白紙上，兩種作品的工作區是同一張紙上的同一種頁。見 UI_SYSTEM〈Left to right〉 |
 | 4-16 ✅ | 底色上的選中狀態改成白紙色 | `ui-system.css`、`chapter-management.css`、`visual-workspace.css` | 已完成（2026-10-16）。章節列、圖文列與主選單的選中項目從 `--dai-soft`（偏冷的淡紫灰，比滑過時的 `--paper-2` 還暗，是左欄裡最不明顯的東西）改成 `--paper-1`：選中的那一列就是右邊那張紙的一角，也是底色上唯一比滑過更亮的填色。白紙上的作品頁與發布頁仍用 `--dai-soft`。見 UI_SYSTEM〈Space before lines〉與 Navigation |
+| 4-17 ✅ | 白紙上的選中狀態改成底色 | `ui-system.css`、`works-library.css`、`publishing.css`、`publishing-refinements.css`、`chapter-management.css`、`global-search.css` | 已完成（2026-10-16）。作品頁的目前作品、管理章節／管理發布按鈕、篩選標籤、排序、平台列、選單與搜尋結果的選中狀態，從偏冷的 `--dai-soft` 改成 `--paper-0`（底色）。規則反過來也成立：底色上選中的是一塊白紙，白紙上選中的是一塊底色，都比滑過時更明顯。`--sf-surface-active`／`--sf-primary-soft` 改指向 `--paper-0` |
 
 ### 4-4 的範圍：共用契約，不是共用 renderer
 

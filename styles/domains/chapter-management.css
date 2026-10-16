@@ -179,7 +179,7 @@
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]:focus-visible{
   border-color:#968f80!important;
-  background:#e8e5eb!important;
+  background:var(--paper-0,#ece9e0)!important;
   color:var(--denim-900,#221f1a)!important;
   outline:none!important;
 }

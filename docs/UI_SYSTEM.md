@@ -167,7 +167,7 @@ names are aliases onto them, not a second set of values.
 | Paper | `--paper-0` ground · `--paper-1` raised · `--paper-2` recessed | Surfaces. Warm white, not `#fff` |
 | Ink | `--ink-1` body · `--ink-1-soft` strong label · `--ink-2` secondary · `--ink-3` metadata · `--ink-faint` | Text |
 | Rules | `--rule-1` hairline · `--rule-2` emphasis | Lines |
-| Accent (黛) | `--dai-700` the accent · `--dai-800` hover · `--dai-soft` active fill | Primary and active |
+| Accent (黛) | `--dai-700` the accent · `--dai-800` hover · `--dai-soft` (drop-target label only) | Primary and active |
 | Pigments | `--vermilion` destructive · `--ochre` warning · `--moss` published | Semantic states |
 
 Three rules hold this together.
@@ -269,7 +269,7 @@ full width.
 `border-left: 2px solid transparent`, so marking one active colours a border that is already
 there instead of adding 2px and pushing every other row's text sideways.
 
-Active is two signals, not one: the accent left marker plus `--dai-soft`. Where a row also
+Active is two signals, not one: the accent left marker plus the `--paper-0` fill (on paper, selected is a piece of the ground). Where a row also
 carries a badge naming the state — "目前作品" — the badge lifts to `--paper-1` so the tint it
 sits on does not swallow it. The badge is the half of that signal which does not depend on
 seeing colour.
@@ -309,8 +309,10 @@ rails draw no lines at all now. Their rows are separated the way the menu's item
 current one is a rounded `--paper-1` fill — a piece of the paper the work column is drawn on,
 and the one fill on the ground lighter than the `--paper-2` hover (see [What a chapter row says](#what-a-chapter-row-says)).
 `--dai-soft` was used there first: a cool grey on the warm ground, darker than the hover fill, it
-was the least visible thing in the rail. On paper (Works, Publishing) the active fill stays
-`--dai-soft`, which does read against white.
+was the least visible thing in the rail. The rule runs both ways: selected is the *other*
+surface. On paper (Works, Publishing, the filter chips, sort options, menus and search results)
+it is `--paper-0`, a piece of the ground, darker than the `--paper-2` hover; `--sf-surface-active`
+and `--sf-primary-soft` name it. `--dai-soft` is no longer a selected state anywhere.
 The Works and Publishing lists keep the row contract above, with its hairlines and marker gutter.
 
 ### Space before lines

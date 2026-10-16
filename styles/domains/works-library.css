@@ -56,7 +56,7 @@
 }
 .project-library-card.active{
   border-left-color:#4b4557!important;
-  background:#e8e5eb!important;
+  background:var(--paper-0,#ece9e0)!important;
 }
 .projects-library > .project-library-card:last-child{
   border-bottom:0!important;
@@ -107,7 +107,7 @@
   height:40px!important;
   padding:0 14px!important;
   border-color:#968f80!important;
-  background:#e8e5eb!important;
+  background:var(--paper-0,#ece9e0)!important;
   color:var(--denim-900,#221f1a)!important;
   font-size:14px!important;
   font-weight:700!important;
@@ -130,7 +130,7 @@
 .project-library-card .project-library-actions > .project-manage-chapters-btn:hover,
 .project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible{
   border-color:#968f80!important;
-  background:#e8e5eb!important;
+  background:var(--paper-0,#ece9e0)!important;
   color:var(--denim-900,#221f1a)!important;
 }
 .project-library-card .project-library-actions > .project-publish-btn:hover,
@@ -141,7 +141,7 @@
 }
 .project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
   border-color:#968f80!important;
-  background:#e8e5eb!important;
+  background:var(--paper-0,#ece9e0)!important;
   color:var(--denim-900,#221f1a)!important;
   /* Open is shown by the tint, as on Publishing's 收合發布; no inset bar. */
   box-shadow:none!important;

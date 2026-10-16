@@ -257,7 +257,7 @@ test('primary action scale and navigation icon language stay consistent', async 
   expect(manageStyle).toMatchObject({
     height: 40,
     fontSize: 14,
-    backgroundColor: 'rgb(232, 229, 235)',
+    backgroundColor: 'rgb(236, 233, 224)',
     color: 'rgb(58, 53, 68)'
   });
   expect(manageStyle.height).toBe(previewStyle.height);
@@ -268,7 +268,7 @@ test('primary action scale and navigation icon language stay consistent', async 
   // The button transitions its fill, so read the value it settles on rather than whichever
   // frame of the transition the first reading happens to catch.
   await expect.poll(() => controlStyle(publishingRow.locator('.publish-manage-btn'))).toMatchObject({
-    backgroundColor: 'rgb(232, 229, 235)',
+    backgroundColor: 'rgb(236, 233, 224)',
     color: 'rgb(34, 31, 26)'
   });
 
@@ -709,7 +709,7 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   await page.evaluate(() => document.activeElement?.blur());
   await page.mouse.move(0, 0);
   await expect.poll(() => activeCard.getByRole('button', { name: '管理章節', exact: true })
-    .evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(232, 229, 235)');
+    .evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(236, 233, 224)');
   // borderColor has its own transition, and the assertions below compare the inactive
   // card's border against the active one's. Waiting only on the active background left
   // the inactive border still animating, so the comparison read two different points of
@@ -741,7 +741,7 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   });
   expect(managementStyles.chapters.height).toBe('40px');
   expect(managementStyles.chapters.fontSize).toBe('14px');
-  expect(managementStyles.chapters.backgroundColor).toBe('rgb(232, 229, 235)');
+  expect(managementStyles.chapters.backgroundColor).toBe('rgb(236, 233, 224)');
   expect(managementStyles.chapters.color).toBe('rgb(34, 31, 26)');
   expect(managementStyles.inactiveChapters.backgroundColor).toBe(managementStyles.chapters.backgroundColor);
   expect(managementStyles.inactiveChapters.borderColor).toBe(managementStyles.chapters.borderColor);

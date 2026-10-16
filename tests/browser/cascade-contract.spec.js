@@ -247,7 +247,7 @@ test('overlays resolve to their own surface rather than inheriting a page rule',
   // The publishing row's action vocabulary: management is tinted, preview stays
   // white and outlined, and both share one control height.
   await expectStyle(page, '.publish-list-actions .publish-manage-btn', {
-    backgroundColor: 'rgb(232, 229, 235)',
+    backgroundColor: 'rgb(236, 233, 224)',
     minHeight: '40px'
   });
   await expectStyle(page, '.publish-list-actions .default-preview-btn', {
@@ -838,7 +838,7 @@ test('a work resolves to a row in a list, not a card', async ({ page }) => {
   await expectStyle(page, '.project-library-card.active', {
     borderLeftWidth: '2px',
     borderLeftColor: 'rgb(75, 69, 87)',
-    backgroundColor: 'rgb(232, 229, 235)',
+    backgroundColor: 'rgb(236, 233, 224)',
     borderTopLeftRadius: '0px'
   });
 

@@ -295,7 +295,7 @@
   cursor:pointer;
 }
 .publish-platform-choose:hover{background:#f4f1e9}
-.publish-platform-row.is-current .publish-platform-choose{background:#e8e5eb}
+.publish-platform-row.is-current .publish-platform-choose{background:var(--paper-0,#ece9e0)}
 .publish-platform-row.is-current .publish-platform-choose strong{color:#4b4557}
 .publish-platform-choose strong{font-size:13px}
 .publish-platform-state-line{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;flex-wrap:wrap}
@@ -1479,7 +1479,7 @@ body #publishingView #publishingProjectFilterBtn strong{
   color:#221f1a;
 }
 .publishing-sort-option.active{
-  background:#e8e5eb;
+  background:var(--paper-0,#ece9e0);
   color:#4b4557;
   font-weight:700;
 }
