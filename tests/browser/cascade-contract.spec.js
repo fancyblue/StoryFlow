@@ -511,14 +511,15 @@ test('a toolbar row resolves to one control height, label size and radius', asyn
     '#openReadingViewBtn', '#quickSwitchProjectBtn', '#shrinkBtn']) {
     await expectStyle(page, selector, { fontSize: '14px' });
   }
-  // One framed control per row: 讀稿檢視 leaves the surface, so it keeps its frame; 設定 is used
-  // rarely and rests as text. The scene buttons are one control, so neither half draws a frame.
-  await expectStyle(page, '#openReadingViewBtn', { borderTopColor: 'rgb(200, 193, 176)' });
-  await expectStyle(page, '#splitSettingsToggle', { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(0, 0, 0, 0)' });
+  // A toolbar's controls are one family: the segment's fill and no frame, for the select, 設定 and
+  // 讀稿檢視 alike. The scene buttons are one control, so neither half draws a frame.
+  for (const selector of ['#suggestionPlatformSelect', '#splitSettingsToggle', '#openReadingViewBtn', '#quickSwitchProjectBtn']) {
+    await expectStyle(page, selector, { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgb(244, 241, 233)' });
+  }
+  // The suggestion's status is a state, not a control: no fill.
+  await expectStyle(page, '#suggestionStatus', { backgroundColor: 'rgba(0, 0, 0, 0)' });
   await expectStyle(page, '#shrinkBtn', { borderTopWidth: '0px', backgroundColor: 'rgba(0, 0, 0, 0)' });
   await expectStyle(page, '.splitter-panel .preview-boundary-controls', { backgroundColor: 'rgb(244, 241, 233)' });
-  // The select is drawn on the page ground like the buttons beside it, so it takes their edge.
-  await expectStyle(page, '#suggestionPlatformSelect', { borderTopColor: 'rgb(200, 193, 176)' });
 
   // Space separates the head, the progress line and the manuscript; no rule is drawn between
   // them, and on the desktop ground the manuscript's paper is its own edge.
@@ -537,17 +538,22 @@ test('a toolbar row resolves to one control height, label size and radius', asyn
   await expectStyle(page, '#preview', { borderTopWidth: '1px' });
 });
 
-// The chapter rail says how far each chapter's split has got, sets a chapter's number apart from
-// its name, and spends its weight on the current chapter. The work's name is text edited in
-// place, and the rare actions — 更新作品來源, 新增文章, a row's ⋯ — rest quietly.
-test('the chapter rail shows each chapter\'s progress and keeps rare actions quiet', async ({ page }) => {
+// The chapter rail marks how far each chapter's split has got, sets a chapter's number apart from
+// its name, and spends its weight on the current chapter. Each row is one line: the figures live
+// in the tooltip, because written under every row they repeated the split panel's progress line.
+// The work's name is text edited in place, and the rare actions — 更新作品來源, 新增文章, a
+// row's ⋯ — rest quietly.
+test('the chapter rail marks each chapter\'s progress and keeps rare actions quiet', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
 
   const row = page.locator('#chapterList .chapter-row').first();
   await expect(row.locator('.chapter-no')).toHaveText('08');
   await expect(row.locator('.chapter-name')).toHaveText('印紋');
-  await expect(row.locator('.chapter-status')).toHaveText('未開始');
+  await expect(row.locator('.chapter-main-button')).toHaveAttribute('title', '未開始');
+  await expect(row.locator('.chapter-mark')).toHaveText('');
+  // One line: the row is no taller than its 38px desktop floor needs.
+  expect(await row.evaluate(node => node.getBoundingClientRect().height)).toBeLessThan(46);
   await expectStyle(page, '#chapterList .chapter-item.active .chapter-name', { fontWeight: '700' });
   await expectStyle(page, '#chapterList .chapter-item small', { fontWeight: '500' });
   // The name and the length share a baseline; the length used to sit a few pixels above it.
@@ -560,13 +566,17 @@ test('the chapter rail shows each chapter\'s progress and keeps rare actions qui
 
   // Confirming the whole chapter marks it finished in the rail and in the list head.
   await page.locator('#confirmBtn').click();
-  await expect(row.locator('.chapter-status')).toHaveText('已切完 · 1 篇');
+  await expect(row.locator('.chapter-main-button')).toHaveAttribute('title', '已切完 · 1 篇');
+  await expect(row.locator('.chapter-mark')).toHaveText('✓');
   await expect(page.locator('#chapterListCount')).toHaveText('1 章 · 已切完 1 章');
 
   await expectStyle(page, '#projectTitle', { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(0, 0, 0, 0)', fontSize: '16px' });
   await expect(page.locator('#projectTitle')).toHaveAccessibleName('作品名稱');
   await expect(page.locator('#projectTitle')).toHaveValue('契約測試');
   await expectStyle(page, '#addChapterBtn', { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(0, 0, 0, 0)', height: '34px' });
+
+  // Rows close up: the current row's fill meets the hairline above and below it.
+  await expectStyle(page, '#chapterList', { rowGap: '0px' });
 
   // A row's ⋯ waits for the row where a pointer can find it, and the current row shows it.
   await page.locator('#addChapterBtn').hover();

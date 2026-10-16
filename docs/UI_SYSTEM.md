@@ -89,14 +89,17 @@ Current shared disclosures include workspace work switching, the split head's �
 
 - Primary: the single action that advances or confirms the current task.
 - Ghost/secondary: preview, return, cancel or supporting actions.
-- Quiet (`.sf-quiet`): a control used rarely enough to rest as text, taking the hover fill only under the pointer or while its disclosure is open. The split head's 設定 and the reading view's 閱讀設定 icon are quiet.
+- Soft (`.sf-soft`): a toolbar control — the segment's `--paper-2` fill, no frame, `--paper-1` under the pointer or while its disclosure is open. The format select, 設定, 讀稿檢視, 回到工作台, the reading view's 閱讀設定 icon and 切換作品 are soft.
+- Quiet (`.sf-quiet`): a control used rarely enough to rest as text, taking the hover fill only under the pointer. 更新作品來源 and ＋ 新增文章／＋ 新增圖文 are quiet.
 - Overflow (`⋯`): infrequent row management and destructive actions.
 - Close (`×`): dismisses a dialog; in pending creation it also cancels the transaction.
 
-A row carries at most one framed secondary control. The 切篇預覽 head once framed five — the format
-select, 閱讀設定, 切篇偏好, 讀稿檢視 and, below them, both scene buttons — and a row where everything
-is outlined has no order to read in. Now the select keeps its field edge, 讀稿檢視 is the row's one
-framed action, and 閱讀設定 and 切篇偏好 sit together behind one quiet 設定 disclosure. It opens a
+A toolbar is one family of controls. The 切篇預覽 head once framed five — the format select,
+閱讀設定, 切篇偏好, 讀稿檢視 and, below them, both scene buttons — and then, with the frames thinned,
+still showed four kinds of thing: a framed field, a filled segment, bare text and a framed button.
+They are all ways of looking at one preview, so they are all soft now: the segment's fill and no
+frame. The suggestion's status (建議／低於偏好) is a state rather than a control, so it is a dot and
+its word with no fill at all. 閱讀設定 and 切篇偏好 sit together behind one 設定 disclosure. It opens a
 panel anchored under the head's actions, laid over the preview rather than pushing it down, with
 閱讀設定 above 切篇偏好; both are changed far less often than the preview is read.
 
@@ -125,7 +128,7 @@ label in the row look undersized.
 | Height | `--sf-control-sm` — 34px on desktop, 40px at 820px and below |
 | Label | `--sf-font-control` (14px) |
 | Corner | 8px; a segment's inner buttons 6px |
-| Edge | `--rule-2`, the line for the page ground, on buttons and selects alike |
+| Surface | no frame; `--paper-2` fill (the segment's), `--paper-1` under the pointer or while open, on buttons and selects alike |
 | Segmented control | outer box `--sf-control-sm`; inner buttons `calc(var(--sf-control-sm) - 6px)` |
 
 `.button.tiny` is this tier, so it applies wherever that class is used, and the select, the
@@ -324,11 +327,13 @@ and the outline returns for the split preview and the reading view alike.
 
 ### What a chapter row says
 
-A chapter row reads number · name · length on one line and, under the name, how far the
-chapter's split has got: a 56px bar and 「未開始」, 「已切 3 篇 · 剩 2,610 字」 or 「已切完 · 2 篇」, in
-`--moss` once finished. These are the figures the progress line below gives for the open
-chapter, for every chapter at once, so the rail answers which chapter to split next without
-opening each one. The list head adds the finished count: 「10 章 · 已切完 2 章」.
+A chapter row is one line: number · name · length · a mark for how far its split has got — ✓ in
+`--moss` once finished, an accent dot part-way, nothing before the first cut. The figures
+(「未開始」, 「已切 3 篇 · 剩 2,610 字」, 「已切完 · 2 篇」) are the row's tooltip and its text for
+assistive technology. They were written under every row once, and that line repeated the progress
+line the split panel gives for the open chapter; the mark answers which chapter to split next
+without repeating it. The list head adds the finished count: 「10 章 · 已切完 2 章」. Rows close up
+with no gap, so the current row's fill meets the hairlines on both sides of it.
 
 A leading 「01、」「序、」 is the chapter's number, not its name, and sits in a column of its own as
 wide as the widest number in the list (`--chapter-no-width`), so names start on one line and

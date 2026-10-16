@@ -189,16 +189,16 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
   min-height:var(--sf-control-sm)!important;
   height:var(--sf-control-sm)!important;
   padding:0 11px!important;
-  border:1px solid #c8c1b0;
+  border:1px solid transparent;
   border-radius:8px!important;
-  background:#fbfaf6;
+  background:#f4f1e9;
   color:var(--denim-700,#4b4557);
   font-size:var(--sf-font-control)!important;
   font-weight:700;
   line-height:1!important;
 }
 .quick-switch-project-btn .sf-chevron{margin-left:2px}
-.quick-switch-project-btn:hover,.quick-switch-project-btn:focus-visible,.quick-switch-project-btn[aria-expanded="true"],.splitter-panel .smart-split-header-actions #openReadingViewBtn:hover,.splitter-panel .smart-split-header-actions #openReadingViewBtn:focus-visible{background:#f4f1e9;border-color:#c8c1b0;color:var(--denim-800,#4b4557)}
+.quick-switch-project-btn:hover,.quick-switch-project-btn:focus-visible,.quick-switch-project-btn[aria-expanded="true"],.splitter-panel .smart-split-header-actions #openReadingViewBtn:hover,.splitter-panel .smart-split-header-actions #openReadingViewBtn:focus-visible{background:#fbfaf6;border-color:transparent;color:var(--denim-800,#4b4557)}
 .chapter-group-label{padding:7px 9px;border-radius:8px;font-size:12px}
 .chapter-item{min-height:44px;padding:10px 11px;border-radius:0;font-size:14px;font-weight:700}
 .chapter-item small{font-size:12px}
@@ -217,13 +217,16 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .splitter-panel .smart-split-mini-settings .range-grid input:focus,.splitter-panel .scene-marker-compact #sceneMarker:focus{border-color:var(--sf-primary)!important;background:#fbfaf6;box-shadow:var(--sf-focus)!important}
 /* The format bar sits in the panel head's actions, beside 切篇偏好, at the head's 34px height. */
 .splitter-panel .suggestion-platform-bar{margin:0!important;gap:8px!important}
-.splitter-panel .suggestion-platform-bar select.text-input{height:var(--sf-control-sm)!important;min-height:var(--sf-control-sm)!important;border:1px solid var(--sf-border-strong)!important;background:#fbfaf6;font-size:14px!important;border-radius:8px!important}
+.splitter-panel .suggestion-platform-bar select.text-input{height:var(--sf-control-sm)!important;min-height:var(--sf-control-sm)!important;border:1px solid transparent!important;background:#f4f1e9!important;font-size:14px!important;border-radius:8px!important}
 #splitPlatformBar .sf-preview-mode-segment,.sf-preview-mode-segment{padding:3px!important;border:0!important;border-radius:8px!important;background:#f4f1e9!important}
 #splitPlatformBar .sf-preview-mode-segment button,.sf-preview-mode-segment button{min-height:calc(var(--sf-control-sm) - 6px)!important;padding:0 11px!important;border-radius:6px!important;font-size:14px!important;font-weight:700!important;color:var(--sf-muted-strong,#3f3930)!important;white-space:nowrap}
 #splitPlatformBar .sf-preview-mode-segment button.active,.sf-preview-mode-segment button.active{background:#fbfaf6!important;color:var(--denim-700,#4b4557)!important}
 .splitter-panel .suggestion-title-row{min-height:40px;margin:4px 0 var(--sf-split-title-gap, 14px)}
 .splitter-panel #suggestionChars{font-size:15px;font-weight:700;color:var(--denim-700,#4b4557);white-space:nowrap}
-.splitter-panel .suggestion-title-row .pill{min-height:30px;padding:0 10px;background:#f4f1e9;color:var(--denim-800,#4b4557)!important;border:0!important;font-size:13px;font-weight:700;white-space:nowrap;word-break:keep-all}
+/* The suggestion's status (建議／低於偏好) is a state, not an action: a dot and its word, with
+   none of the fill the toolbar's controls carry, so it cannot be mistaken for one of them. */
+.splitter-panel .suggestion-title-row .pill{gap:6px;min-height:30px;padding:0;background:transparent;color:var(--ink-2,#6a6357)!important;border:0!important;font-size:13px;font-weight:500;white-space:nowrap;word-break:keep-all}
+.splitter-panel .suggestion-title-row .pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--dai-700,#4b4557)}
 .split-preview-shell .preview{border-radius:14px;background:#fbfaf6;font-size:16px;line-height:1.95;box-shadow:none}
 /* The scene buttons end the article's title row; they carry no frame of their own. */
 .preview-boundary-controls{border:0;background:transparent;padding:0;}
@@ -239,6 +242,13 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .sf-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}
 /* The third tier: a control that is used rarely enough to sit as text until it is pointed at,
    so the row's one framed control is the one that leaves or advances the task. */
+/* A toolbar's controls are one family: the segment's fill, no frame, a lighter fill under the
+   pointer or while open. A row of a framed field, a filled segment, bare text and a framed
+   button read as four kinds of thing for what is one kind — the format select, 預覽／原始 MD,
+   設定 and 讀稿檢視 are all ways of looking at the same preview. Selects, 切換作品 and
+   讀稿檢視 restate the same values in their own rules. */
+.button.sf-soft,.icon-button.sf-soft{border-color:transparent!important;background:#f4f1e9!important;box-shadow:none!important}
+.button.sf-soft:hover:not(:disabled),.icon-button.sf-soft:hover:not(:disabled),.button.sf-soft[aria-expanded="true"],.icon-button.sf-soft[aria-expanded="true"]{border-color:transparent!important;background:#fbfaf6!important}
 .button.sf-quiet,.icon-button.sf-quiet{border-color:transparent!important;background:transparent!important;box-shadow:none!important}
 .button.sf-quiet:hover:not(:disabled),.icon-button.sf-quiet:hover:not(:disabled),.button.sf-quiet[aria-expanded="true"],.icon-button.sf-quiet[aria-expanded="true"]{border-color:transparent!important;background:#f4f1e9!important}
 .format-summary-text{font-size:13px;line-height:1.45!important}

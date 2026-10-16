@@ -40,11 +40,9 @@
   /* The chapter rail is the one list that routinely runs to dozens of rows. A
      44px row is a touch-target floor that desktop does not need, so desktop
      trades ~18% of the row pitch for more chapters visible without scrolling.
-     Narrow and touch layouts keep the 44px row from the shared ui-system layer. */
-  .chapter-list {
-    gap: 5px !important;
-  }
-
+     Narrow and touch layouts keep the 44px row from the shared ui-system layer.
+     The rows stay closed up (gap 0, app-ux.css): a 5px gap here once left the
+     current row's fill and the hover fill short of the hairlines on both sides. */
   #chapterList .chapter-item {
     min-height: 38px !important;
     padding: 6px 11px !important;
