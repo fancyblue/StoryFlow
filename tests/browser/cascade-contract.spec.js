@@ -139,10 +139,10 @@ test('shared controls keep their resolved appearance', async ({ page }) => {
   });
   await expectStyle(page, '.sidebar', { width: '208px' });
 
-  // A page head is its title alone: no English eyebrow above it, and a size that leaves the
-  // section heads below it room to read as sections.
+  // A head is its title alone: no English eyebrow above a page, a section or a list, and a page
+  // title sized to leave the section heads below it room to read as sections.
   await expectStyle(page, '#workspaceView > .topbar h1', { fontSize: '22px' });
-  await expect(page.locator('#workspaceView > .topbar .eyebrow')).toHaveCount(0);
+  await expect(page.locator('.eyebrow')).toHaveCount(0);
 
   // The single solid action of the split review stage.
   await expectStyle(page, '#confirmBtn', {
@@ -425,7 +425,7 @@ test('both content modes draw one SOURCE rail and open one work switcher over it
   });
 });
 
-// The SOURCE and SMART SPLIT heads stand side by side, so their rules read as one line across
+// The 作品與章節 and 切篇預覽 heads stand side by side, so their rules and titles read as one line across
 // the workbench — or as two lines 11px apart, which is what they were: the source head carries
 // 切換作品 beside its title and stood taller. Both rails also head their list the same way.
 test('the workbench heads draw one rule and both rails head their list alike', async ({ page }) => {
@@ -435,10 +435,10 @@ test('the workbench heads draw one rule and both rails head their list alike', a
   const heads = await page.evaluate(() => ['.workspace-grid.workspace-hierarchy > .source-panel > .panel-head', '.splitter-panel > .panel-head']
     .map(selector => {
       const head = document.querySelector(selector);
-      const eyebrow = head.querySelector('.eyebrow');
+      const title = head.querySelector('h2');
       return {
         rule: Math.round(head.getBoundingClientRect().bottom),
-        eyebrow: Math.round(eyebrow.getBoundingClientRect().top)
+        title: Math.round(title.getBoundingClientRect().top)
       };
     }));
   expect(heads[0]).toEqual(heads[1]);

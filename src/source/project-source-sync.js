@@ -629,7 +629,7 @@
     dialog.innerHTML = `
       <div class="project-source-diff-card">
         <header class="project-source-diff-head">
-          <div><p class="eyebrow">SOURCE / PROJECT SYNC</p><h3>更新作品來源</h3><p class="muted">Google Docs 章節可以更新；手動文章永遠保留，不參與來源比對。</p></div>
+          <div><h3>更新作品來源</h3><p class="muted">Google Docs 章節可以更新；手動文章永遠保留，不參與來源比對。</p></div>
           <button id="closeProjectSourceDiff" class="icon-button" type="button" aria-label="關閉">×</button>
         </header>
         <div id="projectSourceDiffSummary" class="project-source-diff-summary"></div>

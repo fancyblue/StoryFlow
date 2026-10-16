@@ -33,9 +33,8 @@
   font-size:22px;
   font-weight:700;
 }
-.storyflow-recovery-card .eyebrow{margin:0 0 7px}
 .storyflow-recovery-card h1{margin:0;font-size:28px}
-.storyflow-recovery-card>p:not(.eyebrow):not(.storyflow-recovery-status){max-width:410px;margin:14px 0 0;color:var(--muted);line-height:1.75}
+.storyflow-recovery-card>p:not(.storyflow-recovery-status){max-width:410px;margin:14px 0 0;color:var(--muted);line-height:1.75}
 .storyflow-recovery-actions{display:grid;width:100%;gap:9px;margin-top:26px}
 .storyflow-recovery-actions .button{width:100%;min-height:46px}
 .storyflow-recovery-actions .button.quiet{border-color:transparent;background:transparent;color:var(--muted)}

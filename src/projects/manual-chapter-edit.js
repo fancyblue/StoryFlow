@@ -19,7 +19,6 @@
       title: document.getElementById('manualSourceTitle'),
       text: document.getElementById('manualSourceText'),
       heading: dialog?.querySelector('.sticky-dialog-head h3'),
-      eyebrow: dialog?.querySelector('.sticky-dialog-head .eyebrow'),
       preview: document.getElementById('previewManualSourceBtn'),
       confirm: document.getElementById('confirmManualSourceBtn'),
       actions: dialog?.querySelector('.manual-source-actions, .source-flow-actions')
@@ -52,12 +51,11 @@
 
   function resetDialogToAddMode() {
     if (editingChapterId) return;
-    const { dialog, heading, eyebrow, preview, confirm } = dialogParts();
+    const { dialog, heading, preview, confirm } = dialogParts();
     if (!dialog) return;
     delete dialog.dataset.editChapterId;
     setEditFooterMode(false);
     if (heading) heading.textContent = '手動新增文章';
-    if (eyebrow) eyebrow.textContent = 'MANUAL SOURCE';
     if (preview) preview.hidden = false;
     if (confirm) confirm.textContent = '確定新增';
     const cancel = ensureCancelButton();
@@ -77,7 +75,7 @@
       return false;
     }
 
-    const { dialog, title, text, heading, eyebrow, preview, confirm } = dialogParts();
+    const { dialog, title, text, heading, preview, confirm } = dialogParts();
     if (!dialog || !title || !text || !confirm) {
       window.notify?.('手動文章編輯器尚未準備完成，請重新整理後再試一次。', true);
       return false;
@@ -90,7 +88,6 @@
     title.value = chapter.title || '';
     text.value = chapter.draft || '';
     if (heading) heading.textContent = '編輯章節';
-    if (eyebrow) eyebrow.textContent = 'MANUAL ARTICLE';
     if (preview) preview.hidden = true;
     confirm.textContent = '儲存修改';
     const cancel = ensureCancelButton();

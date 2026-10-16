@@ -8,14 +8,14 @@
   <meta name="description" content="StoryFlow turns long-form drafts into web-ready publishing parts and tracks multi-platform publishing progress." />
   <link rel="stylesheet" href="./styles/layers/foundation.css?v=20261015-a4" />
   <link rel="stylesheet" href="./styles/layers/legacy-patches.css?v=20260925-a6" />
-  <link rel="stylesheet" href="./smart-split-ui.css?v=20261016-a2" />
+  <link rel="stylesheet" href="./smart-split-ui.css?v=20261016-a6" />
   <link rel="stylesheet" href="./styles/domains/dialogs.css?v=20260925-a4" />
-  <link rel="stylesheet" href="./source-flow.css?v=20261015-a4" />
+  <link rel="stylesheet" href="./source-flow.css?v=20261016-a6" />
   <link rel="stylesheet" href="./projects.css?v=20260914-a2" />
-  <link rel="stylesheet" href="./styles/domains/publishing.css?v=20260925-a6" data-storyflow-publishing-domain />
+  <link rel="stylesheet" href="./styles/domains/publishing.css?v=20261016-a6" data-storyflow-publishing-domain />
   <link rel="stylesheet" href="./sidebar-layout.css?v=20261016-a4" data-storyflow-sidebar-layout />
   <link rel="stylesheet" href="./app-ux.css?v=20261016-a4" />
-  <link rel="stylesheet" href="./connection-ui.css?v=20260925-a6" />
+  <link rel="stylesheet" href="./connection-ui.css?v=20261016-a6" />
   <link rel="stylesheet" href="./workspace-safety.css?v=20260914-a2" />
   <link rel="stylesheet" href="./styles/domains/settings.css?v=20260925-a6" data-storyflow-settings-domain />
   <link rel="stylesheet" href="./styles/layers/ui-polish.css?v=20261016-a4" />
@@ -27,16 +27,16 @@
   <link id="storyflowMobileNavigationCss" rel="stylesheet" href="./styles/layers/mobile-navigation.css?v=20260925-a6" />
   <link id="storyflowBlueThemeCss" rel="stylesheet" href="./styles/layers/theme.css?v=20261016-a4" />
   <link id="storyflowMobileVisualPolishCss" rel="stylesheet" href="./styles/layers/mobile-visual.css?v=20260925-a6" />
-  <link id="storyflowWorkspaceUxCss" rel="stylesheet" href="./styles/domains/workspace-ux.css?v=20261016-a2" />
+  <link id="storyflowWorkspaceUxCss" rel="stylesheet" href="./styles/domains/workspace-ux.css?v=20261016-a6" />
   <link id="storyflowConnectionStatusCss" rel="stylesheet" href="./styles/domains/connection-status.css?v=20261016-a4" />
-  <link id="storyflowUiSystemCss" rel="stylesheet" href="./styles/layers/ui-system.css?v=20261016-a4" />
+  <link id="storyflowUiSystemCss" rel="stylesheet" href="./styles/layers/ui-system.css?v=20261016-a6" />
   <link id="storyflowUiLayoutIntegrityCss" rel="stylesheet" href="./styles/layers/layout-integrity.css?v=20261016-a4" />
   <link id="storyflowProjectSourceModeCss" rel="stylesheet" href="./styles/domains/project-source-mode.css?v=20260924-a1" />
   <link id="storyflowSourceArticleUxCss" rel="stylesheet" href="./styles/domains/source-article-ux.css?v=20260924-a1" />
   <link id="storyflowChapterManagementCss" rel="stylesheet" href="./styles/domains/chapter-management.css?v=20260919-a2" />
   <link id="storyflowManualSourceCss" rel="stylesheet" href="./styles/domains/manual-source.css?v=20260925-a2" />
   <link id="storyflowMobileSafeModeCss" rel="stylesheet" href="./styles/domains/mobile-safe-mode.css?v=20260915-a1" />
-  <link rel="stylesheet" href="./styles/domains/workspace.css?v=20261016-a2" data-storyflow-workspace-domain />
+  <link rel="stylesheet" href="./styles/domains/workspace.css?v=20261016-a6" data-storyflow-workspace-domain />
   <link id="storyflowManualChapterEditCss" rel="stylesheet" href="./styles/domains/manual-chapter-edit.css?v=20260925-a3" />
   <link id="storyflowWorksLibraryUxCss" rel="stylesheet" href="./styles/domains/works-library.css?v=20260925-a6" />
   <link rel="stylesheet" href="./styles/domains/publishing-refinements.css?v=20260925-a6" />
@@ -77,15 +77,15 @@
 
       <section class="workspace-grid workspace-hierarchy">
         <aside class="panel source-panel">
-          <div class="panel-head"><div><p class="eyebrow">SOURCE</p><h2>作品與章節</h2></div><button id="newChapterBtn" class="icon-button" title="新增章節">＋</button></div>
+          <div class="panel-head"><div><h2>作品與章節</h2></div><button id="newChapterBtn" class="icon-button" title="新增章節">＋</button></div>
           <label class="field-label" for="projectTitle">作品名稱</label><input id="projectTitle" class="text-input" value="未命名作品" />
-          <div id="chapterListHead" class="rail-section-head chapter-list-head"><div><p class="eyebrow">CHAPTERS</p><h3>章節清單</h3></div><span id="chapterListCount" class="muted"></span></div>
+          <div id="chapterListHead" class="rail-section-head chapter-list-head"><div><h3>章節清單</h3></div><span id="chapterListCount" class="muted"></span></div>
           <div class="chapter-list" id="chapterList"></div><button id="addChapterBtn" class="button full ghost">＋ 手動新增文章</button>
         </aside>
 
         <section class="panel editor-panel">
           <div class="panel-head editor-head">
-            <div><p class="eyebrow">MASTER DRAFT</p><input id="chapterTitle" class="title-input" value="第一章" aria-label="章節名稱" /><small id="sourceMeta" class="source-meta">尚未綁定來源</small></div>
+            <div><input id="chapterTitle" class="title-input" value="第一章" aria-label="章節名稱" /><small id="sourceMeta" class="source-meta">尚未綁定來源</small></div>
             <div class="source-actions"><button id="pasteSampleBtn" class="button tiny ghost">載入範例</button><button id="importGoogleBtn" class="button tiny primary">選擇 Google Docs</button><button id="syncGoogleBtn" class="button tiny ghost" disabled>重新同步</button></div>
           </div>
           <div class="notice">來源內容確認後會直接進入 SMART SPLIT。StoryFlow 會自動辨識 Google Docs 中重複使用的章節標題層級，章節標題不會加入正文。</div>
@@ -94,7 +94,7 @@
         </section>
 
         <aside class="panel splitter-panel">
-          <div class="panel-head"><div><p class="eyebrow">SMART SPLIT</p><h2>切篇預覽</h2></div></div>
+          <div class="panel-head"><div><h2>切篇預覽</h2></div></div>
           <!-- Every figure here is about the chapter being split, so it belongs to the split
                panel rather than to a strip across the whole column. -->
           <div class="chapter-progress" id="chapterProgress">
@@ -116,7 +116,7 @@
         </aside>
       </section>
       <section class="panel publishing-panel">
-        <div class="panel-head"><div><p class="eyebrow">PUBLISHING QUEUE</p><h2>發布篇與平台狀態</h2></div><span class="muted">發布平台依你的設定顯示。</span></div>
+        <div class="panel-head"><div><h2>發布篇與平台狀態</h2></div><span class="muted">發布平台依你的設定顯示。</span></div>
         <div id="partsList" class="parts-list"></div>
       </section>
       <!-- Reading and seam are one surface, not two. 讀稿 reads the chapter; 接縫 adds the
@@ -125,7 +125,6 @@
       <section id="readingView" class="reading-view" data-view="read" hidden aria-labelledby="readingViewTitle">
         <header class="reading-view-head">
           <div class="reading-view-heading">
-            <p class="eyebrow">READING</p>
             <h2 id="readingViewTitle">章節</h2>
             <p id="readingViewProgress" class="reading-view-progress"></p>
           </div>
@@ -151,10 +150,10 @@
     </main>
   </div>
 
-  <dialog id="tabDialog" aria-labelledby="tabDialogTitle"><form method="dialog" class="dialog-card tab-dialog"><div class="panel-head"><div><p class="eyebrow">GOOGLE DOCS</p><h3 id="tabDialogTitle">選擇要匯入的分頁</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div><p class="muted">選擇分頁後會先顯示 StoryFlow 轉換後的內容；確認後才加入工作區。</p><div id="tabList" class="tab-list"></div></form></dialog>
+  <dialog id="tabDialog" aria-labelledby="tabDialogTitle"><form method="dialog" class="dialog-card tab-dialog"><div class="panel-head"><div><h3 id="tabDialogTitle">選擇要匯入的分頁</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div><p class="muted">選擇分頁後會先顯示 StoryFlow 轉換後的內容；確認後才加入工作區。</p><div id="tabList" class="tab-list"></div></form></dialog>
 
   <dialog id="settingsDialog" aria-labelledby="settingsDialogTitle"><form method="dialog" class="dialog-card settings-dialog">
-    <div class="panel-head"><div><p class="eyebrow">SETTINGS</p><h3 id="settingsDialogTitle">StoryFlow 設定</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div>
+    <div class="panel-head"><div><h3 id="settingsDialogTitle">StoryFlow 設定</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div>
     <div class="settings-section"><strong>Google Picker API Key</strong><p>API Key 會保存在你選擇的 StoryFlow 資料夾 <code>settings.json</code>，不寫入 GitHub 或瀏覽器儲存空間。</p><input id="pickerApiKeyInput" class="text-input" type="password" autocomplete="off" placeholder="AIza..." /><div class="settings-actions"><button id="savePickerKeyBtn" type="button" class="button ghost" disabled>保存到 StoryFlow 資料夾</button><button id="clearPickerKeyBtn" type="button" class="button ghost">清除</button></div></div>
     <div class="settings-section"><strong>StoryFlow 資料夾</strong><p>同一個瀏覽器工作階段內，重新整理頁面會自動接回目前資料夾，不需要重新選擇。關閉瀏覽器／頁籤後再次開啟時，可以要求你重新選擇或重新授權資料夾。</p><button id="settingsFolderBtn" type="button" class="button ghost">連接資料夾</button></div>
     <div class="settings-section"><strong>發布排版</strong><p>初始提供「巴哈小屋、方格子」，兩者都可以移除，也可以自行新增其他平台；每個平台可個別設定排版。</p><label class="field-label" for="defaultIndent">預設段首縮排</label><select id="defaultIndent" class="text-input"><option value="none">不縮排</option><option value="two">全形兩格</option></select><div class="default-format-checks"><label class="format-check"><input id="defaultParagraphSpacing" type="checkbox" checked /><span>預設段落間空一行</span></label><label class="format-check"><input id="defaultSceneSeparator" type="checkbox" checked /><span>預設顯示場景分隔符</span></label></div><div id="platformFormatSettings" class="platform-settings"></div></div>
@@ -165,6 +164,6 @@
 
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://apis.google.com/js/api.js" async defer></script>
-  <script src="./app-loader.js?v=20261016-a4"></script>
+  <script src="./app-loader.js?v=20261016-a6"></script>
 </body>
 </html>

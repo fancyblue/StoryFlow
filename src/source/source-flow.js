@@ -53,7 +53,7 @@
       dialog.innerHTML = `
         <div class="dialog-card source-flow-card">
           <div class="panel-head sticky-dialog-head">
-            <div><p class="eyebrow">SOURCE</p><h3>載入來源</h3></div>
+            <div><h3>載入來源</h3></div>
             <button id="closeSourceDialog" class="icon-button" type="button">×</button>
           </div>
           <p class="muted source-flow-intro">先選擇文章來源。內容會先轉成 StoryFlow 可處理的文字並預覽，確認後才加入工作區。</p>
@@ -105,7 +105,7 @@
       dialog.innerHTML = `
         <div class="dialog-card source-flow-card source-editor-card">
           <div class="panel-head sticky-dialog-head">
-            <div><p class="eyebrow">MANUAL SOURCE</p><h3>手動新增文章</h3></div>
+            <div><h3>手動新增文章</h3></div>
             <button id="closeManualSourceDialog" class="icon-button" type="button">×</button>
           </div>
           <label id="manualProjectTitleField" class="manual-project-title-field" hidden>
@@ -138,7 +138,7 @@
       dialog.innerHTML = `
         <div class="dialog-card source-flow-card source-preview-card">
           <div class="panel-head sticky-dialog-head">
-            <div><p class="eyebrow">SOURCE PREVIEW</p><h3 id="sourcePreviewHeading">確認轉換後內容</h3></div>
+            <div><h3 id="sourcePreviewHeading">確認轉換後內容</h3></div>
             <button id="closeSourcePreviewDialog" class="icon-button" type="button">×</button>
           </div>
           <div id="sourcePreviewSummary" class="source-preview-summary"></div>

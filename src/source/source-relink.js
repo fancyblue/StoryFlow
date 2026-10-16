@@ -73,7 +73,7 @@
     dialog.innerHTML = `
       <div class="dialog-card source-flow-card source-preview-card">
         <div class="panel-head sticky-dialog-head">
-          <div><p class="eyebrow">SOURCE / RELINK</p><h3>重新連結 Google Docs</h3></div>
+          <div><h3>重新連結 Google Docs</h3></div>
           <button id="closeSourceRelinkDialog" class="icon-button" type="button" aria-label="關閉">×</button>
         </div>
         <div id="sourceRelinkSummary" class="source-preview-summary"></div>

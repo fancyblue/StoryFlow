@@ -18,7 +18,6 @@
     dialog.innerHTML = `
       <div class="storyflow-recovery-card">
         <div class="storyflow-recovery-mark" aria-hidden="true">S</div>
-        <p class="eyebrow">WELCOME BACK</p>
         <h1>繼續上次工作</h1>
         <p>Chrome 記得你先前選擇的 StoryFlow 資料夾。重新連接後，會一起載入工作區與 settings.json。</p>
         <div class="storyflow-quick-start-folder"><span>上次資料夾</span><strong id="quickStartFolderName">StoryFlow</strong></div>

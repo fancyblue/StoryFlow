@@ -256,7 +256,6 @@
         <aside class="source-panel visual-entry-list-panel">
           <div class="panel-head visual-project-panel-head">
             <div>
-              <p class="eyebrow">SOURCE</p>
               <div class="source-heading-title-row">
                 <h2>作品與圖文</h2>
                 <div class="source-heading-actions">
@@ -271,7 +270,7 @@
           <label class="field-label" for="visualProjectTitle">作品名稱</label>
           <input id="visualProjectTitle" class="text-input visual-project-title-input" maxlength="160" />
           <div class="visual-entry-section-head rail-section-head">
-            <div><p class="eyebrow">ENTRIES</p><h3>圖文清單</h3></div>
+            <div><h3>圖文清單</h3></div>
             <div class="visual-entry-list-actions"><span id="visualEntryCount" class="muted"></span></div>
           </div>
           <div id="visualEntryList" class="visual-entry-list"></div>
@@ -306,7 +305,7 @@
       dialog.className = 'visual-type-dialog';
       dialog.setAttribute('aria-labelledby', 'visualTypeDialogTitle');
       dialog.innerHTML = `<form method="dialog" class="dialog-card">
-        <div class="panel-head"><div><p class="eyebrow">NEW WORK</p><h3 id="visualTypeDialogTitle">選擇作品類型</h3></div><button class="icon-button" value="cancel" formnovalidate aria-label="關閉">×</button></div>
+        <div class="panel-head"><div><h3 id="visualTypeDialogTitle">選擇作品類型</h3></div><button class="icon-button" value="cancel" formnovalidate aria-label="關閉">×</button></div>
         <div id="visualTypeOptions" class="visual-type-options">
           <button id="chooseLongformType" class="visual-type-option" type="button"><strong>長文作品</strong><span>Google Docs／手動來源、Smart Split、切篇確認與發布。</span></button>
           <button id="chooseVisualType" class="visual-type-option" type="button"><strong>圖文系列</strong><span>文字、多張圖片、封面、圖說、替代文字、排序與基本預覽。</span></button>
@@ -328,7 +327,7 @@
       dialog.className = 'visual-entry-dialog';
       dialog.setAttribute('aria-labelledby', 'visualEntryDialogTitle');
       dialog.innerHTML = `<form method="dialog" class="dialog-card">
-        <div class="panel-head"><div><p class="eyebrow">NEW ENTRY</p><h3 id="visualEntryDialogTitle">新增圖文</h3></div><button class="icon-button" value="cancel" formnovalidate aria-label="關閉">×</button></div>
+        <div class="panel-head"><div><h3 id="visualEntryDialogTitle">新增圖文</h3></div><button class="icon-button" value="cancel" formnovalidate aria-label="關閉">×</button></div>
         <div class="visual-dialog-fields"><label class="visual-field"><span>圖文標題</span><input id="newVisualEntryTitle" class="text-input" required maxlength="160" /></label></div>
         <div class="visual-dialog-actions"><button class="button ghost" value="cancel" formnovalidate>取消</button><button id="confirmNewVisualEntry" class="button primary" type="button">新增圖文</button></div>
       </form>`;
@@ -342,7 +341,7 @@
       dialog.className = 'visual-entry-preview-dialog';
       dialog.setAttribute('aria-labelledby', 'visualEntryPreviewTitle');
       dialog.innerHTML = `<div class="dialog-card visual-entry-preview-card">
-        <div class="panel-head"><div><p class="eyebrow">PREVIEW</p><h3 id="visualEntryPreviewTitle">圖文預覽</h3></div><button class="icon-button" type="button" data-visual-preview-close aria-label="關閉">×</button></div>
+        <div class="panel-head"><div><h3 id="visualEntryPreviewTitle">圖文預覽</h3></div><button class="icon-button" type="button" data-visual-preview-close aria-label="關閉">×</button></div>
         <p class="muted visual-entry-preview-note">這是目前編輯內容的閱讀預覽，不會改變發布狀態。</p>
         <section class="visual-preview" aria-label="圖文基本預覽">
           <h2 id="visualPreviewTitle"></h2><div id="visualPreviewBody" class="visual-preview-body"></div><div id="visualPreviewImages" class="visual-preview-images"></div>
@@ -360,7 +359,7 @@
       dialog.className = 'visual-image-dialog';
       dialog.setAttribute('aria-labelledby', 'visualImageDialogTitle');
       dialog.innerHTML = `<form method="dialog" class="dialog-card">
-        <div class="panel-head"><div><p class="eyebrow">IMAGE</p><h3 id="visualImageDialogTitle">編輯圖片資訊</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div>
+        <div class="panel-head"><div><h3 id="visualImageDialogTitle">編輯圖片資訊</h3></div><button class="icon-button" value="cancel" aria-label="關閉">×</button></div>
         <img id="visualImageDialogPreview" class="visual-image-dialog-preview" alt="" hidden />
         <div class="visual-dialog-fields"><label class="visual-field"><span>替代文字</span><input id="visualImageAlt" class="text-input" maxlength="300" /></label><label class="visual-field"><span>圖說（選填）</span><textarea id="visualImageCaption" class="text-input" rows="3"></textarea></label><label class="format-check"><input id="visualImageCover" type="checkbox" /><span>設為這則圖文的封面</span></label></div>
         <div class="visual-dialog-actions"><button id="visualRemoveImageAssociation" class="button ghost" type="button">移除關聯並保留檔案</button><button id="visualDeleteImageFile" class="button ghost danger" type="button">備份後刪除檔案</button><button id="visualSaveImageMeta" class="button primary" type="button">保存圖片資訊</button></div>

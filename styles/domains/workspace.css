@@ -31,7 +31,7 @@
   background:transparent!important;
 }
 
-/* Both rails head their list the same way: an eyebrow, the list's name and its count, over
+/* Both rails head their list the same way: the list's name and its count, over
    the rule the rows start under. The longform rail used to go straight from the work name to
    its first chapter, so the same column read as two different layouts depending on the work. */
 .rail-section-head{
@@ -51,16 +51,21 @@
 
 /* The SOURCE and SMART SPLIT heads sit side by side, so their rules have to be one line
    across the page. The source head carries 切換作品 beside its title and so stood taller;
-   the split head takes the same height rather than leaving its rule 11px higher. */
+   the split head's format select is taller still. Both take the taller one's height. */
 .workspace-grid.workspace-hierarchy > .source-panel > .panel-head,
 .workspace-grid.workspace-hierarchy .splitter-panel > .panel-head{
   box-sizing:border-box!important;
-  min-height:71px!important;
+  min-height:57px!important;
   padding-bottom:16px!important;
   align-items:flex-start!important;
 }
-/* …and within that height the eyebrows share a top line and the buttons sit beside the
-   title, where 切換作品 sits in the source head. */
+/* …and the split title sits in a row as tall as 切換作品, centred the way the source title is
+   centred beside it, so the two titles share a line and the buttons sit beside the title. */
+.workspace-grid.workspace-hierarchy .splitter-panel > .panel-head > div:first-child{
+  display:flex;
+  align-items:center;
+  min-height:var(--sf-control-sm);
+}
 .workspace-grid.workspace-hierarchy .splitter-panel > .panel-head > .smart-split-header-actions{
   align-self:flex-end!important;
 }
