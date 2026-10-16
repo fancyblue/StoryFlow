@@ -5,10 +5,10 @@ and the reading surface. */
 .source-panel>.panel-head{flex-wrap:wrap!important;align-items:center!important}
 .source-panel>.panel-head>div:first-child{flex:1 1 auto;min-width:0}
 .source-heading-title-row h2{flex:1 1 auto;}
-.quick-switch-project-btn{flex:0 0 auto;min-height:30px;margin-left:auto;padding:0 10px;border:1px solid #c8c1b0;border-radius:8px;background:#fbfaf6;color:var(--denim-700,#4b4557);font-size:11.5px;font-weight:700;line-height:1;cursor:pointer}
-.quick-switch-project-btn:hover,.quick-switch-project-btn:focus-visible,.quick-switch-project-btn[aria-expanded="true"]{border-color:#c8c1b0;background:#f4f1e9;color:var(--denim-800,#4b4557);outline:none}
-.splitter-panel .smart-split-header-actions #openReadingViewBtn{min-height:30px!important;margin-left:auto!important;padding:0 10px!important;border:1px solid #c8c1b0!important;border-radius:8px!important;background:#fbfaf6!important;color:var(--denim-700,#4b4557)!important;box-shadow:none!important;font-size:11.5px!important;font-weight:700!important;line-height:1!important}
-.splitter-panel .smart-split-header-actions #openReadingViewBtn:hover,.splitter-panel .smart-split-header-actions #openReadingViewBtn:focus-visible{border-color:#c8c1b0!important;background:#f4f1e9!important;color:var(--denim-800,#4b4557)!important;outline:none!important;box-shadow:none!important}
+.quick-switch-project-btn{flex:0 0 auto;min-height:30px;margin-left:auto;padding:0 10px;border:1px solid transparent;border-radius:8px;background:#f4f1e9;color:var(--denim-700,#4b4557);font-size:11.5px;font-weight:700;line-height:1;cursor:pointer}
+.quick-switch-project-btn:hover,.quick-switch-project-btn:focus-visible,.quick-switch-project-btn[aria-expanded="true"]{border-color:transparent;background:#fbfaf6;color:var(--denim-800,#4b4557);outline:none}
+.splitter-panel .smart-split-header-actions #openReadingViewBtn{min-height:30px!important;margin-left:auto!important;padding:0 10px!important;border:1px solid transparent!important;border-radius:8px!important;background:#f4f1e9!important;color:var(--denim-700,#4b4557)!important;box-shadow:none!important;font-size:11.5px!important;font-weight:700!important;line-height:1!important}
+.splitter-panel .smart-split-header-actions #openReadingViewBtn:hover,.splitter-panel .smart-split-header-actions #openReadingViewBtn:focus-visible{border-color:transparent!important;background:#fbfaf6!important;color:var(--denim-800,#4b4557)!important;outline:none!important;box-shadow:none!important}
 /* The disclosure opens against its own trigger, not against the panel box. A fixed
    58px from the panel's top edge was a reading of one heading height: the SOURCE head
    grew a title row, and the menu began covering the heading it belongs to. Anchoring to
@@ -81,7 +81,7 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
 .reading-view-controls{flex:1 1 100%!important;display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px 10px!important;order:2!important}
 .reading-view-controls .format-summary-text{max-width:none!important;min-height:0!important}
 .reading-view-controls .platform-select-field{min-width:0!important}
-.reading-view-controls select.text-input{min-height:var(--sf-control-sm)!important;height:var(--sf-control-sm)!important;padding:0 30px 0 10px!important;border-radius:8px!important;font-size:14px!important;font-weight:500!important}
+.reading-view-controls select.text-input{min-height:var(--sf-control-sm)!important;height:var(--sf-control-sm)!important;padding:0 30px 0 10px!important;border-color:transparent!important;border-radius:8px!important;background:#f4f1e9!important;font-size:14px!important;font-weight:500!important}
 /* The format summary is a sentence, not a control: it ends the toolbar line and is cut short
    rather than wrapping mid-phrase between two buttons. The whole sentence is its title. */
 .reading-view-controls .suggestion-platform-settings{flex:1 1 0!important;order:3!important;display:flex!important;align-items:center!important;min-width:0!important}

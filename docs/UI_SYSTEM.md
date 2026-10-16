@@ -89,14 +89,17 @@ Current shared disclosures include workspace work switching, the split head's �
 
 - Primary: the single action that advances or confirms the current task.
 - Ghost/secondary: preview, return, cancel or supporting actions.
-- Quiet (`.sf-quiet`): a control used rarely enough to rest as text, taking the hover fill only under the pointer or while its disclosure is open. The split head's 設定 and the reading view's 閱讀設定 icon are quiet.
+- Soft (`.sf-soft`): a toolbar control — the segment's `--paper-2` fill, no frame, `--paper-1` under the pointer or while its disclosure is open. The format select, 設定, 讀稿檢視, 回到工作台, the reading view's 閱讀設定 icon and 切換作品 are soft.
+- Quiet (`.sf-quiet`): a control used rarely enough to rest as text, taking the hover fill only under the pointer. 更新作品來源 and ＋ 新增文章／＋ 新增圖文 are quiet.
 - Overflow (`⋯`): infrequent row management and destructive actions.
 - Close (`×`): dismisses a dialog; in pending creation it also cancels the transaction.
 
-A row carries at most one framed secondary control. The 切篇預覽 head once framed five — the format
-select, 閱讀設定, 切篇偏好, 讀稿檢視 and, below them, both scene buttons — and a row where everything
-is outlined has no order to read in. Now the select keeps its field edge, 讀稿檢視 is the row's one
-framed action, and 閱讀設定 and 切篇偏好 sit together behind one quiet 設定 disclosure. It opens a
+A toolbar is one family of controls. The 切篇預覽 head once framed five — the format select,
+閱讀設定, 切篇偏好, 讀稿檢視 and, below them, both scene buttons — and then, with the frames thinned,
+still showed four kinds of thing: a framed field, a filled segment, bare text and a framed button.
+They are all ways of looking at one preview, so they are all soft now: the segment's fill and no
+frame. The suggestion's status (建議／低於偏好) is a state rather than a control, so it is a dot and
+its word with no fill at all. 閱讀設定 and 切篇偏好 sit together behind one 設定 disclosure. It opens a
 panel anchored under the head's actions, laid over the preview rather than pushing it down, with
 閱讀設定 above 切篇偏好; both are changed far less often than the preview is read.
 
@@ -125,7 +128,7 @@ label in the row look undersized.
 | Height | `--sf-control-sm` — 34px on desktop, 40px at 820px and below |
 | Label | `--sf-font-control` (14px) |
 | Corner | 8px; a segment's inner buttons 6px |
-| Edge | `--rule-2`, the line for the page ground, on buttons and selects alike |
+| Surface | no frame; `--paper-2` fill (the segment's), `--paper-1` under the pointer or while open, on buttons and selects alike |
 | Segmented control | outer box `--sf-control-sm`; inner buttons `calc(var(--sf-control-sm) - 6px)` |
 
 `.button.tiny` is this tier, so it applies wherever that class is used, and the select, the
@@ -279,13 +282,14 @@ grid gap already puts them apart — and the rail's frame ended wherever its lis
 left an edge partway down the page with nothing on the other side of it. That reads as a
 broken line rather than a drawn one.
 
-One hairline between the columns says it instead. The rail is transparent, carries
-`border-right` and no radius, and stretches to the height of the pairing so the line runs the
-whole way; the subject beside it drops its own frame for the same reason. Stacked below
-820px the two columns part along a horizontal edge, so the hairline moves to the rail's
-bottom. Publishing and the visual workspace arrived here first; longform followed, and
-`cascade-contract.spec.js` now asserts that the two rails resolve to the same shape rather
-than leaving it to a reading of two baselines.
+On desktop the change of surface says it instead: the rail sits on the ground and the subject
+on paper (see [Left to right](#left-to-right)), so the boundary is where ground meets paper and
+no line is drawn at all. It was a hairline between the columns until the subject became a sheet
+of paper; a line along an edge that a colour change already draws is the boundary stated twice.
+The rail is transparent with no border or radius, and both rails resolve to the same shape;
+`cascade-contract.spec.js` asserts it rather than leaving it to a reading of two baselines.
+Stacked below 820px the page is paper throughout, so the two columns part along a horizontal
+hairline at the rail's bottom.
 
 Flattening a panel exposes whatever was drawn inside it in the same paper. The Smart Split
 platform bar had carried a `--paper-1` fill from the theme layer while its own rule asked for
@@ -297,16 +301,13 @@ specificity, not left to be discovered by the next change of ground.
 
 `--rule-1` is for lines drawn **on paper**. `--rule-2` is for lines drawn **on the page
 ground**, which is six lightness steps darker: `--rule-1` against it is 1.1:1, which is not a
-line anyone can see. The works list and the statistics strip sit on the ground and use
-`--rule-2`.
+line anyone can see.
 
-**Open, and deliberately left alone for now.** Both source rails used to be `--paper-1`
-panels, which is why their column divider and their row separators are `--rule-1`. Unframing
-them moved those lines onto the ground without changing their colour, so by the rule above
-they are now the weak pairing this section exists to prevent — in the visual rail since the
-rail was unframed, in longform since it followed. Correcting it is a colour change across
-both workspaces and their baselines, so it is recorded here rather than folded into the
-change that exposed it. `--rule-2` is the value it should take.
+The weak pairing this section warned about — both source rails drawing `--rule-1` row
+separators and a `--rule-1` column divider on the ground — is gone rather than recoloured: the
+rails draw no lines at all now. Their rows are separated the way the menu's items are, and the
+current one is a rounded `--dai-soft` fill (see [What a chapter row says](#what-a-chapter-row-says)).
+The Works and Publishing lists keep the row contract above, with its hairlines and marker gutter.
 
 ### Space before lines
 
@@ -316,19 +317,40 @@ rule under each of the two heads, a rule under the progress line, two rules 15px
 the Google Docs source row and 章節清單, the list's top rule, and an outline around the manuscript.
 Space now separates the head, the source row, the list head and the progress line.
 
-What stays is what has no substitute: the hairline between the two columns, the list's top rule
-and the row separators (both are the list contract above), and the progress bar, which is data.
-The manuscript is `--paper-1` on the `--paper-0` ground on desktop, which is an edge already, so
-it draws no outline there. Below 820px the page itself is paper, the surface step disappears,
-and the outline returns for the split preview and the reading view alike.
+What stays is what has no substitute: the progress bar, which is data. The rails' list top rule
+and row separators went with the rails' lines (above). On desktop the manuscript is text on the
+work column's paper, with no outline and no inset of its own. Below 820px the page itself is
+paper, so the outline returns for the split preview and the reading view alike.
+
+### Left to right
+
+On desktop a page unfolds from left to right, and brightens as it goes: the menu and, in the
+workbench, the chapter or entry rail sit on the `--paper-0` ground; what you are working on is
+one sheet of `--paper-1` that meets the window's top, right and bottom edges. Each view takes the
+whole of `.main` (its padding moves inside it, so nothing in it moves), and the workbench's
+background turns from ground to paper exactly where its rail ends — `--sf-rail-width`, the one
+token both the grid track and that edge read. Works, Publishing and Settings are paper from the
+menu's edge; the reading view is paper throughout, since it replaces both columns.
+
+The paper used to stop 35px short of the right edge and below the page title, which made it one
+more box among the others. A card on the paper says the same thing again, so the manuscript is
+text on it, the Publishing queue is rows on it (its unframed rule now names both its classes,
+because the shared `.panel` card rule loaded later at one class and drew the frame anyway), and
+Settings keeps its cards only because they group form fields.
+
+A view arriving unfolds rather than appears: the page fades in over 220ms and the work column
+follows 60ms later. It is opacity only, so nothing moves under the pointer and no measured
+position changes, and it is off under `prefers-reduced-motion`.
 
 ### What a chapter row says
 
-A chapter row reads number · name · length on one line and, under the name, how far the
-chapter's split has got: a 56px bar and 「未開始」, 「已切 3 篇 · 剩 2,610 字」 or 「已切完 · 2 篇」, in
-`--moss` once finished. These are the figures the progress line below gives for the open
-chapter, for every chapter at once, so the rail answers which chapter to split next without
-opening each one. The list head adds the finished count: 「10 章 · 已切完 2 章」.
+A chapter row is one line: number · name · length · a mark for how far its split has got — ✓ in
+`--moss` once finished, an accent dot part-way, nothing before the first cut. The figures
+(「未開始」, 「已切 3 篇 · 剩 2,610 字」, 「已切完 · 2 篇」) are the row's tooltip and its text for
+assistive technology. They were written under every row once, and that line repeated the progress
+line the split panel gives for the open chapter; the mark answers which chapter to split next
+without repeating it. The list head adds the finished count: 「10 章 · 已切完 2 章」. Rows close up
+with no gap, so the current row's fill meets the hairlines on both sides of it.
 
 A leading 「01、」「序、」 is the chapter's number, not its name, and sits in a column of its own as
 wide as the widest number in the list (`--chapter-no-width`), so names start on one line and
@@ -425,9 +447,13 @@ are 700 because the separation is already unmistakable.
 
 The desktop rail (`min-width: 821px`) is a quiet, flat column: 208 px wide (76 px collapsed),
 36 px items with a 14 px / 500 label and an 18 px stroke icon, 8 px radii, and no edge bar,
-shadow or gradient anywhere in it — the brand mark is a flat `--denim-700` square. The active
-item is the rail's one fill (`--denim-800`), and it does not change weight: the fill and the
-ink colour already say where you are, and a bolder label would only shift the text. The rail's
+shadow or gradient anywhere in it — the brand mark is a flat `--denim-700` square. It sits on
+the page ground with a `--rule-1` hairline at its edge: it was the darkest thing on every screen
+for the control used least. The active item is the rail's one fill, the same rounded
+`--dai-soft` the chapter and entry rails use, and it does not change weight: the fill and the
+ink colour already say where you are, and a bolder label would only shift the text. These
+colours are desktop-only (ui-system.css's desktop navigation block); the phone's bottom bar
+keeps its dark ground. The rail's
 width lives in `sidebar-layout.css`, `--sf-sidebar-width` in `desktop-responsive.css` and the
 toast centre in `app-ux.css`; change all three together. The phone's bottom bar keeps its own
 icon and label sizes in `layout-integrity.css`'s phone block.
@@ -608,7 +634,7 @@ A tool dialog says each thing once. 後記 and 文章圖片 used to repeat the d
 
 Every dialog head runs its rule to the card's edges — the compact dialogs (新增圖文, the visual preview and image dialogs, image removal, recovery) included, which kept theirs inside the card's padding. Closing a publishing tool never drops what was typed in it: 完成, ✕ and Esc all save pending edits to the afterword, the summary and Hashtags, or an image's alt text, caption and placement before the dialog closes, the way the visual editor autosaves; a read-only phone saves nothing on close. The split preferences open under their 切篇偏好 disclosure without repeating the name as a first line.
 
-The visual editor and its entry rail both carry no card. One framed column beside an unframed one is the worst of the two: the framed one ends partway down the page, leaving an edge with nothing on the other side of it. They share the page's ground and one hairline between them, the same shape Publishing uses for a manuscript and its rail. The workspace grid already separates the entry rail from the editor, and the editor's fields carry its structure; a frame there would draw a boundary that is drawn twice. The longform workbench keeps its panels, because there the frames separate three different tools rather than enclosing one. Entry rows follow the same list contract as chapters and works: the row owns the separator, the hover fill and the 2px current marker, and the button inside it owns none of them.
+The visual editor and its entry rail both carry no card. One framed column beside an unframed one is the worst of the two: the framed one ends partway down the page, leaving an edge with nothing on the other side of it. On desktop the rail sits on the ground and the editor on the work column's paper, the same turn the longform workbench makes. The workspace grid already separates the entry rail from the editor, and the editor's fields carry its structure; a frame there would draw a boundary that is drawn twice. The longform workbench keeps its panels, because there the frames separate three different tools rather than enclosing one. Entry rows are drawn like chapter rows: the row owns the hover fill and the rounded current fill, with no separator, and the button inside it owns neither.
 
 The image manager is grouped the way the output is: one group per placement (正文前 / 正文後、後記前 / 後記後), each with its own heading and count, and empty groups are not drawn. Ordering is only meaningful between neighbours that land in the same place, so “上移／下移” move within a group and are disabled at its ends. A row is identified by its stored id, not by the filename it displays — two imports of the same file share one original name. The manager states that copying never carries the image files, permanently and before any image exists, rather than only once there are images to warn about.
 

@@ -326,8 +326,10 @@
     return [...no].reduce((width, char) => width + (/[\x00-\x7f]/.test(char) ? 0.62 : 1), 0);
   }
 
-  // What the rail says about a chapter's split: the same figures the progress line in the
-  // split panel gives for the open chapter, for every chapter at once.
+  // How far a chapter's split has got. The rail shows it as a mark beside the length (✓ finished,
+  // a dot part-way, nothing before the first cut) and keeps the figures for the tooltip and for
+  // assistive technology: written out under every row they repeated the progress line the split
+  // panel already gives for the open chapter.
   function chapterProgress(chapter) {
     const blocks = parseBlocks(chapter.draft);
     if (!blocks.length) return null;
@@ -366,13 +368,16 @@
 
         const { no, name } = chapterNumber(chapter.title);
         const progress = chapterProgress(chapter);
+        const stage = !progress ? '' : progress.finished ? 'is-finished' : progress.ratio > 0 || progress.text !== '未開始' ? 'is-partial' : '';
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = `chapter-item chapter-main-button ${chapter.id === state.activeChapterId ? 'active' : ''} ${progress?.finished ? 'is-finished' : ''}`;
+        button.className = `chapter-item chapter-main-button ${chapter.id === state.activeChapterId ? 'active' : ''} ${stage}`;
+        if (progress) button.title = progress.text;
         button.innerHTML = `<span class="chapter-no">${escapeHtml(no)}</span>`
           + `<span class="chapter-name${name ? '' : ' is-untitled'}">${escapeHtml(name || '（無標題）')}</span>`
           + `<small>${charCount(chapter.draft).toLocaleString()} 字</small>`
-          + (progress ? `<span class="chapter-status"><span class="chapter-status-bar" aria-hidden="true"><i style="width:${Math.round(progress.ratio * 100)}%"></i></span><span>${progress.text}</span></span>` : '');
+          + `<span class="chapter-mark" aria-hidden="true">${stage === 'is-finished' ? '✓' : ''}</span>`
+          + (progress ? `<span class="sf-visually-hidden">，${progress.text}</span>` : '');
         button.onclick = () => {
           state.activeChapterId = chapter.id;
           suggestion = null;

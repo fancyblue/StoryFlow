@@ -16,9 +16,8 @@
 .visual-entry-list-panel {
   position: relative;
   align-self: stretch;
-  padding: 0 18px 0 0;
+  padding: 0 28px 0 0;
   border: 0;
-  border-right: 1px solid var(--rule-1, #ded9cc);
   border-radius: 0;
   background: transparent;
 }
@@ -27,11 +26,12 @@
 .visual-editor-panel { padding: 0; }
 /* Entries are a list of rows, like chapters and works. The row carries the separator and the
    current marker; the button inside it carries neither. */
-.visual-entry-list { display: grid; gap: 0; margin-top: 12px; border-top: 1px solid var(--rule-2, #c8c1b0); }
-.visual-entry-row { border-bottom: 1px solid var(--rule-1, #ded9cc); border-left: 2px solid transparent; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 32px; align-items: center; gap: 6px; padding-left: 10px; overflow: visible; }
+.visual-entry-list { display: grid; gap: 0; margin-top: 0; }
+/* Rows are drawn like the chapter rail's and the menu's: no rules, a rounded fill for the current one. */
+.visual-entry-row { border: 0; border-radius: 8px; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 32px; align-items: center; gap: 6px; padding-left: 4px; overflow: visible; }
 .visual-entry-select { width: 100%; min-width: 0; display: grid; gap: 3px; padding: 11px 6px; text-align: left; border: 0; border-radius: 0; background: transparent; color: inherit; cursor: pointer; }
 .visual-entry-row:hover { background: var(--paper-2, #f4f1e9); }
-.visual-entry-row.active { border-left-color: var(--dai-700, #4b4557); background: var(--dai-soft, #e8e5eb); }
+.visual-entry-row.active { background: var(--dai-soft, #e8e5eb); }
 .visual-entry-select strong { color: var(--ink-1-soft, #3f3930); font-weight: 500; }
 .visual-entry-row.active .visual-entry-select strong { color: var(--dai-800, #3a3544); font-weight: 700; }
 /* The ⋯ waits for its row where a pointer can find it, as in the chapter rail. */
@@ -39,7 +39,6 @@
   .visual-entry-row > .visual-entry-more { opacity: 0 !important; }
   .visual-entry-row:hover > .visual-entry-more, .visual-entry-row.active > .visual-entry-more, .visual-entry-row:focus-within > .visual-entry-more, .visual-entry-row > .visual-entry-more[aria-expanded="true"] { opacity: 1 !important; }
 }
-.visual-entry-row:last-child { border-bottom: 0; }
 .visual-entry-row > .visual-entry-more { position: static !important; inset: auto !important; display: grid !important; visibility: visible !important; place-items: center !important; width: 32px !important; min-width: 32px !important; height: 32px !important; min-height: 32px !important; margin: 0 !important; padding: 0 !important; border: 1px solid transparent !important; border-radius: 9px !important; background: transparent !important; color: #6a6357 !important; font-size: 20px !important; font-weight: 700 !important; line-height: 1 !important; opacity: 1 !important; box-shadow: none !important; }
 .visual-entry-more:hover:not(:disabled), .visual-entry-more:focus-visible, .visual-entry-more[aria-expanded="true"] { border-color: #c8c1b0 !important; background: #fbfaf6 !important; color: #4b4557 !important; outline: none !important; }
 .visual-entry-row > .visual-entry-action-menu { position: absolute !important; top: calc(50% + 20px); right: 0; }

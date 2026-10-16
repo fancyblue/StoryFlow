@@ -16,10 +16,46 @@
   /* The main element still fills the space beside the fixed sidebar. On an
      ultrawide viewport, symmetric padding centers a bounded working canvas. */
   .main {
-    padding-inline: max(
+    --sf-main-pad-x: max(
       clamp(20px, 2.4vw, 36px),
       calc((100vw - var(--sf-sidebar-width) - var(--sf-desktop-content-max)) / 2)
-    ) !important;
+    );
+    padding-inline: var(--sf-main-pad-x) !important;
+  }
+
+  /* Left to right, the page unfolds: the menu and the chapter rail sit on the ground, and
+     what you are working on is one sheet of paper that runs to the window's top, right and
+     bottom edges. Each view takes the whole of .main (its padding moves inside it) so the
+     paper meets the edges instead of stopping short of them; nothing inside moves. The
+     workbench turns from ground to paper exactly where its rail ends. */
+  .main > .app-view {
+    width: auto !important;
+    max-width: none !important;
+    min-height: 100vh;
+    margin: -28px calc(-1 * var(--sf-main-pad-x)) -28px !important;
+    padding: 28px var(--sf-main-pad-x) 28px !important;
+    background: var(--paper-1, #fbfaf6);
+  }
+  .main > .app-view.workspace-view {
+    background: linear-gradient(90deg, var(--paper-0, #ece9e0) calc(var(--sf-main-pad-x) + var(--sf-rail-width)), var(--paper-1, #fbfaf6) 0);
+  }
+  /* The paper keeps its own margin: text never meets the edge where the ground ends. */
+  .main > .app-view.workspace-view .workspace-grid.workspace-hierarchy > .workspace-main-column,
+  .main > .app-view.workspace-view .visual-editor-panel {
+    padding-left: 32px;
+  }
+  /* The reading view replaces both columns, so the whole page is paper. */
+  body.sf-reading-open .main > .app-view.workspace-view {
+    background: var(--paper-1, #fbfaf6);
+  }
+  /* A view arriving unfolds rather than appears: the page fades in, and the work column
+     follows it a beat later. Opacity only, so nothing moves under the pointer. */
+  .main > .app-view:not([hidden]) {
+    animation: sf-unfold .22s ease-out both;
+  }
+  .main > .app-view.workspace-view .workspace-main-column,
+  .main > .app-view.workspace-view .visual-editor-panel {
+    animation: sf-unfold .26s ease-out .06s both;
   }
 
   .projects-page-subtitle,
@@ -40,22 +76,29 @@
   /* The chapter rail is the one list that routinely runs to dozens of rows. A
      44px row is a touch-target floor that desktop does not need, so desktop
      trades ~18% of the row pitch for more chapters visible without scrolling.
-     Narrow and touch layouts keep the 44px row from the shared ui-system layer. */
-  .chapter-list {
-    gap: 5px !important;
-  }
-
+     Narrow and touch layouts keep the 44px row from the shared ui-system layer.
+     The rows stay closed up (gap 0, app-ux.css): a 5px gap here once left the
+     current row's fill and the hover fill short of the hairlines on both sides. */
   #chapterList .chapter-item {
     min-height: 38px !important;
     padding: 6px 11px !important;
   }
 }
 
+@keyframes sf-unfold {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main > .app-view:not([hidden]),
+  .main > .app-view.workspace-view .workspace-main-column,
+  .main > .app-view.workspace-view .visual-editor-panel { animation: none; }
+}
+
 @media (min-width: 1600px) {
   /* Longform and visual workspaces share one source-rail width contract. */
   :root {
-    --sf-workspace-source-columns: clamp(320px, 19vw, 380px) minmax(0, 1fr);
-    --sf-workspace-column-gap: 20px;
+    --sf-rail-width: clamp(320px, 19vw, 380px);
   }
 
   .workspace-grid.workspace-hierarchy {
@@ -64,7 +107,7 @@
   }
 
   .workspace-grid.workspace-empty-mode {
-    grid-template-columns: clamp(280px, 17vw, 340px) minmax(0, 1fr) !important;
-    gap: 20px !important;
+    grid-template-columns: var(--sf-workspace-source-columns) !important;
+    gap: var(--sf-workspace-column-gap) !important;
   }
 }

@@ -235,7 +235,7 @@
       toggle = document.createElement('button');
       toggle.id = 'splitSettingsToggle';
       toggle.type = 'button';
-      toggle.className = 'button tiny ghost sf-quiet';
+      toggle.className = 'button tiny ghost sf-soft';
       toggle.innerHTML = '<span>設定</span><span class="sf-chevron" aria-hidden="true"></span>';
       toggle.setAttribute('aria-haspopup', 'dialog');
       toggle.setAttribute('aria-controls', 'splitSettingsPanel');

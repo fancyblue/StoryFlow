@@ -200,7 +200,7 @@
     if (!container || container.querySelector(':scope > .sf-reading-settings-toggle')) return;
     const toggle = document.createElement('button');
     toggle.type = 'button';
-    toggle.className = 'icon-button sf-reading-settings-toggle sf-quiet';
+    toggle.className = 'icon-button sf-reading-settings-toggle sf-soft';
     toggle.setAttribute('aria-label', '閱讀設定');
     toggle.setAttribute('aria-haspopup', 'dialog');
     toggle.setAttribute('aria-expanded', 'false');
