@@ -537,6 +537,42 @@ test('a toolbar row resolves to one control height, label size and radius', asyn
   await expectStyle(page, '#preview', { borderTopWidth: '1px' });
 });
 
+// The chapter rail says how far each chapter's split has got, sets a chapter's number apart from
+// its name, and spends its weight on the current chapter. The work's name is text edited in
+// place, and the rare actions — 更新作品來源, 新增文章, a row's ⋯ — rest quietly.
+test('the chapter rail shows each chapter\'s progress and keeps rare actions quiet', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+
+  const row = page.locator('#chapterList .chapter-row').first();
+  await expect(row.locator('.chapter-no')).toHaveText('08');
+  await expect(row.locator('.chapter-name')).toHaveText('印紋');
+  await expect(row.locator('.chapter-status')).toHaveText('未開始');
+  await expectStyle(page, '#chapterList .chapter-item.active .chapter-name', { fontWeight: '700' });
+  await expectStyle(page, '#chapterList .chapter-item small', { fontWeight: '500' });
+  // The name and the length share a baseline; the length used to sit a few pixels above it.
+  const baselines = await row.evaluate(node => {
+    const name = node.querySelector('.chapter-name').getBoundingClientRect();
+    const chars = node.querySelector('small').getBoundingClientRect();
+    return Math.abs(name.bottom - chars.bottom) <= 2;
+  });
+  expect(baselines).toBe(true);
+
+  // Confirming the whole chapter marks it finished in the rail and in the list head.
+  await page.locator('#confirmBtn').click();
+  await expect(row.locator('.chapter-status')).toHaveText('已切完 · 1 篇');
+  await expect(page.locator('#chapterListCount')).toHaveText('1 章 · 已切完 1 章');
+
+  await expectStyle(page, '#projectTitle', { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(0, 0, 0, 0)', fontSize: '16px' });
+  await expect(page.locator('#projectTitle')).toHaveAccessibleName('作品名稱');
+  await expect(page.locator('#projectTitle')).toHaveValue('契約測試');
+  await expectStyle(page, '#addChapterBtn', { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(0, 0, 0, 0)', height: '34px' });
+
+  // A row's ⋯ waits for the row where a pointer can find it, and the current row shows it.
+  await page.locator('#addChapterBtn').hover();
+  await expectStyle(page, '#chapterList .chapter-row.active .chapter-more-button', { opacity: '1' });
+});
+
 // A dialog head is part of its card. It used to be a white band over warm paper, and a
 // reserved scrollbar gutter stopped its rule 15px short of the card's edge on every dialog
 // whose content did not scroll.

@@ -3,9 +3,8 @@
 /* Google source metadata is a compact utility row, not a second title block. */
 .source-panel.project-source-google .project-source-origin{
   grid-template-columns:minmax(0,1fr) auto!important;
-  min-height:46px!important;
-  margin:12px 0 14px!important;
-  padding:9px 0 13px!important;
+  margin:0 0 8px!important;
+  padding:0!important;
   gap:12px!important;
 }
 .source-panel.project-source-google .project-source-origin-copy{
@@ -177,8 +176,4 @@
   #sourcePreviewDialog.manual-single-preview .sticky-dialog-actions{
     padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px))!important;
   }
-  .source-panel.project-source-google .project-source-origin{
-    grid-template-columns:1fr!important;
-  }
-  .source-panel.project-source-google .project-source-refresh{width:100%!important}
 }

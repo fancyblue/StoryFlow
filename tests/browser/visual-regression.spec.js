@@ -162,9 +162,11 @@ async function addVisualChapters(page, total = 18) {
       // not a state the app can reach — so the baseline would no longer be a reference.
       clone.classList.remove('active');
       clone.querySelector('.chapter-main-button')?.classList.remove('active');
-      const title = clone.querySelector('.chapter-main-button span');
+      const title = clone.querySelector('.chapter-main-button .chapter-name');
       const chars = clone.querySelector('.chapter-main-button small');
-      if (title) title.textContent = `${String(index + 1).padStart(2, '0')}、測試章節`;
+      if (title) title.textContent = '測試章節';
+      const number = clone.querySelector('.chapter-main-button .chapter-no');
+      if (number) number.textContent = String(index + 1).padStart(2, '0');
       if (chars) chars.textContent = `${(900 + index * 17).toLocaleString()} 字`;
       list.appendChild(clone);
     }

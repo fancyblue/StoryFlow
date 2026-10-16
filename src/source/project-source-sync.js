@@ -216,7 +216,7 @@
           <span class="project-source-origin-label">Google Docs 來源</span>
           <span id="projectSourceOriginName" class="project-source-origin-name"></span>
         </div>
-        <button id="projectRefreshSourceBtn" class="button ghost project-source-refresh" type="button">更新作品來源</button>`;
+        <button id="projectRefreshSourceBtn" class="button tiny ghost sf-quiet project-source-refresh" type="button">更新作品來源</button>`;
       titleInput.insertAdjacentElement('afterend', origin);
       origin.querySelector('#projectRefreshSourceBtn').addEventListener('click', refreshWholeProject);
     }

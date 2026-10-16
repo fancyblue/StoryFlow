@@ -267,14 +267,14 @@
               </div>
             </div>
           </div>
-          <label class="field-label" for="visualProjectTitle">作品名稱</label>
-          <input id="visualProjectTitle" class="text-input visual-project-title-input" maxlength="160" />
+          <label class="field-label sf-visually-hidden" for="visualProjectTitle">作品名稱</label>
+          <input id="visualProjectTitle" class="text-input visual-project-title-input rail-work-name" maxlength="160" title="點一下修改作品名稱" />
           <div class="visual-entry-section-head rail-section-head">
             <div><h3>圖文清單</h3></div>
             <div class="visual-entry-list-actions"><span id="visualEntryCount" class="muted"></span></div>
           </div>
           <div id="visualEntryList" class="visual-entry-list"></div>
-          <button id="visualNewEntryBtn" class="button full ghost visual-entry-add-button" type="button">＋ 新增圖文</button>
+          <button id="visualNewEntryBtn" class="button tiny ghost sf-quiet rail-add-button visual-entry-add-button" type="button">＋ 新增圖文</button>
         </aside>
         <section class="visual-editor-panel">
           <div id="visualEditorEmpty" class="visual-editor-empty"></div>
