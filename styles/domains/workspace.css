@@ -40,7 +40,6 @@
   justify-content:space-between;
   gap:12px;
   padding-top:16px;
-  border-top:1px solid var(--line,#c8c1b0);
 }
 .rail-section-head[hidden]{display:none!important}
 .rail-section-head h3{margin:2px 0 0;font-size:18px}
@@ -49,13 +48,13 @@
   border-top:1px solid var(--rule-2,#c8c1b0);
 }
 
-/* The SOURCE and SMART SPLIT heads sit side by side, so their rules have to be one line
-   across the page. The source head carries 切換作品 beside its title and so stood taller;
-   the split head's format select is taller still. Both take the taller one's height. */
+/* The SOURCE and SMART SPLIT heads sit side by side, so what follows them has to start on one
+   line across the page. Neither draws a rule (space separates a head from its content); both
+   take the height of a title beside one row of toolbar controls. */
 .workspace-grid.workspace-hierarchy > .source-panel > .panel-head,
 .workspace-grid.workspace-hierarchy .splitter-panel > .panel-head{
   box-sizing:border-box!important;
-  min-height:57px!important;
+  min-height:50px!important;
   padding-bottom:16px!important;
   align-items:flex-start!important;
 }
@@ -192,8 +191,6 @@
   align-items:center;
   gap:6px 11px;
   margin:0 0 var(--sf-split-gap, 16px);
-  padding:0 0 var(--sf-split-gap, 13px);
-  border-bottom:1px solid #ded9cc;
 }
 .chapter-progress[hidden]{display:none!important}
 .chapter-progress-bar{

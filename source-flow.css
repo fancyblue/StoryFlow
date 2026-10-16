@@ -36,7 +36,6 @@
   grid-template-columns:1fr;
   align-items:start;
   gap:10px;
-  border-bottom:1px solid var(--line);
 }
 .source-panel > .panel-head h2 { line-height:1.3; }
 
