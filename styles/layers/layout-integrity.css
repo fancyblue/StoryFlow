@@ -179,13 +179,13 @@
   display:inline-flex!important;
   align-items:center;
   gap:6px;
-  min-height:34px;
+  min-height:var(--sf-control-sm);
   padding:0 11px;
   border:1px solid #c8c1b0;
-  border-radius:9px;
+  border-radius:8px;
   background:#fbfaf6;
   color:var(--sf-muted,#6a6357);
-  font-size:13px;
+  font-size:var(--sf-font-control);
   font-weight:700;
 }
 .splitter-panel #splitPreferencesToggle:hover,

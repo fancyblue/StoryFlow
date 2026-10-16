@@ -28,9 +28,6 @@ and the reading surface. */
 .format-summary-text{display:flex!important;align-items:center!important;min-height:32px!important;margin:0!important;color:#3f3930!important;font-weight:500!important;white-space:normal!important}
 .sf-preview-mode-control{gap:8px!important;color:var(--sf-muted)!important;font-size:13px!important}
 .sf-preview-mode-label{font-size:12px!important;font-weight:700!important}
-.sf-preview-mode-segment{padding:3px!important;border:0!important;border-radius:9px!important;background:#f4f1e9!important}
-.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:34px!important;padding:0 11px!important;border-radius:7px!important;font-size:13px!important;font-weight:700!important}
-.sf-preview-mode-segment button.active,#splitPlatformBar .sf-preview-mode-segment button.active{background:#fbfaf6!important;color:var(--denim-700,#4b4557)!important;}
 
 /* The reading surface takes the workbench's place rather than covering it: both rails
    collapse, and what is left is the chapter. 讀稿 and 接縫 are two views of this one
@@ -73,7 +70,6 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
   justify-content:space-between!important;
   gap:6px 14px!important;
   padding:0 0 8px!important;
-  border-bottom:1px solid var(--rule-1,#ded9cc)!important;
 }
 /* Title and progress share one line, so the head costs one line of text. */
 .reading-view-heading{flex:1 1 320px!important;min-width:0!important;display:flex!important;align-items:baseline!important;gap:10px!important}
@@ -85,13 +81,13 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
 .reading-view-controls{flex:1 1 100%!important;display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px 10px!important;order:2!important}
 .reading-view-controls .format-summary-text{max-width:none!important;min-height:0!important}
 .reading-view-controls .platform-select-field{min-width:0!important}
-.reading-view-controls select.text-input{min-height:38px!important;height:38px!important;padding:0 30px 0 10px!important;font-size:13.5px!important;font-weight:500!important}
+.reading-view-controls select.text-input{min-height:var(--sf-control-sm)!important;height:var(--sf-control-sm)!important;padding:0 30px 0 10px!important;border-radius:8px!important;font-size:14px!important;font-weight:500!important}
 /* The format summary is a sentence, not a control: it ends the toolbar line and is cut short
    rather than wrapping mid-phrase between two buttons. The whole sentence is its title. */
 .reading-view-controls .suggestion-platform-settings{flex:1 1 0!important;order:3!important;display:flex!important;align-items:center!important;min-width:0!important}
 .reading-view-controls .suggestion-platform-settings .format-summary-text{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
-.reading-view-switch{display:inline-flex!important;gap:2px!important;padding:3px!important;border-radius:9px!important;background:var(--paper-2,#f4f1e9)!important}
-.reading-view-switch button{min-height:34px!important;padding:0 13px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:var(--ink-2,#6a6357)!important;font:inherit!important;font-size:13px!important;font-weight:700!important;cursor:pointer!important}
+.reading-view-switch{display:inline-flex!important;gap:2px!important;padding:3px!important;border-radius:8px!important;background:var(--paper-2,#f4f1e9)!important}
+.reading-view-switch button{min-height:calc(var(--sf-control-sm) - 6px)!important;padding:0 13px!important;border:0!important;border-radius:6px!important;background:transparent!important;color:var(--ink-2,#6a6357)!important;font:inherit!important;font-size:14px!important;font-weight:700!important;cursor:pointer!important}
 .reading-view-switch button.active{background:var(--paper-1,#fbfaf6)!important;color:var(--dai-700,#4b4557)!important}
 .reading-view-hint{margin-block:0!important;padding:0!important;border:0!important;background:transparent!important;color:var(--ink-2,#6a6357)!important;font-size:12px!important;font-weight:500!important;line-height:1.5!important}
 .reading-view-hint[hidden]{display:none!important}
@@ -101,7 +97,7 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
   overflow:auto!important;
   margin-block:0!important;
   padding:var(--sf-reading-flow-pad, 18px 20px)!important;
-  border:1px solid var(--rule-1,#ded9cc)!important;
+  border:0!important;
   border-radius:14px!important;
   background:var(--paper-1,#fbfaf6)!important;
   white-space:pre-wrap!important;
@@ -209,9 +205,10 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
   .reading-view-head{align-items:flex-start!important}
   .reading-view-controls{width:100%!important}
   .reading-view-controls .platform-select-field{flex:1 1 140px!important}
-  .reading-flow{padding:15px 16px!important}
+  /* Below 820px the page itself is paper, so the manuscript states its edge with a hairline. */
+  .reading-flow{padding:15px 16px!important;border:1px solid var(--rule-1,#ded9cc)!important}
   /* Relative, the sticky `top:20px` would shift the stacked rail 20px down onto SMART SPLIT. */
-  .source-panel{position:relative!important;top:0!important}.sf-preview-mode-segment button,#splitPlatformBar .sf-preview-mode-segment button{min-height:38px!important;font-size:13.5px!important}
+  .source-panel{position:relative!important;top:0!important}
   .sidebar-connection-copy{gap:7px!important}
   .splitter-panel #suggestionChars{font-size:15px!important}#readingCurrentChars.reading-current-chars{font-size:12.5px!important}
   .splitter-panel .suggestion-title-row .pill{font-size:13px!important;min-height:30px!important}
@@ -224,7 +221,7 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
 
 /* 閱讀設定 (src/ui/reading-settings.js). The toggle takes the 34px height of the controls it
    sits between; the panel floats against it, framed by a rule rather than a shadow. */
-.icon-button.sf-reading-settings-toggle{width:34px;min-width:34px;height:34px;min-height:34px;border-radius:8px}
+.icon-button.sf-reading-settings-toggle{width:var(--sf-control-sm);min-width:var(--sf-control-sm);height:var(--sf-control-sm);min-height:var(--sf-control-sm);border-radius:8px}
 /* In the reading head it travels with 回到工作台 when the line wraps, instead of starting the row. */
 .reading-view-head .sf-reading-settings-toggle{order:1;margin-left:auto}
 .sf-reading-settings-toggle svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}

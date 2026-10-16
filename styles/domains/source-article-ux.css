@@ -30,8 +30,8 @@
 }
 .source-panel.project-source-google .project-source-origin-name[hidden]{display:none!important}
 .source-panel.project-source-google .project-source-refresh{
-  min-height:38px!important;
-  height:38px!important;
+  min-height:var(--sf-control-sm)!important;
+  height:var(--sf-control-sm)!important;
 }
 
 /* A single Google tab does not need a redundant group card. JS hides it; keep the

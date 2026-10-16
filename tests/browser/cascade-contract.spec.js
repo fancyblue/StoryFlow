@@ -456,10 +456,10 @@ test('both content modes draw one SOURCE rail and open one work switcher over it
   });
 });
 
-// The 作品與章節 and 切篇預覽 heads stand side by side, so their rules and titles read as one line across
-// the workbench — or as two lines 11px apart, which is what they were: the source head carries
-// 切換作品 beside its title and stood taller. Both rails also head their list the same way.
-test('the workbench heads draw one rule and both rails head their list alike', async ({ page }) => {
+// The 作品與章節 and 切篇預覽 heads stand side by side, so their titles read as one line across the
+// workbench — or as two lines 11px apart, which is what they were: the source head carries 切換作品
+// beside its title and stood taller. Both rails also head their list the same way.
+test('the workbench heads share one line and both rails head their list alike', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
 
@@ -489,6 +489,46 @@ test('the workbench heads draw one rule and both rails head their list alike', a
     title: getComputedStyle(el.querySelector('h3')).fontSize
   }));
   expect(longformHead).toEqual(visualHead);
+});
+
+// A toolbar row is one control height. The split head mixed a 40px format select and a 40px
+// segmented control with 34px buttons, at three radii and two label sizes, because the select's
+// own 34px rule lost to a shared `!important` and the segment's height was its buttons plus
+// padding. Every control a row holds now resolves to the same box.
+test('a toolbar row resolves to one control height, label size and radius', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+
+  const row = ['#suggestionPlatformSelect', '.splitter-panel .sf-preview-mode-segment', '.sf-reading-settings-toggle',
+    '#splitPreferencesToggle', '#openReadingViewBtn', '#quickSwitchProjectBtn', '#shrinkBtn', '#expandBtn'];
+  const boxes = await page.evaluate(selectors => selectors.map(selector => {
+    const el = document.querySelector(selector);
+    return { selector, height: Math.round(el.getBoundingClientRect().height), radius: getComputedStyle(el).borderTopLeftRadius };
+  }), row);
+  for (const box of boxes) expect(box, box.selector).toEqual({ selector: box.selector, height: 34, radius: '8px' });
+
+  for (const selector of ['#suggestionPlatformSelect', '.splitter-panel .sf-preview-mode-segment button', '#splitPreferencesToggle',
+    '#openReadingViewBtn', '#quickSwitchProjectBtn', '#shrinkBtn']) {
+    await expectStyle(page, selector, { fontSize: '14px' });
+  }
+  // The select is drawn on the page ground like the buttons beside it, so it takes their edge.
+  await expectStyle(page, '#suggestionPlatformSelect', { borderTopColor: 'rgb(200, 193, 176)' });
+
+  // Space separates the head, the progress line and the manuscript; no rule is drawn between
+  // them, and on the desktop ground the manuscript's paper is its own edge.
+  for (const selector of ['.workspace-grid.workspace-hierarchy > .source-panel > .panel-head', '.splitter-panel > .panel-head', '#chapterProgress']) {
+    await expectStyle(page, selector, { borderBottomWidth: '0px' });
+  }
+  await expectStyle(page, '#chapterListHead', { borderTopWidth: '0px' });
+  await expectStyle(page, '#preview', { borderTopWidth: '0px', backgroundColor: 'rgb(251, 250, 246)' });
+
+  // Below 820px the page itself is paper: the controls grow to the touch height together, and
+  // the manuscript draws its edge again.
+  await page.setViewportSize({ width: 820, height: 900 });
+  const tablet = await page.evaluate(selectors => selectors.map(selector =>
+    Math.round(document.querySelector(selector).getBoundingClientRect().height)), row.slice(0, 5));
+  expect(new Set(tablet)).toEqual(new Set([40]));
+  await expectStyle(page, '#preview', { borderTopWidth: '1px' });
 });
 
 // A dialog head is part of its card. It used to be a white band over warm paper, and a

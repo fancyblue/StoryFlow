@@ -99,7 +99,6 @@
   gap:10px;
   margin:14px 0 16px;
   padding:10px 0 14px;
-  border-bottom:1px solid var(--line,#ded9cc);
 }
 .project-source-origin[hidden]{display:none!important}
 .project-source-origin-copy{display:grid;gap:3px;min-width:0}
@@ -132,13 +131,13 @@
   text-overflow:ellipsis;
 }
 .project-source-refresh{
-  min-height:38px!important;
-  padding:0 12px!important;
+  min-height:var(--sf-control-sm)!important;
+  padding:0 11px!important;
   border:1px solid #c8c1b0!important;
-  border-radius:10px!important;
+  border-radius:8px!important;
   background:#fbfaf6!important;
   color:#4b4557!important;
-  font-size:12.5px!important;
+  font-size:var(--sf-font-control)!important;
   font-weight:700!important;
   line-height:1!important;
   white-space:nowrap!important;
@@ -186,13 +185,13 @@
   align-items:center!important;
   justify-content:center!important;
   width:100%!important;
-  min-height:42px!important;
+  min-height:var(--sf-control)!important;
   margin-top:14px!important;
   border:1px solid #c8c1b0!important;
   border-radius:10px!important;
   background:#fbfaf6!important;
   color:#4b4557!important;
-  font-size:13px!important;
+  font-size:var(--sf-font-control)!important;
   font-weight:700!important;
 }
 .source-panel.project-source-mode #addChapterBtn:hover,

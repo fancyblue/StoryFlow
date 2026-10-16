@@ -1,6 +1,6 @@
 # StoryFlow UI system
 
-> 狀態：現行 UI 規範（已落地，持續維護；最後同步：2026-09-01）
+> 狀態：現行 UI 規範（已落地，持續維護；最後同步：2026-10-16）
 
 This is the small shared UI contract for StoryFlow's desktop-first interface. Prefer these patterns over page-specific variants.
 
@@ -99,6 +99,27 @@ Do not place a destructive action beside the primary action when an overflow men
 A destructive action must never be the only enabled control in an empty state. When there is nothing to destroy it is disabled, and it must also *render* as disabled: danger controls are selected by id or by a single class, which outranks the shared `.button:disabled` treatment, so the disabled rule is restated at matching specificity in the theme layer. "清除 Google 設定" follows this, staying disabled until integration settings exist.
 
 One action carries one label and one weight wherever it appears. Connecting the StoryFlow folder is reached from the Settings folder card and from the backup centre, so both read "連接資料夾" and both stay outlined; the backup control only proxies the owning card and must not out-emphasize it. Sidebar chrome ranks below navigation: the collapse toggle rests on no fill at all and takes the shared hover tint only under the pointer, never the `--denim-800` used by an active nav item, so a utility control cannot read as the current destination.
+
+## Toolbar controls
+
+A row of controls is one height. The 切篇預覽 head used to hold a 40px format select, a 40px
+預覽／原始 MD segment and 34px buttons, at three corner radii and two label sizes. Nothing chose
+that: the select's own `height:34px` lost to a shared `!important`, and the segment's height was
+its 34px buttons plus 3px of padding on each side. Side by side, the taller boxes made every
+label in the row look undersized.
+
+| Part | Value |
+| --- | --- |
+| Height | `--sf-control-sm` — 34px on desktop, 40px at 820px and below |
+| Label | `--sf-font-control` (14px) |
+| Corner | 8px; a segment's inner buttons 6px |
+| Edge | `--rule-2`, the line for the page ground, on buttons and selects alike |
+| Segmented control | outer box `--sf-control-sm`; inner buttons `calc(var(--sf-control-sm) - 6px)` |
+
+`.button.tiny` is this tier, so it applies wherever that class is used, and the select, the
+segment, 閱讀設定, 切篇偏好, 讀稿檢視, 切換作品, 更新作品來源 and the scene buttons all resolve to it.
+A control that needs a different height belongs on a different row. `cascade-contract.spec.js`
+measures the split head and the source head together and fails if any of them drifts.
 
 ## A disabled control explains itself, and looks disabled
 
@@ -275,6 +296,20 @@ rail was unframed, in longform since it followed. Correcting it is a colour chan
 both workspaces and their baselines, so it is recorded here rather than folded into the
 change that exposed it. `--rule-2` is the value it should take.
 
+### Space before lines
+
+A rule is drawn where an edge cannot be seen otherwise, not where one section ends and the next
+begins. The workbench had seven horizontal lines before the first sentence of the manuscript: a
+rule under each of the two heads, a rule under the progress line, two rules 15px apart between
+the Google Docs source row and 章節清單, the list's top rule, and an outline around the manuscript.
+Space now separates the head, the source row, the list head and the progress line.
+
+What stays is what has no substitute: the hairline between the two columns, the list's top rule
+and the row separators (both are the list contract above), and the progress bar, which is data.
+The manuscript is `--paper-1` on the `--paper-0` ground on desktop, which is an edge already, so
+it draws no outline there. Below 820px the page itself is paper, the surface step disappears,
+and the outline returns for the split preview and the reading view alike.
+
 ### Chapter progress
 
 The four chapter figures used to be a strip of cards across the top of the main column. They
@@ -412,7 +447,7 @@ rules owning those gaps already read. Nothing is added to outrank them.
 
 The choice belongs to the browser, not to a work: how much prose fits depends on the screen.
 It is kept in `localStorage` under `storyflow.ui.readingSettings`, like the sidebar collapse,
-and lasts only the session where storage is refused. The toggle, a 34px icon button labelled
+and lasts only the session where storage is refused. The toggle, an icon button at the toolbar control height labelled
 閱讀設定, sits immediately before the control that leaves its surface: before 讀稿檢視 in the
 split panel head, before 回到工作台 in the reading view.
 
