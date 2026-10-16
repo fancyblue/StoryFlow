@@ -314,11 +314,43 @@
     return groups;
   }
 
+  // A leading 「01、」「序、」 is the chapter's number, not its name. The rail sets it in a column of
+  // its own so names start on one line and numbers stack; the title itself is never changed.
+  function chapterNumber(title) {
+    const match = /^([^、\s]{1,4})、(.*)$/u.exec(String(title || '').trim());
+    return match ? { no: match[1], name: match[2].trim() } : { no: '', name: String(title || '').trim() };
+  }
+
+  // Digits are about half the width of a CJK glyph; the column fits the widest number shown.
+  function numberWidth(no) {
+    return [...no].reduce((width, char) => width + (/[\x00-\x7f]/.test(char) ? 0.62 : 1), 0);
+  }
+
+  // What the rail says about a chapter's split: the same figures the progress line in the
+  // split panel gives for the open chapter, for every chapter at once.
+  function chapterProgress(chapter) {
+    const blocks = parseBlocks(chapter.draft);
+    if (!blocks.length) return null;
+    const confirmedBlocks = Math.min(chapter.confirmedBlockCount || 0, blocks.length);
+    const confirmed = blocks.slice(0, confirmedBlocks).reduce((sum, block) => sum + block.chars, 0);
+    const total = blocks.reduce((sum, block) => sum + block.chars, 0);
+    const parts = (chapter.parts || []).length;
+    const finished = confirmedBlocks >= blocks.length;
+    const ratio = total ? confirmed / total : 0;
+    let text = '未開始';
+    if (finished) text = `已切完 · ${parts.toLocaleString()} 篇`;
+    else if (confirmedBlocks || parts) text = `已切 ${parts.toLocaleString()} 篇 · 剩 ${(total - confirmed).toLocaleString()} 字`;
+    return { finished, ratio, text };
+  }
+
   function renderChaptersWithActions() {
     const list = document.getElementById('chapterList');
     if (!list) return;
     list.innerHTML = '';
     const groups = chapterGroups();
+    const widest = Math.max(0, ...state.chapters.map(chapter => numberWidth(chapterNumber(chapter.title).no)));
+    list.classList.toggle('has-chapter-numbers', widest > 0);
+    list.style.setProperty('--chapter-no-width', `${(widest + 0.5).toFixed(2)}em`);
 
     groups.forEach(group => {
       if (groups.length > 1 || group.key !== '__manual__') {
@@ -332,10 +364,15 @@
         const row = document.createElement('div');
         row.className = `chapter-row ${chapter.id === state.activeChapterId ? 'active' : ''}`;
 
+        const { no, name } = chapterNumber(chapter.title);
+        const progress = chapterProgress(chapter);
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = `chapter-item chapter-main-button ${chapter.id === state.activeChapterId ? 'active' : ''}`;
-        button.innerHTML = `<span>${escapeHtml(chapter.title)}</span><small>${charCount(chapter.draft).toLocaleString()} 字</small>`;
+        button.className = `chapter-item chapter-main-button ${chapter.id === state.activeChapterId ? 'active' : ''} ${progress?.finished ? 'is-finished' : ''}`;
+        button.innerHTML = `<span class="chapter-no">${escapeHtml(no)}</span>`
+          + `<span class="chapter-name${name ? '' : ' is-untitled'}">${escapeHtml(name || '（無標題）')}</span>`
+          + `<small>${charCount(chapter.draft).toLocaleString()} 字</small>`
+          + (progress ? `<span class="chapter-status"><span class="chapter-status-bar" aria-hidden="true"><i style="width:${Math.round(progress.ratio * 100)}%"></i></span><span>${progress.text}</span></span>` : '');
         button.onclick = () => {
           state.activeChapterId = chapter.id;
           suggestion = null;

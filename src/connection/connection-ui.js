@@ -274,7 +274,8 @@
     const count = document.getElementById('chapterListCount');
     if (!list || !count) return;
     const chapters = list.querySelectorAll('.chapter-item').length;
-    const text = `${chapters.toLocaleString()} 章`;
+    const finished = list.querySelectorAll('.chapter-item.is-finished').length;
+    const text = `${chapters.toLocaleString()} 章${finished ? ` · 已切完 ${finished.toLocaleString()} 章` : ''}`;
     if (count.textContent !== text) count.textContent = text;
   }
   const chapterListNode = document.getElementById('chapterList');

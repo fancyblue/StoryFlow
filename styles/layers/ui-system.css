@@ -235,6 +235,8 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .sf-button-group>.button.tiny{position:relative;height:calc(var(--sf-control-sm) - 6px)!important;min-height:calc(var(--sf-control-sm) - 6px)!important;padding:0 10px!important;border:0!important;border-radius:6px!important;background:transparent!important;box-shadow:none!important}
 .sf-button-group>.button.tiny:hover:not(:disabled){background:#fbfaf6!important}
 .sf-button-group>.button.tiny+.button.tiny::before{content:"";position:absolute;left:-2px;top:6px;bottom:6px;width:1px;background:#c8c1b0}
+/* A name for assistive technology that the layout already shows another way. */
+.sf-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}
 /* The third tier: a control that is used rarely enough to sit as text until it is pointed at,
    so the row's one framed control is the one that leaves or advances the task. */
 .button.sf-quiet,.icon-button.sf-quiet{border-color:transparent!important;background:transparent!important;box-shadow:none!important}

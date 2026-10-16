@@ -121,27 +121,11 @@
   white-space:nowrap;
 }
 
-/* The full-width manual action actually exists in the DOM. A legacy UX layer hid it;
-   keep it visible so the source card offers an explicit manual path. */
+/* The manual action actually exists in the DOM. A legacy UX layer hid it; keep it visible so
+   the rail offers an explicit manual path. It is a quiet control (`.sf-quiet`): adding an
+   article by hand is rare beside a Google Docs source, so it rests as text under the list. */
 .source-panel #addChapterBtn{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:100%;
-  min-height:40px;
-  margin-top:12px;
-  border:1px solid #c8c1b0;
-  border-radius:10px;
-  background:var(--sf-surface-soft);
-  color:var(--denim-700,#4b4557);
-  font-size:13px;
-  font-weight:700;
-}
-.source-panel #addChapterBtn:hover,
-.source-panel #addChapterBtn:focus-visible{
-  border-color:#c8c1b0;
-  background:#f4f1e9;
-  color:var(--denim-900,#221f1a);
+  margin-top:10px;
 }
 
 /* SMART SPLIT: use the exact same title/action alignment contract. */
@@ -331,7 +315,6 @@
     min-height:40px!important;
     height:40px!important;
   }
-  .source-panel #addChapterBtn{min-height:44px;font-size:14px}
   .settings-view .security-note{padding-left:48px}
 }
 

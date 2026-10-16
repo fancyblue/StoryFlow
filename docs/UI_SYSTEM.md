@@ -322,6 +322,26 @@ The manuscript is `--paper-1` on the `--paper-0` ground on desktop, which is an 
 it draws no outline there. Below 820px the page itself is paper, the surface step disappears,
 and the outline returns for the split preview and the reading view alike.
 
+### What a chapter row says
+
+A chapter row reads number · name · length on one line and, under the name, how far the
+chapter's split has got: a 56px bar and 「未開始」, 「已切 3 篇 · 剩 2,610 字」 or 「已切完 · 2 篇」, in
+`--moss` once finished. These are the figures the progress line below gives for the open
+chapter, for every chapter at once, so the rail answers which chapter to split next without
+opening each one. The list head adds the finished count: 「10 章 · 已切完 2 章」.
+
+A leading 「01、」「序、」 is the chapter's number, not its name, and sits in a column of its own as
+wide as the widest number in the list (`--chapter-no-width`), so names start on one line and
+numbers stack. Only the display changes; the title is stored and exported as written. A title
+that is only a number (「終、」) shows 「（無標題）」 in `--ink-3`. Names are 500 and the current
+chapter's is 700: ten bold rows left the selected one nothing to be heavier with. The length is
+500 in `--ink-3` and shares the name's baseline.
+
+Above the list, the work's name is text edited in place (`.rail-work-name`): no frame until it
+has focus, the hover fill to say it can be changed, and its 作品名稱 label kept for assistive
+technology only. The Google Docs source row sits directly under it with a quiet 更新作品來源.
+The visual rail uses the same name, the same quiet 新增圖文 and the same row weights.
+
 ### Chapter progress
 
 The four chapter figures used to be a strip of cards across the top of the main column. They
@@ -519,7 +539,7 @@ A disabled control states why it is unavailable. The split scene controls carry 
 
 A control selected by class rather than `.button` does not inherit the shared disabled treatment, so it restates it — including opting its `:hover` out with `:not(:disabled)`, since a disabled button still matches `:hover` and would otherwise light up under the cursor. Anything nested inside dims with it; an unavailable option with a lit icon reads as enabled in a grey box.
 
-Longform chapters/articles and visual entries share this rule. Their list-level create action sits below the list, and every editable row keeps a persistent trailing `⋯`. Manual-article and visual-entry menus use the same order: edit first, delete second. A visual entry is deleted as `⋯ → 刪除圖文`; do not add a second destructive button to the editor footer or make Workspace, Works and Publishing use different delete entry points. All entry deletion paths must reach the same confirmation and Recovery guard.
+Longform chapters/articles and visual entries share this rule. Their list-level create action sits below the list as a quiet control (`.sf-quiet`), and every editable row keeps a trailing `⋯` in a fixed place. In the two workspace rails, on a device with a pointer, that `⋯` waits for its row: it shows under the pointer, on the current row, while focus is inside the row and while its menu is open, and it stays focusable at all times. On touch, and on the Works page, it is always shown. Manual-article and visual-entry menus use the same order: edit first, delete second. A visual entry is deleted as `⋯ → 刪除圖文`; do not add a second destructive button to the editor footer or make Workspace, Works and Publishing use different delete entry points. All entry deletion paths must reach the same confirmation and Recovery guard.
 
 On the Works page, “管理章節／管理圖文” is the most likely next step and uses the same emphasized light-blue treatment on every work card. Both content types use “工作台” for the active work and “開啟” for inactive works; never substitute type-specific open labels for that open action. “管理發布” is a quieter tinted shortcut. The “目前作品” badge and card treatment alone communicate which work is active; action color must not duplicate selection or make identical labels look like different functions. Expanded management uses a stronger soft selection with an inset accent, never a solid primary fill. Manual chapters and visual entries show direct “編輯” plus a persistent trailing `⋯` for Recovery-guarded deletion.
 

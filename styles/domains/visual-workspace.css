@@ -3,7 +3,6 @@
 .visual-workspace { display: grid; gap: 16px; }
 .visual-project-panel-head { align-items: center; }
 .visual-project-panel-head h2 { margin-bottom: 0; }
-.visual-project-title-input { width: 100%; margin-bottom: 16px; }
 /* The list head (`.rail-section-head`) is shared with the longform rail in workspace.css. */
 .visual-entry-list-actions { display: grid; justify-items: end; gap: 8px; }
 .visual-entry-add-button { margin-top: 10px; }
@@ -33,7 +32,13 @@
 .visual-entry-select { width: 100%; min-width: 0; display: grid; gap: 3px; padding: 11px 6px; text-align: left; border: 0; border-radius: 0; background: transparent; color: inherit; cursor: pointer; }
 .visual-entry-row:hover { background: var(--paper-2, #f4f1e9); }
 .visual-entry-row.active { border-left-color: var(--dai-700, #4b4557); background: var(--dai-soft, #e8e5eb); }
-.visual-entry-row.active .visual-entry-select strong { color: var(--dai-800, #3a3544); }
+.visual-entry-select strong { color: var(--ink-1-soft, #3f3930); font-weight: 500; }
+.visual-entry-row.active .visual-entry-select strong { color: var(--dai-800, #3a3544); font-weight: 700; }
+/* The ⋯ waits for its row where a pointer can find it, as in the chapter rail. */
+@media (hover: hover) {
+  .visual-entry-row > .visual-entry-more { opacity: 0 !important; }
+  .visual-entry-row:hover > .visual-entry-more, .visual-entry-row.active > .visual-entry-more, .visual-entry-row:focus-within > .visual-entry-more, .visual-entry-row > .visual-entry-more[aria-expanded="true"] { opacity: 1 !important; }
+}
 .visual-entry-row:last-child { border-bottom: 0; }
 .visual-entry-row > .visual-entry-more { position: static !important; inset: auto !important; display: grid !important; visibility: visible !important; place-items: center !important; width: 32px !important; min-width: 32px !important; height: 32px !important; min-height: 32px !important; margin: 0 !important; padding: 0 !important; border: 1px solid transparent !important; border-radius: 9px !important; background: transparent !important; color: #6a6357 !important; font-size: 20px !important; font-weight: 700 !important; line-height: 1 !important; opacity: 1 !important; box-shadow: none !important; }
 .visual-entry-more:hover:not(:disabled), .visual-entry-more:focus-visible, .visual-entry-more[aria-expanded="true"] { border-color: #c8c1b0 !important; background: #fbfaf6 !important; color: #4b4557 !important; outline: none !important; }

@@ -97,8 +97,8 @@
   grid-template-columns:minmax(0,1fr) auto;
   align-items:center;
   gap:10px;
-  margin:14px 0 16px;
-  padding:10px 0 14px;
+  margin:0 0 8px;
+  padding:0;
 }
 .project-source-origin[hidden]{display:none!important}
 .project-source-origin-copy{display:grid;gap:3px;min-width:0}
@@ -180,27 +180,6 @@
 .source-panel.project-source-mode #chapterList{
   margin-top:14px;
 }
-.source-panel.project-source-mode #addChapterBtn{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  width:100%!important;
-  min-height:var(--sf-control)!important;
-  margin-top:14px!important;
-  border:1px solid #c8c1b0!important;
-  border-radius:10px!important;
-  background:#fbfaf6!important;
-  color:#4b4557!important;
-  font-size:var(--sf-font-control)!important;
-  font-weight:700!important;
-}
-.source-panel.project-source-mode #addChapterBtn:hover,
-.source-panel.project-source-mode #addChapterBtn:focus-visible{
-  border-color:#c8c1b0!important;
-  background:#f4f1e9!important;
-  color:#221f1a!important;
-  outline:none!important;
-}
 .source-panel.project-source-unset #addChapterBtn{display:none!important}
 
 .project-source-empty-articles{
@@ -248,8 +227,6 @@
   .project-creation-chooser{padding:12px}
   .project-creation-option{grid-template-columns:34px minmax(0,1fr) 16px;padding:10px}
   .project-creation-option-icon{width:34px;height:34px}
-  .project-source-origin{grid-template-columns:1fr;align-items:start}
-  .project-source-refresh{width:100%!important;min-height:42px!important}
   .source-sync-undo-bar{align-items:stretch;flex-direction:column}
   .source-sync-undo-bar>.button{width:100%}
 }
