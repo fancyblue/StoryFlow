@@ -55,12 +55,17 @@
   .main > .app-view.workspace-view .visual-editor-panel {
     padding-left: 32px;
   }
-  /* The split preview is one page set on the paper: the toolbar, the progress line and the prose
-     share the reading measure (or 600px, the toolbar's own width, when the measure is narrower)
-     and the page sits in the middle of the sheet, so what is left of the paper is an even margin
-     on both sides instead of a blank strip on the right. 閱讀設定's measure widens the page. */
-  .main > .app-view.workspace-view .workspace-grid.workspace-hierarchy > .workspace-main-column > .splitter-panel {
-    max-width: max(calc(var(--sf-reading-chars, 36) * var(--sf-reading-size, 16px)), 600px) !important;
+  /* What you work on is one page set on the paper, in both content modes: the split preview's
+     toolbar, progress line and prose, and the visual editor's fields, share the reading measure
+     (or 600px, the toolbar's own width, when the measure is narrower), and the page sits in the
+     middle of the sheet, so what is left of the paper is an even margin on both sides instead of
+     a blank strip on the right. 閱讀設定's measure widens the page. */
+  .main > .app-view.workspace-view {
+    --sf-page-width: max(calc(var(--sf-reading-chars, 36) * var(--sf-reading-size, 16px)), 600px);
+  }
+  .main > .app-view.workspace-view .workspace-grid.workspace-hierarchy > .workspace-main-column > .splitter-panel,
+  .main > .app-view.workspace-view .visual-editor-panel > * {
+    max-width: var(--sf-page-width) !important;
     margin-inline: auto !important;
   }
   /* The reading view replaces both columns, so the whole page is paper. */

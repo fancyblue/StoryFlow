@@ -475,6 +475,7 @@ token 就位後，這一步是改幾十行的事。
 | 4-12 ✅ | 工具列一種外觀；章節進度縮成記號；清單列緊貼 | `ui-system.css`、`workspace-ux.css`、`chapter-management.css`、`desktop-responsive.css`、`app-ux.js` 等 | 已完成（2026-10-16）。工具列的格式選單、設定、讀稿檢視、回到工作台、閱讀設定圖示與切換作品統一成 `.sf-soft`（分段控制的底色、無框）；「建議／低於偏好」改成圓點加文字，不再像按鈕。章節列回到一行，進度改成字數旁的記號（✓ 已切完、圓點切到一半、空白未開始），數字移到提示文字。`desktop-responsive.css` 的 `.chapter-list{gap:5px}` 讓選取與滑過的底色碰不到分隔線，已拿掉。見 UI_SYSTEM〈Action hierarchy〉〈What a chapter row says〉 |
 | 4-13 ✅ | 由左往右展開：淺色主選單、底色章節欄、貼齊視窗的白紙工作區 | `desktop-responsive.css`、`ui-system.css`、`workspace.css`、`chapter-management.css`、`visual-workspace.css`、`publishing.css`、`works-library.css` 等 | 已完成（2026-10-16）。桌機主選單從暖黑改成底色＋細線，選中項目用圓角 `--dai-soft`（手機底部列不變）。每個畫面延伸到 `.main` 的邊緣：作品、發布、設定整頁是白紙；工作台在章節欄結束處（`--sf-rail-width`，欄寬與交界共用一個 token）從底色轉成白紙，白紙貼齊視窗上、右、下緣；原稿是白紙上的文字，不再是卡片。章節欄與圖文欄拿掉所有分隔線，標題縮成小標籤、作品名稱放大，選取改成跟主選單一樣的圓角底色。發布佇列的「不加外框」規則原本輸給較晚載入的 `.panel` 卡片規則，外框一直都在，已修正。畫面切換時淡入、工作欄晚 60ms（只動透明度，減少動態效果時關閉）。見 UI_SYSTEM〈Left to right〉 |
 | 4-14 ✅ | 左欄可拖拉調寬、切篇預覽成為置中的一頁 | `src/ui/rail-resize.js`、`desktop-responsive.css`、`workspace.css`、`index.html`、`visual-workspace.js` | 已完成（2026-10-16）。底色轉白紙的那條邊可以拖拉（兩種作品共用一個寬度，240–640px，存在這個瀏覽器的 `localStorage`，按兩下或 Home 還原；工作欄永遠留至少 600px）。切篇預覽的工具列、進度與正文共用閱讀寬度（不足 600px 時用 600px）並置中在白紙上，右邊不再留一條空白。主選單的「S」改回淺色字，收合鈕滑過時不再出現灰色外框。見 UI_SYSTEM〈Left to right〉 |
+| 4-15 ✅ | 圖文編輯表單也成為置中的一頁 | `desktop-responsive.css` | 已完成（2026-10-16）。圖文的編輯欄位（與尚未選擇圖文時的空狀態）和切篇預覽共用同一個頁寬 `--sf-page-width`（閱讀寬度，不足 600px 時用 600px），置中在白紙上，兩種作品的工作區是同一張紙上的同一種頁。見 UI_SYSTEM〈Left to right〉 |
 
 ### 4-4 的範圍：共用契約，不是共用 renderer
 
