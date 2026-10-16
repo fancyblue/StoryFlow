@@ -429,6 +429,7 @@ token 就位後，這一步是改幾十行的事。
 | 4-4 ✅ | 作品頁與發布頁共用「作品 › 章節 › 篇」清單元件 | 新增 `styles/domains/list-hierarchy.css`；`chapter-management.js`、`publishing-project-filter.js`、`publishing-flow.js` | 已完成，但**共用的是層級契約不是 renderer**——見下方說明。另外**刪掉了 `publishing-grouping.js`**（76 行，完全失效） |
 | 4-5 ✅ | 發布篩選依語意分組；排序控制 | `publishing-flow.js`、`publishing-project-filter.js`、`projects.js`、`publishing.css` | 已完成。兩半一起做，因為它們動同一塊版面。GAPS 第 5 項**不需要資料模型變更**就結案了——長文的篇根本沒有時間戳記，所以「最近更新」做不到，改成「章節順序／最新在前」兩個方向。排序偏好是全域的，加進 `CARRIED_PREFERENCES`（那份清單原本在三個地方各寫一遍） |
 | 4-6 ✅ | 空狀態與首次使用關卡 | `app-ux.js`、`works-library.css`（`quick-start.js` 沒有改動） | 已完成。**W-06 本身已經沒有違規**——4-1 補的作品頁空狀態就是最後那一個缺口，我用一份活的稽核把六個可達的空狀態全部量過（實心按鈕數、頁首有沒有競爭的實心鈕），全部通過。真正還沒做的是設計稿 First run 那一節裡的另外兩件事，見下 |
+| 4-7 ✅ | 側欄平面化、頁首只留中文標題 | `sidebar-layout.css`、`ui-system.css`、`layout-integrity.css`、`theme.css`；四個頁首的模板 | 已完成（2026-10-16）。桌機側欄 250 → 208 px，導覽列 48 → 36 px、標籤 17 px/700 → 14 px/500、圖示 21 → 18 px；拿掉選取項目左側的 3 px 邊條、品牌方塊的漸層與收合鈕的底色與框線，選取項目的 `--denim-800` 是側欄裡唯一的填色。頁首拿掉 `STORYFLOW / …` 英文眉標，`--sf-font-page` 30 → 22 px（手機 27 → 20 px）。區塊眉標（SOURCE、SMART SPLIT、CHAPTERS）是頁面內的區域名稱，不在這次範圍。手機底部列不變。見 UI_SYSTEM〈Navigation rail and page heads〉 |
 
 ### 4-4 的範圍：共用契約，不是共用 renderer
 

@@ -5,7 +5,7 @@
 
 @media (min-width: 821px) {
   .app-shell {
-    --sf-sidebar-width: 250px;
+    --sf-sidebar-width: 208px;
     --sf-desktop-content-max: 1800px;
   }
 

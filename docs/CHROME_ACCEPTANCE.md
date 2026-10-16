@@ -101,7 +101,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] In Workspace, confirm neither content type shows a direct publishing shortcut. Enter Publishing from primary navigation or the Works-page “管理發布” action.
 - [ ] Confirm Publishing's empty-state return action remains the single solid 40 px / 14 px CTA, while publishing filters remain compact pills.
 - [ ] In Settings, confirm “匯入 settings.json” is primary when Google integration is missing; the save button remains disabled and quiet until valid fields change. “新增平台” and “建立目前備份” stay secondary.
-- [ ] Check the expanded and collapsed sidebar on macOS and Windows Chrome. Workspace, Works, Publishing, Settings, Search and the collapse control should all use the same stroke-icon language without platform-dependent text glyphs.
+- [ ] Check the expanded and collapsed sidebar on macOS and Windows Chrome. Workspace, Works, Publishing, Settings, Search and the collapse control should all use the same stroke-icon language without platform-dependent text glyphs. The expanded rail is the narrow flat one UI_SYSTEM describes (208 px, one fill on the active item, no edge bar), and each page head shows its Chinese title alone, with no English eyebrow above it.
 
 ## 6. Publishing and destructive-action safety
 
