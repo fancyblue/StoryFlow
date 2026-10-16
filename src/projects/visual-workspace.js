@@ -276,6 +276,7 @@
           <div id="visualEntryList" class="visual-entry-list"></div>
           <button id="visualNewEntryBtn" class="button tiny ghost sf-quiet rail-add-button visual-entry-add-button" type="button">＋ 新增圖文</button>
         </aside>
+        <div class="sf-rail-resizer" role="separator" aria-orientation="vertical" aria-label="調整左欄寬度" aria-valuemin="240" aria-valuemax="640" tabindex="0" title="拖拉調整寬度・按兩下還原"></div>
         <section class="visual-editor-panel">
           <div id="visualEditorEmpty" class="visual-editor-empty"></div>
           <form id="visualEditorForm" class="visual-editor-form" hidden>

@@ -21,6 +21,17 @@
       calc((100vw - var(--sf-sidebar-width) - var(--sf-desktop-content-max)) / 2)
     );
     padding-inline: var(--sf-main-pad-x) !important;
+    /* The rail is as wide as its breakpoint says until someone drags it (src/ui/rail-resize.js
+       sets --sf-rail-user and [data-rail-width] on <html>). A dragged width still leaves the work
+       column 600px (or, where even the default leaves less, stops at the default), so a width
+       chosen on a wide screen never squeezes a narrower window. The
+       columns are declared again here because a custom property is resolved where it is
+       declared: :root's copy would keep :root's rail width. */
+    --sf-rail-width: var(--sf-rail-default);
+    --sf-workspace-source-columns: var(--sf-rail-width) minmax(0, 1fr);
+  }
+  :root[data-rail-width] .main {
+    --sf-rail-width: clamp(240px, var(--sf-rail-user, var(--sf-rail-default)), max(var(--sf-rail-default), calc(100vw - var(--sf-sidebar-width) - 2 * var(--sf-main-pad-x) - 600px)));
   }
 
   /* Left to right, the page unfolds: the menu and the chapter rail sit on the ground, and
@@ -43,6 +54,14 @@
   .main > .app-view.workspace-view .workspace-grid.workspace-hierarchy > .workspace-main-column,
   .main > .app-view.workspace-view .visual-editor-panel {
     padding-left: 32px;
+  }
+  /* The split preview is one page set on the paper: the toolbar, the progress line and the prose
+     share the reading measure (or 600px, the toolbar's own width, when the measure is narrower)
+     and the page sits in the middle of the sheet, so what is left of the paper is an even margin
+     on both sides instead of a blank strip on the right. 閱讀設定's measure widens the page. */
+  .main > .app-view.workspace-view .workspace-grid.workspace-hierarchy > .workspace-main-column > .splitter-panel {
+    max-width: max(calc(var(--sf-reading-chars, 36) * var(--sf-reading-size, 16px)), 600px) !important;
+    margin-inline: auto !important;
   }
   /* The reading view replaces both columns, so the whole page is paper. */
   body.sf-reading-open .main > .app-view.workspace-view {
@@ -98,7 +117,7 @@
 @media (min-width: 1600px) {
   /* Longform and visual workspaces share one source-rail width contract. */
   :root {
-    --sf-rail-width: clamp(320px, 19vw, 380px);
+    --sf-rail-default: clamp(320px, 19vw, 380px);
   }
 
   .workspace-grid.workspace-hierarchy {
