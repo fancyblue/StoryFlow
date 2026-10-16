@@ -328,6 +328,9 @@ test('visual workspace, works actions, publishing actions, and previews stay con
     // One baseline, not three: the loop already proves the layout holds at every desktop width,
     // so a second and third screenshot would only lengthen the run for the same evidence.
     if (size.width === 1440) {
+      // A row's fill is too few pixels for the baseline's tolerance to notice, so say it: the
+      // current entry is the paper fill both rails use, lighter than hover.
+      await expect(page.locator('.visual-entry-row.active')).toHaveCSS('background-color', 'rgb(251, 250, 246)');
       await expect(page.locator('#visualWorkspace')).toHaveScreenshot('visual-workspace-1440.png');
     }
 

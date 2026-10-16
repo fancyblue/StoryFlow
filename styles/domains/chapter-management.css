@@ -21,8 +21,11 @@
 #chapterList .chapter-row:hover{
   background:var(--paper-2,#f4f1e9)!important;
 }
+/* The current row is a piece of the paper the work column is drawn on: the one fill on the
+   ground that is lighter than hover. --dai-soft, a cool grey on warm ground, sat darker than
+   the hover fill and was the least visible thing in the rail. */
 #chapterList .chapter-row.active{
-  background:var(--dai-soft,#e8e5eb)!important;
+  background:var(--paper-1,#fbfaf6)!important;
 }
 #chapterList .chapter-row > .chapter-main-button{
   width:100%!important;

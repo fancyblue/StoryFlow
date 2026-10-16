@@ -31,7 +31,7 @@
 .visual-entry-row { border: 0; border-radius: 8px; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 32px; align-items: center; gap: 6px; padding-left: 4px; overflow: visible; }
 .visual-entry-select { width: 100%; min-width: 0; display: grid; gap: 3px; padding: 11px 6px; text-align: left; border: 0; border-radius: 0; background: transparent; color: inherit; cursor: pointer; }
 .visual-entry-row:hover { background: var(--paper-2, #f4f1e9); }
-.visual-entry-row.active { background: var(--dai-soft, #e8e5eb); }
+.visual-entry-row.active { background: var(--paper-1, #fbfaf6); }
 .visual-entry-select strong { color: var(--ink-1-soft, #3f3930); font-weight: 500; }
 .visual-entry-row.active .visual-entry-select strong { color: var(--dai-800, #3a3544); font-weight: 700; }
 /* The ⋯ waits for its row where a pointer can find it, as in the chapter rail. */
