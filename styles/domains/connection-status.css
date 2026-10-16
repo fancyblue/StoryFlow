@@ -12,7 +12,7 @@
 }
 
 @media (min-width:821px){
-  /* Keep Google / folder / settings / logout on one line in the 250px sidebar.
+  /* Keep Google / folder / settings / logout on one line in the 208px sidebar.
      The strip is the sidebar footer, so auto margin absorbs all remaining vertical
      space and keeps connection/session actions anchored to the bottom edge. */
   .sidebar #sidebarConnectionStatus.sidebar-connection-status{
@@ -66,7 +66,7 @@
     overflow:visible!important;
     color:#c8c1b0!important;
     font-size:12px!important;
-    font-weight:700!important;
+    font-weight:500!important;
     line-height:1!important;
     white-space:nowrap!important;
     text-overflow:clip!important;

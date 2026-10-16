@@ -35,7 +35,6 @@
       view.innerHTML = `
         <header class="settings-page-head">
           <div>
-            <p class="eyebrow">STORYFLOW / SETTINGS</p>
             <h1 id="settingsViewHeading">設定</h1>
             <p class="settings-page-subtitle">管理 Google Docs、StoryFlow 資料夾、發布平台與排版。</p>
           </div>

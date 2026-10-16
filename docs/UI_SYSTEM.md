@@ -98,7 +98,7 @@ Do not place a destructive action beside the primary action when an overflow men
 
 A destructive action must never be the only enabled control in an empty state. When there is nothing to destroy it is disabled, and it must also *render* as disabled: danger controls are selected by id or by a single class, which outranks the shared `.button:disabled` treatment, so the disabled rule is restated at matching specificity in the theme layer. "清除 Google 設定" follows this, staying disabled until integration settings exist.
 
-One action carries one label and one weight wherever it appears. Connecting the StoryFlow folder is reached from the Settings folder card and from the backup centre, so both read "連接資料夾" and both stay outlined; the backup control only proxies the owning card and must not out-emphasize it. Sidebar chrome ranks below navigation: the collapse toggle rests on a translucent fill, never on the `--denim-800` used by an active nav item, so a utility control cannot read as the current destination.
+One action carries one label and one weight wherever it appears. Connecting the StoryFlow folder is reached from the Settings folder card and from the backup centre, so both read "連接資料夾" and both stay outlined; the backup control only proxies the owning card and must not out-emphasize it. Sidebar chrome ranks below navigation: the collapse toggle rests on no fill at all and takes the shared hover tint only under the pointer, never the `--denim-800` used by an active nav item, so a utility control cannot read as the current destination.
 
 ## A disabled control explains itself, and looks disabled
 
@@ -353,6 +353,25 @@ and weight adds noise instead of rank.
 Do not raise a weight to separate two adjacent items. Size, colour and spacing carry that
 distinction — a statistic's label and its number are 12.5 px muted against 26 px ink, and both
 are 700 because the separation is already unmistakable.
+
+## Navigation rail and page heads
+
+The desktop rail (`min-width: 821px`) is a quiet, flat column: 208 px wide (76 px collapsed),
+36 px items with a 14 px / 500 label and an 18 px stroke icon, 8 px radii, and no edge bar,
+shadow or gradient anywhere in it — the brand mark is a flat `--denim-700` square. The active
+item is the rail's one fill (`--denim-800`), and it does not change weight: the fill and the
+ink colour already say where you are, and a bolder label would only shift the text. The rail's
+width lives in `sidebar-layout.css`, `--sf-sidebar-width` in `desktop-responsive.css` and the
+toast centre in `app-ux.css`; change all three together. The phone's bottom bar keeps its own
+icon and label sizes in `layout-integrity.css`'s phone block.
+
+A page head is its title alone. Works, the workbench, Publishing and Settings once carried an
+English eyebrow (`STORYFLOW / WORKSPACE`) above a 30 px Chinese title, which restated the
+navigation in a second language and spent two lines on a label. The title is now one line at
+`--sf-font-page` — 22 px on desktop, 20 px at 820 px and below — with the page's subtitle, if
+it has one, under it. Section eyebrows (`SOURCE`, `SMART SPLIT`, `CHAPTERS`) are a separate
+matter: they name a region within a page and are unchanged. `cascade-contract.spec.js` pins the
+rail's active item, its width and the head's size.
 
 ## Reading measure
 
