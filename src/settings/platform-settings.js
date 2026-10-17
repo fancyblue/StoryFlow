@@ -78,21 +78,73 @@
     renderFormattingSettings();
   }
 
-  function removePlatform(name) {
-    if (!confirm(`移除「${name}」平台？\n\n會移除這個平台的排版、自訂標題、發布狀態、時間與文章網址，但不會刪除已產出的 Markdown。`)) return;
+  // Everything an article or visual entry keeps per platform, keyed by the platform's name.
+  const PLATFORM_FIELDS = ['platformStatus', 'publicationRecords', 'platformTitles', 'platformHashtags', 'platformIncludeAfterword'];
+
+  function publishableItems(projectState) {
+    return [
+      ...(projectState?.chapters || []).flatMap(chapter => chapter?.parts || []),
+      ...(projectState?.visualEntries || [])
+    ];
+  }
+
+  // The platform list is shared by every work, so its records go from every work, not only
+  // the open one. A record left in another work would come back under any later platform
+  // given the same name. Returns what was removed, so a failed save can put it back.
+  function stripPlatformRecords(name) {
+    const removed = [];
+    const visit = projectState => {
+      for (const item of publishableItems(projectState)) {
+        for (const field of PLATFORM_FIELDS) {
+          const record = item?.[field];
+          if (!record || typeof record !== 'object' || !Object.hasOwn(record, name)) continue;
+          removed.push([record, record[name]]);
+          delete record[name];
+        }
+      }
+    };
+    if (window.StoryFlowProjects?.forEachState) window.StoryFlowProjects.forEachState(visit);
+    else visit(state);
+    return removed;
+  }
+
+  async function removePlatform(name) {
+    if (!confirm(`移除「${name}」平台？\n\n所有作品中這個平台的排版、自訂標題、Hashtags、發布狀態、時間與文章網址都會移除；移除前會先建立 Recovery 安全副本。已產出的 Markdown 不會刪除。`)) return false;
+
+    try {
+      const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
+      if (typeof prepare !== 'function') throw new Error('Recovery 安全元件尚未準備完成。');
+      await prepare('before-platform-delete');
+    } catch (error) {
+      notify(`尚未移除平台：無法建立 Recovery 安全副本（${error.message}）`, true);
+      return false;
+    }
+
     const index = platforms.indexOf(name);
+    const config = state.formatting.platforms?.[name];
     if (index >= 0) platforms.splice(index, 1);
     delete state.formatting.platforms?.[name];
-    for (const chapter of state.chapters || []) {
-      for (const part of chapter.parts || []) {
-        if (part.platformStatus) delete part.platformStatus[name];
-        if (part.publicationRecords) delete part.publicationRecords[name];
-        if (part.platformTitles) delete part.platformTitles[name];
-      }
-    }
+    const removed = stripPlatformRecords(name);
     saveState('平台已移除');
+
+    const flush = window.StoryFlowPersistenceStatus?.flush;
+    const saved = typeof flush === 'function' ? await flush() : false;
+    if (!saved) {
+      // Put the platform back as it was, so the page shows what the folder still holds.
+      removed.forEach(([record, value]) => { record[name] = value; });
+      if (index >= 0 && !platforms.includes(name)) platforms.splice(index, 0, name);
+      if (config) state.formatting.platforms[name] = config;
+      refreshDependentUI();
+      renderFormattingSettings();
+      notify(`尚未移除平台：無法寫入 StoryFlow 資料夾，「${name}」已保留`, true);
+      return false;
+    }
+
     refreshDependentUI();
     renderFormattingSettings();
+    window.StoryFlowRenderProjects?.();
+    notify(`已移除平台「${name}」`);
+    return true;
   }
 
   function addPlatform() {

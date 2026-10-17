@@ -371,8 +371,20 @@
       }));
   }
 
+  // Visit every work's live state, for a change that belongs to all of them — a platform is
+  // shared by every work, but its publication records live in each one. The active work is
+  // `state` itself, not its stored copy, which syncActiveRecord would overwrite on the next save.
+  function forEachState(visit) {
+    ensureStore();
+    visit(state);
+    store.projects.forEach(project => {
+      if (project.id !== store.activeProjectId && project.state) visit(project.state);
+    });
+  }
+
   window.StoryFlowProjects = {
     list: listProjects,
+    forEachState,
     activeId: () => { ensureStore(); return store.activeProjectId; },
     isActivePlaceholder: () => activeRecord()?.placeholder === true,
     findBySourceDocId,

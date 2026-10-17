@@ -550,11 +550,78 @@ test('settings links to a privacy policy that states the scope the app requests'
   expect(pageErrors).toEqual([]);
 });
 
+// Two works holding records for both platforms: a longform article in one, a visual entry in
+// the other, so a removal that only reached the open work would leave the other behind.
+async function seedPlatformRecords(page) {
+  await page.evaluate(() => {
+    window.__notes = [];
+    window.__recoveryReasons = [];
+    window.__savedSettings = [];
+    const baseNotify = notify;
+    notify = (message, isError = false) => {
+      window.__notes.push([message, Boolean(isError)]);
+      return baseNotify(message, isError);
+    };
+    StoryFlowIntegrations.saveWorkspace = async () => 'StoryFlow-test/workspace.json';
+    StoryFlowIntegrations.saveStoryFlowSettings = async settings => {
+      window.__savedSettings.push(structuredClone(settings));
+      return 'StoryFlow-test/settings.json';
+    };
+    StoryFlowIntegrations.createWorkspaceRecoverySnapshot = async reason => {
+      // Recovery has to see the data before anything is removed.
+      window.__recoveryReasons.push([reason, platforms.includes('方格子')]);
+      return { artifactPath: `StoryFlow-test/Recovery/${reason}.json` };
+    };
+    const records = () => ({
+      platformStatus: { 巴哈小屋: true, 方格子: true },
+      publicationRecords: {
+        巴哈小屋: { publishedAt: '2026-10-01T08:00', url: 'https://example.com/baha' },
+        方格子: { publishedAt: '2026-10-02T08:00', url: 'https://example.com/vocus' }
+      },
+      platformTitles: { 巴哈小屋: '巴哈標題', 方格子: '方格子標題' },
+      platformHashtags: { 巴哈小屋: '#巴哈', 方格子: '#方格子' },
+      platformIncludeAfterword: { 巴哈小屋: true, 方格子: false }
+    });
+    StoryFlowProjects.createProject({ title: '平台長文' }, { quiet: true });
+    state.chapters[0].parts.push({ id: 'platform-part', title: '第一篇', markdown: '內文', startBlock: 0, endBlock: 1, ...records() });
+    StoryFlowProjects.createProject({
+      title: '平台圖文',
+      contentMode: 'visual',
+      visualEntry: { id: 'platform-entry', title: '圖文一', body: '內文', ...records() }
+    }, { quiet: true });
+  });
+}
+
+async function platformRecordKeys(page) {
+  return page.evaluate(() => StoryFlowProjects.searchSnapshot().map(project => {
+    const items = [
+      ...(project.state.chapters || []).flatMap(chapter => chapter.parts || []),
+      ...(project.state.visualEntries || [])
+    ];
+    return {
+      title: project.title,
+      keys: items.map(item => ['platformStatus', 'publicationRecords', 'platformTitles', 'platformHashtags', 'platformIncludeAfterword']
+        .map(field => Object.keys(item[field] || {}).sort().join('+')).join(' '))
+    };
+  }));
+}
+
+const BOTH_PLATFORMS = '巴哈小屋+方格子 巴哈小屋+方格子 巴哈小屋+方格子 巴哈小屋+方格子 巴哈小屋+方格子';
+const ONLY_BAHA = '巴哈小屋 巴哈小屋 巴哈小屋 巴哈小屋 巴哈小屋';
+
+async function openPlatformMenu(page, name) {
+  if (!(await page.locator('#settingsView').isVisible())) await page.locator('#sidebarSettingsBtn').click();
+  const row = page.locator(`#platformFormatSettings .platform-setting-row[data-platform="${name}"]`);
+  await row.getByRole('button', { name: `更多「${name}」操作` }).click();
+  return { row, item: row.getByRole('menuitem', { name: `刪除平台「${name}」` }) };
+}
+
 // AGENTS.md: infrequent or destructive row actions use ⋯ → menu action. A platform row used
 // to end in an always-visible red 刪除, the one list in the app that still did.
-test('a publishing platform is removed from its row\'s ⋯ menu, after confirmation', async ({ page }) => {
+test('a publishing platform is removed from its row\'s ⋯ menu, from every work, after Recovery', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.goto('/');
+  await seedPlatformRecords(page);
   await page.locator('#sidebarSettingsBtn').click();
   const row = page.locator('#platformFormatSettings .platform-setting-row[data-platform="方格子"]');
   await expect(row).toBeVisible();
@@ -583,26 +650,87 @@ test('a publishing platform is removed from its row\'s ⋯ menu, after confirmat
   await expect(item).toBeHidden();
   await expect(more).toHaveAttribute('aria-expanded', 'false');
 
-  // Declining the confirmation keeps the platform.
+  // Declining the confirmation keeps the platform and takes no Recovery copy.
   page.once('dialog', dialog => dialog.dismiss());
   await more.click();
   await item.click();
   await expect(row).toBeVisible();
-  expect(await page.evaluate(() => platforms.includes('方格子'))).toBe(true);
+  expect(await page.evaluate(() => window.__recoveryReasons)).toEqual([]);
+  expect(await platformRecordKeys(page)).toEqual([
+    { title: '平台長文', keys: [BOTH_PLATFORMS] },
+    { title: '平台圖文', keys: [BOTH_PLATFORMS] }
+  ]);
 
   page.once('dialog', dialog => {
     expect(dialog.message()).toContain('移除「方格子」平台？');
+    expect(dialog.message()).toContain('所有作品');
     dialog.accept();
   });
   await more.click();
   await item.click();
   await expect(row).toHaveCount(0);
   await expect(page.locator('#platformFormatSettings .platform-setting-row[data-platform="巴哈小屋"]')).toBeVisible();
-  const remaining = await page.evaluate(() => ({
+  await expect.poll(() => page.evaluate(() => window.__notes.at(-1))).toEqual(['已移除平台「方格子」', false]);
+
+  expect(await page.evaluate(() => window.__recoveryReasons)).toEqual([['before-platform-delete', true]]);
+  // Both works lose the platform — the open visual one and the longform one behind it — and
+  // the other platform's records stay untouched.
+  expect(await platformRecordKeys(page)).toEqual([
+    { title: '平台長文', keys: [ONLY_BAHA] },
+    { title: '平台圖文', keys: [ONLY_BAHA] }
+  ]);
+  // Success is reported only after settings.json was written without the platform.
+  const persisted = await page.evaluate(() => {
+    const last = window.__savedSettings.at(-1);
+    return { platforms: last.platforms, config: Object.keys(last.formatting.platforms) };
+  });
+  expect(persisted).toEqual({ platforms: ['巴哈小屋'], config: ['巴哈小屋'] });
+  expect(pageErrors).toEqual([]);
+});
+
+test('a platform stays when its Recovery copy cannot be made', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+  await seedPlatformRecords(page);
+  await page.evaluate(() => {
+    StoryFlowIntegrations.createWorkspaceRecoverySnapshot = async () => { throw new Error('磁碟已滿'); };
+  });
+  const { row, item } = await openPlatformMenu(page, '方格子');
+  page.once('dialog', dialog => dialog.accept());
+  await item.click();
+  await expect.poll(() => page.evaluate(() => window.__notes.at(-1)))
+    .toEqual(['尚未移除平台：無法建立 Recovery 安全副本（磁碟已滿）', true]);
+  await expect(row).toBeVisible();
+  expect(await page.evaluate(() => [...platforms])).toEqual(['巴哈小屋', '方格子']);
+  expect(await platformRecordKeys(page)).toEqual([
+    { title: '平台長文', keys: [BOTH_PLATFORMS] },
+    { title: '平台圖文', keys: [BOTH_PLATFORMS] }
+  ]);
+  expect(pageErrors).toEqual([]);
+});
+
+test('a platform removal that cannot be saved is put back', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+  await seedPlatformRecords(page);
+  await page.evaluate(() => {
+    StoryFlowIntegrations.saveStoryFlowSettings = async () => { throw new Error('寫入失敗'); };
+  });
+  const { row, item } = await openPlatformMenu(page, '方格子');
+  page.once('dialog', dialog => dialog.accept());
+  await item.click();
+  await expect.poll(() => page.evaluate(() => window.__notes.at(-1)))
+    .toEqual(['尚未移除平台：無法寫入 StoryFlow 資料夾，「方格子」已保留', true]);
+  expect(await page.evaluate(() => window.__recoveryReasons)).toEqual([['before-platform-delete', true]]);
+  await expect(row).toBeVisible();
+  expect(await page.evaluate(() => ({
     platforms: [...platforms],
-    config: Object.keys(state.formatting.platforms || {}).includes('方格子')
-  }));
-  expect(remaining).toEqual({ platforms: ['巴哈小屋'], config: false });
+    config: Boolean(state.formatting.platforms['方格子'])
+  }))).toEqual({ platforms: ['巴哈小屋', '方格子'], config: true });
+  expect(await platformRecordKeys(page)).toEqual([
+    { title: '平台長文', keys: [BOTH_PLATFORMS] },
+    { title: '平台圖文', keys: [BOTH_PLATFORMS] }
+  ]);
   expect(pageErrors).toEqual([]);
 });
 
