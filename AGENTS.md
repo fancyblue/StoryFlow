@@ -47,6 +47,24 @@ Any operation that may delete, overwrite, replace or mis-associate user data mus
 
 Keep `src/core/shared.js` first in the manifest, `src/core/render-pipeline.js` immediately after `src/core/app.js`, and `src/projects/content-model.js` loaded before project consumers. Extend `renderAll`, `renderChapters`, `renderSuggestion` and `renderParts` through `StoryFlowRender.provide/before/after`; never reassign them (`npm run test:static` refuses it). Before adding a helper to a module, check whether `src/core/shared.js` already owns it; before copying one between modules, move it there instead. Admission is narrow — pure, stateless and identical in every copy — and `docs/ARCHITECTURE.md` records why `clone()` stays duplicated. Preserve workspace schema version 2 unless a real incompatible outer-workspace change requires migration.
 
+## Where to look first
+
+Start a change from its row rather than searching the whole repository; read the named document section, not the whole document. Browser specs are split by the same areas, so the row's spec is also the smallest relevant Playwright run (`npx playwright test tests/browser/<spec>`). Shared test setup (`prepare`, `gotoWorkbench`) lives in `tests/browser/support/workbench.js`; add helpers used by more than one spec there.
+
+| Area | Code | Styles | Browser spec | Specification |
+|---|---|---|---|---|
+| Startup, navigation, dialogs, search, desktop bounds, render pipeline | `src/core/`, `src/ui/` | `styles/layers/`, `domains/dialogs.css`, `domains/global-search.css` | `app-shell.spec.js` | UI_SYSTEM “Dialog behavior”, “Command search”, “Responsive scope”; UX_FLOW “Global search and quick jump” |
+| Works library, longform workspace, chapters, reading/seam, split | `src/projects/`, `src/split/` | `domains/works-library.css`, `workspace*.css`, `chapter-management.css`, `manual-*.css` | `longform.spec.js` | UX_FLOW “Create a work” … “Navigating a long chapter list”; CHROME_ACCEPTANCE §4–5 |
+| Visual works and entries | `src/projects/visual-workspace.js`, `content-model.js` | `domains/visual-workspace.css`, `layers/mobile-visual.css` | `visual.spec.js` | `docs/VISUAL_CONTENT_MODE_DESIGN.md` |
+| Google/manual source, sync, diff, undo | `src/source/` | `domains/project-source-mode.css`, `source-article-ux.css` | `source-sync.spec.js` | CHROME_ACCEPTANCE §3 |
+| Publishing list, preview/copy, images, afterwords, records | `src/publishing/` | `domains/publishing*.css`, `article-images.css` | `publishing.spec.js` | UX_FLOW “Article afterwords” … “Platform publication records”; CHROME_ACCEPTANCE §6 |
+| Settings, platforms, backup center, storage cleanup | `src/settings/` | `domains/settings*.css` | `settings.spec.js` | CHROME_ACCEPTANCE §7 |
+| Folder connection, workspace safety, phone read-only mode | `src/connection/`, `src/persistence/` | `domains/connection-status.css`, `mobile-safe-mode.css`, `layers/mobile-navigation.css` | `folder-and-mobile.spec.js` | UX_FLOW “Phone editing”; CHROME_ACCEPTANCE §1–2, §8–9 |
+| Resolved shared control styles, cascade order | — | all | `cascade-contract.spec.js` | UI_SYSTEM “Cascade order”, “One control, one size” |
+| Pixel baselines and layout geometry | — | all | `visual-regression.spec.js`, `reading-density.spec.js` | `tests/README.md` |
+
+`src/legacy/` holds dormant scripts that the asset manifest does not load (`docs/ARCHITECTURE.md`); skip it when searching for live behavior.
+
 ## UI and interaction contract
 
 - The same label must have the same position, visual weight and behavior across pages.
