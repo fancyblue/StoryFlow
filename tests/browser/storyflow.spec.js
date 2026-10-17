@@ -449,9 +449,9 @@ test('render functions run one implementation and their hooks in load order', as
       after: ['workspace-interactions', 'smart-split-ui', 'platform-lock', 'boundary-engine', 'app-ux', 'connection-ui', 'reading-settings', 'smart-split-title']
     },
     renderParts: {
-      before: [],
+      before: ['publishing-lightbox-memory'],
       impl: 'renderPublishingDashboard',
-      after: ['publishing-disclosure', 'publishing-project-switcher', 'publishing-project-filter']
+      after: ['publishing-lightbox-sync', 'publishing-disclosure', 'publishing-project-switcher', 'publishing-project-filter']
     }
   });
 
@@ -1373,9 +1373,9 @@ test('published articles keep an independent afterword and can exclude it from o
   await expect(card.locator('.publish-afterword-badge')).toContainText('有後記 10 字');
   await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
 
-  // Preview is the expanded row's left column, and the rail on the right chooses which
-  // version it shows. Nothing opens on top of the row that is already open.
-  await card.getByRole('button', { name: '預覽「有後記的文章」', exact: true }).click();
+  // Preview is the lightbox's left column, and the rail on the right chooses which version it
+  // shows; StoryFlow 預設 is the rail's first entry. Nothing opens on top of the lightbox.
+  await card.locator('.publish-platform-row[data-platform=""] .publish-platform-choose').click();
   const preview = card.locator('.publish-preview-panel');
   await expect(preview).toBeVisible();
   await expect(card.locator('.publish-platform-row.is-current')).toHaveAttribute('data-platform', '');
@@ -1417,6 +1417,8 @@ test('published articles keep an independent afterword and can exclude it from o
       return false;
     };
   });
+  // Deleting is a row action (⋯ in the queue), so the lightbox closes first.
+  await card.getByRole('button', { name: '關閉', exact: true }).click();
   await card.locator('.publish-more-btn').click();
   await card.getByRole('menuitem', { name: '刪除文章', exact: true }).click();
   const deleteMessage = await page.evaluate(() => window.__afterwordDeleteMessages.at(-1));
@@ -1758,7 +1760,7 @@ test('article images import private copies, preview, reorder, describe, and remo
   await expect.poll(() => page.evaluate(() => window.__copiedImageMarkdown)).toContain('夜空中的城堡');
 
   await toolDialog.getByRole('button', { name: '完成', exact: true }).click();
-  await card.getByRole('button', { name: '預覽「附圖文章」', exact: true }).click();
+  await card.locator('.publish-platform-row[data-platform=""] .publish-platform-choose').click();
   const preview = card.locator('.publish-preview-panel');
   await expect(preview).toBeVisible();
   await expect(preview.locator('.platform-preview-image')).toHaveCount(2);
@@ -2168,7 +2170,7 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   await expect(plainVisualPreview.locator('#platformPreviewTitle')).toHaveText('預覽');
   await expect(plainVisualPreview.locator('#platformPreviewSettings')).toBeHidden();
   await expect(plainVisualPreview.locator('#platformPreviewVisualExtras')).toBeHidden();
-  await publishCard.getByRole('button', { name: /收合「月下預告」的發布平台/ }).click();
+  await publishCard.getByRole('button', { name: '關閉', exact: true }).click();
   await expect(plainVisualPreview).toHaveCount(0);
   await page.evaluate(() => {
     const spacer = document.createElement('div');
@@ -2184,7 +2186,8 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   expect(beforeManage.scrollY).toBeGreaterThan(0);
   expect(afterManage.scrollY).toBeGreaterThan(0);
   expect(Math.abs(afterManage.top - beforeManage.top)).toBeLessThanOrEqual(2);
-  await expect(publishCard.getByRole('button', { name: /收合「月下預告」的發布平台/ })).toBeFocused();
+  // Opening moves focus into the lightbox that opened over the row.
+  await expect(publishCard.getByRole('button', { name: '關閉', exact: true })).toBeFocused();
   await page.evaluate(() => document.getElementById('publishingScrollAnchorFixture')?.remove());
   await expect(publishCard.locator('.visual-publish-helpers')).toHaveCount(0);
   const helperToolButton = publishCard.getByRole('button', { name: '摘要與 Hashtags', exact: true });
@@ -2346,10 +2349,13 @@ test('visual content phase one creates, edits, stores, previews, orders, and rem
   const deletionCard = page.locator('.publish-list-item', { hasText: '準備刪除的圖文' });
   await expect(deletionCard).toBeVisible();
   await expect(deletionCard.locator('.publish-readiness-badge')).toHaveText('內容尚未完成');
+  // 月下預告 is still open from before the trip to the workbench; its lightbox covers the queue.
+  await page.locator('.publish-lightbox:not([hidden])').getByRole('button', { name: '關閉', exact: true }).click();
   await deletionCard.getByRole('button', { name: '展開「準備刪除的圖文」的發布平台', exact: true }).click();
   await deletionCard.locator('.publish-platform-row[data-platform="巴哈小屋"] .publish-platform-choose').click();
   await expect(deletionCard.locator('#togglePlatformPublished')).toBeDisabled();
   await expect(deletionCard.locator('#platformPreviewRecordBtn')).toBeDisabled();
+  await deletionCard.getByRole('button', { name: '關閉', exact: true }).click();
   await deletionCard.getByRole('button', { name: '更多「準備刪除的圖文」操作', exact: true }).click();
   page.once('dialog', dialog => dialog.accept());
   await deletionCard.getByRole('menuitem', { name: '刪除圖文', exact: true }).click();
