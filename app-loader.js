@@ -21,7 +21,7 @@
     { src: './src/publishing/platform-lock.js?v=20260925-a5', owner: 'publishing' },
     { src: './src/source/source-diff.js?v=20260912-a1', owner: 'source' },
     { src: './src/source/source-sync-history.js?v=20260825-p1', owner: 'source' },
-    { src: './src/source/source-flow.js?v=20261016-a7', owner: 'source' },
+    { src: './src/source/source-flow.js?v=20261017-a7', owner: 'source' },
     { src: './src/projects/projects.js?v=20260918-a2', owner: 'projects' },
     { src: './src/split/boundary-engine.js?v=20260925-a5', owner: 'split' },
     { src: './src/publishing/publishing-flow.js?v=20261017-a5', owner: 'publishing' },

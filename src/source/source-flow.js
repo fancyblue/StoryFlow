@@ -180,7 +180,14 @@
     document.getElementById('manualSourceTitle').value = '';
     document.getElementById('manualSourceText').value = '';
     dialog.showModal();
-    requestAnimationFrame(() => (creation ? projectTitle : document.getElementById('manualSourceTitle'))?.focus());
+    // The first field takes focus a frame after the dialog opens, but never away from a field
+    // the writer has already moved into: in that frame the next field's text used to land in
+    // the work name ("第二作品新章節"). showModal() itself parks focus on the × close button.
+    requestAnimationFrame(() => {
+      const current = document.activeElement;
+      if (dialog.contains(current) && current.matches('input, textarea, select')) return;
+      (creation ? projectTitle : document.getElementById('manualSourceTitle'))?.focus();
+    });
     return true;
   }
 
