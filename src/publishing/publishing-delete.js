@@ -148,8 +148,9 @@
     }
   }
 
-  // Capture the delete action before publishing-flow's legacy handler asks for a
-  // separate directory. All other publishing interactions continue unchanged.
+  // Capture the delete action in the capture phase so this Recovery-backed path is the only
+  // one a longform article takes. publishing-flow.js handles only visual entries, which
+  // findEntryFromButton() does not look up.
   document.addEventListener('click', event => {
     const button = event.target.closest?.('.publish-delete-btn');
     if (!button) return;

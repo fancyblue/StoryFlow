@@ -14,7 +14,7 @@ StoryFlow is a build-free static site. GitHub Pages serves the repository root, 
 | Workspace persistence | `src/persistence/integrations.js`, `src/persistence/settings-sync.js`, `src/persistence/project-persistence-guard.js`, `src/persistence/mobile-safe-mode.js` | `workspace.json` |
 | Backup and recovery | `src/persistence/integrations.js`, `src/persistence/workspace-safety.js`, `src/settings/backup-center.js` | `workspace.backup.json`, `Recovery/` |
 | Google bootstrap and token session | `src/settings/settings-bootstrap.js`, `src/connection/session-auth.js` | `settings.json`, session storage |
-| Generated articles | `src/persistence/integrations.js` | `Works/<work>/<chapter>/` |
+| Generated articles | `src/persistence/integrations.js`; deletion through `src/publishing/publishing-delete.js` (Recovery first) | `Works/<work>/<chapter>/` |
 | Private article images | `src/persistence/integrations.js`, `src/publishing/article-images.js` | `Works/<work>/<chapter>/assets/<part-id>/` |
 | Visual entries and private images | `src/projects/visual-workspace.js`, `src/persistence/integrations.js` | `Works/<work>/Visual/<entry-id>/` |
 
@@ -30,7 +30,7 @@ All `workspace.json` writes must go through `StoryFlowIntegrations.saveWorkspace
 
 ## Runtime layers
 
-1. `src/persistence/integrations.js` provides file and Google adapters.
+1. `src/persistence/integrations.js` provides the folder, workspace, Recovery and image-file adapters; `src/source/google-docs.js`, loaded immediately after it, adds Google sign-in, Picker and Docs import to the same `StoryFlowIntegrations` object. The Google half holds only the access token, token client and Picker key and touches no folder, so the two share no state; it must load before `session-auth.js`, `settings-sync.js`, `google-auth.js` and `mobile-google-auth.js`, which wrap its methods at load time.
 2. `src/core/app.js` defines the base state and rendering helpers.
 3. `src/core/render-pipeline.js` turns the four render functions into pipelines that later modules extend.
 4. `src/persistence/settings-sync.js` owns debounced persistence and truthful save status.
@@ -107,7 +107,7 @@ This runs the static architecture check, the palette contract (`scripts/palette-
 
 A visual entry's `summary` is authored in `src/projects/visual-workspace.js` alongside its title and body and rides the same entry autosave. Publishing reads it; it does not write it. A longform part's `summary` has no editor of its own and stays with the 摘要與 Hashtags tool in `publishing-flow.js`.
 
-`src/publishing/publishing-flow.js` owns the publishing list and, inside the expanded row, the preview panel. `buildPublishPreviewPanel()` builds it and `renderPublishPreview(panel, part, platform, contentMode)` fills it; `previewPublish()` is now only a selection — it sets `selectedPartKey` and `selectedPlatformKey` and re-renders. Because exactly one row is expanded at a time, the panel's element ids stay unique in the document. Any `renderParts()` rebuilds that panel, so what must survive a rebuild (the copy options) lives in module state rather than on the element.
+`src/publishing/publishing-output.js` holds the pure output and status rules — titles, body and afterword per platform, Hashtags, status and publication records — and exposes them as `window.StoryFlowPublishingOutput`; it has no UI or module state. `src/publishing/publishing-flow.js` reads them from there and owns the publishing list and, inside the expanded row, the preview panel. `buildPublishPreviewPanel()` builds it and `renderPublishPreview(panel, part, platform, contentMode)` fills it; `previewPublish()` is now only a selection — it sets `selectedPartKey` and `selectedPlatformKey` and re-renders. Because exactly one row is expanded at a time, the panel's element ids stay unique in the document. Any `renderParts()` rebuilds that panel, so what must survive a rebuild (the copy options) lives in module state rather than on the element.
 
 `#readingView` in `index.html` is the reading surface. `src/ui/workspace-interactions.js` owns its shell (open, close, the format select, and closing it when the view or the work changes); `src/split/boundary-engine.js` owns what the flow says and which of `讀稿`/`接縫` is showing, through `window.StoryFlowSetReadingViewMode`. `src/ui/preview-mode.js` treats `#readingFlow` as the `reading` group, so the surface inherits the shared rendered-Markdown contract and its reading measure. `src/ui/reading-settings.js` owns 閱讀設定: the size, leading, measure and density this browser chose, applied as custom properties on `<html>` and kept in `localStorage` (see UI_SYSTEM's Reading measure); it never touches work data. Nothing about it is a dialog: it is a section inside `#workspaceView`, and `publishing-flow.js`'s `ensureViewStructure()` moves it there with the topbar and the workspace grid.
 
