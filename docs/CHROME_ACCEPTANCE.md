@@ -125,7 +125,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Delete the test publishing part and confirm a `workspace.before-publishing-delete-*.json` file appears in `Recovery/`.
 - [ ] Delete an empty test chapter and confirm a `workspace.before-chapter-delete-*.json` file appears.
 - [ ] Delete a disposable work and confirm a `workspace.before-project-delete-*.json` file appears.
-- [ ] With two works that both record a disposable test platform, remove it in Settings and confirm a `workspace.before-platform-delete-*.json` file appears, and that neither work's articles or visual entries still show its status, URL, title or Hashtags in Publishing.
+- [ ] With two works that both record a disposable test platform, remove it in Settings and confirm a `workspace.before-platform-delete-*.json` file appears, and that neither work's articles or visual entries still show its status, URL, title or Hashtags in Publishing. Before that, rename it and confirm a `workspace.before-platform-rename-*.json` file appears and both works show their records under the new name.
 - [ ] Confirm the Google Doc itself was not changed or deleted.
 
 ## 7. Backup and recovery

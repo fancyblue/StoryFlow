@@ -33,51 +33,6 @@
     if (typeof renderSuggestion === 'function') renderSuggestion();
   }
 
-  function renamePlatform(oldName, input) {
-    const nextName = String(input.value || '').trim();
-    if (!nextName) {
-      input.value = oldName;
-      notify('平台名稱不能留白', true);
-      return;
-    }
-    if (nextName === oldName) return;
-    if (platforms.includes(nextName)) {
-      input.value = oldName;
-      notify(`「${nextName}」已存在`, true);
-      input.focus();
-      input.select();
-      return;
-    }
-
-    const index = platforms.indexOf(oldName);
-    if (index < 0) return;
-    platforms[index] = nextName;
-    const config = ensureConfig(oldName);
-    state.formatting.platforms[nextName] = config;
-    delete state.formatting.platforms[oldName];
-
-    for (const chapter of state.chapters || []) {
-      for (const part of chapter.parts || []) {
-        if (part.platformStatus && oldName in part.platformStatus) {
-          if (!(nextName in part.platformStatus)) part.platformStatus[nextName] = part.platformStatus[oldName];
-          delete part.platformStatus[oldName];
-        }
-        if (part.publicationRecords && oldName in part.publicationRecords) {
-          if (!(nextName in part.publicationRecords)) part.publicationRecords[nextName] = part.publicationRecords[oldName];
-          delete part.publicationRecords[oldName];
-        }
-        if (part.platformTitles && oldName in part.platformTitles) {
-          if (!(nextName in part.platformTitles)) part.platformTitles[nextName] = part.platformTitles[oldName];
-          delete part.platformTitles[oldName];
-        }
-      }
-    }
-
-    saveState('平台名稱已更新');
-    refreshDependentUI();
-    renderFormattingSettings();
-  }
-
   // Everything an article or visual entry keeps per platform, keyed by the platform's name.
   const PLATFORM_FIELDS = ['platformStatus', 'publicationRecords', 'platformTitles', 'platformHashtags', 'platformIncludeAfterword'];
 
@@ -88,50 +43,132 @@
     ];
   }
 
-  // The platform list is shared by every work, so its records go from every work, not only
-  // the open one. A record left in another work would come back under any later platform
-  // given the same name. Returns what was removed, so a failed save can put it back.
-  function stripPlatformRecords(name) {
-    const removed = [];
-    const visit = projectState => {
+  // The platform list is shared by every work, but each work keeps its own records keyed by
+  // platform name. Renaming or removing a platform therefore reaches every work, not only the
+  // open one: a record left behind in another work would come back under any later platform
+  // given the same name.
+  function forEachPlatformRecord(visit) {
+    const visitState = projectState => {
       for (const item of publishableItems(projectState)) {
         for (const field of PLATFORM_FIELDS) {
           const record = item?.[field];
-          if (!record || typeof record !== 'object' || !Object.hasOwn(record, name)) continue;
-          removed.push([record, record[name]]);
-          delete record[name];
+          if (record && typeof record === 'object' && !Array.isArray(record)) visit(record);
         }
       }
     };
-    if (window.StoryFlowProjects?.forEachState) window.StoryFlowProjects.forEachState(visit);
-    else visit(state);
-    return removed;
+    if (window.StoryFlowProjects?.forEachState) window.StoryFlowProjects.forEachState(visitState);
+    else visitState(state);
+  }
+
+  // Each change is [record, key, hadKey, previousValue], so a failed save can put every
+  // record back as it was.
+  function setRecordKey(changes, record, key, value) {
+    changes.push([record, key, Object.hasOwn(record, key), record[key]]);
+    if (value === undefined) delete record[key];
+    else record[key] = value;
+  }
+
+  function undoRecordChanges(changes) {
+    for (const [record, key, hadKey, value] of [...changes].reverse()) {
+      if (hadKey) record[key] = value;
+      else delete record[key];
+    }
+  }
+
+  async function prepareRecovery(reason, refusal) {
+    try {
+      const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
+      if (typeof prepare !== 'function') throw new Error('Recovery 安全元件尚未準備完成。');
+      await prepare(reason);
+      return true;
+    } catch (error) {
+      notify(`${refusal}：無法建立 Recovery 安全副本（${error.message}）`, true);
+      return false;
+    }
+  }
+
+  async function flushPersistence() {
+    const flush = window.StoryFlowPersistenceStatus?.flush;
+    return typeof flush === 'function' ? Boolean(await flush()) : false;
+  }
+
+  async function renamePlatform(oldName, input) {
+    const nextName = String(input.value || '').trim();
+    if (!nextName) {
+      input.value = oldName;
+      notify('平台名稱不能留白', true);
+      return false;
+    }
+    if (nextName === oldName) return false;
+    if (platforms.includes(nextName)) {
+      input.value = oldName;
+      notify(`「${nextName}」已存在`, true);
+      input.focus();
+      input.select();
+      return false;
+    }
+
+    // A rename re-associates every record this platform holds, so it is Recovery-first.
+    if (!(await prepareRecovery('before-platform-rename', '尚未更新平台名稱'))) {
+      input.value = oldName;
+      return false;
+    }
+    // The list may have changed while Recovery was being written.
+    const index = platforms.indexOf(oldName);
+    if (index < 0 || platforms.includes(nextName)) {
+      input.value = oldName;
+      return false;
+    }
+
+    platforms[index] = nextName;
+    const config = ensureConfig(oldName);
+    state.formatting.platforms[nextName] = config;
+    delete state.formatting.platforms[oldName];
+
+    // nextName is not a platform, so a value already under it is one left behind by an
+    // earlier removal. The records being renamed are the ones the user can see, so they win.
+    const changes = [];
+    forEachPlatformRecord(record => {
+      if (!Object.hasOwn(record, oldName)) return;
+      setRecordKey(changes, record, nextName, record[oldName]);
+      setRecordKey(changes, record, oldName, undefined);
+    });
+    saveState('平台名稱已更新');
+
+    if (!(await flushPersistence())) {
+      undoRecordChanges(changes);
+      if (platforms[index] === nextName) platforms[index] = oldName;
+      state.formatting.platforms[oldName] = config;
+      delete state.formatting.platforms[nextName];
+      refreshDependentUI();
+      renderFormattingSettings();
+      notify(`尚未更新平台名稱：無法寫入 StoryFlow 資料夾，仍為「${oldName}」`, true);
+      return false;
+    }
+
+    refreshDependentUI();
+    renderFormattingSettings();
+    window.StoryFlowRenderProjects?.();
+    return true;
   }
 
   async function removePlatform(name) {
     if (!confirm(`移除「${name}」平台？\n\n所有作品中這個平台的排版、自訂標題、Hashtags、發布狀態、時間與文章網址都會移除；移除前會先建立 Recovery 安全副本。已產出的 Markdown 不會刪除。`)) return false;
-
-    try {
-      const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
-      if (typeof prepare !== 'function') throw new Error('Recovery 安全元件尚未準備完成。');
-      await prepare('before-platform-delete');
-    } catch (error) {
-      notify(`尚未移除平台：無法建立 Recovery 安全副本（${error.message}）`, true);
-      return false;
-    }
+    if (!(await prepareRecovery('before-platform-delete', '尚未移除平台'))) return false;
 
     const index = platforms.indexOf(name);
     const config = state.formatting.platforms?.[name];
     if (index >= 0) platforms.splice(index, 1);
     delete state.formatting.platforms?.[name];
-    const removed = stripPlatformRecords(name);
+    const changes = [];
+    forEachPlatformRecord(record => {
+      if (Object.hasOwn(record, name)) setRecordKey(changes, record, name, undefined);
+    });
     saveState('平台已移除');
 
-    const flush = window.StoryFlowPersistenceStatus?.flush;
-    const saved = typeof flush === 'function' ? await flush() : false;
-    if (!saved) {
+    if (!(await flushPersistence())) {
       // Put the platform back as it was, so the page shows what the folder still holds.
-      removed.forEach(([record, value]) => { record[name] = value; });
+      undoRecordChanges(changes);
       if (index >= 0 && !platforms.includes(name)) platforms.splice(index, 0, name);
       if (config) state.formatting.platforms[name] = config;
       refreshDependentUI();
