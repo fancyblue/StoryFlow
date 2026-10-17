@@ -763,7 +763,7 @@ test('a dialog head is the card\'s own paper and its rule reaches the card edge'
 // into the rule under it. Opened, it no longer unfolds between its neighbours: a chapter of
 // preview there made the queue several screens long. It opens in a lightbox over the queue,
 // beside the menu, where the manuscript and the platforms scroll on their own, the copy actions
-// stay at the foot, and 放大 fills the page.
+// stay at the foot, and 放大 lifts the same window over the whole site.
 test('a publishing article is a row until it opens, then a lightbox over the queue', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
@@ -806,8 +806,11 @@ test('a publishing article is a row until it opens, then a lightbox over the que
     return {
       clearOfMenu: win.left >= Math.round(sidebar.right),
       inside: win.top >= 0 && win.bottom <= innerHeight + 0.5 && win.right <= innerWidth + 0.5,
-      fillsPage: Math.round(win.left) === Math.round(sidebar.right) && Math.round(win.right) === innerWidth
-        && Math.round(win.top) === 0 && Math.round(win.bottom) === innerHeight,
+      // Enlarged, it is still a window on a scrim, now over the whole site, menu included.
+      coversSite: Math.round(win.left) === 16 && Math.round(win.right) === innerWidth - 16
+        && Math.round(win.top) === 16 && Math.round(win.bottom) === innerHeight - 16
+        && box.contains(document.elementFromPoint(8, innerHeight / 2))
+        && getComputedStyle(box.querySelector('.publish-lightbox-window')).borderTopLeftRadius === '14px',
       columnScrolls: getComputedStyle(column).overflowY,
       railScrolls: getComputedStyle(rail).overflowY,
       actionsStick: getComputedStyle(actions).position,
@@ -816,7 +819,7 @@ test('a publishing article is a row until it opens, then a lightbox over the que
     };
   });
   expect(await geometry()).toEqual({
-    clearOfMenu: true, inside: true, fillsPage: false, columnScrolls: 'auto', railScrolls: 'auto',
+    clearOfMenu: true, inside: true, coversSite: false, columnScrolls: 'auto', railScrolls: 'auto',
     actionsStick: 'sticky', pageLocked: 'hidden', noSideways: true
   });
 
@@ -829,7 +832,7 @@ test('a publishing article is a row until it opens, then a lightbox over the que
   await size.click();
   await expect(size).toHaveAttribute('aria-pressed', 'true');
   await expect(size).toHaveAttribute('aria-label', '縮小視窗');
-  await expect.poll(async () => (await geometry()).fillsPage).toBe(true);
+  await expect.poll(async () => (await geometry()).coversSite).toBe(true);
   expect((await geometry()).noSideways).toBe(true);
   expect(await page.evaluate(() => localStorage.getItem('storyflow.ui.publishLightboxMaximized'))).toBe('1');
   // Switching the version rebuilds the row; the size and the focus survive it.
@@ -837,7 +840,7 @@ test('a publishing article is a row until it opens, then a lightbox over the que
   await expect(lightbox).toHaveClass(/is-maximized/);
   await expect(lightbox.locator('.publish-platform-row.is-current .publish-platform-choose')).toBeFocused();
   await size.click();
-  await expect.poll(async () => (await geometry()).fillsPage).toBe(false);
+  await expect.poll(async () => (await geometry()).coversSite).toBe(false);
 
   await page.keyboard.press('Escape');
   await expect(lightbox).toBeHidden();
