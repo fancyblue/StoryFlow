@@ -128,6 +128,14 @@ function normalizePublishingPart(part) {
     .filter(([platform]) => platform));
   if (typeof part.afterword !== 'string') part.afterword = '';
   if (typeof part.includeAfterword !== 'boolean') part.includeAfterword = true;
+  // A platform may decide for itself whether the afterword goes into the copied text; without
+  // its own choice it follows includeAfterword, the article's shared default.
+  if (!part.platformIncludeAfterword || typeof part.platformIncludeAfterword !== 'object' || Array.isArray(part.platformIncludeAfterword)) {
+    part.platformIncludeAfterword = {};
+  }
+  part.platformIncludeAfterword = Object.fromEntries(Object.entries(part.platformIncludeAfterword)
+    .map(([platform, include]) => [String(platform).trim(), include])
+    .filter(([platform, include]) => platform && typeof include === 'boolean'));
   if (!Array.isArray(part.images)) part.images = [];
   const placements = new Set(['before-body', 'after-body', 'after-afterword']);
   part.images = part.images.filter(image => image && typeof image === 'object' && image.fileName);
@@ -357,6 +365,7 @@ function chapterMetadata(chapter) {
       summary: part.summary || '', hashtags: part.hashtags || '', tags: structuredClone(part.tags || []),
       platformHashtags: structuredClone(part.platformHashtags || {}),
       afterword: part.afterword || '', afterwordChars: charCount(part.afterword), includeAfterword: part.includeAfterword !== false,
+      platformIncludeAfterword: structuredClone(part.platformIncludeAfterword || {}),
       images: structuredClone(part.images || []),
       publicationRecords: structuredClone(part.publicationRecords || {}),
       published: part.published, platformStatus: part.platformStatus
@@ -371,7 +380,7 @@ async function confirmSuggestion() {
     id: crypto.randomUUID(), title: suggestion.name, startBlock: suggestion.start, endBlock: suggestion.end,
     chars: suggestion.chars, raw: suggestion.raw, formatted: suggestion.formatted, published: false,
     publishTitle: '', platformTitles: {}, summary: '', hashtags: '', tags: [], platformHashtags: {},
-    afterword: '', includeAfterword: true, images: [], publicationRecords: {},
+    afterword: '', includeAfterword: true, platformIncludeAfterword: {}, images: [], publicationRecords: {},
     platformStatus: Object.fromEntries(platforms.map(platform => [platform, false]))
   };
   chapter.parts.push(part);

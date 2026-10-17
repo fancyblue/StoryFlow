@@ -99,6 +99,7 @@
       images,
       platformTitles: normalizeStringRecord(entry.platformTitles),
       platformHashtags: normalizeStringRecord(entry.platformHashtags, { keepEmpty: true }),
+      platformIncludeAfterword: normalizeBooleanRecord(entry.platformIncludeAfterword),
       platformStatus: normalizeBooleanRecord(entry.platformStatus),
       publicationRecords: normalizePublicationRecords(entry.publicationRecords),
       createdAt: typeof entry.createdAt === 'string' ? entry.createdAt : '',
@@ -163,6 +164,7 @@
     return {
       platformTitles: normalizeStringRecord(item.platformTitles),
       platformHashtags: normalizeStringRecord(item.platformHashtags, { keepEmpty: true }),
+      platformIncludeAfterword: normalizeBooleanRecord(item.platformIncludeAfterword),
       platformStatus: normalizeBooleanRecord(item.platformStatus),
       publicationRecords: normalizePublicationRecords(item.publicationRecords)
     };

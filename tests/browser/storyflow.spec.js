@@ -1393,22 +1393,41 @@ test('published articles keep an independent afterword and can exclude it from o
   await expect(include).toBeChecked();
   await include.uncheck();
   await expect(card.locator('#platformPreviewContent')).not.toContainText('這是寫給讀者的後記。');
+  // The choice belongs to this platform: the rail says so, and every other version — the
+  // default output, the next platform — still follows the article and keeps the afterword.
+  const platformName = await platformRow.getAttribute('data-platform');
+  await expect(platformRow.locator('.publish-platform-afterword-summary')).toHaveText('此平台不附後記');
+  const otherRow = card.locator('.publish-platform-row').nth(2);
+  await otherRow.locator('.publish-platform-choose').click();
+  await expect(card.locator('#platformPreviewIncludeAfterword')).toBeChecked();
+  await expect(card.locator('#platformPreviewContent')).toContainText('這是寫給讀者的後記。');
+  await platformRow.locator('.publish-platform-choose').click();
+  await expect(card.locator('#platformPreviewIncludeAfterword')).not.toBeChecked();
+  await expect(card.locator('#platformPreviewContent')).not.toContainText('這是寫給讀者的後記。');
 
-  const stateResult = await page.evaluate(() => {
+  const stateResult = await page.evaluate(platform => {
     const chapter = state.chapters.find(item => item.title === '後記測試章節');
     chapter.draft = '來源更新後的正文。';
     const part = chapter.parts[0];
     return {
       afterword: part.afterword,
       includeAfterword: part.includeAfterword,
-      output: StoryFlowPublishingOutput.forPart(part, '')
+      platformIncludeAfterword: part.platformIncludeAfterword,
+      platformOutput: StoryFlowPublishingOutput.forPart(part, platform),
+      defaultOutput: StoryFlowPublishingOutput.forPart(part, '')
     };
-  });
+  }, platformName);
   expect(stateResult).toEqual({
     afterword: '這是寫給讀者的後記。',
-    includeAfterword: false,
-    output: '正文原稿。'
+    includeAfterword: true,
+    platformIncludeAfterword: { [platformName]: false },
+    platformOutput: '正文原稿。',
+    defaultOutput: '正文原稿。\n\n---\n\n後記\n\n這是寫給讀者的後記。'
   });
+  // Ticking it again agrees with the article's default, so the platform follows it once more.
+  await card.locator('#platformPreviewIncludeAfterword').check();
+  await expect.poll(() => page.evaluate(() => state.chapters.find(item => item.title === '後記測試章節').parts[0].platformIncludeAfterword)).toEqual({});
+  await card.locator('#platformPreviewIncludeAfterword').uncheck();
 
   await page.evaluate(() => {
     window.__afterwordDeleteMessages = [];

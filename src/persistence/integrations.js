@@ -422,6 +422,7 @@ const StoryFlowIntegrations = (() => {
       images: normalized.images,
       platformTitles: normalized.platformTitles,
       platformHashtags: normalized.platformHashtags,
+      platformIncludeAfterword: normalized.platformIncludeAfterword,
       platformStatus: normalized.platformStatus,
       publicationRecords: normalized.publicationRecords,
       createdAt: normalized.createdAt,

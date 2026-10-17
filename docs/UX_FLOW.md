@@ -243,10 +243,11 @@ Deleting anything that owns images takes the images with it — an article, a vi
 
 ```text
 發布 → 管理發布 → 後記 → 編輯／保存 → 關閉燈箱 → 預覽
-                                                   ↘ 可排除後記，只輸出正文
+                                                   ↘ 選一個平台 → 「附上後記」決定這個平台要不要放後記
 ```
 
-- One publishing article owns one shared afterword; platform-specific variants are intentionally out of scope.
+- One publishing article owns one shared afterword text; platform-specific afterword texts are intentionally out of scope.
+- Whether the afterword goes into the copied text is decided per platform. The 後記 tool's checkbox is the article's default — what StoryFlow 預設, the article Markdown and every platform without its own choice use. A platform's “附上後記” in the preview stores that platform's own choice (`platformIncludeAfterword`); choosing what the default already says removes it, so the platform follows the default again. The rail notes a platform that decided differently (“此平台附上後記／此平台不附後記”).
 - The expanded item shows only a compact body/image/helper summary. “摘要與 Hashtags” and “後記” open focused dialogs for both content types, so platform rows remain visible without scrolling past large fields.
 - Saving updates `workspace.json` and, when the StoryFlow folder is connected, rewrites that article Markdown with `正文 → 分隔線 → 後記`.
 - Source refresh may update a chapter draft but must not change an existing publishing part or its afterword.
