@@ -24,15 +24,21 @@
 身份確認可以和唯讀盤點並行，但任何修改前至少讀取：
 
 1. [`AGENTS.md`](AGENTS.md)：安全、架構、UI、Git、測試與完成條件。
-2. [`README.md`](README.md)：產品範圍、使用方式與私人資料邊界。
-3. 與任務相關的正式文件：
-   - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-   - [`docs/UI_SYSTEM.md`](docs/UI_SYSTEM.md)
-   - [`docs/UX_FLOW.md`](docs/UX_FLOW.md)
-   - [`docs/VISUAL_CONTENT_MODE_DESIGN.md`](docs/VISUAL_CONTENT_MODE_DESIGN.md)
-   - [`tests/README.md`](tests/README.md)
-   - [`docs/CHROME_ACCEPTANCE.md`](docs/CHROME_ACCEPTANCE.md)
-4. 目前 default branch、開啟中的 PR、最近 Actions 與必要時的 Pages deployment。
+2. `AGENTS.md`〈Where to look first〉裡任務所屬那一列指定的程式、測試與**文件章節**。只讀那幾節，不要整份讀下列文件；任務跨好幾列時，每一列都讀。
+3. 任務涉及產品範圍或私人資料邊界時，再讀 [`README.md`](README.md)。
+
+下列正式文件是那張表指向的來源，依任務選讀相關章節：
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- [`docs/UI_SYSTEM.md`](docs/UI_SYSTEM.md)
+- [`docs/UX_FLOW.md`](docs/UX_FLOW.md)
+- [`docs/VISUAL_CONTENT_MODE_DESIGN.md`](docs/VISUAL_CONTENT_MODE_DESIGN.md)
+- [`tests/README.md`](tests/README.md)
+- [`docs/CHROME_ACCEPTANCE.md`](docs/CHROME_ACCEPTANCE.md)
+
+最後確認目前 default branch、開啟中的 PR、最近 Actions 與必要時的 Pages deployment。
+
+`docs/DESIGN_IMPLEMENTATION_PLAN.md` 是已完成設計紀錄，`docs/DESIGN_DATA_GAPS.md` 是候選需求；日常修改不需要讀，只在查某個決定的來由或要動工其中一項時讀相關段落。
 
 不要把本文件中的摘要當成即時 GitHub 狀態。branch、PR、CI 與 deployment 必須在接手當下重新查詢。
 
@@ -105,6 +111,8 @@ StoryFlow 是私人、單人使用的瀏覽器內容工作台：
 ```
 
 只有文件變更且不影響網站資產時，不需要為了形式等待 Pages；仍須確認 repository validation。
+
+使用者的長期指示（2026-10-17）：在本次 task 已確認的帳號下，實作完成、相稱測試通過、判斷可以上線時，直接建立 PR，CI 通過且沒有衝突就合併，不再詢問「要不要開 PR／合併」。這不取代第 0 節的身份確認，也不放寬任何資料安全規則。
 
 ## 7. 任務交接格式
 

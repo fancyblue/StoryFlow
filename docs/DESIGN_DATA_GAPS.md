@@ -16,7 +16,10 @@
 
 設計過程提出、但目前**沒有**的：
 
-### 1. 分平台的「附上後記」開關
+### 1. 分平台的「附上後記」開關（已完成：階段 4-19）
+
+> 已實作為 `platformIncludeAfterword`：平台值覆寫文章預設值，沒有自己值的平台沿用預設。現行行為見 `docs/UX_FLOW.md`〈Article afterwords〉。以下保留提出時的紀錄。
+
 
 - 現況：`includeAfterword` 是單一 boolean（`content-model.js:97`、`publishing-flow.js:53`），一次決定所有平台。
 - 需求：不同平台可各自決定要不要附後記。
@@ -91,7 +94,7 @@
 
 實作前逐項確認，不要整批視為已核可：
 
-- [ ] 1. `platformIncludeAfterword`
+- [x] 1. `platformIncludeAfterword` —— **已完成（階段 4-19）**
 - [ ] 2. `platformCopyTitle`
 - [ ] 3. `platformSummaries`
 - [ ] 4. `confirmedAt`（只有在想讓排序變成全域確認時間時才需要；目前文案與實作相符，不做也沒錯。第 5 項已用不依賴時間戳記的做法完成，所以這一項仍然不做）

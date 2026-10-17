@@ -1,8 +1,12 @@
 # 介面重新設計：實作順序
 
-> 狀態：**候選／待驗證** — 尚未授權實作。這份文件排的是「如果要做，用什麼順序做」，
-> 不是已核可的工作項。設計稿見對話中的提案連結；資料結構與使用案例差異見
-> [`DESIGN_DATA_GAPS.md`](DESIGN_DATA_GAPS.md)。
+> 狀態：**已完成設計紀錄** — 階段 0–5 已落地（最後一項 4-19，2026-10-17）。這份文件保留決策與 Phase 歷程；
+> 現行行為以 [`UI_SYSTEM.md`](UI_SYSTEM.md)、[`UX_FLOW.md`](UX_FLOW.md) 與 [`ARCHITECTURE.md`](ARCHITECTURE.md) 為準。
+> 日常修改不需要讀這份文件，只有要查某個決定的來由時才讀相關段落。
+>
+> **仍然開放的只有兩件，都不是排定的工作：**
+> - 其餘約 1,780 個 `!important`（階段 1 插曲的 C 類）：不排期，改到哪個檔案順手清那個檔案的。
+> - [`DESIGN_DATA_GAPS.md`](DESIGN_DATA_GAPS.md) 的第 2、3、4、6、7 項：仍是候選，動工前要逐項確認。
 
 ## 排序原則
 
@@ -451,7 +455,7 @@ token 就位後，這一步是改幾十行的事。
   另外三個 spec 原本寫死了舊色票的 `rgb()` 期望值（cascade-contract 13 處、storyflow 16 處），
   已依 `cascade-contract.spec.js` 自己的規定更新：確認新值是想要的，然後在同一個 commit 裡改期望值。
 
-- **驗證（待做）**：`docs/CHROME_ACCEPTANCE.md` 的人工清單需要在真實機器上跑一次。
+- **驗證**：真實機器上的人工驗收依 `docs/CHROME_ACCEPTANCE.md` 在每次發版時重跑，不在這裡記為一次性的完成或待做。
 
 ---
 
@@ -633,10 +637,11 @@ Hashtags **不跟著搬**：平台可以覆寫它，所以它留在發布那一�
 
 以下在 [`DESIGN_DATA_GAPS.md`](DESIGN_DATA_GAPS.md) 逐項確認之前**不要開工**：
 
-- 分平台的「附上後記」「複製時附上標題」「摘要」（GAPS 1–3）
+- 分平台的「複製時附上標題」「摘要」（GAPS 2–3）
 - `confirmedAt`（GAPS 4，階段 0-2 只改文案不碰這個）
-- 發布佇列排序偏好的保存位置（GAPS 5，擋住 4-5）
 - 「未切」的計算方式，以及「最新那一個還沒切的章」的定義（GAPS 6，擋住作品列的進度與主要動作）
+
+已解除：分平台的「附上後記」（GAPS 1）由 4-19 完成；發布佇列排序偏好（GAPS 5）由 4-5 完成，未動資料模型。
 
 **來源相關維持現狀**：`project.sourceDocId` 的推導行為與作品列的來源顯示不在本次範圍內。
 
@@ -644,11 +649,11 @@ Hashtags **不跟著搬**：平台可以覆寫它，所以它留在發布那一�
 
 ## 每個 PR 的完成條件
 
-依 `AGENTS.md`：
+當時每個 PR 依 `AGENTS.md` 遵守的條件（現行規則以 `AGENTS.md` 為準）：
 
-- [ ] 改到靜態資產 → `npm run bump:assets`，且 `npm run test:assets` 通過
-- [ ] `npm run test:static` 通過
-- [ ] 動到 stylesheet 順序 → `scripts/cascade-order.json` 同步更新，cascade 契約測試通過
-- [ ] 視覺回歸：階段 1 必須零差異；階段 2 之後逐張確認才更新基準
-- [ ] 行為、架構或已完成設計階段有變 → 同一個 PR 更新對應文件
+- 改到靜態資產 → `npm run bump:assets`，且 `npm run test:assets` 通過
+- `npm run test:static` 通過
+- 動到 stylesheet 順序 → `scripts/cascade-order.json` 同步更新，cascade 契約測試通過
+- 視覺回歸：階段 1 必須零差異；階段 2 之後逐張確認才更新基準
+- 行為、架構或已完成設計階段有變 → 同一個 PR 更新對應文件
       （採用了 GAPS 第五節列出的使用案例差異時，同步更新 `docs/UX_FLOW.md` 的那幾列）
