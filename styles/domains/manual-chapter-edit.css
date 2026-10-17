@@ -28,11 +28,21 @@
   font-size:15px;
   line-height:1;
 }
+/* The rule between 編輯 and 刪除 is drawn in the gap between them, not as the delete item's
+   top border: as a border it squared off that item's top corners, so its hover fill was the
+   one square-cornered item among the works, publishing and chapter menus. */
 .chapter-row-action-menu .chapter-row-edit-menu-item + .chapter-row-delete-menu-item{
-  margin-top:3px;
-  padding-top:8px;
-  border-top:1px solid #ded9cc;
-  border-radius:0 0 7px 7px;
+  position:relative;
+  margin-top:9px;
+}
+.chapter-row-action-menu .chapter-row-edit-menu-item + .chapter-row-delete-menu-item::before{
+  content:"";
+  position:absolute;
+  top:-5px;
+  left:4px;
+  right:4px;
+  height:1px;
+  background:#ded9cc;
 }
 #manualSourceDialog[data-edit-chapter-id] #cancelManualChapterEditBtn{
   display:inline-flex!important;

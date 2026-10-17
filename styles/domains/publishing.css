@@ -57,7 +57,11 @@
   font-size:11px;
   font-weight:700;
 }
-.content-type-filter.active{background:#f4f1e9;border-color:#c8c1b0;color:#4b4557}
+/* 全部類型／長文／圖文 is one control on Works and on Publishing, so it is one chip: the same
+   34px box (below) and, like the status chips beside it, selected as a piece of the ground. It
+   was the recessed fill here and the ground there, and 31px on Works against 34px on Publishing. */
+.content-type-filter:hover{background:var(--sf-surface-soft,#f4f1e9);border-color:#c8c1b0}
+.content-type-filter.active{background:var(--sf-primary-soft,#ece9e0);border-color:#c8c1b0;color:var(--denim-800,#4b4557)}
 .content-type-filter[data-content-type="visual"].active{background:#eef0e4;border-color:#59703f;color:#59703f}
 
 .publishing-dashboard-panel{margin-top:0!important;}
@@ -632,15 +636,11 @@
 .publish-list-actions{position:relative!important}
 /* Hide the legacy destructive control regardless of renderer nesting/cascade. */
 .publish-delete-btn{display:none!important}
+/* Geometry is the shared list-row tier in ui-system.css. */
 .publish-list-actions > .publish-manage-btn{
-  min-height:36px!important;
-  height:36px!important;
-  padding:0 12px!important;
-  border-radius:9px!important;
   border-color:#ded9cc!important;
   background:#fbfaf6!important;
   color:#4b4557!important;
-  font-size:12px!important;
   font-weight:700!important;
   white-space:nowrap!important;
 }
@@ -653,12 +653,6 @@
   order:99!important;
   display:grid!important;
   place-items:center!important;
-  width:36px!important;
-  min-width:36px!important;
-  height:36px!important;
-  min-height:36px!important;
-  padding:0!important;
-  border-radius:9px!important;
   border-color:#ded9cc!important;
   background:#fbfaf6!important;
   color:#6a6357!important;
@@ -751,13 +745,12 @@
 
 @media(max-width:680px){
   .publish-list-actions{
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px!important;
   }
   .publish-list-actions > .default-preview-btn,
   .publish-list-actions > .publish-manage-btn{width:100%!important}
   .publish-list-actions > .publish-more-btn{
     grid-column:3!important;
-    width:36px!important;
   }
   .publishing-toolbar{margin-bottom:8px!important}
   .publish-list-summary{padding:10px!important}
@@ -777,7 +770,7 @@
 .publishing-project-switch-btn.single-project strong{color:#4b4557}
 .publishing-project-menu{position:absolute;top:calc(100% + 8px);right:0;z-index:150;display:grid;gap:4px;width:min(300px,72vw);max-height:min(320px,55vh);overflow:auto;padding:8px;border:1px solid #c8c1b0;border-radius:12px;background:#fbfaf6;}
 .publishing-project-menu[hidden]{display:none!important}
-.publishing-project-menu-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:40px;padding:8px 10px;border:0;border-radius:9px;background:transparent;color:var(--sf-text);font-size:13px;font-weight:700;text-align:left;cursor:pointer}
+.publishing-project-menu-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:40px;padding:8px 10px;border:0;border-radius:7px;background:transparent;color:var(--sf-text);font-size:13px;font-weight:700;text-align:left;cursor:pointer}
 .publishing-project-menu-item span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .publishing-project-menu-item:hover:not(:disabled),.publishing-project-menu-item:focus-visible{background:#f4f1e9;outline:none}
 .publishing-project-menu-item.active{background:var(--sf-surface-active);color:var(--sf-primary-hover);cursor:default}
@@ -1346,10 +1339,12 @@ button.publish-delete-btn{
   .platform-preview-hashtags-row>.button{width:auto}
 }
 
-/* Publishing consistency: project, type and status filters share one control scale. */
+/* Publishing consistency: project, type and status filters share one control scale, and
+   Works' type filter is the same control. */
 body #publishingView #publishingProjectFilterBtn,
 body #publishingView #publishingContentTypeFilters .content-type-filter,
-body #publishingView #publishingFilters .publishing-filter{
+body #publishingView #publishingFilters .publishing-filter,
+body #projectsView #worksTypeFilters .content-type-filter{
   box-sizing:border-box!important;
   display:inline-flex!important;
   align-items:center!important;
@@ -1408,7 +1403,8 @@ body #publishingView #publishingProjectFilterBtn strong{
 @media(max-width:680px){
   body #publishingView #publishingProjectFilterBtn,
   body #publishingView #publishingContentTypeFilters .content-type-filter,
-  body #publishingView #publishingFilters .publishing-filter{
+  body #publishingView #publishingFilters .publishing-filter,
+  body #projectsView #worksTypeFilters .content-type-filter{
     min-height:36px!important;
     height:36px!important;
   }
@@ -1457,16 +1453,19 @@ body #publishingView #publishingProjectFilterBtn strong{
   font-size:11.5px;
   white-space:nowrap;
 }
+/* It shares the toolbar's row, so it is the toolbar's height and corner (UI_SYSTEM.md, toolbar
+   controls), and the current order does not change weight: the fill already says which one is
+   current, and a bolder label only made the pair shift sideways when it changed. */
 .publishing-sort-option{
-  min-height:30px;
+  min-height:var(--sf-control-sm,34px);
   padding:0 10px;
   border:0;
-  border-radius:7px;
+  border-radius:8px;
   background:transparent;
   color:#6a6357;
   font:inherit;
-  font-size:12.5px;
-  font-weight:500;
+  font-size:12px;
+  font-weight:700;
   white-space:nowrap;
   cursor:pointer;
 }
@@ -1477,7 +1476,6 @@ body #publishingView #publishingProjectFilterBtn strong{
 .publishing-sort-option.active{
   background:var(--paper-0,#ece9e0);
   color:#4b4557;
-  font-weight:700;
 }
 .publishing-sort-option:focus-visible{
   outline:none;

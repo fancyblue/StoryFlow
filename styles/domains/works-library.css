@@ -77,51 +77,26 @@
   justify-content:flex-end!important;
   flex-wrap:nowrap!important;
 }
+/* Geometry is the shared list-row tier in ui-system.css; this file owns only colour. */
 .project-library-actions > .button{
-  min-height:40px!important;
-  height:40px!important;
-  padding:0 12px!important;
-  border-radius:9px!important;
-  font-size:14px!important;
   font-weight:700!important;
   white-space:nowrap!important;
 }
-.project-library-card .project-library-actions > .project-open-btn{
-  min-height:40px!important;
-  height:40px!important;
-  padding:0 12px!important;
-  border-radius:9px!important;
-  font-size:14px!important;
-  font-weight:700!important;
-}
-.project-library-actions .project-open-btn:not(.primary){
-  border-color:#c8c1b0!important;
-  background:#fbfaf6!important;
-  color:#4b4557!important;
-}
 /* Keep identical actions identical across cards. The active work is already shown
    by its card and badge; chapter management gets the stronger soft treatment, while
-   publishing remains a quieter shortcut. */
+   publishing remains a quieter shortcut. 管理章節 rests exactly as Publishing's 管理發布
+   does — the ground's fill on the ordinary frame — and takes the darker frame and ink only
+   under the pointer or while open, as that one does; it used to rest in its open state. */
 .project-library-card .project-library-actions > .project-manage-chapters-btn{
-  min-height:40px!important;
-  height:40px!important;
-  padding:0 14px!important;
-  border-color:#968f80!important;
+  border-color:#c8c1b0!important;
   background:var(--paper-0,#ece9e0)!important;
-  color:var(--denim-900,#221f1a)!important;
-  font-size:14px!important;
-  font-weight:700!important;
+  color:var(--denim-800,#4b4557)!important;
   box-shadow:none!important;
 }
 .project-library-card .project-library-actions > .project-publish-btn{
-  min-height:40px!important;
-  height:40px!important;
-  padding:0 14px!important;
   border-color:#c8c1b0!important;
   background:#fbfaf6!important;
   color:var(--denim-800,#4b4557)!important;
-  font-size:14px!important;
-  font-weight:700!important;
   box-shadow:none!important;
 }
 .project-library-card .project-publish-btn[hidden]{
@@ -154,9 +129,6 @@
   order:99!important;
   display:grid!important;
   place-items:center!important;
-  width:36px!important;
-  min-width:36px!important;
-  padding:0!important;
   border-color:#ded9cc!important;
   background:#fbfaf6!important;
   color:#6a6357!important;
@@ -276,12 +248,12 @@
   .project-library-actions > .project-manage-chapters-btn{
     flex:1 1 auto!important;
   }
-  .project-library-more-btn{flex:0 0 36px!important}
+  .project-library-more-btn{flex:0 0 40px!important}
 }
 @media(max-width:560px){
   .project-library-actions{
     display:grid!important;
-    grid-template-columns:1fr 1fr 36px!important;
+    grid-template-columns:1fr 1fr 40px!important;
   }
   /* 開啟 | 管理發布 | ⋯ on the first line — the order Publishing's rows use — and the chapter
      disclosure across the whole second line, directly above the list it opens. It used to

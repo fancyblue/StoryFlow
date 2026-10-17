@@ -1217,3 +1217,91 @@ test('compact dialog heads run to the edge, and split preferences are named once
   });
   expect(edges).toEqual({ left: 0, right: 0, rule: '1px' });
 });
+
+// The same control is one control on every page. Each of these was decided twice and came out
+// different: Works' row actions at 9px and 8px corners with a ⋯ 6px shorter than Publishing's,
+// its 全部類型 chips 31px against Publishing's 34px and selected in another fill, and three
+// sizes and two frames of × for dismissing a dialog.
+test('the same control resolves alike on Works, Publishing and every dialog', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+  await page.evaluate(() => { window.StoryFlowIntegrations.savePart = async () => 'x.md'; });
+  await page.locator('#confirmBtn').click();
+
+  const shapes = selector => page.evaluate(sel => [...document.querySelectorAll(sel)]
+    .filter(node => node.getBoundingClientRect().width > 0)
+    .map(node => {
+      const style = getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      return {
+        height: Math.round(rect.height),
+        square: Math.round(rect.width) === Math.round(rect.height),
+        corner: style.borderTopLeftRadius,
+        label: style.fontSize,
+        frame: style.borderTopColor,
+        fill: style.backgroundColor
+      };
+    }), selector);
+  const geometry = list => list.map(({ height, corner, label }) => ({ height, corner, label }));
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await expect(page.locator('.project-library-card').first()).toBeVisible();
+  const worksRow = await shapes('.project-library-card .project-library-actions > .button');
+  const worksMore = await shapes('.project-library-card .project-library-more-btn');
+  const worksChip = await shapes('#worksTypeFilters .content-type-filter:not(.active)');
+  const worksChipActive = await shapes('#worksTypeFilters .content-type-filter.active');
+  const worksManage = await shapes('.project-manage-chapters-btn');
+
+  await page.locator('#projectsNewWorkBtn').click();
+  const typeDialog = page.getByRole('dialog', { name: '選擇作品類型' });
+  await expect(typeDialog).toBeVisible();
+  await page.mouse.move(0, 0);
+  const dialogClose = await shapes('#visualTypeDialog .panel-head .icon-button');
+  await typeDialog.getByRole('button', { name: '關閉', exact: true }).click();
+  await expect(typeDialog).toBeHidden();
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('.publish-list-item').first()).toBeVisible();
+  await page.mouse.move(0, 0);
+  const publishingRow = await shapes('.publish-list-actions > .button');
+  const publishingMore = await shapes('.publish-list-actions > .publish-more-btn');
+  const publishingChip = await shapes('#publishingContentTypeFilters .content-type-filter:not(.active)');
+  const publishingChipActive = await shapes('#publishingContentTypeFilters .content-type-filter.active');
+  const statusChipActive = await shapes('#publishingFilters .publishing-filter.active');
+  const publishingManage = await shapes('.publish-list-actions > .publish-manage-btn');
+
+  await page.locator('.publish-list-item').first().getByRole('button', { name: /展開.*發布平台/ }).click();
+  await expect(page.locator('.publish-lightbox-close')).toBeVisible();
+  await page.mouse.move(0, 0);
+  const lightboxClose = await shapes('.publish-lightbox-close');
+  await page.locator('.publish-lightbox-close').click();
+
+  await page.keyboard.press('Control+K');
+  await expect(page.locator('#closeGlobalSearch')).toBeVisible();
+  await page.mouse.move(0, 0);
+  const searchClose = await shapes('#closeGlobalSearch');
+
+  // A list row's actions: one tier, wherever the list is, and ⋯ as wide as it is tall.
+  const tier = { height: 40, corner: '10px', label: '14px' };
+  for (const row of [worksRow, publishingRow]) {
+    expect(row.length).toBeGreaterThan(1);
+    expect(geometry(row)).toEqual(row.map(() => tier));
+  }
+  expect(worksMore.map(item => item.square)).toEqual([true]);
+  expect(publishingMore.map(item => item.square)).toEqual([true]);
+  // 管理章節 rests exactly as 管理發布 does.
+  expect(worksManage[0]).toEqual(publishingManage[0]);
+
+  // 全部類型／長文／圖文 is one chip, selected the way the status chips beside it are.
+  expect(worksChip[0]).toEqual(publishingChip[0]);
+  expect(worksChipActive[0]).toEqual(publishingChipActive[0]);
+  expect(publishingChipActive[0].fill).toBe(statusChipActive[0].fill);
+  expect(worksChip[0].height).toBe(34);
+
+  // One close control: no frame, no fill at rest, the toolbar's height.
+  const close = { height: 34, square: true, corner: '8px', fill: 'rgba(0, 0, 0, 0)' };
+  for (const control of [dialogClose, lightboxClose, searchClose]) {
+    expect(control).toHaveLength(1);
+    expect(control[0]).toMatchObject(close);
+  }
+});

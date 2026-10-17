@@ -87,23 +87,24 @@
   outline:0!important;
 }
 #globalSearchInput::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;display:none}
+/* The same close control as every dialog's (dialogs.css). */
 .global-search-close{
   display:grid;
   place-items:center;
-  width:36px;
-  min-width:36px;
-  height:36px;
+  width:var(--sf-control-sm,34px);
+  min-width:var(--sf-control-sm,34px);
+  height:var(--sf-control-sm,34px);
   padding:0;
-  border:1px solid #ded9cc;
-  border-radius:9px;
-  background:#fbfaf6;
-  color:#4b4557;
-  font-size:24px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#6a6357;
+  font-size:22px;
+  font-weight:400;
   line-height:1;
-  font-weight:700;
 }
 .global-search-close:hover,
-.global-search-close:focus-visible{border-color:#c8c1b0;background:#f4f1e9;color:#221f1a}
+.global-search-close:focus-visible{background:#f4f1e9;color:#221f1a}
 .global-search-options{
   display:flex;
   align-items:center;
