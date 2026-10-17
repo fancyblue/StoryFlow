@@ -308,7 +308,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .publishing-filter{min-height:34px;padding:0 11px;border:1px solid var(--sf-border);border-radius:999px;background:#fbfaf6!important;color:var(--sf-muted);font-size:13px;font-weight:700}
 .publishing-filter:hover{border-color:#c8c1b0;background:var(--sf-surface-soft)!important}
 .publishing-filter.active{background:var(--sf-primary-soft)!important;border-color:#c8c1b0;color:var(--denim-800,#4b4557)}
-.publish-list-summary{min-height:70px;padding:12px 14px!important}
+.publish-list-summary{min-height:58px;padding:9px 14px!important}
 .publish-chapter-name{font-size:12px;font-weight:700}
 .publish-list-title-row strong{font-size:16px;font-weight:700}
 .publish-list-title-row span{font-size:12px!important}

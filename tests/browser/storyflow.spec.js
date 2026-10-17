@@ -3208,8 +3208,11 @@ test('publishing order can follow chapters, and the choice follows the writer no
     window.renderAll?.();
   });
 
+  // Each chapter holds one part, so neither has a header of its own: the order is read from
+  // the rows, by the chapter number their titles start with.
   const chapterOrder = () => page.evaluate(() =>
-    [...document.querySelectorAll('.publishing-chapter-group-head strong')].map(node => node.textContent.trim()));
+    [...document.querySelectorAll('.publishing-project-group-body .publish-list-title-row strong')]
+      .map(node => node.textContent.trim().slice(0, 2)));
 
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.locator('#publishingSortControl')).toBeVisible();
@@ -3218,11 +3221,13 @@ test('publishing order can follow chapters, and the choice follows the writer no
   // re-rendered through wrappers that run on their own turn of the event loop, so a single
   // reading can be taken before the order it is asserting has been drawn. Seen as a flaky
   // pass on CI, where the retry then succeeded.
-  await expect.poll(chapterOrder).toEqual(['02、第二章', '01、第一章']);
+  await expect.poll(chapterOrder).toEqual(['02', '01']);
+  // A one-part chapter is a row, not a header over a row that repeats it.
+  await expect(page.locator('#publishingView .publishing-chapter-group')).toHaveCount(0);
 
   await page.getByRole('button', { name: '章節順序', exact: true }).click();
   await expect(page.getByRole('button', { name: '章節順序', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect.poll(chapterOrder).toEqual(['01、第一章', '02、第二章']);
+  await expect.poll(chapterOrder).toEqual(['01', '02']);
 
   // It belongs to the writer, not to one work: switchProject() replaces `state` wholesale, so
   // carrying it has to be deliberate, the way the split preferences above it already are.
