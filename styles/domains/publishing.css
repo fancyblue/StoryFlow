@@ -898,8 +898,10 @@
 .publishing-chapter-group .publish-list-item:last-child{
   border-radius:0 0 13px 13px!important;
 }
-.publishing-chapter-group .publish-list-summary{
-  min-height:58px!important;
+/* A chapter with several parts is one block among the work's rows, so it ends on the same
+   hairline a row does; without it the block ran straight into the next chapter's row. */
+.publishing-project-group-body > .publishing-chapter-group:not(:last-child){
+  border-bottom:1px solid var(--rule-1,#ded9cc);
 }
 .publishing-chapter-group .publish-chapter-name{
   display:none!important;

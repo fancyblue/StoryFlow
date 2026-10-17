@@ -432,25 +432,26 @@
     });
     chapters.forEach(chapter => { chapter.count.textContent = `${chapter.size.toLocaleString()} 項`; });
 
-    // A chapter header earns its place by separating one chapter from another, or by
-    // labelling several parts at once. One chapter holding one row does neither: it
-    // restates the work header and repeats its count. Unwrap only that case — keeping
-    // the header for a single chapter with many parts, where removing it would replace
-    // one label with the same label repeated on every row.
+    // A chapter header earns its place by labelling several parts at once. A chapter that
+    // holds one part does not: its header restated the row under it and counted "1 項", so a
+    // work of one-part chapters drew every row twice — a small header, a rule, then the same
+    // name larger and indented below it, which read as the hierarchy upside down. Every such
+    // chapter is unwrapped into the work's body, and its row names the chapter only when its
+    // own title does not already (「06、共鳴（1）」 already says 06、共鳴).
+    chapters.forEach(chapter => {
+      if (chapter.size !== 1) return;
+      const row = chapter.rows.firstElementChild;
+      chapter.section.replaceWith(row);
+      const title = chapter.title || '';
+      if (title && (chapter.lastRowTitle || '').startsWith(title)) {
+        row.setAttribute('data-chapter-repeats-title', 'true');
+      }
+    });
+    // The header that remains still labels its parts, but with no sibling chapter its count
+    // can only repeat the work count directly above it.
     if (chapters.size === 1) {
       const only = chapters.values().next().value;
-      if (only.size === 1) {
-        only.section.replaceWith(...only.rows.children);
-        // The unwrapped row shows its own chapter name again. Suppress it only when
-        // the chapter and the part carry the same name, where it states nothing new.
-        if (only.title && only.title === only.lastRowTitle) {
-          body.querySelector(':scope > .publish-list-item')?.setAttribute('data-chapter-repeats-title', 'true');
-        }
-      } else {
-        // The header still labels its parts, but with no sibling chapter its count
-        // can only repeat the work count directly above it.
-        only.count.remove();
-      }
+      if (only.size > 1) only.count.remove();
     }
 
     const applyProjectCollapse = () => {
