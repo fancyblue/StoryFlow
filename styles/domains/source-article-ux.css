@@ -86,8 +86,8 @@
 }
 #manualSourceDialog.manual-source-dialog .manual-source-actions .button{
   min-height:40px!important;
-  padding:0 15px!important;
-  font-size:13px!important;
+  padding:0 14px!important;
+  font-size:var(--sf-font-control,14px)!important;
   font-weight:700!important;
 }
 
@@ -127,7 +127,7 @@
   margin:0 0 5px;
   padding:8px 10px;
   border:1px solid #c8c1b0;
-  border-radius:9px;
+  border-radius:10px;
   background:#fbfaf6;
   color:#4b4557;
   font-size:13px;

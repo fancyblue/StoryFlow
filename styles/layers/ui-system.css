@@ -122,12 +122,28 @@ h3{font-size:18px;font-weight:700;line-height:1.3}
   font-weight:700;
   line-height:1.15!important;
 }
-.button.tiny,.project-library-actions .button,.publish-list-actions .button,.source-linked-actions .button{
+.button.tiny,.source-linked-actions .button{
   min-height:var(--sf-control-sm)!important;
   height:var(--sf-control-sm)!important;
   padding:0 11px!important;
   border-radius:8px!important;
   font-size:var(--sf-font-control)!important;
+}
+/* A list row's actions are the standard tier on every page that lists rows. Works drew 開啟 at
+   9px corners, 管理發布 at 8px and its ⋯ 6px shorter than either, beside a Publishing row whose
+   預覽, 管理發布 and ⋯ were all 40px; the two pages settled it separately, and differently. The
+   ⋯ is the same height and as wide as it is tall. */
+.project-library-actions>.button,.publish-list-actions>.button{
+  min-height:var(--sf-control)!important;
+  height:var(--sf-control)!important;
+  padding:0 14px!important;
+  border-radius:10px!important;
+  font-size:var(--sf-font-control)!important;
+}
+.project-library-actions>.project-library-more-btn,.publish-list-actions>.publish-more-btn{
+  width:var(--sf-control)!important;
+  min-width:var(--sf-control)!important;
+  padding:0!important;
 }
 .button.primary{background:var(--sf-primary)!important;border-color:var(--sf-primary)!important;color:#fbfaf6;box-shadow:none!important}
 .button.primary:hover:not(:disabled){background:var(--sf-primary-hover)!important;border-color:var(--sf-primary-hover)!important}
@@ -226,7 +242,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .chapter-group-label{padding:7px 9px;border-radius:8px;font-size:12px}
 .chapter-item{min-height:44px;padding:10px 11px;border-radius:0;font-size:14px;font-weight:700}
 .chapter-item small{font-size:12px}
-.chapter-delete-button{width:34px;min-width:34px;border-radius:9px}
+.chapter-delete-button{width:34px;min-width:34px;border-radius:8px}
 .source-choice{border-color:var(--sf-border);border-radius:14px}
 .source-choice:hover{border-color:#c8c1b0;background:#f4f1e9}
 .source-choice span{font-size:13px}
@@ -237,7 +253,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 /* Smart Split: controls are tools; preview content remains the strongest frame. */
 .splitter-panel .smart-split-mini-settings{gap:12px!important;padding:0!important;margin:0;border-bottom:0!important}
 .splitter-panel .smart-split-mini-settings .range-grid label,.splitter-panel .scene-marker-compact,.splitter-panel .suggestion-platform-bar .platform-select-field>span{color:var(--sf-muted);font-size:13px!important;font-weight:700!important;line-height:1.2!important}
-.splitter-panel .smart-split-mini-settings .range-grid input,.splitter-panel .scene-marker-compact #sceneMarker{height:40px!important;min-height:40px!important;border:1px solid var(--sf-border)!important;background:#fbfaf6;color:var(--sf-text);font-size:14px!important;border-radius:9px!important}
+.splitter-panel .smart-split-mini-settings .range-grid input,.splitter-panel .scene-marker-compact #sceneMarker{height:40px!important;min-height:40px!important;border:1px solid var(--sf-border)!important;background:#fbfaf6;color:var(--sf-text);font-size:14px!important;border-radius:10px!important}
 .splitter-panel .smart-split-mini-settings .range-grid input:focus,.splitter-panel .scene-marker-compact #sceneMarker:focus{border-color:var(--sf-primary)!important;background:#fbfaf6;box-shadow:var(--sf-focus)!important}
 /* The format bar sits in the panel head's actions, beside 切篇偏好, at the head's 34px height. */
 .splitter-panel .suggestion-platform-bar{margin:0!important;gap:8px!important}
@@ -307,12 +323,14 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .settings-view .settings-section>strong{font-size:16px;font-weight:700;margin-bottom:5px}
 .settings-view .settings-section p{font-size:13.5px;line-height:1.65}
 .settings-view .platform-editor-hint{font-size:13px;line-height:1.5}
-.settings-view .platform-add-button{height:36px!important;min-height:36px!important;padding:0 11px!important;background:#f4f1e9!important;border-color:var(--sf-border-strong);color:var(--denim-700,#4b4557)!important;font-size:13px!important;font-weight:700}
-.settings-view .platform-add-button:hover{background:#f4f1e9!important;border-color:#c8c1b0}
+/* ＋ 新增平台 is the same kind of action as Works' ＋ 新增作品 — create a thing in the list below
+   — so it is the same button: the standard ghost, at the standard height. It was a 36px
+   recessed-fill variant found nowhere else. */
+.settings-view .platform-add-button{height:var(--sf-control)!important;min-height:var(--sf-control)!important;padding:0 14px!important;border-radius:10px!important}
 .settings-view .platform-setting-row{min-height:62px;gap:14px!important}
 .settings-view .platform-default-name{font-size:14px;font-weight:700}
 .settings-view .platform-inline-check span{font-size:13px}
-.settings-view .platform-row-delete{height:34px;min-height:34px!important;padding:0 9px!important;font-size:13px!important;font-weight:700}
+.settings-view .platform-row-delete{height:34px;min-height:34px!important;padding:0 9px!important;font-size:var(--sf-font-control)!important;font-weight:700}
 .settings-view .platform-settings-empty strong{font-size:13px}.settings-view .platform-settings-empty span{font-size:12.5px}
 .settings-view .security-note{font-size:13px;line-height:1.6}
 
@@ -345,6 +363,7 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .topbar .save-state{font-size:13px}
   .button{min-height:44px!important;font-size:14px!important}
   .button.tiny,.project-library-actions .button,.publish-list-actions .button,.source-linked-actions .button{height:40px!important;min-height:40px!important;font-size:14px!important}
+  .project-library-actions>.project-library-more-btn,.publish-list-actions>.publish-more-btn{width:40px!important;min-width:40px!important}
   .text-input,.range-grid input,.compact-select,select.text-input,input.text-input{height:44px!important;min-height:44px!important;font-size:14px!important}
   .field-label{font-size:13px!important}
   .sidebar{background:var(--sf-text)}

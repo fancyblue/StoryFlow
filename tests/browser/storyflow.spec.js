@@ -742,7 +742,9 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   expect(managementStyles.chapters.height).toBe('40px');
   expect(managementStyles.chapters.fontSize).toBe('14px');
   expect(managementStyles.chapters.backgroundColor).toBe('rgb(236, 233, 224)');
-  expect(managementStyles.chapters.color).toBe('rgb(34, 31, 26)');
+  // At rest 管理章節 is Publishing's 管理發布: the ground's fill in --denim-800. Full ink is its
+  // hover and open state, as it is that one's; it used to rest in the open state.
+  expect(managementStyles.chapters.color).toBe('rgb(58, 53, 68)');
   expect(managementStyles.inactiveChapters.backgroundColor).toBe(managementStyles.chapters.backgroundColor);
   expect(managementStyles.inactiveChapters.borderColor).toBe(managementStyles.chapters.borderColor);
   expect(managementStyles.inactiveChapters.color).toBe(managementStyles.chapters.color);
