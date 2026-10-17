@@ -114,7 +114,7 @@
 #publishingView .publish-list-actions>.publish-manage-btn:hover:not(:disabled),
 #publishingView .publish-list-actions>.publish-manage-btn:focus-visible{
   border-color:#968f80!important;
-  background:#e8e5eb!important;
+  background:var(--paper-0,#ece9e0)!important;
   color:var(--denim-900,#221f1a)!important;
 }
 #publishingView .publish-list-actions>.publish-manage-btn:focus-visible{
@@ -123,19 +123,16 @@
 }
 #publishingView .publish-list-actions>.publish-manage-btn[aria-expanded="true"]{
   border-color:#968f80!important;
-  background:#e8e5eb!important;
+  background:var(--paper-0,#ece9e0)!important;
   color:var(--denim-900,#221f1a)!important;
   box-shadow:none!important;
 }
 
-/* Expanded, a row holds a region that has to read as belonging to it, so it gets the one
-   frame between the queue and the manuscript — closed on all four sides, even as the last
-   row, and held off its neighbours' hairlines so no rule runs into it. */
+/* The open article is in the lightbox; in the queue its row is simply the current one, marked
+   the way a current row is on paper — the ground tone. It used to unfold into a framed region
+   between its neighbours. */
 #publishingView .publish-list-item.expanded{
-  margin:8px 0!important;
-  border:1px solid var(--rule-1,#ded9cc)!important;
-  border-radius:14px!important;
-  background:var(--paper-1,#fbfaf6)!important;
+  background:var(--paper-0,#ece9e0)!important;
   box-shadow:none!important;
 }
 

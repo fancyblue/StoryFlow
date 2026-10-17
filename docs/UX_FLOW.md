@@ -75,7 +75,7 @@ The Publishing page separates queue navigation from the actual publishing commit
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
 | P-01 | Resume the latest unfinished publication | 繼續發布 | Filters and project selector | One solid page action, visible only when pending or partial work exists |
-| P-02 | Choose a specific article or visual entry to process | 管理發布 | 預覽、`⋯` | Same labels and order for longform and visual content; expanding gives two columns — the manuscript on the left, its versions on the right |
+| P-02 | Choose a specific article or visual entry to process | 管理發布 | 預覽、`⋯` | Same labels and order for longform and visual content; it opens a lightbox over the queue with two columns — the manuscript on the left, its versions on the right — ‹ › to step through the queue and 放大／縮小 |
 | P-03 | Verify platform formatting | Pick the platform in the rail | One compact title/content settings card, then body/images, shared summary and effective platform Hashtags | The left column switches in place; nothing opens over the row already open. Platform title style and optional publishing helpers exist only once a platform is picked |
 | P-04 | Copy content to a platform | 複製內容 | Optionally prepend title as heading or bold, 複製標題 | The single solid action at the foot of the left column |
 | P-05 | Store publication time and URL | 保存發布紀錄 | 取消、開啟文章 | The single solid action in the record dialog |
@@ -89,9 +89,9 @@ The Publishing page separates queue navigation from the actual publishing commit
 | P-12 | Prepare optional publishing helpers | 摘要與 Hashtags | Click-to-copy rows and a platform Hashtags editor in the preview | The main content and image order come first. Both helpers show their effective value as a click-to-copy row; only Hashtags can be edited there, because a platform may override them, explicitly use none or return to the common value. The summary is a read-only row: a visual entry's is written in the visual editor, a longform part's in this tool. Neither helper enters the body automatically |
 | P-13 | Reduce a long Publishing queue by work | Small chevron in the work-group heading | Work count remains visible | Defaults expanded; collapse is session-only, keyboard accessible and survives filter rerenders without changing content or publishing state |
 
-An expanded “收合發布” control is still a disclosure. Use a stronger soft selection, border or adjacent panel treatment instead of the full primary fill; the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task. The separate work-group collapse control is icon-only and intentionally smaller: it hides or reveals the whole work body while leaving the title, content-type badge and item count visible. It is a view preference for the current browser session, not workspace data.
+The open article's row is marked as the current row; the lightbox itself carries ✕, and its primary fill is kept for the task inside it: the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task. The separate work-group collapse control is icon-only and intentionally smaller: it hides or reveals the whole work body while leaving the title, content-type badge and item count visible. It is a view preference for the current browser session, not workspace data.
 
-Expanding or collapsing “管理發布” must preserve the active card's viewport position and restore focus to its replacement disclosure control after the list rerenders. Opening a management panel must not return the page to the top.
+Opening or closing “管理發布” must preserve the queue's scroll position. Opening moves focus into the lightbox; closing returns it to the row's “管理發布” after the list rerenders. A rerender while the lightbox is open keeps its size, the same version's scroll position and the focused control.
 
 ### Settings
 

@@ -81,11 +81,6 @@
   transition:border-color .15s ease,box-shadow .15s ease;
 }
 .publish-list-item:last-child{border-bottom:0}
-.publish-list-item.expanded{
-  border:1px solid var(--rule-1,#ded9cc);
-  border-radius:14px;
-  background:var(--paper-1,#fbfaf6);
-}
 
 .publish-list-summary{
   display:grid;
@@ -295,7 +290,7 @@
   cursor:pointer;
 }
 .publish-platform-choose:hover{background:#f4f1e9}
-.publish-platform-row.is-current .publish-platform-choose{background:#e8e5eb}
+.publish-platform-row.is-current .publish-platform-choose{background:var(--paper-0,#ece9e0)}
 .publish-platform-row.is-current .publish-platform-choose strong{color:#4b4557}
 .publish-platform-choose strong{font-size:13px}
 .publish-platform-state-line{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;flex-wrap:wrap}
@@ -1479,11 +1474,129 @@ body #publishingView #publishingProjectFilterBtn strong{
   color:#221f1a;
 }
 .publishing-sort-option.active{
-  background:#e8e5eb;
+  background:var(--paper-0,#ece9e0);
   color:#4b4557;
   font-weight:700;
 }
 .publishing-sort-option:focus-visible{
   outline:none;
   box-shadow:var(--sf-focus);
+}
+
+/* 管理發布 opens a lightbox over the queue (publishing-flow.js). Unfolded inside the list, a
+   chapter of preview between two rows made the queue several screens long, and the platforms
+   and 複製內容 scrolled away with it. The lightbox covers the page, not the menu: the menu stays
+   usable, and leaving for another view and coming back finds the same article open. Inside, the
+   manuscript and the platforms scroll on their own and the copy actions stay at the foot.
+   放大 lifts the same lightbox over the whole site, menu included, still a window on a scrim; the
+   content follows the window's own width through a container query rather than the viewport's,
+   so both sizes lay out from what they have. */
+.publish-lightbox[hidden]{display:none!important}
+.publish-lightbox{
+  position:fixed;
+  inset:0 0 0 var(--sf-sidebar-width,0px);
+  z-index:190;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  background:rgba(34,31,26,.32);
+  overscroll-behavior:contain;
+  cursor:default;
+}
+.publish-lightbox-window{
+  container:publish-lightbox / inline-size;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
+  width:min(1120px,100%);
+  height:min(880px,100%);
+  min-width:0;
+  overflow:hidden;
+  border-radius:14px;
+  background:var(--paper-1,#fbfaf6);
+  box-shadow:0 18px 60px rgba(34,31,26,.24);
+}
+.publish-lightbox.is-maximized{inset:0;z-index:300;padding:16px}
+.publish-lightbox.is-maximized .publish-lightbox-window{width:100%;height:100%}
+html.sf-publish-lightbox-open{overflow:hidden}
+
+.publish-lightbox-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+  padding:10px 12px 10px 24px;
+  border-bottom:1px solid var(--rule-1,#ded9cc);
+}
+.publish-lightbox-title{display:flex;align-items:baseline;gap:10px;flex:1 1 auto;min-width:0}
+.publish-lightbox-title strong{min-width:0;overflow:hidden;font-size:18px;line-height:1.4;white-space:nowrap;text-overflow:ellipsis}
+.publish-lightbox-chars{flex:none;color:var(--ink-3,#6f6759);font-size:13px;white-space:nowrap}
+.publish-lightbox-status{flex:none;margin-left:auto;color:var(--ink-2,#6a6357);font-size:13px;font-weight:700;white-space:nowrap}
+.publish-lightbox-status.done{color:var(--moss,#59703f)}
+.publish-lightbox-controls{display:flex;flex:none;gap:2px}
+.publish-lightbox-button{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  padding:0;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:var(--ink-2,#6a6357);
+  cursor:pointer;
+}
+.publish-lightbox-button:hover:not(:disabled){background:var(--paper-2,#f4f1e9);color:var(--ink-1,#221f1a)}
+.publish-lightbox-button:disabled{opacity:.35;cursor:default}
+.publish-lightbox-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.publish-lightbox-size .publish-lightbox-shrink,
+.publish-lightbox.is-maximized .publish-lightbox-size .publish-lightbox-grow{display:none}
+.publish-lightbox.is-maximized .publish-lightbox-size .publish-lightbox-shrink{display:block}
+
+.publish-lightbox .publish-platform-details{
+  grid-template-columns:minmax(0,1fr) clamp(220px,28%,300px);
+  gap:0;
+  min-height:0;
+  padding:0;
+  border-top:0;
+}
+.publish-lightbox .publish-manuscript-column{
+  align-content:start;
+  min-height:0;
+  overflow:auto;
+  overscroll-behavior:contain;
+  padding:6px 28px 0;
+}
+/* The manuscript is a page in the middle of whatever width the window has. */
+.publish-lightbox .publish-manuscript-column > *{width:100%;max-width:760px;margin-inline:auto}
+.publish-lightbox .publish-platform-rail{
+  min-height:0;
+  margin:0;
+  padding:12px 14px 16px;
+  overflow:auto;
+  overscroll-behavior:contain;
+}
+.publish-lightbox .platform-preview-actions{
+  position:sticky;
+  bottom:0;
+  z-index:2;
+  padding:12px 0 16px!important;
+  background:var(--paper-1,#fbfaf6);
+}
+
+/* A narrow window — a small screen, or the normal size beside a wide menu — stacks the
+   platforms above the manuscript and scrolls as one column. */
+@container publish-lightbox (max-width:760px){
+  .publish-lightbox .publish-platform-details{grid-template-columns:minmax(0,1fr);align-content:start;overflow:auto;overscroll-behavior:contain}
+  .publish-lightbox .publish-manuscript-column{overflow:visible;padding:0 16px}
+  .publish-lightbox .publish-platform-rail{order:-1;overflow:visible;padding:10px 16px 12px;border-left:0;border-bottom:1px solid var(--rule-1,#ded9cc)}
+  .publish-lightbox-chars{display:none}
+  .publish-lightbox-head{padding-left:16px}
+}
+
+/* On a phone the lightbox is the screen above the bottom bar, and there is nothing to enlarge. */
+@media(max-width:820px){
+  .publish-lightbox,
+  .publish-lightbox.is-maximized{inset:0 0 calc(var(--storyflow-mobile-nav-height,72px) + env(safe-area-inset-bottom)) 0;z-index:190;padding:0}
+  .publish-lightbox-window{width:100%;height:100%;border-radius:0;box-shadow:none}
+  .publish-lightbox-size{display:none}
 }

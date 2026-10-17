@@ -146,7 +146,7 @@
   background:#f4f1e9;
 }
 .global-search-result.active{
-  background:#e8e5eb;
+  background:var(--paper-0,#ece9e0);
 }
 .global-search-result:focus-visible{outline:0;box-shadow:0 0 0 3px rgba(34,31,26,.18)}
 .global-search-result-type{

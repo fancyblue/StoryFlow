@@ -270,7 +270,7 @@ test('works, publishing, and settings retain their desktop composition', async (
   await expectVisibleChildrenSeparated(page.locator('.publish-list-actions'));
   await expect(page.locator('#publishingView')).toHaveScreenshot('publishing-queue-1440.png');
 
-  // The queue only shows a row's collapsed summary. The two-column panel behind 管理發布 is
+  // The queue only shows a row's collapsed summary. The two-column lightbox behind 管理發布 is
   // where most publishing CSS actually renders, so it needs baselines of its own before any
   // stylesheet refactor can claim "the pixels did not move" — one for the default output and
   // one for a platform's version, because the left column changes shape between them.
@@ -292,7 +292,7 @@ test('works, publishing, and settings retain their desktop composition', async (
   await expectHorizontallyBounded(desktopPreview);
   await expectVisibleChildrenSeparated(desktopPreview.locator('.platform-preview-actions'));
   await expect(desktopPreview).toHaveScreenshot('platform-preview-platform-1440.png');
-  await publishRow.getByRole('button', { name: /收合.*發布平台/ }).click();
+  await publishRow.getByRole('button', { name: '關閉', exact: true }).click();
 
   await page.locator('#sidebarSettingsBtn').click();
   await expectDocumentBounded(page);

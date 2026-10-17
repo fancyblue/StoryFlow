@@ -247,7 +247,7 @@ test('overlays resolve to their own surface rather than inheriting a page rule',
   // The publishing row's action vocabulary: management is tinted, preview stays
   // white and outlined, and both share one control height.
   await expectStyle(page, '.publish-list-actions .publish-manage-btn', {
-    backgroundColor: 'rgb(232, 229, 235)',
+    backgroundColor: 'rgb(236, 233, 224)',
     minHeight: '40px'
   });
   await expectStyle(page, '.publish-list-actions .default-preview-btn', {
@@ -760,9 +760,11 @@ test('a dialog head is the card\'s own paper and its rule reaches the card edge'
 
 // Collapsed, a publishing article is a row: the shared layer used to give it a 12px radius
 // and colour its reserved marker gutter, so the row drew half a box — a left edge curving
-// into the rule under it. Expanded, it is the one frame between the queue and the manuscript,
-// and that frame used to lose its bottom edge to the last-row rule.
-test('a publishing article is a row until it opens, then one closed frame', async ({ page }) => {
+// into the rule under it. Opened, it no longer unfolds between its neighbours: a chapter of
+// preview there made the queue several screens long. It opens in a lightbox over the queue,
+// beside the menu, where the manuscript and the platforms scroll on their own, the copy actions
+// stay at the foot, and 放大 lifts the same window over the whole site.
+test('a publishing article is a row until it opens, then a lightbox over the queue', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
   await page.evaluate(() => { window.StoryFlowIntegrations.savePart = async () => 'x.md'; });
@@ -783,17 +785,134 @@ test('a publishing article is a row until it opens, then one closed frame', asyn
 
   await row.locator('.publish-manage-btn').click();
   await expect(row).toHaveClass(/expanded/);
+  // In the queue the open row is only the current one: the ground tone, no frame.
   await expectStyle(page, '.publish-list-item.expanded', {
-    borderTopWidth: '1px',
-    borderRightWidth: '1px',
-    borderBottomWidth: '1px',
-    borderLeftWidth: '1px',
-    borderBottomColor: 'rgb(222, 217, 204)',
-    borderTopLeftRadius: '14px',
+    borderTopWidth: '0px',
+    borderTopLeftRadius: '0px',
+    backgroundColor: 'rgb(236, 233, 224)',
     boxShadow: 'none'
   });
-  // Tint is how the expander says it is open; the 3px inset bar it also drew is gone.
-  await expectStyle(page, '.publish-list-item.expanded .publish-manage-btn', { boxShadow: 'none' });
+  const lightbox = row.locator('.publish-lightbox');
+  await expect(lightbox).toBeVisible();
+  await expect(lightbox.locator('.publish-lightbox-close')).toBeFocused();
+
+  const geometry = () => page.evaluate(() => {
+    const box = document.querySelector('.publish-lightbox:not([hidden])');
+    const win = box.querySelector('.publish-lightbox-window').getBoundingClientRect();
+    const sidebar = document.querySelector('.sidebar').getBoundingClientRect();
+    const column = box.querySelector('.publish-manuscript-column');
+    const rail = box.querySelector('.publish-platform-rail');
+    const actions = box.querySelector('.platform-preview-actions');
+    return {
+      clearOfMenu: win.left >= Math.round(sidebar.right),
+      inside: win.top >= 0 && win.bottom <= innerHeight + 0.5 && win.right <= innerWidth + 0.5,
+      // Enlarged, it is still a window on a scrim, now over the whole site, menu included.
+      coversSite: Math.round(win.left) === 16 && Math.round(win.right) === innerWidth - 16
+        && Math.round(win.top) === 16 && Math.round(win.bottom) === innerHeight - 16
+        && box.contains(document.elementFromPoint(8, innerHeight / 2))
+        && getComputedStyle(box.querySelector('.publish-lightbox-window')).borderTopLeftRadius === '14px',
+      columnScrolls: getComputedStyle(column).overflowY,
+      railScrolls: getComputedStyle(rail).overflowY,
+      actionsStick: getComputedStyle(actions).position,
+      pageLocked: getComputedStyle(document.documentElement).overflowY,
+      noSideways: document.documentElement.scrollWidth <= innerWidth
+    };
+  });
+  expect(await geometry()).toEqual({
+    clearOfMenu: true, inside: true, coversSite: false, columnScrolls: 'auto', railScrolls: 'auto',
+    actionsStick: 'sticky', pageLocked: 'hidden', noSideways: true
+  });
+
+  // One article in the queue: there is nothing to step to.
+  await expect(lightbox.getByRole('button', { name: '上一篇', exact: true })).toBeDisabled();
+  await expect(lightbox.getByRole('button', { name: '下一篇', exact: true })).toBeDisabled();
+
+  const size = lightbox.locator('.publish-lightbox-size');
+  await expect(size).toHaveAttribute('aria-label', '放大視窗');
+  await size.click();
+  await expect(size).toHaveAttribute('aria-pressed', 'true');
+  await expect(size).toHaveAttribute('aria-label', '縮小視窗');
+  await expect.poll(async () => (await geometry()).coversSite).toBe(true);
+  expect((await geometry()).noSideways).toBe(true);
+  expect(await page.evaluate(() => localStorage.getItem('storyflow.ui.publishLightboxMaximized'))).toBe('1');
+  // Switching the version rebuilds the row; the size and the focus survive it.
+  await lightbox.locator('.publish-platform-row:not([data-platform=""]) .publish-platform-choose').first().click();
+  await expect(lightbox).toHaveClass(/is-maximized/);
+  await expect(lightbox.locator('.publish-platform-row.is-current .publish-platform-choose')).toBeFocused();
+  await size.click();
+  await expect.poll(async () => (await geometry()).coversSite).toBe(false);
+
+  await page.keyboard.press('Escape');
+  await expect(lightbox).toBeHidden();
+  await expect(row).not.toHaveClass(/expanded/);
+  await expect(row.locator('.publish-manage-btn')).toBeFocused();
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflowY)).not.toBe('hidden');
+});
+
+// ‹ › step through the queue without going back to it, and keep the platform: publishing a run
+// of chapters to one platform is what stepping is for. The window lays out from its own width
+// (a container query), so a narrow window stacks the platforms above the manuscript whatever
+// the viewport, and on a phone the lightbox is the screen above the bottom bar.
+test('the publishing lightbox steps through the queue and lays out from its own width', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+  await page.evaluate(() => {
+    state.chapters[0].parts = [1, 2, 3].map(index => ({
+      id: `lightbox-part-${index}`,
+      title: `燈箱文章 ${index}`,
+      chars: 4,
+      startBlock: index - 1,
+      endBlock: index,
+      formatted: '測試內容',
+      platformStatus: {}
+    }));
+    renderAll();
+  });
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  const rows = page.locator('.publish-list-item');
+  await expect(rows).toHaveCount(3);
+  const titles = await rows.locator('.publish-list-title-row strong').allTextContents();
+
+  await rows.first().locator('.publish-manage-btn').click();
+  const open = page.locator('.publish-lightbox:not([hidden])');
+  const heading = open.locator('.publish-lightbox-title strong');
+  await expect(heading).toHaveText(titles[0]);
+  await expect(open.getByRole('button', { name: '上一篇', exact: true })).toBeDisabled();
+  await open.locator('.publish-platform-row:not([data-platform=""]) .publish-platform-choose').first().click();
+  const platform = await open.locator('.publish-platform-row.is-current').getAttribute('data-platform');
+  expect(platform).not.toBe('');
+
+  await open.getByRole('button', { name: '下一篇', exact: true }).click();
+  await expect(heading).toHaveText(titles[1]);
+  await expect(open.locator('.publish-platform-row.is-current')).toHaveAttribute('data-platform', platform);
+  await expect(open.getByRole('button', { name: '下一篇', exact: true })).toBeFocused();
+  await open.getByRole('button', { name: '下一篇', exact: true }).click();
+  await expect(heading).toHaveText(titles[2]);
+  await expect(open.getByRole('button', { name: '下一篇', exact: true })).toBeDisabled();
+  await expect(open.locator('.publish-lightbox-close')).toBeFocused();
+  await open.getByRole('button', { name: '上一篇', exact: true }).click();
+  await expect(heading).toHaveText(titles[1]);
+  await expect(rows.nth(1)).toHaveClass(/expanded/);
+
+  const layout = () => page.evaluate(() => {
+    const box = document.querySelector('.publish-lightbox:not([hidden])');
+    const win = box.querySelector('.publish-lightbox-window').getBoundingClientRect();
+    const rail = box.querySelector('.publish-platform-rail').getBoundingClientRect();
+    const column = box.querySelector('.publish-manuscript-column').getBoundingClientRect();
+    const size = box.querySelector('.publish-lightbox-size');
+    return {
+      stacked: rail.bottom <= column.top + 1,
+      sideBySide: rail.left >= column.right - 1,
+      within: win.left >= 0 && win.right <= innerWidth + 0.5 && win.bottom <= innerHeight + 0.5,
+      noSideways: document.documentElement.scrollWidth <= innerWidth,
+      sizeShown: getComputedStyle(size).display !== 'none'
+    };
+  });
+  expect(await layout()).toEqual({ stacked: false, sideBySide: true, within: true, noSideways: true, sizeShown: true });
+  await page.setViewportSize({ width: 900, height: 760 });
+  await expect.poll(layout).toEqual({ stacked: true, sideBySide: false, within: true, noSideways: true, sizeShown: true });
+  await page.setViewportSize(PHONE);
+  await expect.poll(layout).toEqual({ stacked: true, sideBySide: false, within: true, noSideways: true, sizeShown: false });
 });
 
 // A work is a row in the works list. The stylesheets say so in works-library.css and said
@@ -838,7 +957,7 @@ test('a work resolves to a row in a list, not a card', async ({ page }) => {
   await expectStyle(page, '.project-library-card.active', {
     borderLeftWidth: '2px',
     borderLeftColor: 'rgb(75, 69, 87)',
-    backgroundColor: 'rgb(232, 229, 235)',
+    backgroundColor: 'rgb(236, 233, 224)',
     borderTopLeftRadius: '0px'
   });
 

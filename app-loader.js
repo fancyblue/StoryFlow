@@ -24,7 +24,7 @@
     { src: './src/source/source-flow.js?v=20261016-a7', owner: 'source' },
     { src: './src/projects/projects.js?v=20260918-a2', owner: 'projects' },
     { src: './src/split/boundary-engine.js?v=20260925-a5', owner: 'split' },
-    { src: './src/publishing/publishing-flow.js?v=20261016-a7', owner: 'publishing' },
+    { src: './src/publishing/publishing-flow.js?v=20261017-a4', owner: 'publishing' },
     { id: 'storyflowPublishingDisclosureJs', src: './src/publishing/publishing-disclosure.js?v=20260925-a5', owner: 'publishing' },
     { src: './src/publishing/publishing-project-switcher.js?v=20260925-a5', owner: 'publishing' },
     { id: 'storyflowPublishingProjectFilterJs', src: './src/publishing/publishing-project-filter.js?v=20260925-a5', owner: 'publishing' },
