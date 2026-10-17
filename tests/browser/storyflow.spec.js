@@ -550,6 +550,62 @@ test('settings links to a privacy policy that states the scope the app requests'
   expect(pageErrors).toEqual([]);
 });
 
+// AGENTS.md: infrequent or destructive row actions use ⋯ → menu action. A platform row used
+// to end in an always-visible red 刪除, the one list in the app that still did.
+test('a publishing platform is removed from its row\'s ⋯ menu, after confirmation', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+  await page.locator('#sidebarSettingsBtn').click();
+  const row = page.locator('#platformFormatSettings .platform-setting-row[data-platform="方格子"]');
+  await expect(row).toBeVisible();
+  await expect(row.getByRole('button', { name: /刪除/ })).toHaveCount(0);
+  await expect(row.getByText('刪除', { exact: true })).toHaveCount(0);
+
+  const more = row.getByRole('button', { name: '更多「方格子」操作' });
+  await expect(more).toHaveAttribute('aria-haspopup', 'menu');
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  const box = await more.boundingBox();
+  expect({ width: Math.round(box.width), height: Math.round(box.height) }).toEqual({ width: 34, height: 34 });
+  expect(await more.evaluate(node => getComputedStyle(node).borderRadius)).toBe('8px');
+
+  // Escape and a click elsewhere close it without removing anything.
+  await more.click();
+  const item = row.getByRole('menuitem', { name: '刪除平台「方格子」' });
+  await expect(item).toBeVisible();
+  await expect(item).toBeFocused();
+  await expect(more).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('Escape');
+  await expect(item).toBeHidden();
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  await more.click();
+  await expect(item).toBeVisible();
+  await page.locator('#settingsView h2, #settingsView .settings-section > strong').first().click();
+  await expect(item).toBeHidden();
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+
+  // Declining the confirmation keeps the platform.
+  page.once('dialog', dialog => dialog.dismiss());
+  await more.click();
+  await item.click();
+  await expect(row).toBeVisible();
+  expect(await page.evaluate(() => platforms.includes('方格子'))).toBe(true);
+
+  page.once('dialog', dialog => {
+    expect(dialog.message()).toContain('移除「方格子」平台？');
+    dialog.accept();
+  });
+  await more.click();
+  await item.click();
+  await expect(row).toHaveCount(0);
+  await expect(page.locator('#platformFormatSettings .platform-setting-row[data-platform="巴哈小屋"]')).toBeVisible();
+  const remaining = await page.evaluate(() => ({
+    platforms: [...platforms],
+    config: Object.keys(state.formatting.platforms || {}).includes('方格子')
+  }));
+  expect(remaining).toEqual({ platforms: ['巴哈小屋'], config: false });
+  expect(pageErrors).toEqual([]);
+});
+
 // What "stays stable" protects is that working in a 24-chapter rail does not cost you your
 // place in it — CHROME_ACCEPTANCE states it as "neither the page nor chapter rail jumps to
 // the top". This was written as pixel-exact equality instead, a stricter claim than that

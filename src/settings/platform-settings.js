@@ -214,15 +214,70 @@
       refreshDependentUI();
     });
 
+    row.append(nameInput, indent, spacing, scene, buildRowActions(name));
+    return row;
+  }
+
+  // Removal is infrequent and destructive, so it sits behind the row's trailing ⋯ like the
+  // chapter, entry, work and publishing rows. The menu takes the chapter rail's classes, so
+  // it looks the same and chapter-management.js closes it on Escape or an outside click.
+  function buildRowActions(name) {
+    const actions = document.createElement('div');
+    actions.className = 'platform-row-actions';
+
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'button tiny ghost chapter-more-button platform-row-more';
+    more.textContent = '⋯';
+    more.title = `更多「${name}」操作`;
+    more.setAttribute('aria-label', `更多「${name}」操作`);
+    more.setAttribute('aria-haspopup', 'menu');
+    more.setAttribute('aria-expanded', 'false');
+
+    const menu = document.createElement('div');
+    menu.className = 'chapter-row-action-menu platform-row-action-menu';
+    menu.hidden = true;
+    menu.setAttribute('role', 'menu');
+
     const remove = document.createElement('button');
     remove.type = 'button';
-    remove.className = 'button tiny ghost platform-row-delete';
-    remove.textContent = '刪除';
-    remove.setAttribute('aria-label', `刪除 ${name} 平台`);
-    remove.onclick = () => removePlatform(name);
+    remove.className = 'chapter-row-delete-menu-item';
+    remove.setAttribute('role', 'menuitem');
+    remove.setAttribute('aria-label', `刪除平台「${name}」`);
+    remove.innerHTML = '<span aria-hidden="true">×</span><span>刪除平台</span>';
+    remove.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      closeMenu(menu, more);
+      removePlatform(name);
+    });
+    menu.appendChild(remove);
 
-    row.append(nameInput, indent, spacing, scene, remove);
-    return row;
+    more.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const opening = menu.hidden;
+      document.querySelectorAll('.platform-row-action-menu').forEach(other => {
+        if (other !== menu) closeMenu(other, other.parentElement?.querySelector('.platform-row-more'));
+      });
+      if (!opening) {
+        closeMenu(menu, more);
+        return;
+      }
+      menu.hidden = false;
+      more.setAttribute('aria-expanded', 'true');
+      window.StoryFlowAnchoredMenu?.open?.(menu);
+      remove.focus({ preventScroll: true });
+    });
+
+    actions.append(more, menu);
+    return actions;
+  }
+
+  function closeMenu(menu, more) {
+    menu.hidden = true;
+    window.StoryFlowAnchoredMenu?.close?.(menu);
+    more?.setAttribute('aria-expanded', 'false');
   }
 
   window.renderFormattingSettings = function renderFormattingSettingsIntegrated() {

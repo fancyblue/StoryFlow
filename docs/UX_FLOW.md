@@ -103,7 +103,7 @@ The Settings page is a collection of independent decision cards. It may contain 
 | S-02 | Save changed Google integration values | 保存 Google 整合設定 | 取消更新、重新匯入 | Solid only while valid unsaved changes exist; disabled or quiet when unchanged |
 | S-03 | Authenticate after configuration is ready | 登入 Google | 更新設定、重新匯入 | The single solid action for this setup stage |
 | S-04 | Choose or reconnect the StoryFlow folder | 連接資料夾／重新連接 | 重新檢查 | Solid only while the folder is required and disconnected; connected state becomes status, not a button CTA |
-| S-05 | Add or maintain publishing platforms | 新增平台 | Rename, reorder or remove platform | Tinted or outlined list-management action; removal uses danger treatment after confirmation |
+| S-05 | Add or maintain publishing platforms | 新增平台 | Rename in the row; `⋯ → 刪除平台` | Tinted or outlined list-management action. Removal is never a visible row button: each platform row ends in the compact `⋯` (34px, 8px corner) whose menu holds 刪除平台, in the danger colour, followed by the confirmation |
 | S-06 | Change platform formatting | 保存 changed setting through normal workspace persistence | Preview or reset individual values | Controls and status, not a permanent solid CTA; surface unsaved/error state instead |
 | S-07 | Inspect or create a manual backup | 建立目前備份 | 重新檢查、下載、匯入、恢復 | Normally tinted or outlined; an explicit import/restore confirmation becomes solid inside its decision panel |
 | S-08 | Temporarily unlock phone editing | 開啟本次編輯 | Return to read-only | State switch with warning, not a blue primary CTA; saving or conflict resolution owns any primary action |

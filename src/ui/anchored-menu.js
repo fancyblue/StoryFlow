@@ -17,7 +17,7 @@
 //    available is the intersection of the panel and the window, and where there is no
 //    scroll panel at all, the window is the only limit.
 (function () {
-  const ROW_SELECTOR = '.chapter-row, .visual-entry-row, .project-chapter-manager-row';
+  const ROW_SELECTOR = '.chapter-row, .visual-entry-row, .project-chapter-manager-row, .platform-row-actions';
   const PANEL_SELECTOR = '.source-panel, .visual-entry-list-panel';
   const GAP = 8;
   const ANCHOR_OFFSET = 20;
