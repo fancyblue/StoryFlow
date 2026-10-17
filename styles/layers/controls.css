@@ -81,8 +81,8 @@ input.text-input:focus{
   height:40px!important;
   min-height:40px!important;
   padding:0 14px!important;
-  border-radius:9px!important;
-  font-size:12px!important;
+  border-radius:10px!important;
+  font-size:14px!important;
   display:inline-flex!important;
   align-items:center!important;
   justify-content:center!important;

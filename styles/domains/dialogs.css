@@ -35,12 +35,36 @@ dialog form.dialog-card > .panel-head:first-child,
   border-bottom: 1px solid var(--line);
 }
 
+/* One close control. A dialog's × was a 40px framed box, the search dialog's a 36px framed
+   box with a 24px glyph, and the publishing lightbox's a bare 34px icon: three answers to
+   "dismiss this". All of them are now the lightbox's — no frame, the toolbar's 34px, ink-2,
+   and the hover fill only under the pointer — because closing is never the decision a dialog
+   is asking for, so it should not carry the weight of the buttons that are. */
 dialog .dialog-card > .panel-head:first-child .icon-button,
 dialog form.dialog-card > .panel-head:first-child .icon-button,
-.sticky-dialog-head .icon-button {
+.sticky-dialog-head .icon-button,
+dialog .project-source-diff-head > .icon-button {
   flex: 0 0 auto;
   z-index: 101;
-  background: #fbfaf6;
+  width: var(--sf-control-sm, 34px);
+  min-width: var(--sf-control-sm, 34px);
+  height: var(--sf-control-sm, 34px);
+  min-height: var(--sf-control-sm, 34px);
+  border-color: transparent !important;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2, #6a6357);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+}
+dialog .dialog-card > .panel-head:first-child .icon-button:hover:not(:disabled),
+dialog form.dialog-card > .panel-head:first-child .icon-button:hover:not(:disabled),
+.sticky-dialog-head .icon-button:hover:not(:disabled),
+dialog .project-source-diff-head > .icon-button:hover:not(:disabled) {
+  border-color: transparent !important;
+  background: var(--paper-2, #f4f1e9) !important;
+  color: var(--ink-1, #221f1a) !important;
 }
 
 /* One dialog head. The flow dialogs, Settings and the publication record already run their

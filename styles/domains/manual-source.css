@@ -98,8 +98,8 @@
 
 #manualSourceDialog#manualSourceDialog .source-flow-actions .button{
   min-height:40px!important;
-  padding:0 15px!important;
-  font-size:13px!important;
+  padding:0 14px!important;
+  font-size:var(--sf-font-control,14px)!important;
   font-weight:700!important;
 }
 

@@ -1,6 +1,6 @@
 # StoryFlow UI system
 
-> 狀態：現行 UI 規範（已落地，持續維護；最後同步：2026-10-16）
+> 狀態：現行 UI 規範（已落地，持續維護；最後同步：2026-10-17）
 
 This is the small shared UI contract for StoryFlow's desktop-first interface. Prefer these patterns over page-specific variants.
 
@@ -135,6 +135,46 @@ label in the row look undersized.
 segment, 設定, 讀稿檢視, 切換作品, 更新作品來源 and the scene button group all resolve to it.
 A control that needs a different height belongs on a different row. `cascade-contract.spec.js`
 measures the split head and the source head together and fails if any of them drifts.
+
+## One control, one size
+
+A button's height decides its corner and its label, and the same control is the same size on
+every page that shows it. A pass over every page found the same thing decided twice and
+settled differently each time: Works drew its row's 開啟 at 9px corners, 管理發布 at 8px and its
+`⋯` 6px shorter than both, beside a Publishing row that was 40px throughout; 全部類型／長文／圖文
+was a 31px chip with an 11px label on Works and a 34px, 12px chip on Publishing, selected in the
+recessed fill on one and the ground on the other; and dismissing a dialog was a 40px framed `×`,
+a 36px framed `×` with a 24px glyph in search, or a bare 34px icon in the publishing lightbox.
+
+| Tier | Height | Corner | Label | Used for |
+| --- | --- | --- | --- | --- |
+| Standard | `--sf-control` (40px) | 10px | 14px | Page and section actions, dialog footers, form fields, and every list row's actions on Works and Publishing |
+| Compact | `--sf-control-sm` (34px) | 8px | 14px | `.button.tiny`: toolbars, tool buttons inside a task, a nested chapter or entry row's 編輯 and `⋯` |
+| Segment | 34px outer, 28px inner | 8px / 6px | 14px | 預覽／原始 MD, the reading view's 讀稿／接縫, 少一個場景／多一個場景 |
+| Chip | 34px | pill | 12px | Filters: 作品, 全部類型／長文／圖文 on Works and Publishing alike, publishing status |
+| Menu item | 36–40px | 7px | — | Row menus and the work switchers |
+| Close `×` | 34px square | 8px, no frame | 22px glyph at 400 | Every dialog head, global search and the publishing lightbox |
+
+Rules that follow from it:
+
+- **A list row's actions are the standard tier**, owned once in `ui-system.css`; Works and
+  Publishing set only their colours. The row's `⋯` is as tall as its neighbours and square.
+- **The same management action rests the same way.** 管理章節 and Publishing's 管理發布 both rest
+  on the ground's fill inside the ordinary frame, and take the darker frame and full ink only
+  under the pointer or while open. 管理章節 used to rest in its open state.
+- **Selected on paper is the ground** for every chip: the type chips now take it like the
+  status chips beside them. The 圖文 chip keeps its moss when selected, because that colour is
+  the content type, not the selection.
+- **A sort is not a chip, but it is the toolbar's height.** 最新在前／章節順序 is 34px at 8px
+  corners and keeps one weight in both states, so the pair no longer shifts when it changes.
+- **Closing is never the decision a dialog asks for**, so `×` carries no frame and no fill
+  until the pointer reaches it. A destructive menu item is separated from 編輯 by a rule drawn
+  in the gap, not by a top border that would square off its corners.
+- `#confirmBtn` (確認並存成 Markdown, 46px at 11px) stays the one exception: a lone, final
+  action that competes with nothing beside it.
+
+`cascade-contract.spec.js` measures Works' and Publishing's row actions, both pages' type chips
+and the three close controls together, and fails when one of them drifts from the others.
 
 ## A disabled control explains itself, and looks disabled
 
@@ -591,7 +631,7 @@ A control selected by class rather than `.button` does not inherit the shared di
 
 Longform chapters/articles and visual entries share this rule. Their list-level create action sits below the list as a quiet control (`.sf-quiet`), and every editable row keeps a trailing `⋯` in a fixed place. In the two workspace rails, on a device with a pointer, that `⋯` waits for its row: it shows under the pointer, on the current row, while focus is inside the row and while its menu is open, and it stays focusable at all times. On touch, and on the Works page, it is always shown. Manual-article and visual-entry menus use the same order: edit first, delete second. A visual entry is deleted as `⋯ → 刪除圖文`; do not add a second destructive button to the editor footer or make Workspace, Works and Publishing use different delete entry points. All entry deletion paths must reach the same confirmation and Recovery guard.
 
-On the Works page, “管理章節／管理圖文” is the most likely next step and uses the same emphasized light-blue treatment on every work card. Both content types use “工作台” for the active work and “開啟” for inactive works; never substitute type-specific open labels for that open action. “管理發布” is a quieter tinted shortcut. The “目前作品” badge and card treatment alone communicate which work is active; action color must not duplicate selection or make identical labels look like different functions. Expanded management uses a stronger soft selection with an inset accent, never a solid primary fill. Manual chapters and visual entries show direct “編輯” plus a persistent trailing `⋯` for Recovery-guarded deletion.
+On the Works page, “管理章節／管理圖文” is the most likely next step and uses the same emphasized light-blue treatment on every work card. Both content types use “工作台” for the active work and “開啟” for inactive works; never substitute type-specific open labels for that open action. “管理發布” is a quieter tinted shortcut. The “目前作品” badge and card treatment alone communicate which work is active; action color must not duplicate selection or make identical labels look like different functions. Expanded management uses a stronger soft selection — the darker frame and full ink over the same ground fill — never a solid primary fill. Manual chapters and visual entries show direct “編輯” plus a persistent trailing `⋯` for Recovery-guarded deletion.
 
 ## The reading surface
 
