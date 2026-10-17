@@ -1086,6 +1086,18 @@ test('publishing groups by space, menus share one glyph, and the preview foot li
     return { width: getComputedStyle(glyph).width, fontSize: getComputedStyle(glyph).fontSize, label: getComputedStyle(glyph.parentElement).fontSize };
   })).toEqual(publishGlyph);
   await page.keyboard.press('Escape');
+  await page.locator('#sidebarSettingsBtn').click();
+  await page.locator('#platformFormatSettings .platform-row-more').first().click();
+  await expect.poll(() => page.evaluate(() => {
+    const glyph = document.querySelector('.platform-row-action-menu:not([hidden]) .chapter-row-delete-menu-item > span:first-child');
+    if (!glyph) return null;
+    return { width: getComputedStyle(glyph).width, fontSize: getComputedStyle(glyph).fontSize, label: getComputedStyle(glyph.parentElement).fontSize };
+  })).toEqual(publishGlyph);
+  await expectStyle(page, '.platform-row-action-menu:not([hidden]) .chapter-row-delete-menu-item', {
+    color: 'rgb(168, 68, 58)',
+    minHeight: '36px'
+  });
+  await page.keyboard.press('Escape');
 
   // The preview's actions start where the manuscript box does: the shared layer used to pad
   // them 22px in as though they were still a dialog footer.

@@ -33,66 +33,155 @@
     if (typeof renderSuggestion === 'function') renderSuggestion();
   }
 
-  function renamePlatform(oldName, input) {
+  // Everything an article or visual entry keeps per platform, keyed by the platform's name.
+  const PLATFORM_FIELDS = ['platformStatus', 'publicationRecords', 'platformTitles', 'platformHashtags', 'platformIncludeAfterword'];
+
+  function publishableItems(projectState) {
+    return [
+      ...(projectState?.chapters || []).flatMap(chapter => chapter?.parts || []),
+      ...(projectState?.visualEntries || [])
+    ];
+  }
+
+  // The platform list is shared by every work, but each work keeps its own records keyed by
+  // platform name. Renaming or removing a platform therefore reaches every work, not only the
+  // open one: a record left behind in another work would come back under any later platform
+  // given the same name.
+  function forEachPlatformRecord(visit) {
+    const visitState = projectState => {
+      for (const item of publishableItems(projectState)) {
+        for (const field of PLATFORM_FIELDS) {
+          const record = item?.[field];
+          if (record && typeof record === 'object' && !Array.isArray(record)) visit(record);
+        }
+      }
+    };
+    if (window.StoryFlowProjects?.forEachState) window.StoryFlowProjects.forEachState(visitState);
+    else visitState(state);
+  }
+
+  // Each change is [record, key, hadKey, previousValue], so a failed save can put every
+  // record back as it was.
+  function setRecordKey(changes, record, key, value) {
+    changes.push([record, key, Object.hasOwn(record, key), record[key]]);
+    if (value === undefined) delete record[key];
+    else record[key] = value;
+  }
+
+  function undoRecordChanges(changes) {
+    for (const [record, key, hadKey, value] of [...changes].reverse()) {
+      if (hadKey) record[key] = value;
+      else delete record[key];
+    }
+  }
+
+  async function prepareRecovery(reason, refusal) {
+    try {
+      const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
+      if (typeof prepare !== 'function') throw new Error('Recovery 安全元件尚未準備完成。');
+      await prepare(reason);
+      return true;
+    } catch (error) {
+      notify(`${refusal}：無法建立 Recovery 安全副本（${error.message}）`, true);
+      return false;
+    }
+  }
+
+  async function flushPersistence() {
+    const flush = window.StoryFlowPersistenceStatus?.flush;
+    return typeof flush === 'function' ? Boolean(await flush()) : false;
+  }
+
+  async function renamePlatform(oldName, input) {
     const nextName = String(input.value || '').trim();
     if (!nextName) {
       input.value = oldName;
       notify('平台名稱不能留白', true);
-      return;
+      return false;
     }
-    if (nextName === oldName) return;
+    if (nextName === oldName) return false;
     if (platforms.includes(nextName)) {
       input.value = oldName;
       notify(`「${nextName}」已存在`, true);
       input.focus();
       input.select();
-      return;
+      return false;
     }
 
+    // A rename re-associates every record this platform holds, so it is Recovery-first.
+    if (!(await prepareRecovery('before-platform-rename', '尚未更新平台名稱'))) {
+      input.value = oldName;
+      return false;
+    }
+    // The list may have changed while Recovery was being written.
     const index = platforms.indexOf(oldName);
-    if (index < 0) return;
+    if (index < 0 || platforms.includes(nextName)) {
+      input.value = oldName;
+      return false;
+    }
+
     platforms[index] = nextName;
     const config = ensureConfig(oldName);
     state.formatting.platforms[nextName] = config;
     delete state.formatting.platforms[oldName];
 
-    for (const chapter of state.chapters || []) {
-      for (const part of chapter.parts || []) {
-        if (part.platformStatus && oldName in part.platformStatus) {
-          if (!(nextName in part.platformStatus)) part.platformStatus[nextName] = part.platformStatus[oldName];
-          delete part.platformStatus[oldName];
-        }
-        if (part.publicationRecords && oldName in part.publicationRecords) {
-          if (!(nextName in part.publicationRecords)) part.publicationRecords[nextName] = part.publicationRecords[oldName];
-          delete part.publicationRecords[oldName];
-        }
-        if (part.platformTitles && oldName in part.platformTitles) {
-          if (!(nextName in part.platformTitles)) part.platformTitles[nextName] = part.platformTitles[oldName];
-          delete part.platformTitles[oldName];
-        }
-      }
+    // nextName is not a platform, so a value already under it is one left behind by an
+    // earlier removal. The records being renamed are the ones the user can see, so they win.
+    const changes = [];
+    forEachPlatformRecord(record => {
+      if (!Object.hasOwn(record, oldName)) return;
+      setRecordKey(changes, record, nextName, record[oldName]);
+      setRecordKey(changes, record, oldName, undefined);
+    });
+    saveState('平台名稱已更新');
+
+    if (!(await flushPersistence())) {
+      undoRecordChanges(changes);
+      if (platforms[index] === nextName) platforms[index] = oldName;
+      state.formatting.platforms[oldName] = config;
+      delete state.formatting.platforms[nextName];
+      refreshDependentUI();
+      renderFormattingSettings();
+      notify(`尚未更新平台名稱：無法寫入 StoryFlow 資料夾，仍為「${oldName}」`, true);
+      return false;
     }
 
-    saveState('平台名稱已更新');
     refreshDependentUI();
     renderFormattingSettings();
+    window.StoryFlowRenderProjects?.();
+    return true;
   }
 
-  function removePlatform(name) {
-    if (!confirm(`移除「${name}」平台？\n\n會移除這個平台的排版、自訂標題、發布狀態、時間與文章網址，但不會刪除已產出的 Markdown。`)) return;
+  async function removePlatform(name) {
+    if (!confirm(`移除「${name}」平台？\n\n所有作品中這個平台的排版、自訂標題、Hashtags、發布狀態、時間與文章網址都會移除；移除前會先建立 Recovery 安全副本。已產出的 Markdown 不會刪除。`)) return false;
+    if (!(await prepareRecovery('before-platform-delete', '尚未移除平台'))) return false;
+
     const index = platforms.indexOf(name);
+    const config = state.formatting.platforms?.[name];
     if (index >= 0) platforms.splice(index, 1);
     delete state.formatting.platforms?.[name];
-    for (const chapter of state.chapters || []) {
-      for (const part of chapter.parts || []) {
-        if (part.platformStatus) delete part.platformStatus[name];
-        if (part.publicationRecords) delete part.publicationRecords[name];
-        if (part.platformTitles) delete part.platformTitles[name];
-      }
-    }
+    const changes = [];
+    forEachPlatformRecord(record => {
+      if (Object.hasOwn(record, name)) setRecordKey(changes, record, name, undefined);
+    });
     saveState('平台已移除');
+
+    if (!(await flushPersistence())) {
+      // Put the platform back as it was, so the page shows what the folder still holds.
+      undoRecordChanges(changes);
+      if (index >= 0 && !platforms.includes(name)) platforms.splice(index, 0, name);
+      if (config) state.formatting.platforms[name] = config;
+      refreshDependentUI();
+      renderFormattingSettings();
+      notify(`尚未移除平台：無法寫入 StoryFlow 資料夾，「${name}」已保留`, true);
+      return false;
+    }
+
     refreshDependentUI();
     renderFormattingSettings();
+    window.StoryFlowRenderProjects?.();
+    notify(`已移除平台「${name}」`);
+    return true;
   }
 
   function addPlatform() {
@@ -214,15 +303,70 @@
       refreshDependentUI();
     });
 
+    row.append(nameInput, indent, spacing, scene, buildRowActions(name));
+    return row;
+  }
+
+  // Removal is infrequent and destructive, so it sits behind the row's trailing ⋯ like the
+  // chapter, entry, work and publishing rows. The menu takes the chapter rail's classes, so
+  // it looks the same and chapter-management.js closes it on Escape or an outside click.
+  function buildRowActions(name) {
+    const actions = document.createElement('div');
+    actions.className = 'platform-row-actions';
+
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'button tiny ghost chapter-more-button platform-row-more';
+    more.textContent = '⋯';
+    more.title = `更多「${name}」操作`;
+    more.setAttribute('aria-label', `更多「${name}」操作`);
+    more.setAttribute('aria-haspopup', 'menu');
+    more.setAttribute('aria-expanded', 'false');
+
+    const menu = document.createElement('div');
+    menu.className = 'chapter-row-action-menu platform-row-action-menu';
+    menu.hidden = true;
+    menu.setAttribute('role', 'menu');
+
     const remove = document.createElement('button');
     remove.type = 'button';
-    remove.className = 'button tiny ghost platform-row-delete';
-    remove.textContent = '刪除';
-    remove.setAttribute('aria-label', `刪除 ${name} 平台`);
-    remove.onclick = () => removePlatform(name);
+    remove.className = 'chapter-row-delete-menu-item';
+    remove.setAttribute('role', 'menuitem');
+    remove.setAttribute('aria-label', `刪除平台「${name}」`);
+    remove.innerHTML = '<span aria-hidden="true">×</span><span>刪除平台</span>';
+    remove.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      closeMenu(menu, more);
+      removePlatform(name);
+    });
+    menu.appendChild(remove);
 
-    row.append(nameInput, indent, spacing, scene, remove);
-    return row;
+    more.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const opening = menu.hidden;
+      document.querySelectorAll('.platform-row-action-menu').forEach(other => {
+        if (other !== menu) closeMenu(other, other.parentElement?.querySelector('.platform-row-more'));
+      });
+      if (!opening) {
+        closeMenu(menu, more);
+        return;
+      }
+      menu.hidden = false;
+      more.setAttribute('aria-expanded', 'true');
+      window.StoryFlowAnchoredMenu?.open?.(menu);
+      remove.focus({ preventScroll: true });
+    });
+
+    actions.append(more, menu);
+    return actions;
+  }
+
+  function closeMenu(menu, more) {
+    menu.hidden = true;
+    window.StoryFlowAnchoredMenu?.close?.(menu);
+    more?.setAttribute('aria-expanded', 'false');
   }
 
   window.renderFormattingSettings = function renderFormattingSettingsIntegrated() {

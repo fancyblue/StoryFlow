@@ -29,7 +29,7 @@
       if (menu === except) return;
       menu.hidden = true;
       window.StoryFlowAnchoredMenu?.close?.(menu);
-      menu.closest('.chapter-row, .project-chapter-manager-row, .visual-entry-row')?.querySelector('.chapter-more-button')?.setAttribute('aria-expanded', 'false');
+      menu.closest('.chapter-row, .project-chapter-manager-row, .visual-entry-row, .platform-row-actions')?.querySelector('.chapter-more-button')?.setAttribute('aria-expanded', 'false');
     });
   }
 

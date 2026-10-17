@@ -409,7 +409,7 @@
 }
 .settings-view .platform-setting-row{
   display:grid!important;
-  grid-template-columns:minmax(160px,220px) minmax(200px,280px) max-content max-content 64px!important;
+  grid-template-columns:minmax(160px,220px) minmax(200px,280px) max-content max-content var(--sf-control-sm)!important;
   justify-content:start;
   align-items:center!important;
   padding:10px 0!important;
@@ -443,18 +443,37 @@
 .settings-view .platform-inline-check span{
   font-weight:500;
 }
-.settings-view .platform-row-delete{
-  justify-self:start;
-  min-width:auto!important;
-  border-color:transparent!important;
-  background:transparent!important;
-  color:#a8443a!important;
+/* Removal sits behind the row's trailing ⋯, the compact tier UI_SYSTEM's toolbar table sets
+   (--sf-control-sm square, 8px corner from .button.tiny). The menu is the chapter rail's,
+   anchored to this box rather than to the row, so it opens under the ⋯ in every layout. */
+.settings-view .platform-row-actions{
+  position:relative;
+  justify-self:end;
+  width:var(--sf-control-sm);
+  height:var(--sf-control-sm);
 }
-.settings-view .platform-row-delete:hover{
-  background:#f6e9e6!important;
-  border-color:#e6cdc7!important;
-  color:#a8443a!important;
+.settings-view .platform-row-actions > .button.platform-row-more{
+  display:grid!important;
+  place-items:center!important;
+  width:var(--sf-control-sm)!important;
+  min-width:var(--sf-control-sm)!important;
+  padding:0!important;
+  border-color:#ded9cc!important;
+  background:#fbfaf6!important;
+  color:#6a6357!important;
+  font-size:19px!important;
+  line-height:1!important;
 }
+.settings-view .platform-row-actions > .button.platform-row-more:hover:not(:disabled),
+.settings-view .platform-row-actions > .button.platform-row-more:focus-visible,
+.settings-view .platform-row-actions > .button.platform-row-more[aria-expanded="true"]{
+  border-color:#c8c1b0!important;
+  background:#fbfaf6!important;
+  color:#4b4557!important;
+  outline:none!important;
+}
+.settings-view .platform-row-action-menu{top:calc(100% + 6px);right:0}
+.settings-view .platform-row-action-menu.opens-up{top:auto;bottom:calc(100% + 6px)}
 .settings-view .platform-settings-empty{
   display:flex;
   flex-direction:column;
@@ -480,7 +499,7 @@
 
 @media(max-width:1180px){
   .settings-view .platform-setting-row{
-    grid-template-columns:minmax(140px,190px) minmax(180px,240px) max-content max-content 56px!important;
+    grid-template-columns:minmax(140px,190px) minmax(180px,240px) max-content max-content var(--sf-control-sm)!important;
     gap:10px!important;
   }
 }
@@ -497,10 +516,7 @@
   .settings-view .platform-name-input{grid-column:1}
   .settings-view .platform-indent-select{grid-column:2}
   .settings-view .platform-inline-check{white-space:normal}
-  .settings-view .platform-row-delete{
-    grid-column:2;
-    justify-self:end;
-  }
+  .settings-view .platform-row-actions{grid-column:2}
 }
 
 @media(max-width:620px){
@@ -512,10 +528,9 @@
   .settings-view .platform-name-input,
   .settings-view .platform-indent-select,
   .settings-view .platform-inline-check,
-  .settings-view .platform-row-delete{
+  .settings-view .platform-row-actions{
     grid-column:1!important;
   }
-  .settings-view .platform-row-delete{justify-self:start}
 }
 
 /* --- settings-bootstrap.css --- */

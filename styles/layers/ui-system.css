@@ -152,8 +152,8 @@ h3{font-size:18px;font-weight:700;line-height:1.3}
 .button:disabled,.icon-button:disabled{opacity:1;background:#fbfaf6;border-color:#ded9cc!important;color:#968f80!important;cursor:not-allowed}
 .button:active:not(:disabled){transform:translateY(1px)}
 .icon-button{display:grid;place-items:center;width:var(--sf-control);min-width:var(--sf-control);height:var(--sf-control);min-height:var(--sf-control);padding:0;border-radius:10px;font-size:18px}
-.button.danger,.button.ghost.project-delete-btn,.button.project-delete-btn,.project-library-delete,.publish-delete-btn,.settings-view .platform-row-delete,.chapter-delete-button{color:var(--sf-danger)!important}
-.button.danger:hover:not(:disabled),.project-library-delete:hover,.publish-delete-btn:hover,.settings-view .platform-row-delete:hover,.chapter-delete-button:hover{background:var(--sf-danger-soft)!important;border-color:#e6cdc7!important;color:var(--sf-danger)!important}
+.button.danger,.button.ghost.project-delete-btn,.button.project-delete-btn,.project-library-delete,.publish-delete-btn,.chapter-delete-button{color:var(--sf-danger)!important}
+.button.danger:hover:not(:disabled),.project-library-delete:hover,.publish-delete-btn:hover,.chapter-delete-button:hover{background:var(--sf-danger-soft)!important;border-color:#e6cdc7!important;color:var(--sf-danger)!important}
 
 /* Field system */
 .field-label,.project-switcher-field>span,.platform-select-field>span{
@@ -330,7 +330,6 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .settings-view .platform-setting-row{min-height:62px;gap:14px!important}
 .settings-view .platform-default-name{font-size:14px;font-weight:700}
 .settings-view .platform-inline-check span{font-size:13px}
-.settings-view .platform-row-delete{height:34px;min-height:34px!important;padding:0 9px!important;font-size:var(--sf-font-control)!important;font-weight:700}
 .settings-view .platform-settings-empty strong{font-size:13px}.settings-view .platform-settings-empty span{font-size:12.5px}
 .settings-view .security-note{font-size:13px;line-height:1.6}
 
@@ -391,7 +390,7 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .publishing-filter{min-height:36px;font-size:13px}
   .settings-view .settings-section{padding:18px}
   .settings-view .platform-setting-row{grid-template-columns:1fr!important;gap:8px!important;padding:14px 0!important}
-  .settings-view .platform-name-input,.settings-view .platform-indent-select,.settings-view .platform-inline-check,.settings-view .platform-row-delete{grid-column:1}
+  .settings-view .platform-name-input,.settings-view .platform-indent-select,.settings-view .platform-inline-check,.settings-view .platform-row-actions{grid-column:1}
 }
 
 @media(max-width:390px){

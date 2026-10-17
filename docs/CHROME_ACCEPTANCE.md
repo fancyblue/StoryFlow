@@ -101,7 +101,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] At a phone width, confirm the rail sits above the manuscript, and that the optional 摘要／Hashtags rows read as stacked label-and-value blocks rather than one character per line.
 - [ ] In Workspace, confirm neither content type shows a direct publishing shortcut. Enter Publishing from primary navigation or the Works-page “管理發布” action.
 - [ ] Confirm Publishing's empty-state return action remains the single solid 40 px / 14 px CTA, while publishing filters remain compact pills.
-- [ ] In Settings, confirm “匯入 settings.json” is primary when Google integration is missing; the save button remains disabled and quiet until valid fields change. “新增平台” and “建立目前備份” stay secondary.
+- [ ] In Settings, confirm “匯入 settings.json” is primary when Google integration is missing; the save button remains disabled and quiet until valid fields change. “新增平台” and “建立目前備份” stay secondary. In 發布排版, confirm no platform row shows a visible 刪除: each ends in a 34px `⋯` whose menu holds 刪除平台, Escape or a click elsewhere closes it, and choosing it asks for confirmation and makes a Recovery copy before the platform disappears.
 - [ ] Check the expanded and collapsed sidebar on macOS and Windows Chrome. Workspace, Works, Publishing, Settings, Search and the collapse control should all use the same stroke-icon language without platform-dependent text glyphs. The expanded rail is the narrow flat one UI_SYSTEM describes (208 px, one fill on the active item, no edge bar), and each page, section, list and dialog head shows its Chinese title alone, with no English eyebrow above it.
 
 ## 6. Publishing and destructive-action safety
@@ -125,6 +125,7 @@ Before publishing, verify split precision with a disposable chapter containing o
 - [ ] Delete the test publishing part and confirm a `workspace.before-publishing-delete-*.json` file appears in `Recovery/`.
 - [ ] Delete an empty test chapter and confirm a `workspace.before-chapter-delete-*.json` file appears.
 - [ ] Delete a disposable work and confirm a `workspace.before-project-delete-*.json` file appears.
+- [ ] With two works that both record a disposable test platform, remove it in Settings and confirm a `workspace.before-platform-delete-*.json` file appears, and that neither work's articles or visual entries still show its status, URL, title or Hashtags in Publishing. Before that, rename it and confirm a `workspace.before-platform-rename-*.json` file appears and both works show their records under the new name.
 - [ ] Confirm the Google Doc itself was not changed or deleted.
 
 ## 7. Backup and recovery
