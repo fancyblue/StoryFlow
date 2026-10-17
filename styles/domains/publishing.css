@@ -313,7 +313,8 @@
 .publish-platform-hashtags:hover,.publish-platform-hashtags:focus-visible{color:#4b4557;text-decoration:underline;outline:none}
 .publish-platform-hashtags.is-custom{color:#4b4557;font-weight:700}
 .publish-platform-hashtags-empty{margin-left:7px;color:#6f6759;font-size:10px}
-.publish-platform-hashtags-summary{color:#6a6357;font-size:10px;line-height:1.4}
+.publish-platform-hashtags-summary,
+.publish-platform-afterword-summary{color:#6a6357;font-size:10px;line-height:1.4}
 .publish-platform-record-summary{
   color:#6a6357;
   font-size:10px;

@@ -94,12 +94,21 @@
       part.tags = StoryFlowContentModel.tagsFromHashtags(part.hashtags);
       part.afterword = typeof part.afterword === 'string' ? part.afterword : '';
       if (typeof part.includeAfterword !== 'boolean') part.includeAfterword = true;
+      part.platformIncludeAfterword ||= {};
       return part;
     }
     return normalizePublishingPart(part);
   }
 
-  function outputSections(part, platform, includeAfterword = part?.includeAfterword !== false) {
+  // Whether the afterword goes into a version's text. includeAfterword is the article's shared
+  // default (set where the afterword is written, and what StoryFlow 預設 and the Markdown file
+  // use); a platform can decide for itself, and a platform that has not decided follows it.
+  function includeAfterwordFor(part, platform = '') {
+    const own = platform ? part?.platformIncludeAfterword?.[platform] : undefined;
+    return typeof own === 'boolean' ? own : part?.includeAfterword !== false;
+  }
+
+  function outputSections(part, platform, includeAfterword = includeAfterwordFor(part, platform)) {
     normalizePublishItem(part);
     const raw = isVisualPart(part) ? part.body : (part.raw ?? part.formatted ?? '');
     const format = value => platform ? platformFormat(value, platform) : webFormat(value);
@@ -108,7 +117,7 @@
     return { body, afterword: includeAfterword && afterword ? format(afterword) : '' };
   }
 
-  function outputFor(part, platform, includeAfterword = part?.includeAfterword !== false) {
+  function outputFor(part, platform, includeAfterword = includeAfterwordFor(part, platform)) {
     const sections = outputSections(part, platform, includeAfterword);
     if (!sections.afterword) return sections.body;
     return `${sections.body}\n\n---\n\n後記\n\n${sections.afterword}`;
@@ -789,14 +798,18 @@
       refreshContent();
     };
     afterwordOption.hidden = !platformSpecific || afterwordCount === 0;
-    includeAfterword.checked = part.includeAfterword !== false;
+    includeAfterword.checked = includeAfterwordFor(part, platform);
     panel.querySelector('#platformPreviewAfterwordCount').textContent = `${afterwordCount.toLocaleString()} 字`;
     includeAfterword.onchange = async () => {
       if (!platformSpecific) return;
-      part.includeAfterword = includeAfterword.checked;
-      refreshOptionsSummary();
+      // This platform's own choice. Choosing what the shared default already says drops the
+      // platform's entry, so it goes back to following the article.
+      part.platformIncludeAfterword ||= {};
+      if (includeAfterword.checked === (part.includeAfterword !== false)) delete part.platformIncludeAfterword[platform];
+      else part.platformIncludeAfterword[platform] = includeAfterword.checked;
       saveState('後記輸出設定已更新');
-      refreshContent();
+      // Rebuilt rather than refreshed: the rail notes which platforms decided differently.
+      renderParts();
       const entry = allEntries().find(item => item.part === part);
       if (!entry) return;
       try {
@@ -1080,7 +1093,7 @@
       <div class="publish-afterword-head">
         <label class="publish-afterword-include">
           <input type="checkbox" ${part.includeAfterword !== false ? 'checked' : ''} ${part.afterword.trim() ? '' : 'disabled'} />
-          <span>分平台預覽與複製時附上</span>
+          <span>分平台預覽與複製時附上（預設，各平台可另外決定）</span>
         </label>
       </div>
       <textarea class="publish-afterword-input" rows="5" aria-label="內容後記" placeholder="寫下完稿後想補充給讀者的話。"></textarea>
@@ -1267,6 +1280,9 @@
       : '';
     const current = (selectedPlatformKey || '') === (platform || '');
     const label = isDefault ? 'StoryFlow 預設' : platform;
+    // Said only where the platform has decided differently from the article's default.
+    const ownAfterword = isDefault || !afterwordChars(part) ? undefined : part.platformIncludeAfterword?.[platform];
+    const afterwordSummary = typeof ownAfterword === 'boolean' ? (ownAfterword ? '此平台附上後記' : '此平台不附後記') : '';
 
     const row = document.createElement('div');
     row.className = `publish-platform-row${isDefault ? ' is-default-output' : ''}${current ? ' is-current' : ''}`;
@@ -1279,6 +1295,7 @@
         </span>
         ${hasPlatformTitle ? `<small class="publish-platform-title-summary">自訂標題：${escapeHtml(platformTitle)}</small>` : ''}
         ${hashtagsOverridden && !hashtagsText ? '<small class="publish-platform-hashtags-summary">此平台不使用 Hashtags</small>' : ''}
+        ${afterwordSummary ? `<small class="publish-platform-afterword-summary">${afterwordSummary}</small>` : ''}
         ${recordSummary ? `<small class="publish-platform-record-summary">${escapeHtml(recordSummary)}</small>` : ''}
       </button>
       ${hashtagsText ? `<button class="publish-platform-hashtags ${hashtagsOverridden ? 'is-custom' : ''}" type="button" aria-label="複製 Hashtags：${escapeHtml(hashtagsText)}" title="${hashtagsOverridden ? '平台自訂 Hashtags；點一下複製' : '沿用共用 Hashtags；點一下複製'}">${escapeHtml(hashtagsText)}</button>` : isDefault ? '' : '<span class="publish-platform-hashtags-empty">未設定 Hashtags</span>'}`;

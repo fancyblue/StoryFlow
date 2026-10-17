@@ -479,6 +479,7 @@ token 就位後，這一步是改幾十行的事。
 | 4-16 ✅ | 底色上的選中狀態改成白紙色 | `ui-system.css`、`chapter-management.css`、`visual-workspace.css` | 已完成（2026-10-16）。章節列、圖文列與主選單的選中項目從 `--dai-soft`（偏冷的淡紫灰，比滑過時的 `--paper-2` 還暗，是左欄裡最不明顯的東西）改成 `--paper-1`：選中的那一列就是右邊那張紙的一角，也是底色上唯一比滑過更亮的填色。白紙上的作品頁與發布頁仍用 `--dai-soft`。見 UI_SYSTEM〈Space before lines〉與 Navigation |
 | 4-17 ✅ | 白紙上的選中狀態改成底色 | `ui-system.css`、`works-library.css`、`publishing.css`、`publishing-refinements.css`、`chapter-management.css`、`global-search.css` | 已完成（2026-10-16）。作品頁的目前作品、管理章節／管理發布按鈕、篩選標籤、排序、平台列、選單與搜尋結果的選中狀態，從偏冷的 `--dai-soft` 改成 `--paper-0`（底色）。規則反過來也成立：底色上選中的是一塊白紙，白紙上選中的是一塊底色，都比滑過時更明顯。`--sf-surface-active`／`--sf-primary-soft` 改指向 `--paper-0` |
 | 4-18 ✅ | 「管理發布」改成燈箱 | `publishing-flow.js`、`publishing.css`、`publishing-refinements.css` | 已完成（2026-10-17）。原本在清單裡原地展開，整章預覽夾在兩列之間，清單被撐成好幾個螢幕長，平台和「複製內容」也跟著捲走。現在打開是蓋在清單上的燈箱（不蓋主選單）：標題列有篇名、字數、狀態、‹ › 上一篇／下一篇（保留平台）、放大／縮小（放大後同樣是燈箱、蓋住整個網站含主選單；這個瀏覽器記住）與 ✕；Esc 或點外面也會關閉。裡面左稿右平台各自捲動，稿子在視窗寬度內置中，操作列固定在左欄底部。版面依視窗本身寬度（container query）排：視窗窄時平台疊到稿子上方；手機是底部選單以上的全螢幕。重新繪製時保留大小、同一版本的捲動位置與焦點。刪除等列操作仍在清單的 `⋯`。見 UI_SYSTEM 中「管理發布」opens the article in a lightbox 一段 |
+| 4-19 ✅ | 後記依平台決定要不要放進內文 | `publishing-flow.js`、`app.js`、`content-model.js`、`integrations.js` | 已完成（2026-10-17）。選平台後的「附上後記」原本改的是整篇共用的設定，關掉一個平台，所有平台和 StoryFlow 預設一起少了後記。現在它只存這個平台的選擇（`platformIncludeAfterword`），平台列會註明「此平台附上／不附後記」；後記工具裡的勾選是整篇的預設，StoryFlow 預設、Markdown 檔與沒有自己選擇的平台都照它。選回和預設一樣時，平台的選擇自動取消、回到跟隨預設。工作區 schema 不變（新欄位缺少時視為跟隨預設） |
 
 ### 4-4 的範圍：共用契約，不是共用 renderer
 
