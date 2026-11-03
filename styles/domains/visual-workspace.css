@@ -1,18 +1,25 @@
+/* Visual workspace: one image per article (docs/REDESIGN_PROPOSAL.md Phase C).
+   Three columns on a desktop — the SOURCE rail (articles, then the photo library), the
+   editor, and the live preview. The rail keeps the longform rail's width contract
+   (--sf-workspace-source-columns) and unframed shape, so switching between the two kinds of
+   work moves nothing on the left. */
 .visual-workspace[hidden], .visual-workspace [hidden], .visual-workspace .hidden { display: none !important; }
 .visual-workspace-suppressed { display: none !important; }
-/* The paused notice for an old visual work stands on the paper, in the work column, not
-   across the turn from ground to paper that the rail width sets. */
-.visual-workspace { display: grid; grid-template-columns: var(--sf-workspace-source-columns); gap: 16px; }
-.visual-paused-state { grid-column: -2 / -1; }
-/* The list head (`.rail-section-head`) is shared with the longform rail in workspace.css. */
-.visual-entry-list-actions { display: grid; justify-items: end; gap: 8px; }
-.visual-entry-add-button { margin-top: 10px; }
-.project-type-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 9px; border-radius: 999px; background: #f4f1e9; color: #4b4557; font-size: 12px; font-weight: 700; }
-.visual-entry-list-panel { min-width: 0; }
-/* A list beside its subject, the same shape Publishing uses: one hairline says where the
-   two columns part. A card here left a framed column next to an unframed one, ending partway
-   down the page — an edge with nothing on the other side of it, which reads as a broken line
-   rather than as a boundary. */
+.visual-workspace { display: grid; gap: 16px; }
+.visual-readonly-note { padding: 10px 14px; border: 1px solid #ecdfc4; border-radius: 10px; background: #f5eddc; color: #8a6526; font-size: 13px; }
+
+.visual-workspace-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--sf-rail-width, 320px) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sf-workspace-column-gap);
+  align-items: start;
+}
+.visual-entry-list-panel, .visual-editor-panel, .visual-preview-panel { min-width: 0; }
+
+/* The rail: on the ground, no frame, the same shape as the longform rail. */
+.visual-project-panel-head { align-items: center; }
+.visual-project-panel-head h2 { margin-bottom: 0; }
 .visual-entry-list-panel {
   position: relative;
   align-self: stretch;
@@ -21,19 +28,19 @@
   border-radius: 0;
   background: transparent;
 }
-/* The editor is this page's one subject and the grid already says where it is, so a card
-   around it only draws a boundary that is there anyway. Its own fields carry the structure. */
-/* Entries are a list of rows, like chapters and works. The row carries the separator and the
-   current marker; the button inside it carries neither. */
+.visual-entry-list-actions { display: grid; justify-items: end; gap: 8px; }
+.visual-entry-add-button { margin-top: 10px; }
+.project-type-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 9px; border-radius: 999px; background: #f4f1e9; color: #4b4557; font-size: 12px; font-weight: 700; }
+
+/* Articles are a list of rows, like chapters: no rules, a rounded paper fill for the current one. */
 .visual-entry-list { display: grid; gap: 0; margin-top: 0; }
-/* Rows are drawn like the chapter rail's and the menu's: no rules, a rounded fill for the current one. */
 .visual-entry-row { border: 0; border-radius: 8px; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 32px; align-items: center; gap: 6px; padding-left: 4px; overflow: visible; }
 .visual-entry-select { width: 100%; min-width: 0; display: grid; gap: 3px; padding: 11px 6px; text-align: left; border: 0; border-radius: 0; background: transparent; color: inherit; cursor: pointer; }
 .visual-entry-row:hover { background: var(--paper-2, #f4f1e9); }
 .visual-entry-row.active { background: var(--paper-1, #fbfaf6); }
 .visual-entry-select strong { color: var(--ink-1-soft, #3f3930); font-weight: 500; }
 .visual-entry-row.active .visual-entry-select strong { color: var(--dai-800, #3a3544); font-weight: 700; }
-/* The ⋯ waits for its row where a pointer can find it, as in the chapter rail. */
+.visual-entry-list small { color: var(--muted, #6a6357); }
 @media (hover: hover) {
   .visual-entry-row > .visual-entry-more { opacity: 0 !important; }
   .visual-entry-row:hover > .visual-entry-more, .visual-entry-row.active > .visual-entry-more, .visual-entry-row:focus-within > .visual-entry-more, .visual-entry-row > .visual-entry-more[aria-expanded="true"] { opacity: 1 !important; }
@@ -42,41 +49,136 @@
 .visual-entry-more:hover:not(:disabled), .visual-entry-more:focus-visible, .visual-entry-more[aria-expanded="true"] { border-color: #c8c1b0 !important; background: #fbfaf6 !important; color: #4b4557 !important; outline: none !important; }
 .visual-entry-row > .visual-entry-action-menu { position: absolute !important; top: calc(50% + 20px); right: 0; }
 .visual-entry-row > .visual-entry-action-menu.opens-up { top: auto; bottom: calc(50% + 20px); }
-.visual-entry-list small { color: var(--muted, #6a6357); }
 .visual-entry-empty { padding: 28px 14px; text-align: center; color: var(--muted, #6a6357); }
-/* The empty state is a sentence, not a thumbnail: it takes the row rather than one 155px
-   cell, which was breaking it mid-phrase. */
-/* A preview is manuscript on paper, the same surface the source and Publishing previews use;
-   the ochre it used to wear is the palette's warning pigment. */
-/* The footer is not another field. It states what the whole entry amounts to and carries
-   the action that leaves it, so it closes the editor rather than continuing it: one rule
-   across, then air, the same emphasis line the entry list uses to open itself. Four pixels
-   of padding and nothing else had left it reading as one more row of the form it ends. */
+
+/* The photo library under the articles: what there is to write about, and what is used. */
+.visual-photo-library { margin-top: 22px; padding-top: 14px; border-top: 1px solid #ded9cc; }
+.visual-photo-library-toggle { display: flex; align-items: center; gap: 8px; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.visual-photo-library-toggle h3 { margin: 0; font-size: 13px; }
+.visual-photo-library-toggle .muted { margin-left: auto; font-size: 12px; }
+.visual-photo-library-toggle[aria-expanded="false"] .sf-chevron { transform: rotate(-90deg); }
+.visual-photo-library-body { display: grid; gap: 10px; margin-top: 10px; }
+.visual-photo-hint, .visual-photo-note { margin: 0; color: #6a6357; font-size: 12px; line-height: 1.5; }
+.visual-photo-mode { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 8px; background: #e8e5eb; color: #3a3544; font-size: 12px; font-weight: 700; }
+.visual-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.visual-photo-empty { grid-column: 1 / -1; margin: 0; color: #6a6357; font-size: 12px; }
+.visual-photo-tile { position: relative; }
+.visual-photo-choose { display: block; width: 100%; padding: 0; border: 2px solid transparent; border-radius: 8px; background: #f4f1e9; cursor: pointer; overflow: hidden; }
+.visual-photo-choose:hover, .visual-photo-choose:focus-visible { border-color: #968f80; outline: none; }
+.visual-photo-tile.is-current .visual-photo-choose { border-color: #4b4557; }
+.visual-photo-tile.is-used:not(.is-current) .visual-photo-thumb img { opacity: .55; }
+.visual-photo-zoom { position: absolute; top: 4px; right: 4px; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 1px solid #c8c1b0; border-radius: 6px; background: #fbfaf6; color: #4b4557; font-size: 13px; line-height: 1; cursor: pointer; opacity: 0; }
+.visual-photo-tile:hover .visual-photo-zoom, .visual-photo-zoom:focus-visible { opacity: 1; outline: none; }
+@media (hover: none) { .visual-photo-zoom { opacity: 1; } }
+.visual-photo-used { position: absolute; left: 4px; right: 4px; bottom: 4px; padding: 2px 6px; overflow: hidden; border-radius: 999px; background: #fbfaf6; color: #3a3544; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
+.visual-add-photos { justify-self: start; }
+
+/* A photo slot shows the file name until Drive has given the image, and why when it cannot. */
+.visual-photo-thumb { display: grid; place-items: center; width: 100%; aspect-ratio: 1; overflow: hidden; background: #f4f1e9; color: #6a6357; font-size: 11px; text-align: center; }
+.visual-photo-thumb > span { padding: 6px; overflow-wrap: anywhere; }
+.visual-photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.visual-photo-thumb.is-missing { color: #8a6526; background: #f5eddc; }
+
+/* The editor: the article's fields in reading order, on the paper. */
+.visual-editor-panel { padding: 0 24px 24px 32px; }
+.visual-editor-form { display: grid; gap: 16px; }
+.visual-editor-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; min-height: 34px; }
+.visual-autosave-status { color: #6a6357; font-size: 13px; }
+.visual-pending-pill { padding: 0; border: 0; background: transparent; color: #6a6357; font: inherit; font-size: 13px; cursor: pointer; }
+.visual-pending-pill::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: #8a6526; vertical-align: middle; }
+.visual-pending-pill:hover, .visual-pending-pill:focus-visible { color: #8a6526; text-decoration: underline; text-underline-offset: 3px; outline: none; }
+.visual-pane-switch { display: none; margin-left: auto; }
+.visual-undo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; border-radius: 8px; background: #e8e5eb; color: #3a3544; font-size: 13px; }
+.visual-field { display: grid; gap: 6px; }
+.visual-field > span, .visual-field > label { color: #3f3930; font-size: 13px; font-weight: 700; }
+.visual-field small { color: #6f6759; font-weight: 500; }
+/* The shared control rule sizes every .text-input to one line, with !important; the article's
+   multi-line fields are the exception, so they say so at the same strength. */
+.visual-editor-form textarea.text-input { height: auto !important; padding-top: 10px; padding-bottom: 10px; resize: vertical; }
+.visual-editor-form .visual-quote-input { min-height: 72px !important; line-height: 1.7 !important; }
+.visual-quote-from-body { justify-self: start; }
+.visual-editor-form .visual-body-input { min-height: 360px !important; line-height: 1.75 !important; }
+.visual-entry-photo { display: grid; min-height: 120px; border: 1px dashed #c8c1b0; border-radius: 10px; background: #fbfaf6; overflow: hidden; }
+.visual-entry-photo.is-drop-target { border-color: #4b4557; background: #e8e5eb; }
+.visual-entry-photo-open { display: block; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
+.visual-entry-photo-open .visual-photo-thumb { aspect-ratio: auto; max-height: 360px; }
+.visual-entry-photo-open .visual-photo-thumb img { height: auto; max-height: 360px; object-fit: contain; }
+.visual-entry-photo-pick { min-height: 120px; padding: 18px; border: 0; background: transparent; color: #4b4557; font: inherit; font-weight: 700; cursor: pointer; }
+.visual-entry-photo-pick:disabled { color: #968f80; cursor: default; }
+.visual-entry-photo-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.visual-entry-photo-actions small { overflow-wrap: anywhere; }
+.visual-entry-photo-actions .is-armed, .visual-dialog-actions .is-armed { border-color: #a8443a !important; color: #a8443a !important; }
+.visual-editor-footer { padding-top: 12px; border-top: 1px solid #ded9cc; font-size: 13px; }
+.visual-editor-empty { display: grid; place-items: center; min-height: 320px; text-align: center; }
+.visual-editor-empty h2 { margin: 0 0 8px; }
+
+/* The live preview: the article as it will read, on a phone's width or a desktop page. */
+.visual-preview-panel { position: sticky; top: 16px; display: grid; gap: 12px; padding: 0 8px 24px 0; }
+.visual-preview-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.visual-preview-head > strong { margin-right: auto; font-size: 13px; }
+.visual-preview-head .select { min-height: 34px; }
+.visual-preview-stage { display: grid; justify-items: center; max-height: calc(100vh - 140px); overflow: auto; padding: 4px; border-radius: 12px; background: #f4f1e9; }
+.visual-article-preview { width: 100%; max-width: 680px; padding: 28px 24px 36px; border-radius: 10px; background: #fbfaf6; color: #221f1a; }
+.visual-article-preview[data-width="phone"] { max-width: 390px; padding: 24px 18px 32px; }
+.visual-article-title { margin: 0 0 20px; font-size: 22px; line-height: 1.4; }
+.visual-article-quote { margin: 8px 0 28px; padding: 0; border: 0; color: #6a6357; text-align: center; }
+.visual-article-quote > span { display: block; margin-bottom: 8px; color: #968f80; font-size: 34px; line-height: 1; }
+.visual-article-quote p { margin: 0; font-size: 17px; line-height: 1.8; white-space: pre-wrap; }
+.visual-article-figure { margin: 0 0 24px; }
+.visual-article-figure .visual-photo-thumb { aspect-ratio: auto; min-height: 160px; border-radius: 4px; }
+.visual-article-figure .visual-photo-thumb img { height: auto; object-fit: contain; }
+.visual-article-figure figcaption, .visual-article-caption-only { margin: 10px 0 0; color: #6a6357; font-size: 15px; text-align: center; }
+.visual-article-body { font-size: 17px; line-height: 1.95; white-space: pre-wrap; overflow-wrap: anywhere; }
+.visual-article-scene { display: block; color: #6a6357; text-align: center; }
+.visual-article-empty { color: #968f80; }
+.visual-article-afterword { margin-top: 28px; white-space: pre-wrap; }
+.visual-article-afterword hr { border: 0; border-top: 1px solid #ded9cc; }
+.visual-article-afterword-label { color: #6a6357; font-weight: 700; }
+.visual-publish-article { max-width: none; padding: 4px 0 12px; background: transparent; }
+.visual-photo-download { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+/* Dialogs. */
 .visual-type-dialog .dialog-card, .visual-entry-dialog .dialog-card { width: min(680px, calc(100vw - 32px)); }
-.visual-entry-preview-dialog .dialog-card { width: min(760px, calc(100vw - 32px)); max-height: min(88vh, 920px); overflow: auto; }
-.visual-entry-preview-note { margin: 0 0 14px; }
-.visual-type-dialog [hidden], .visual-entry-dialog [hidden], .visual-entry-preview-dialog [hidden] { display: none !important; }
+.visual-type-dialog [hidden], .visual-entry-dialog [hidden], .visual-photo-dialog [hidden] { display: none !important; }
 .visual-type-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .visual-type-option { display: grid; gap: 7px; padding: 18px; border: 1px solid var(--line, #c8c1b0); border-radius: 14px; background: #fbfaf6; text-align: left; cursor: pointer; }
 .visual-type-option:hover { border-color: #4b4557; background: #fbfaf6; }
 .visual-type-option:focus-visible { border-color: #4b4557; background: #fbfaf6; outline: 3px solid rgba(75,69,87,.2); outline-offset: 2px; }
 .visual-type-option strong { font-size: 17px; }
 .visual-type-option span { color: var(--muted, #6a6357); line-height: 1.55; }
-/* The two ways of removing an image stand apart from saving it: on the left, with the one that
-   deletes the file in the destructive colour every other 刪除 wears. Side by side with 保存 at
-   the same weight, deleting a file read as one more way of finishing the edit. */
+.visual-dialog-fields { display: grid; gap: 14px; }
+.visual-dialog-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+.visual-photo-dialog .dialog-card { width: min(960px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; }
+.visual-photo-dialog-card { display: grid; gap: 14px; }
+.visual-photo-stage { display: grid; grid-template-columns: 40px minmax(0, 1fr) 40px; align-items: center; gap: 8px; }
+.visual-photo-step { width: 40px; height: 40px; border: 1px solid #c8c1b0; border-radius: 10px; background: #fbfaf6; color: #4b4557; font-size: 18px; cursor: pointer; }
+.visual-photo-step:disabled { color: #968f80; cursor: default; }
+.visual-photo-dialog-image { display: grid; place-items: center; min-height: 240px; max-height: 62vh; overflow: hidden; border-radius: 8px; background: #f4f1e9; color: #6a6357; }
+.visual-photo-dialog-image img { max-width: 100%; max-height: 62vh; object-fit: contain; display: block; }
+.visual-photo-dialog-caption { margin: 0; color: #6a6357; font-size: 13px; text-align: center; }
+.visual-photo-dialog .visual-dialog-actions .danger { margin-right: auto; }
+
+/* Under 1366px the editor and the preview share one column, switched by 編輯｜預覽. */
+@media (max-width: 1365px) {
+  .visual-workspace-layout { grid-template-columns: var(--sf-workspace-source-columns); }
+  .visual-pane-switch { display: inline-flex; }
+  .visual-workspace-layout[data-pane="edit"] > .visual-preview-panel { display: none; }
+  .visual-workspace-layout[data-pane="preview"] > .visual-editor-panel > .visual-editor-form > :not(.visual-editor-status) { display: none; }
+  .visual-preview-panel { grid-column: 2; position: static; padding: 0 24px 24px 32px; }
+  .visual-workspace-layout[data-pane="preview"] > .visual-editor-panel { padding-bottom: 0; }
+}
 @media (max-width: 820px) {
-  /* Stacked, the two columns part along a horizontal edge, so the hairline turns with
-     them — the same turn the longform rail makes at this breakpoint. */
+  /* Stacked, the rail parts from the work along a horizontal hairline, as the longform rail does. */
   .visual-entry-list-panel { padding: 0 0 18px; border-right: 0; border-bottom: 1px solid var(--rule-1, #ded9cc); }
   .visual-entry-list { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
   .visual-type-options { grid-template-columns: 1fr; }
+  .visual-editor-panel, .visual-preview-panel { grid-column: 1; padding: 18px 0; }
+  .visual-photo-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
 }
 @media (max-width: 560px) {
   .visual-entry-section-head { align-items: flex-start; }
   .visual-entry-list-actions { justify-items: stretch; }
-  .visual-entry-list-actions .button { width: auto; }
   .visual-entry-list { grid-template-columns: 1fr; }
+  .visual-photo-stage { grid-template-columns: 32px minmax(0, 1fr) 32px; }
+  .visual-photo-step { width: 32px; height: 32px; }
 }
-
-

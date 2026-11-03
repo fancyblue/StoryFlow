@@ -1,6 +1,11 @@
-// Shared content-model primitives for longform and future visual works.
-// Phase 0 deliberately exposes no UI; this module only defines compatible data,
-// storage and publishing boundaries for later feature modules.
+// Shared content-model primitives for longform and visual works: compatible data, storage
+// and publishing boundaries, and no UI.
+//
+// A visual work is one image per article (docs/REDESIGN_PROPOSAL.md Phase C). Its photos
+// stay in the writer's Google Drive; `project.photos` holds only references to them — a
+// Drive file id and what is needed to show and order it — never the image itself. Each
+// entry points at one of them with `photoId`. The older visual format (`entry.images`,
+// files copied into the folder) is kept as it is read, never rewritten or deleted here.
 (function () {
   const CONTENT_MODES = Object.freeze({ LONGFORM: 'longform', VISUAL: 'visual' });
   const IMAGE_PLACEMENTS = new Set(['cover', 'body']);
@@ -76,6 +81,22 @@
     };
   }
 
+  function normalizeVisualPhoto(candidate) {
+    const photo = record(candidate);
+    const number = value => (Number.isFinite(Number(value)) ? Number(value) : 0);
+    return {
+      id: typeof photo.id === 'string' && photo.id ? photo.id : crypto.randomUUID(),
+      driveFileId: typeof photo.driveFileId === 'string' ? photo.driveFileId.trim() : '',
+      name: typeof photo.name === 'string' && photo.name.trim() ? photo.name.trim() : '未命名照片',
+      mimeType: typeof photo.mimeType === 'string' ? photo.mimeType : '',
+      width: number(photo.width),
+      height: number(photo.height),
+      takenAt: typeof photo.takenAt === 'string' ? photo.takenAt : '',
+      alt: typeof photo.alt === 'string' ? photo.alt : '',
+      addedAt: typeof photo.addedAt === 'string' ? photo.addedAt : ''
+    };
+  }
+
   function normalizeVisualEntry(candidate, index = 0) {
     const entry = record(candidate);
     const images = Array.isArray(entry.images)
@@ -92,6 +113,9 @@
       summary: typeof entry.summary === 'string' ? entry.summary.trim() : '',
       hashtags: typeof entry.hashtags === 'string' ? entry.hashtags.trim() : '',
       tags: tagsFromHashtags(entry.hashtags),
+      quote: typeof entry.quote === 'string' ? entry.quote : '',
+      photoId: typeof entry.photoId === 'string' ? entry.photoId : '',
+      caption: typeof entry.caption === 'string' ? entry.caption : '',
       body: typeof entry.body === 'string' ? entry.body : '',
       afterword: typeof entry.afterword === 'string' ? entry.afterword : '',
       includeAfterword: entry.includeAfterword !== false,
@@ -114,6 +138,14 @@
     project.visualEntries = Array.isArray(project.visualEntries)
       ? project.visualEntries.filter(item => item && typeof item === 'object').map(normalizeVisualEntry)
       : [];
+    // One reference per Drive file: picking a photo twice adds nothing.
+    const seenFiles = new Set();
+    project.photos = (Array.isArray(project.photos) ? project.photos : [])
+      .filter(item => item && typeof item === 'object')
+      .map(normalizeVisualPhoto)
+      .filter(photo => photo.driveFileId && !seenFiles.has(photo.driveFileId) && seenFiles.add(photo.driveFileId));
+    // An entry whose photoId names no photo keeps it: normalising must not drop a reference
+    // because something else went wrong. The editor shows it as missing instead.
     return project;
   }
 
@@ -209,6 +241,9 @@
       summary: sourceEntry.summary,
       hashtags: sourceEntry.hashtags,
       tags: clone(sourceEntry.tags),
+      quote: sourceEntry.quote,
+      photoId: sourceEntry.photoId,
+      caption: sourceEntry.caption,
       body: sourceEntry.body,
       afterword: sourceEntry.afterword,
       includeAfterword: sourceEntry.includeAfterword,
@@ -223,6 +258,7 @@
     CONTENT_MODES,
     normalizeContentMode,
     normalizeVisualImage,
+    normalizeVisualPhoto,
     normalizeVisualEntry,
     tagsFromHashtags,
     normalizeProject,

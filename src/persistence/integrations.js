@@ -401,15 +401,41 @@ const StoryFlowIntegrations = (() => {
     return archiveRecordedAssets(directory, images, partId);
   }
 
-  async function saveVisualEntry({ projectTitle, entry }) {
+  // One image per article: the export reads in the order the article does — title, quote,
+  // the photo, its caption, the body, the afterword. The photo is a link to the writer's
+  // Google Drive file, never a copy (REDESIGN_PROPOSAL C5).
+  function visualEntryMarkdown(entry, photo) {
+    const parts = [`# ${entry.title}`];
+    const quote = String(entry.quote || '').trim();
+    if (quote) parts.push(quote.split('\n').map(line => `> ${line}`).join('\n'));
+    if (photo?.driveFileId) {
+      const alt = String(photo.alt || photo.name || '').replace(/[[\]]/g, '');
+      parts.push(`![${alt}](https://drive.google.com/file/d/${encodeURIComponent(photo.driveFileId)}/view)`);
+    }
+    const caption = String(entry.caption || '').trim();
+    if (caption) parts.push(`*${caption.replace(/\*/g, '\\*')}*`);
+    if (String(entry.body || '').trim()) parts.push(String(entry.body).trimEnd());
+    const afterword = String(entry.afterword || '').trim();
+    if (afterword) parts.push(`---\n\n後記\n\n${afterword}`);
+    return parts.join('\n\n').trimEnd() + '\n';
+  }
+
+  async function saveVisualEntry({ projectTitle, entry, photo = null }) {
     if (!(await ensureOutputPermission())) throw new Error('StoryFlow 尚未取得輸出資料夾寫入權限。');
     const normalized = window.StoryFlowContentModel.normalizeVisualEntry(entry);
     const directory = await visualEntryDirectory({ projectTitle, entryId: normalized.id }, true);
-    const content = `# ${normalized.title}\n\n${normalized.body}`.trimEnd() + '\n';
+    const resolvedPhoto = photo || (normalized.photoId ? window.StoryFlowVisualPhotos?.byId?.(normalized.photoId) : null);
+    const content = visualEntryMarkdown(normalized, resolvedPhoto);
     const metadata = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       id: normalized.id,
       title: normalized.title,
+      quote: normalized.quote,
+      caption: normalized.caption,
+      photo: resolvedPhoto ? {
+        id: resolvedPhoto.id, driveFileId: resolvedPhoto.driveFileId, name: resolvedPhoto.name,
+        mimeType: resolvedPhoto.mimeType, alt: resolvedPhoto.alt || ''
+      } : null,
       summary: normalized.summary,
       hashtags: normalized.hashtags,
       tags: normalized.tags,

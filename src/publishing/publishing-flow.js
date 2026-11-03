@@ -461,7 +461,9 @@
     const refreshContent = () => {
       const container = panel.querySelector('#platformPreviewContent');
       const sections = outputSections(part, platform, includeAfterword.checked);
-      if (visual) {
+      if (visual && !part.images?.length) {
+        renderOneImagePreview(container, part, includeTitle.checked ? titleStyle.value : '', platform, includeAfterword.checked);
+      } else if (visual) {
         renderVisualPublishPreview(container, part, outputFor(part, platform, includeAfterword.checked), includeTitle.checked ? titleStyle.value : '', platform);
       } else if (window.StoryFlowArticleImages?.renderPreview) {
         window.StoryFlowArticleImages.renderPreview(container, part, sections, {
@@ -534,12 +536,9 @@
       summaryText = String(part.summary || '').trim();
       summaryCard.disabled = !summaryText;
       panel.querySelector('#platformPreviewSummary').textContent = summaryText || '尚未設定';
-      // Each content type writes its summary in one place: a visual entry in its editor, a
-      // longform article in 摘要與 Hashtags. Pointing an article at the visual editor sent the
-      // writer somewhere its summary cannot be written.
-      summaryCard.querySelector('small').textContent = summaryText
-        ? '點一下複製'
-        : (visual ? '在圖文編輯器設定' : '在「摘要與 Hashtags」設定');
+      // Both content types write their summary in one place: 摘要與 Hashtags, beside the text
+      // rather than in the editor of it.
+      summaryCard.querySelector('small').textContent = summaryText ? '點一下複製' : '在「摘要與 Hashtags」設定';
       summaryCard.onclick = async () => {
         if (!summaryText) return;
         try {
@@ -774,6 +773,37 @@
       const isMarker = value && ((marker && value === marker) || /^[＊*]{3,}$/.test(value));
       return isMarker ? `<span class="visual-publish-scene">${escapeHtml(value)}</span>` : escapeHtml(line);
     }).join('<br>');
+  }
+
+  // A one-image article (REDESIGN_PROPOSAL C6) is previewed as the reader will see it — the
+  // same renderer as the workspace's live preview — with its photo read from Google Drive
+  // into memory. The photo cannot travel in the copied text, so it can be downloaded here and
+  // uploaded on the platform at the 〔圖片〕 mark.
+  function renderOneImagePreview(container, entry, titleStyle, platform, includeAfterword) {
+    container.dataset.sfPreviewManaged = 'visual';
+    container.innerHTML = '<article class="visual-article-preview visual-publish-article" data-width="desktop"></article><section class="visual-upload-order visual-photo-download"></section>';
+    window.StoryFlowVisualWorkspace?.renderArticle?.(container.querySelector('article'), entry, {
+      platform, includeAfterword, titleStyle: titleStyle ? 'heading' : ''
+    });
+    const photo = window.StoryFlowVisualPhotos?.byId?.(entry.photoId);
+    const download = container.querySelector('.visual-photo-download');
+    if (!photo) {
+      download.innerHTML = `<div><strong>圖片</strong><span>${entry.photoId ? '照片庫裡已沒有這張照片。' : '這則圖文沒有圖片。'}</span></div>`;
+      return;
+    }
+    download.innerHTML = `<div><strong>圖片</strong><span>圖片不會被複製或自動上傳；請在平台上、〔圖片〕的位置自行上傳這張照片。</span></div>
+      <button class="button tiny ghost visual-photo-download-btn" type="button">下載圖片</button>`;
+    download.querySelector('button').addEventListener('click', async event => {
+      event.stopPropagation();
+      const url = await window.StoryFlowVisualPhotos.load(photo);
+      if (!url) return notify('無法從 Google Drive 讀取這張照片；請確認已登入 Google，且照片仍在 Drive。', true);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = photo.name;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    });
   }
 
   function renderVisualPublishPreview(container, entry, body, titleStyle, platform) {
@@ -1161,7 +1191,7 @@
 
     const statusCount = status.total ? ` · ${status.published}/${status.total}` : '';
     const afterwordCount = afterwordChars(part);
-    const imageCount = part.images?.length || 0;
+    const imageCount = (part.images?.length || 0) + (visual && part.photoId ? 1 : 0);
     const bodyChars = visual ? charCount(part.body) : part.chars;
     const summaryText = String(part.summary || '').trim();
     const hashtagsText = String(part.hashtags || '').trim();

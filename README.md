@@ -2,7 +2,7 @@
 
 StoryFlow 是一個以瀏覽器執行的長篇內容切篇與多平台發布工作台。程式可以部署在 GitHub Pages；文章、工作進度與個人 Google 整合設定保存在使用者自行選擇的 StoryFlow 資料夾。
 
-> 圖文正在重新設計（[`docs/REDESIGN_PROPOSAL.md`](docs/REDESIGN_PROPOSAL.md)）：舊版圖文工作台已拔除，新版「一圖一文」完成前暫時無法建立圖文作品。既有的舊版圖文作品原樣保留，工作台只顯示暫停說明，發布頁仍可預覽與複製。
+> 圖文作品是「一圖一文」：每則圖文有標題、選填引言、一張照片與圖說、正文，編輯欄旁即時預覽（手機寬或桌面寬，可套用平台格式）。同一作品的圖文共用一個照片庫，照片從 Google Drive 選取並**留在 Drive**：StoryFlow 只記住是哪一個檔案，顯示時才讀進這個分頁的記憶體，不會複製到 StoryFlow 資料夾、GitHub 或瀏覽器儲存，也不會修改或刪除 Drive 上的照片。操作與規則見 [`docs/UX_FLOW.md`](docs/UX_FLOW.md)〈Visual works: one image per article〉。
 
 SMART SPLIT 預設只在原稿的場景分隔點提出切篇建議，並可用「少一個場景／多一個場景」快速調整。要看得更完整時按「讀稿檢視」：工作台兩側收起，整章以單一文字流呈現，已確認、這一篇與尚未處理以墨色深淺區分。遇到單一場景過長時，切換到同一畫面的「接縫」檢視，拖曳「本篇結尾」或直接點選任一段落間的位置；切點只吸附在段落之間，會即時更新本篇與後續字數，而且不會改寫原稿。接縫只作用於目前尚未確認的文章，不會回溯重切已建立或已發布的文章。
 
@@ -76,9 +76,8 @@ StoryFlow/
       │  ├─ metadata.json
       │  └─ assets/<文章固定 ID>/*.{jpg,jpeg,png,webp,gif}
       └─ Visual/<圖文固定 ID>/
-         ├─ content.md
-         ├─ metadata.json
-         └─ assets/*.{jpg,jpeg,png,webp,gif}
+         ├─ content.md      # 標題、引言、照片的 Google Drive 連結、圖說、正文、後記
+         └─ metadata.json   # 照片只記錄 Drive 檔案 ID 與檔名，不含圖片
 ```
 
 StoryFlow 只會在 `workspace.json` 實際寫入完成後顯示「已保存」；尚未連接資料夾、準備保存、保存中或寫入失敗都會分別顯示。所有工作區寫入都依序執行，並在改寫前把最近正常版本保存為 `workspace.backup.json`。

@@ -47,6 +47,7 @@
     'importPartImages',
     'removePartImage',
     'saveVisualEntry',
+    'pickDrivePhotos',
     'importVisualImages',
     'removeVisualImage',
     'removeVisualEntryFiles',

@@ -733,8 +733,7 @@ test('publishing order can follow chapters, and the choice follows the writer no
 test('a visual work is not offered an order it has no chapters for', async ({ page }) => {
   const pageErrors = await prepare(page);
   await gotoWorkbench(page, '/?visual-regression=1');
-  // A visual work as an existing workspace holds it; no editor creates one until the new
-  // visual workspace lands (REDESIGN_PROPOSAL Phase C).
+  // A visual work created directly; visual.spec.js covers the type chooser.
   await page.evaluate(() => StoryFlowProjects.createProject({
     title: '圖文排序測試', contentMode: 'visual', visualEntry: {
         id: crypto.randomUUID(), title: '月下預告', summary: '', hashtags: '', tags: [], body: '', images: [],
@@ -807,14 +806,14 @@ test('publishing lists every work, orders what it lists, and editing a chapter i
 
   const visualRow = page.locator('.publish-list-item', { hasText: '月下預告' }).first();
   await visualRow.locator('.publish-manage-btn').click();
-  const scene = visualRow.locator('.visual-publish-copy .visual-publish-scene').first();
+  const scene = visualRow.locator('.visual-article-body .visual-article-scene').first();
   await expect(scene).toBeVisible();
   await expect.poll(() => scene.evaluate(node => ({
     align: getComputedStyle(node).textAlign,
     spans: Math.abs(node.getBoundingClientRect().width - node.parentElement.getBoundingClientRect().width) <= 1
   }))).toEqual({ align: 'center', spans: true });
   // Copy is unchanged: the marker is still the text the writer will paste.
-  await expect(visualRow.locator('.visual-publish-copy')).toContainText('＊＊＊');
+  await expect(visualRow.locator('.visual-article-body')).toContainText('＊＊＊');
   expect(pageErrors).toEqual([]);
 });
 

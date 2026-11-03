@@ -371,8 +371,13 @@ test('the hidden attribute always wins over a component display rule', async ({ 
 // baselines nor the DOM assertions caught it, because the markup was correct throughout and
 // the menus are closed in every baseline. These are resolved values, which is the level the
 // failure actually lived at.
-// The visual rail is out until the one-image visual workspace lands (REDESIGN_PROPOSAL
-// Phase C); the longform half of each claim stays pinned meanwhile.
+async function visualWorkspace(page) {
+  await page.evaluate(() => StoryFlowProjects.createProject(
+    { title: '契約圖文', contentMode: 'visual', visualEntry: { id: 'contract-visual-entry', title: '契約圖文一' } }, { quiet: true }
+  ));
+  await expect(page.locator('#visualWorkspace')).toBeVisible();
+  await page.mouse.move(0, 0);
+}
 function railShape(page, selector) {
   return page.locator(selector).evaluate(el => {
     const style = getComputedStyle(el);
@@ -415,7 +420,7 @@ async function switcherShape(page, { button, menu, fieldBelow }) {
   return { ...shape, movedTheRail: fieldTopAfter - fieldTopBefore, widenedTheRail: fieldWidthAfter - fieldWidthBefore };
 }
 
-test('the SOURCE rail is unframed and its work switcher opens over it', async ({ page }) => {
+test('both content modes draw one SOURCE rail and open one work switcher over it', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
 
@@ -426,8 +431,17 @@ test('the SOURCE rail is unframed and its work switcher opens over it', async ({
     fieldBelow: '#projectTitle'
   });
 
-  // Unframed, on the ground, with no line of its own — the page turns from ground to paper
-  // where it ends (the view's background, checked below).
+  await visualWorkspace(page);
+  const visualRail = await railShape(page, '.visual-entry-list-panel');
+  const visualSwitcher = await switcherShape(page, {
+    button: '#visualProjectSwitchBtn',
+    menu: '#visualProjectMenu',
+    fieldBelow: '#visualProjectTitle'
+  });
+
+  // One rail, the same in both modes: unframed, on the ground, with no line of its own — the
+  // page turns from ground to paper where it ends (the view's background, checked below).
+  expect(longformRail).toEqual(visualRail);
   expect(longformRail).toMatchObject({
     backgroundColor: 'rgba(0, 0, 0, 0)',
     borderTopWidth: '0px',
@@ -436,6 +450,7 @@ test('the SOURCE rail is unframed and its work switcher opens over it', async ({
     padding: '0px 28px 0px 0px'
   });
 
+  expect(longformSwitcher).toEqual(visualSwitcher);
   expect(longformSwitcher).toMatchObject({
     position: 'absolute',
     ownSurface: true,
@@ -451,7 +466,7 @@ test('the SOURCE rail is unframed and its work switcher opens over it', async ({
 // workbench — or as two lines 11px apart, which is what they were: the source head carries 切換作品
 // beside its title and stood taller. The rail's head is now a small label and the split head a
 // title, so they share a centre line rather than a top. Both rails also head their list the same way.
-test('the workbench heads share one line and the rail heads its list', async ({ page }) => {
+test('the workbench heads share one line and both rails head their list alike', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
 
@@ -475,7 +490,14 @@ test('the workbench heads share one line and the rail heads its list', async ({ 
     padding: getComputedStyle(el).paddingTop,
     title: getComputedStyle(el.querySelector('h3')).fontSize
   }));
-  expect(longformHead.title).toBeTruthy();
+
+  await visualWorkspace(page);
+  const visualHead = await page.locator('.visual-entry-section-head').evaluate(el => ({
+    rule: getComputedStyle(el).borderTopWidth,
+    padding: getComputedStyle(el).paddingTop,
+    title: getComputedStyle(el.querySelector('h3')).fontSize
+  }));
+  expect(longformHead).toEqual(visualHead);
 });
 
 // A toolbar row is one control height. The split head mixed a 40px format select and a 40px
@@ -646,9 +668,10 @@ test('the rail edge can be dragged, is remembered, and goes back to its default'
 
   const measure = () => page.evaluate(() => {
     const view = document.getElementById('workspaceView');
-    const grid = document.querySelector('.workspace-grid.workspace-hierarchy');
+    const grid = [...document.querySelectorAll('.workspace-grid.workspace-hierarchy, .visual-workspace-layout')]
+      .find(el => el.getBoundingClientRect().width);
     const rail = grid.querySelector(':scope > .source-panel').getBoundingClientRect();
-    const work = grid.querySelector(':scope > .workspace-main-column').getBoundingClientRect();
+    const work = grid.querySelector(':scope > .workspace-main-column, :scope > .visual-editor-panel').getBoundingClientRect();
     const handle = grid.querySelector(':scope > .sf-rail-resizer');
     const stop = Number(/\) ([\d.]+)px/.exec(getComputedStyle(view).backgroundImage)?.[1]);
     return {
@@ -681,17 +704,18 @@ test('the rail edge can be dragged, is remembered, and goes back to its default'
   expect(capped.work).toBeGreaterThanOrEqual(600);
   expect(capped.work).toBeLessThanOrEqual(601);
 
-  // A reload keeps the width.
+  // Both workspaces draw the one width, and a reload keeps it.
   await page.evaluate(() => StoryFlowRailWidth.set(380));
   await page.reload();
   await page.locator('.nav-item[data-view="workspace"]').click();
+  await visualWorkspace(page);
   await expect.poll(measure).toMatchObject({ rail: 380, turnAtRail: true, handleAtRail: true, stored: '380' });
 
-  await handle.dblclick();
+  await page.locator('#visualWorkspace .sf-rail-resizer').dblclick();
   await expect.poll(measure).toMatchObject({ rail: 320, stored: null });
 
   await page.setViewportSize(PHONE);
-  await expect(handle).toBeHidden();
+  await expect(page.locator('#visualWorkspace .sf-rail-resizer')).toBeHidden();
 });
 
 // A dialog head is part of its card. It used to be a white band over warm paper, and a
@@ -1195,7 +1219,7 @@ test('the same control resolves alike on Works, Publishing and every dialog', as
   const geometry = list => list.map(({ height, corner, label }) => ({ height, corner, label }));
 
   // The type chips show only while the library holds both kinds of work, so a visual work
-  // joins it; until the new visual workspace lands that is a work created directly.
+  // joins it, created directly.
   await page.evaluate(() => {
     const current = StoryFlowProjects.activeId();
     StoryFlowProjects.createProject({ title: '契約圖文', contentMode: 'visual' }, { quiet: true });

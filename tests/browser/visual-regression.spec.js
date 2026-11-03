@@ -101,8 +101,8 @@ async function openVisualWork(page) {
     window.StoryFlowIntegrations.saveVisualEntry = async payload =>
       'StoryFlow-test/Works/' + payload.projectTitle + '/Visual/' + payload.entry.id;
   });
-  // A visual work as an existing workspace holds it: no editor creates one until the new
-  // visual workspace lands (REDESIGN_PROPOSAL Phase C).
+  // A visual work created directly with one article; visual.spec.js covers creating one
+  // through the type chooser.
   await page.evaluate(() => {
     const now = new Date().toISOString();
     StoryFlowProjects.createProject({
@@ -304,19 +304,29 @@ test('works, publishing, and settings retain their desktop composition', async (
 });
 
 
-test('an old visual work, works actions, publishing actions, and previews stay contained', async ({ page }) => {
+test('the visual workspace, works actions, publishing actions, and previews stay contained', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openVisualWork(page);
 
   for (const size of layoutViewports) {
     await page.setViewportSize(size);
     await page.locator('.nav-item[data-view="workspace"]').click();
-    // The workspace says the work is paused, offers the way back to Works, and edits nothing.
-    await expect(page.locator('#visualWorkspace .visual-paused-state')).toBeVisible();
-    await expect(page.locator('#visualPausedWorksBtn')).toBeVisible();
+    await expect(page.locator('#visualWorkspace')).toBeVisible();
     await expect(page.locator('.workspace-grid.workspace-hierarchy')).toBeHidden();
     await expectDocumentBounded(page);
-    await expectHorizontallyBounded(page.locator('#visualWorkspace'));
+    const layout = await page.locator('.visual-workspace-layout').evaluate(element => {
+      const root = element.getBoundingClientRect();
+      const rail = element.querySelector('.visual-entry-list-panel').getBoundingClientRect();
+      const editor = element.querySelector('.visual-editor-panel').getBoundingClientRect();
+      return {
+        railInside: rail.left >= root.left - 1 && rail.right <= root.right + 1,
+        editorInside: editor.left >= root.left - 1 && editor.right <= root.right + 1,
+        separated: rail.right <= editor.left + 1 || rail.bottom <= editor.top + 1
+      };
+    });
+    expect(layout).toEqual({ railInside: true, editorInside: true, separated: true });
+    // The current article is the paper fill both rails use, lighter than hover.
+    await expect(page.locator('.visual-entry-row.active')).toHaveCSS('background-color', 'rgb(251, 250, 246)');
 
     await page.locator('.nav-item[data-view="projects"]').click();
     await expectDocumentBounded(page);

@@ -106,13 +106,15 @@
           kind: 'visual', label: '發布圖文', projectId: project.id, projectTitle,
           partKey: visualKey(project, entry), title: displayTitle, internalTitle,
           subtitle: `${projectTitle} · 圖文${displayTitle !== internalTitle ? ` · 內部名稱：${internalTitle}` : ''}`,
-          titleFields: [...platformTitles, internalTitle],
+          // A one-image article is also found by its photo's file name (REDESIGN_PROPOSAL C7).
+          titleFields: [...platformTitles, internalTitle,
+            ...((project.state?.photos || []).filter(photo => photo.id === entry.photoId).map(photo => photo.name))],
           tagFields: [...new Set([
             ...(Array.isArray(entry.tags) ? entry.tags : []),
             ...(window.StoryFlowContentModel?.tagsFromHashtags?.(entry.hashtags) || [])
           ])],
-          bodyFields: [entry.summary || '', entry.body || ''],
-          pendingFields: [entry.body || '', entry.afterword || ''],
+          bodyFields: [entry.summary || '', entry.quote || '', entry.caption || '', entry.body || ''],
+          pendingFields: [entry.quote || '', entry.caption || '', entry.body || '', entry.afterword || ''],
           order: Date.parse(entry.updatedAt || entry.createdAt || '') || orderBase + entryIndex / 1000
         });
       });

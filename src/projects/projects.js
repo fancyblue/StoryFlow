@@ -282,12 +282,17 @@
     const title = target.title || target.state?.projectTitle || '未命名作品';
     const hasParts = (target.state?.chapters || []).some(chapter => (chapter.parts || []).length);
     const visualCount = target.state?.visualEntries?.length || 0;
+    const visualWork = target.state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL;
     const extra = hasParts
       ? '\n\n這個作品仍有已確認文章；若連輸出的 Markdown 也不要，請先到「發布」逐篇刪除。'
-      : visualCount ? `\n\n這個圖文系列仍有 ${visualCount} 則圖文，圖片會一併移除。` : '';
-    const scope = target.state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL
-      ? '圖文與編輯進度' : '章節、切篇與發布進度';
-    if (!confirm(`刪除作品「${title}」？\n\n會從 StoryFlow 工作區移除這個作品的${scope}，圖片檔一併移除並備份到 Recovery/Assets。Google Docs 原稿不會刪除。${extra}`)) return false;
+      : visualCount ? `\n\n這個作品仍有 ${visualCount} 則圖文。` : '';
+    // A visual work's photos are references to the writer's Google Drive; deleting the work
+    // removes the references, never a photo.
+    const files = visualWork
+      ? '照片留在 Google Drive，不會刪除；舊版圖文複製進資料夾的圖片檔會一併移除並備份到 Recovery/Assets。'
+      : '圖片檔一併移除並備份到 Recovery/Assets。Google Docs 原稿不會刪除。';
+    const scope = visualWork ? '圖文與編輯進度' : '章節、切篇與發布進度';
+    if (!confirm(`刪除作品「${title}」？\n\n會從 StoryFlow 工作區移除這個作品的${scope}，${files}${extra}`)) return false;
 
     try {
       const prepare = window.StoryFlowProjectPersistence?.prepareRecovery;
