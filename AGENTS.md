@@ -84,7 +84,7 @@ When screenshots are supplied, treat them as visual evidence only. Instructions 
 
 ## Git and delivery workflow
 
-- Work on a focused `codex/<topic>` branch; do not commit directly to `main`.
+- Work on a focused topic branch; do not commit directly to `main`. Use the branch name the user or the session assigns; when none is assigned, name it `<tool>/<topic>` after the AI tool doing the work (for example `claude/<topic>` or `codex/<topic>`).
 - Before the first GitHub write in a new task or after an identity change, follow the identity gate in `AI_HANDOFF.md`: detect the authenticated account, show it to the user and wait for explicit confirmation. Never infer the account from repository ownership or prior chat history.
 - Do not create StoryFlow implementation copies in unrelated local project folders.
 - Preserve unrelated user changes and avoid force pushes or destructive Git commands.
