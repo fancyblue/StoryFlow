@@ -51,8 +51,7 @@
     background: linear-gradient(90deg, var(--paper-0, #ece9e0) calc(var(--sf-main-pad-x) + var(--sf-rail-width)), var(--paper-1, #fbfaf6) 0);
   }
   /* The paper keeps its own margin: text never meets the edge where the ground ends. */
-  .main > .app-view.workspace-view .workspace-grid.workspace-hierarchy > .workspace-main-column,
-  .main > .app-view.workspace-view .visual-editor-panel {
+  .main > .app-view.workspace-view .workspace-grid.workspace-hierarchy > .workspace-main-column {
     padding-left: 32px;
   }
   /* What you work on is one page set on the paper, in both content modes: the split preview's
@@ -63,8 +62,7 @@
   .main > .app-view.workspace-view {
     --sf-page-width: max(calc(var(--sf-reading-chars, 36) * var(--sf-reading-size, 16px)), 600px);
   }
-  .main > .app-view.workspace-view .workspace-grid.workspace-hierarchy > .workspace-main-column > .splitter-panel,
-  .main > .app-view.workspace-view .visual-editor-panel > * {
+  .main > .app-view.workspace-view .workspace-grid.workspace-hierarchy > .workspace-main-column > .splitter-panel {
     max-width: var(--sf-page-width) !important;
     margin-inline: auto !important;
   }
@@ -79,8 +77,7 @@
   .main > .app-view:not([hidden]) {
     animation: sf-unfold .22s ease-out backwards;
   }
-  .main > .app-view.workspace-view .workspace-main-column,
-  .main > .app-view.workspace-view .visual-editor-panel {
+  .main > .app-view.workspace-view .workspace-main-column {
     animation: sf-unfold .26s ease-out .06s backwards;
   }
 
@@ -117,8 +114,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .main > .app-view:not([hidden]),
-  .main > .app-view.workspace-view .workspace-main-column,
-  .main > .app-view.workspace-view .visual-editor-panel { animation: none; }
+  .main > .app-view.workspace-view .workspace-main-column { animation: none; }
 }
 
 @media (min-width: 1600px) {

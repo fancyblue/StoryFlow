@@ -25,6 +25,18 @@ test('publishing counts content types by work even when one work has several ent
 
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.getByText('測試發布文章 1', { exact: true })).toBeVisible();
+  // With every work the same kind there is nothing to filter by type, so the row is absent.
+  await expect(page.locator('#publishingContentTypeFilters')).toBeHidden();
+
+  // A visual work without entries joins the library: the row appears, and counts works that
+  // have something to publish.
+  await page.evaluate(() => {
+    const current = StoryFlowProjects.activeId();
+    StoryFlowProjects.createProject({ title: '空白圖文', contentMode: 'visual' }, { quiet: true });
+    StoryFlowProjects.switchProject(current, { quiet: true });
+  });
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.locator('#publishingContentTypeFilters')).toBeVisible();
   await expect(page.locator('#publishingContentTypeFilters [data-content-type="all"]')).toHaveText('全部類型 1');
   await expect(page.locator('#publishingContentTypeFilters [data-content-type="longform"]')).toHaveText('長文 1');
@@ -95,9 +107,11 @@ test('publishing counts content types by work even when one work has several ent
   await expect(page.getByText('測試發布文章 3', { exact: true })).toBeVisible();
 
   await page.locator('#publishingProjectFilterBtn').click();
+  // Unticking every work is not an empty selection: the filter returns to 全部.
   const checkbox = page.locator('.publishing-project-filter-option input').first();
   await expect(checkbox).toBeChecked();
   await checkbox.click({ noWaitAfter: true });
+  await page.locator('.publishing-project-filter-option input').nth(1).click({ noWaitAfter: true });
 
   await expect(page.locator('#publishingProjectFilterSummary')).toHaveText('全部');
   await expect(page.locator('.publishing-project-filter-option input').first()).toBeChecked();
@@ -719,15 +733,15 @@ test('publishing order can follow chapters, and the choice follows the writer no
 test('a visual work is not offered an order it has no chapters for', async ({ page }) => {
   const pageErrors = await prepare(page);
   await gotoWorkbench(page, '/?visual-regression=1');
-  await page.locator('#createProjectManually').click();
-  // The dialog renames itself once a type is chosen, so it is addressed by id rather than
-  // by the name it is about to stop having.
-  const typeDialog = page.locator('#visualTypeDialog');
-  await typeDialog.locator('#chooseVisualType').click();
-  await expect(typeDialog.locator('#visualSeriesCreatePanel')).toBeVisible();
-  await typeDialog.locator('#visualSeriesTitle').fill('圖文排序測試');
-  await typeDialog.locator('#visualFirstEntryTitle').fill('月下預告');
-  await typeDialog.getByRole('button', { name: '建立圖文系列', exact: true }).click();
+  // A visual work as an existing workspace holds it; no editor creates one until the new
+  // visual workspace lands (REDESIGN_PROPOSAL Phase C).
+  await page.evaluate(() => StoryFlowProjects.createProject({
+    title: '圖文排序測試', contentMode: 'visual', visualEntry: {
+        id: crypto.randomUUID(), title: '月下預告', summary: '', hashtags: '', tags: [], body: '', images: [],
+        coverImageId: '', platformTitles: {}, platformStatus: {}, publicationRecords: {},
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+      }
+  }, { quiet: true }));
   await page.locator('.nav-item[data-view="publishing"]').click();
 
   // Visual entries have no chapters, and unlike parts they do carry updatedAt, so the order
@@ -772,13 +786,13 @@ test('publishing lists every work, orders what it lists, and editing a chapter i
   // Publishing sees the one work first, then a visual work created after that visit.
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.locator('.publishing-project-group')).toHaveCount(1);
-  await page.evaluate(() => StoryFlowProjects.createProject({ title: '後建的圖文', contentMode: 'visual' }, { quiet: true }));
-  await page.locator('.nav-item[data-view="workspace"]').click();
-  await page.locator('#visualNewEntryBtn').click();
-  await page.locator('#newVisualEntryTitle').fill('月下預告');
-  await page.locator('#confirmNewVisualEntry').click();
-  await page.locator('#visualEntryBody').fill('月光落在城牆上。\n\n第二段圖文內容。');
-  await expect(page.locator('#visualEditorSaveStatus')).toContainText('已儲存');
+  await page.evaluate(() => StoryFlowProjects.createProject({
+    title: '後建的圖文', contentMode: 'visual', visualEntry: {
+        id: crypto.randomUUID(), title: '月下預告', summary: '', hashtags: '', tags: [], body: '月光落在城牆上。\n\n第二段圖文內容。', images: [],
+        coverImageId: '', platformTitles: {}, platformStatus: {}, publicationRecords: {},
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+      }
+  }, { quiet: true }));
 
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.locator('.publishing-project-group')).toHaveCount(2);

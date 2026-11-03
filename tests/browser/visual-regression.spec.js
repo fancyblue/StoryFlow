@@ -101,22 +101,22 @@ async function openVisualWork(page) {
     window.StoryFlowIntegrations.saveVisualEntry = async payload =>
       'StoryFlow-test/Works/' + payload.projectTitle + '/Visual/' + payload.entry.id;
   });
-  await page.locator('.nav-item[data-view="projects"]').click();
-  await page.locator('.projects-empty-state .button').click();
-  const typeDialog = page.locator('#visualTypeDialog');
-  await typeDialog.locator('#chooseVisualType').click();
-  await typeDialog.locator('#visualSeriesTitle').fill('版面測試圖文集');
-  await typeDialog.locator('#visualFirstEntryTitle').fill('月下預告');
-  await typeDialog.getByRole('button', { name: '建立圖文系列', exact: true }).click();
+  // A visual work as an existing workspace holds it: no editor creates one until the new
+  // visual workspace lands (REDESIGN_PROPOSAL Phase C).
   await page.evaluate(() => {
-    const entry = state.visualEntries[0];
-    entry.body = '月光落在城牆上。\n\n第二段圖文內容。';
-    entry.summary = '版面測試摘要';
-    entry.hashtags = '#StoryFlow #圖文';
-    entry.tags = ['StoryFlow', '圖文'];
-    entry.afterword = '版面測試後記。';
+    const now = new Date().toISOString();
+    StoryFlowProjects.createProject({
+      title: '版面測試圖文集', contentMode: 'visual',
+      visualEntry: {
+        id: crypto.randomUUID(), title: '月下預告', body: '月光落在城牆上。\n\n第二段圖文內容。',
+        summary: '版面測試摘要', hashtags: '#StoryFlow #圖文', tags: ['StoryFlow', '圖文'],
+        afterword: '版面測試後記。', images: [], coverImageId: '', platformTitles: {},
+        platformStatus: {}, publicationRecords: {}, createdAt: now, updatedAt: now
+      }
+    }, { quiet: true });
     renderAll();
   });
+  await page.locator('.nav-item[data-view="workspace"]').click();
   await expect(page.locator('#visualWorkspace')).toBeVisible();
 }
 
@@ -304,35 +304,19 @@ test('works, publishing, and settings retain their desktop composition', async (
 });
 
 
-test('visual workspace, works actions, publishing actions, and previews stay contained', async ({ page }) => {
+test('an old visual work, works actions, publishing actions, and previews stay contained', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openVisualWork(page);
 
   for (const size of layoutViewports) {
     await page.setViewportSize(size);
     await page.locator('.nav-item[data-view="workspace"]').click();
-    await expect(page.locator('#visualWorkspace')).toBeVisible();
+    // The workspace says the work is paused, offers the way back to Works, and edits nothing.
+    await expect(page.locator('#visualWorkspace .visual-paused-state')).toBeVisible();
+    await expect(page.locator('#visualPausedWorksBtn')).toBeVisible();
+    await expect(page.locator('.workspace-grid.workspace-hierarchy')).toBeHidden();
     await expectDocumentBounded(page);
-    const layout = await page.locator('.visual-workspace-layout').evaluate(element => {
-      const root = element.getBoundingClientRect();
-      const rail = element.querySelector('.visual-entry-list-panel').getBoundingClientRect();
-      const editor = element.querySelector('.visual-editor-panel').getBoundingClientRect();
-      return {
-        railInside: rail.left >= root.left - 1 && rail.right <= root.right + 1,
-        editorInside: editor.left >= root.left - 1 && editor.right <= root.right + 1,
-        separated: rail.right <= editor.left + 1 || rail.bottom <= editor.top + 1
-      };
-    });
-    expect(layout).toEqual({ railInside: true, editorInside: true, separated: true });
-
-    // One baseline, not three: the loop already proves the layout holds at every desktop width,
-    // so a second and third screenshot would only lengthen the run for the same evidence.
-    if (size.width === 1440) {
-      // A row's fill is too few pixels for the baseline's tolerance to notice, so say it: the
-      // current entry is the paper fill both rails use, lighter than hover.
-      await expect(page.locator('.visual-entry-row.active')).toHaveCSS('background-color', 'rgb(251, 250, 246)');
-      await expect(page.locator('#visualWorkspace')).toHaveScreenshot('visual-workspace-1440.png');
-    }
+    await expectHorizontallyBounded(page.locator('#visualWorkspace'));
 
     await page.locator('.nav-item[data-view="projects"]').click();
     await expectDocumentBounded(page);
@@ -343,13 +327,7 @@ test('visual workspace, works actions, publishing actions, and previews stay con
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('.nav-item[data-view="workspace"]').click();
   await expectDocumentBounded(page);
-  await expectHorizontallyBounded(page.locator('.visual-workspace-layout'));
-  await page.locator('#visualPreviewEntryBtn').click();
-  const workspacePreview = page.locator('#visualEntryPreviewDialog');
-  await expect(workspacePreview).toBeVisible();
-  await expectDialogContained(workspacePreview);
-  await expectVisibleChildrenSeparated(workspacePreview.locator('.visual-dialog-actions'));
-  await workspacePreview.getByRole('button', { name: '關閉', exact: true }).last().click();
+  await expectHorizontallyBounded(page.locator('#visualWorkspace'));
 
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expectDocumentBounded(page);

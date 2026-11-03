@@ -541,17 +541,17 @@ test('works cards report publishing progress per content type using publishing r
   // The bar is decorative; the numbers reach assistive technology through one name.
   await expect(progress).toHaveAttribute('aria-label', /已完成 1 \/ 1/);
 
-  // A visual series counts entries, not chapters.
-  await page.evaluate(() => {
-    window.StoryFlowIntegrations.saveVisualEntry = async payload => 'x/' + payload.entry.id;
-  });
-  await page.locator('#projectsNewWorkBtn').click();
-  const typeDialog = page.locator('#visualTypeDialog');
-  await typeDialog.locator('#chooseVisualType').click();
-  await typeDialog.locator('#visualSeriesTitle').fill('圖文進度');
-  await typeDialog.locator('#visualFirstEntryTitle').fill('月下預告');
-  await typeDialog.getByRole('button', { name: '建立圖文系列', exact: true }).click();
+  // A visual work counts entries, not chapters. It is created as an existing workspace holds
+  // one; no editor creates one until the new visual workspace lands.
+  await page.evaluate(() => StoryFlowProjects.createProject({
+    title: '圖文進度', contentMode: 'visual', visualEntry: {
+        id: crypto.randomUUID(), title: '月下預告', summary: '', hashtags: '', tags: [], body: '', images: [],
+        coverImageId: '', platformTitles: {}, platformStatus: {}, publicationRecords: {},
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+      }
+  }, { quiet: true }));
 
+  await page.locator('.nav-item[data-view="publishing"]').click();
   await page.locator('.nav-item[data-view="projects"]').click();
   const visualCard = page.locator('.project-library-card', { hasText: '圖文進度' });
   await expect(visualCard.locator('.project-library-meta')).toContainText('則圖文');

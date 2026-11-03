@@ -89,10 +89,6 @@ dialog .project-source-diff-head > .icon-button:hover:not(:disabled) {
   margin: 0 -24px 18px !important;
   padding: 20px 24px 16px !important;
 }
-.visual-entry-preview-card .visual-dialog-actions {
-  margin-inline: -24px !important;
-  padding-inline: 24px !important;
-}
 
 #settingsDialog {
   width: min(760px, calc(100vw - 24px));

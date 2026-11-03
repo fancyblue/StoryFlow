@@ -2,11 +2,7 @@
 
 StoryFlow 是一個以瀏覽器執行的長篇內容切篇與多平台發布工作台。程式可以部署在 GitHub Pages；文章、工作進度與個人 Google 整合設定保存在使用者自行選擇的 StoryFlow 資料夾。
 
-> 圖文內容維護模式的產品、Phase 狀態與技術決策見 [`docs/VISUAL_CONTENT_MODE_DESIGN.md`](docs/VISUAL_CONTENT_MODE_DESIGN.md)。Phase 1 與 Phase 2 已開放：可建立「圖文系列」、維護文字與私人圖片，並在共用發布頁管理平台標題、預覽／複製、圖片上傳順序、平台發布狀態與發布紀錄。
-
-建立圖文系列後，工作台會切換成獨立的圖文編輯介面，不顯示 Smart Split。每則圖文使用固定 ID 儲存在 `Works/<作品>/Visual/<entry-id>/`，改名不會移動圖片；刪除圖文前會建立 Recovery，圖片檔一併移除並先備份到 `Recovery/Assets/`。手機唯讀模式可以閱讀與預覽，但不允許新增、匯入、排序、刪除或保存。
-
-圖文建立後就會加入共用發布清單，標題、正文與圖片異動會自動儲存，不需要切換「草稿／可發布」。發布完整度由標題，以及正文或至少一張圖片推導；內容不完整時仍可查看與整理，但不能記錄或標註平台已發布。發布管理統一從主導覽或作品頁進入。圖文與長文共用發布篩選與繼續發布邏輯，但圖片不會被複製或上傳到平台；預覽會保留封面、圖說、替代文字與手動上傳順序。
+> 圖文正在重新設計（[`docs/REDESIGN_PROPOSAL.md`](docs/REDESIGN_PROPOSAL.md)）：舊版圖文工作台已拔除，新版「一圖一文」完成前暫時無法建立圖文作品。既有的舊版圖文作品原樣保留，工作台只顯示暫停說明，發布頁仍可預覽與複製。
 
 SMART SPLIT 預設只在原稿的場景分隔點提出切篇建議，並可用「少一個場景／多一個場景」快速調整。要看得更完整時按「讀稿檢視」：工作台兩側收起，整章以單一文字流呈現，已確認、這一篇與尚未處理以墨色深淺區分。遇到單一場景過長時，切換到同一畫面的「接縫」檢視，拖曳「本篇結尾」或直接點選任一段落間的位置；切點只吸附在段落之間，會即時更新本篇與後續字數，而且不會改寫原稿。接縫只作用於目前尚未確認的文章，不會回溯重切已建立或已發布的文章。
 
@@ -31,7 +27,7 @@ SMART SPLIT 預設只在原稿的場景分隔點提出切篇建議，並可用�
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | 已落地，持續維護 | 執行時、資料所有權與模組邊界 |
 | [`docs/UI_SYSTEM.md`](docs/UI_SYSTEM.md) | 已落地，持續維護 | 共用視覺與互動規範 |
 | [`docs/UX_FLOW.md`](docs/UX_FLOW.md) | 已落地，持續維護 | 各頁任務與操作優先順序 |
-| [`docs/VISUAL_CONTENT_MODE_DESIGN.md`](docs/VISUAL_CONTENT_MODE_DESIGN.md) | Phase 0–2 已完成 | 圖文模式的完成紀錄、資料邊界與持續驗收依據 |
+| [`docs/VISUAL_CONTENT_MODE_DESIGN.md`](docs/VISUAL_CONTENT_MODE_DESIGN.md) | 已被取代 | 圖文模式的完成紀錄、資料邊界與持續驗收依據 |
 | [`docs/CHROME_ACCEPTANCE.md`](docs/CHROME_ACCEPTANCE.md) | 可重複執行 | 高風險變更與大型發布的人工驗收清單 |
 | [`tests/README.md`](tests/README.md) | 現行測試規範 | 風險導向的自動化與人工驗證策略 |
 

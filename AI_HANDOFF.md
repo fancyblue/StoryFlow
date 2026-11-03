@@ -47,10 +47,10 @@
 StoryFlow 是私人、單人使用的瀏覽器內容工作台：
 
 - 長文：來源建立／同步、Smart Split、切篇確認與多平台發布準備。
-- 圖文：獨立圖文工作台、私人圖片維護、預覽與共用發布流程。
+- 圖文：重新設計中（`docs/REDESIGN_PROPOSAL.md`）。舊版工作台已拔除，新版「一圖一文」完成前無法建立；舊資料原樣保留並可在發布頁使用。
 - 共用能力：作品切換、搜尋、串行保存、Recovery、發布狀態與手機安全唯讀。
 - GitHub Pages 只提供程式；正文、圖片、workspace 與個人整合設定保存在使用者選擇的私人 StoryFlow 資料夾。
-- 圖文 Phase 0–2 已完成；目前沒有後續 Phase 規劃。
+- 全站調整與圖文重新設計依 `docs/REDESIGN_PROPOSAL.md` 的 Phase 0 → A → B → C 進行，每個 Phase 一個 PR。
 
 ## 3. 來源真實性與優先順序
 

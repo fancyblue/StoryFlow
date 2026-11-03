@@ -154,6 +154,15 @@
       longform: projectModes.filter(mode => mode === 'longform').length,
       visual: projectModes.filter(mode => mode === 'visual').length
     };
+    // Shown only while the library holds both kinds of work, judged on every work rather
+    // than the selected ones, so narrowing 作品 does not make the row come and go.
+    const everyWork = mergeActiveState(workspaceSnapshot || storeSnapshot()).projects || [];
+    const modeOf = project => (project?.state?.contentMode === 'visual' ? 'visual' : 'longform');
+    const mixed = everyWork.some(project => modeOf(project) === 'visual')
+      && everyWork.some(project => modeOf(project) === 'longform');
+    const group = document.getElementById('publishingContentTypeFilters');
+    if (group) group.hidden = !mixed;
+    if (!mixed && currentContentType !== 'all') currentContentType = 'all';
     document.querySelectorAll('#publishingContentTypeFilters [data-content-type]').forEach(button => {
       const key = button.dataset.contentType || 'all';
       const label = key === 'all' ? '全部類型' : key === 'longform' ? '長文' : '圖文';

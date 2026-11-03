@@ -267,8 +267,7 @@
    only; stacked, there is no edge to drag. */
 .sf-rail-resizer{display:none}
 @media(min-width:821px){
-  .workspace-grid.workspace-hierarchy,
-  .visual-workspace-layout{position:relative}
+  .workspace-grid.workspace-hierarchy{position:relative}
   .sf-rail-resizer{position:absolute;top:0;bottom:0;left:var(--sf-rail-width);z-index:3;display:block;width:12px;margin-left:-6px;cursor:col-resize;touch-action:none}
   .sf-rail-resizer::after{content:"";position:absolute;top:0;bottom:0;left:5px;width:2px;border-radius:2px;background:transparent;transition:background-color .15s ease}
   .sf-rail-resizer:hover::after{background:var(--rule-2,#c8c1b0)}
