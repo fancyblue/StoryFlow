@@ -257,3 +257,10 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
 .sf-reading-settings-stepper{display:flex;align-items:center;gap:6px}
 .sf-reading-settings-stepper output{min-width:4.5em;text-align:center;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums}
 .sf-reading-settings-foot{display:flex;justify-content:flex-end;padding-top:2px;border-top:1px solid var(--rule-1,#ded9cc)}
+
+/* 待補 count beside the split status: the same pill, a button because it jumps to the next
+   mark, and the warning pigment on its dot because it is a caution rather than a state. */
+.splitter-panel .suggestion-title-row .sf-pending-pill{font:inherit;font-size:13px;cursor:pointer}
+.splitter-panel .suggestion-title-row .sf-pending-pill::before{background:#8a6526}
+.splitter-panel .suggestion-title-row .sf-pending-pill:hover,
+.splitter-panel .suggestion-title-row .sf-pending-pill:focus-visible{color:#8a6526!important;text-decoration:underline;text-underline-offset:3px;outline:none}

@@ -61,7 +61,25 @@
 .projects-library > .project-library-card:last-child{
   border-bottom:0!important;
 }
-.project-library-main{min-width:0!important}
+/* The work's name and meta line are the control that opens it (B1). Drawn as the text it
+   was: no frame, no fill, the row's own hover. The title underlines under the pointer so the
+   target is discoverable without a second button saying 開啟. */
+.project-library-main{
+  min-width:0!important;
+  display:grid!important;
+  justify-items:start!important;
+  width:100%!important;
+  margin:0!important;
+  padding:4px 0!important;
+  border:0!important;
+  background:transparent!important;
+  color:inherit!important;
+  font:inherit!important;
+  text-align:left!important;
+  cursor:pointer!important;
+}
+.project-library-main:hover .project-library-title-row strong{text-decoration:underline;text-underline-offset:3px}
+.project-library-main:focus-visible{outline:3px solid rgba(75,69,87,.2)!important;outline-offset:2px!important;border-radius:6px!important}
 .project-library-title-row{gap:7px!important}
 .project-library-title-row strong{
   color:var(--sf-text)!important;
@@ -87,12 +105,6 @@
    publishing remains a quieter shortcut. 管理章節 rests exactly as Publishing's 管理發布
    does — the ground's fill on the ordinary frame — and takes the darker frame and ink only
    under the pointer or while open, as that one does; it used to rest in its open state. */
-.project-library-card .project-library-actions > .project-manage-chapters-btn{
-  border-color:#c8c1b0!important;
-  background:var(--paper-0,#ece9e0)!important;
-  color:var(--denim-800,#4b4557)!important;
-  box-shadow:none!important;
-}
 .project-library-card .project-library-actions > .project-publish-btn{
   border-color:#c8c1b0!important;
   background:#fbfaf6!important;
@@ -102,24 +114,11 @@
 .project-library-card .project-publish-btn[hidden]{
   display:none!important;
 }
-.project-library-card .project-library-actions > .project-manage-chapters-btn:hover,
-.project-library-card .project-library-actions > .project-manage-chapters-btn:focus-visible{
-  border-color:#968f80!important;
-  background:var(--paper-0,#ece9e0)!important;
-  color:var(--denim-900,#221f1a)!important;
-}
 .project-library-card .project-library-actions > .project-publish-btn:hover,
 .project-library-card .project-library-actions > .project-publish-btn:focus-visible{
   border-color:#c8c1b0!important;
   background:var(--sf-primary-soft,#f4f1e9)!important;
   color:var(--denim-900,#221f1a)!important;
-}
-.project-library-card .project-library-actions > .project-manage-chapters-btn[aria-expanded="true"]{
-  border-color:#968f80!important;
-  background:var(--paper-0,#ece9e0)!important;
-  color:var(--denim-900,#221f1a)!important;
-  /* Open is shown by the tint, as on Publishing's 收合發布; no inset bar. */
-  box-shadow:none!important;
 }
 
 .project-library-actions .project-library-delete{display:none!important}
@@ -186,10 +185,6 @@
   color:#a8443a;
   outline:none;
 }
-.project-chapter-manager{
-  margin-top:10px!important;
-  padding-top:12px!important;
-}
 
 /* Publishing progress on a work card. The bar is decorative: the accessible name on
    the container carries the same numbers, so screen readers get one reading, not three. */
@@ -244,27 +239,14 @@
     align-items:stretch!important;
     gap:14px!important;
   }
-  .project-library-actions > .project-open-btn,
-  .project-library-actions > .project-manage-chapters-btn{
-    flex:1 1 auto!important;
-  }
   .project-library-more-btn{flex:0 0 40px!important}
 }
 @media(max-width:560px){
-  .project-library-actions{
-    display:grid!important;
-    grid-template-columns:1fr 1fr 40px!important;
-  }
-  /* 開啟 | 管理發布 | ⋯ on the first line — the order Publishing's rows use — and the chapter
-     disclosure across the whole second line, directly above the list it opens. It used to
-     land alone in the right half of that line, leaving the left half empty. */
-  .project-library-actions > .project-open-btn{grid-column:1!important;grid-row:1!important;width:100%!important}
-  .project-library-actions > .project-publish-btn{grid-column:2!important;grid-row:1!important;width:100%!important}
-  /* 1 / 4, not 1 / -1: a shared layer redefines this grid as two explicit columns, so ⋯'s
-     column is implicit and -1 would stop short of it. */
-  .project-library-actions > .project-manage-chapters-btn{grid-column:1 / 4!important;grid-row:2!important;width:100%!important}
+  /* 管理發布 | ⋯ on one line (the grid itself is ui-system.css's phone row): the work itself
+     is opened from its name above them. */
+  .project-library-actions > .project-publish-btn{grid-column:1!important;grid-row:1!important;width:100%!important}
   .project-library-more-btn{
-    grid-column:3!important;
+    grid-column:2!important;
     grid-row:1!important;
   }
 }

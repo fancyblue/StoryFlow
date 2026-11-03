@@ -110,7 +110,9 @@
   color:#4b4557;
   font-weight:700;
 }
-.publish-list-title-row .publish-readiness-badge.incomplete{
+/* 待補 N is the same caution as an unfinished entry: the warning pigment, not an error. */
+.publish-list-title-row .publish-readiness-badge.incomplete,
+.publish-list-title-row .publish-pending-badge{
   display:inline-flex;
   align-items:center;
   min-height:22px;

@@ -87,7 +87,7 @@ Shared interaction vocabulary is documented in [UI_SYSTEM.md](UI_SYSTEM.md), and
 | `src/connection/` | Google session, folder session and connection controls |
 | `src/settings/` | Settings view, bootstrap and file import |
 | `src/persistence/` | Workspace IO, save queue, backup and recovery |
-| `src/projects/` | Work library, chapter management and project switching |
+| `src/projects/` | Work library, the workspace rail's chapter menus and project switching |
 | `src/source/` | Google/manual source ingestion, relinking and source modes |
 | `src/split/` | Smart Split preferences, scene/paragraph boundaries and continuation |
 | `src/publishing/` | Publishing queue, filters, grouping and platform guards |

@@ -65,5 +65,14 @@
     select.value = values.includes(previous) ? previous : (withDefault ? '' : (names[0] || ''));
   }
 
-  window.StoryFlowShared = { safeName, normalizeTitle, partKey, hasConnectedFolder, platformNames, fillPlatformSelect };
+  // 【待補】 and 【待確認】 are the writer's own notes inside the text: something to fill in or
+  // check before it goes out (REDESIGN_PROPOSAL B3). Only the opening is matched, so
+  // 【待補：照片說明】 and 【待確認 日期】 count as well. Workspace, Publishing and search all ask
+  // this one question, so it is answered once here.
+  const PENDING_MARK = /【待(?:補|確認)/g;
+  function pendingMarkCount(...texts) {
+    return texts.reduce((total, text) => total + (String(text || '').match(PENDING_MARK)?.length || 0), 0);
+  }
+
+  window.StoryFlowShared = { safeName, normalizeTitle, partKey, hasConnectedFolder, platformNames, fillPlatformSelect, pendingMarkCount };
 })();

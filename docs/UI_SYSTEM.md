@@ -159,9 +159,8 @@ Rules that follow from it:
 
 - **A list row's actions are the standard tier**, owned once in `ui-system.css`; Works and
   Publishing set only their colours. The row's `⋯` is as tall as its neighbours and square.
-- **The same management action rests the same way.** 管理章節 and Publishing's 管理發布 both rest
-  on the ground's fill inside the ordinary frame, and take the darker frame and full ink only
-  under the pointer or while open. 管理章節 used to rest in its open state.
+- **The same management action rests the same way.** Works' 管理發布 is one control on every
+  card, current or not. (Works no longer carries 管理章節; a work opens from its name.)
 - **Selected on paper is the ground** for every chip: the type chips now take it like the
   status chips beside them. The 圖文 chip keeps its moss when selected, because that colour is
   the content type, not the selection.
@@ -458,16 +457,12 @@ how deep a level sits and what separates one row from the next. Works indented a
 | `.sf-hier-head` | A level's header line: what the level is, then its count or controls at the far end |
 | `.sf-chevron` (in `styles/layers/ui-system.css`) | The chevron, pointing the same way for the same state |
 
-What a row *contains* stays each page's business. A chapter row on Works carries 編輯章節; a
-part row on Publishing carries 預覽與複製; neither belongs in the shared file.
+What a row *contains* stays each page's business. A part row on Publishing carries 預覽與複製;
+it does not belong in the shared file. Works used to nest chapters under a work on this rule as
+well; it now lists works only, so Publishing is the page that nests.
 
-The disclosure is shared in behaviour, not in appearance: both expanders carry
-`aria-expanded` and rotate the same chevron, but a work row's expander is also a named action
-("管理章節" / "收合章節") while a chapter group's is a bare control. Giving the work row a bare
-chevron would drop an action label that [action hierarchy](#action-hierarchy) requires.
-
-`cascade-contract.spec.js` pins it: both pages' nested level, row separator and marker gutter
-must come back identical, and the step must be exactly 16px. A page that drifts to "about the
+`cascade-contract.spec.js` pins it: Publishing's nested level, row separator and marker gutter
+come from the shared rule, and the step must be exactly 16px. A page that drifts to "about the
 same depth" fails there rather than being noticed a year later.
 
 ### Owning a property means owning all of it
@@ -631,7 +626,7 @@ A control selected by class rather than `.button` does not inherit the shared di
 
 Longform chapters/articles and visual entries share this rule. Their list-level create action sits below the list as a quiet control (`.sf-quiet`), and every editable row keeps a trailing `⋯` in a fixed place. In the two workspace rails, on a device with a pointer, that `⋯` waits for its row: it shows under the pointer, on the current row, while focus is inside the row and while its menu is open, and it stays focusable at all times. On touch, and on the Works page, it is always shown. Manual-article and visual-entry menus use the same order: edit first, delete second. A visual entry is deleted as `⋯ → 刪除圖文`; do not add a second destructive button to the editor footer or make Workspace, Works and Publishing use different delete entry points. All entry deletion paths must reach the same confirmation and Recovery guard.
 
-On the Works page, “管理章節／管理圖文” is the most likely next step and uses the same emphasized light-blue treatment on every work card. Both content types use “工作台” for the active work and “開啟” for inactive works; never substitute type-specific open labels for that open action. “管理發布” is a quieter tinted shortcut. The “目前作品” badge and card treatment alone communicate which work is active; action color must not duplicate selection or make identical labels look like different functions. Expanded management uses a stronger soft selection — the darker frame and full ink over the same ground fill — never a solid primary fill. Manual chapters and visual entries show direct “編輯” plus a persistent trailing `⋯` for Recovery-guarded deletion.
+On the Works page, opening a work is the most likely next step, and the work's name is that control for both content types: the title and meta line are one unframed button whose accessible name is 開啟「作品名」, with the title underlined under the pointer and a focus ring for the keyboard. The row's actions are “管理發布”, a quieter tinted shortcut, and `⋯`. The “目前作品” badge and card treatment alone communicate which work is active; action color must not duplicate selection or make identical labels look like different functions. Chapters and entries are edited and deleted from the workspace rail only.
 
 ## The reading surface
 
@@ -664,7 +659,7 @@ about, rather than keeping the other view's now-meaningless offset.
 The bottom actions — character counts, the two scene buttons, `確認並存成 Markdown` — are
 identical in both views. That is the evidence the two were one surface all along.
 
-Character counts in review headers are supporting metadata, not headings: keep them smaller and quieter than the article title and action label. In the works library, “工作台”, “開啟”, “管理發布” and “管理章節” share one control height, font size and weight. All “管理章節” buttons use one emphasized light-blue treatment; Workbench stays outlined and publishing uses a paler tinted treatment.
+Character counts in review headers are supporting metadata, not headings: keep them smaller and quieter than the article title and action label. In the works library, “管理發布” and `⋯` share the list-row control height, font size and weight on every card.
 
 The publishing list uses one action vocabulary for both content types: “預覽”, “管理發布”, then the persistent trailing `⋯`. “管理發布” uses the light-blue management identity and 40 px / 14 px geometry; “預覽” remains white and outlined, while `⋯` remains tertiary. An expanded “收合發布” state uses a stronger soft selection or border rather than the primary fill; solid emphasis belongs to copy or save actions inside the active task. A chapter group inside a work earns its header by labelling several parts at once. A chapter holding one part does not — even beside other chapters, where separating them is already the row hairlines' job — so every one-part chapter is unwrapped into the work's rows: a work of one-part chapters used to draw each row twice, as a small header with "1 項" and a rule, then the same name larger and indented under it. The unwrapped row states its own chapter name only when its title does not already begin with it (「06、共鳴（1）」 already says 06、共鳴). A chapter with several parts keeps its header, ends on the row hairline like any row, and drops its count when it is the work's only chapter, where the count could only repeat the work's. Every row in the queue, grouped or not, is one height. Visual entries have no chapter and are never grouped: the synthetic list they used to form restated the work header. Each Publishing work-group heading ends with a compact chevron-only disclosure beside its item count. It collapses only that work's chapter/visual-entry body, defaults to expanded after reload, retains its session state through filter rerenders, and must expose the full work name through `aria-label` without becoming a large text button.
 

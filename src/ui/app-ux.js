@@ -220,26 +220,29 @@
       card.dataset.contentMode = project.contentMode || 'longform';
       const visual = project.contentMode === 'visual';
       const sourceLabel = project.sourceDocId ? 'Google Docs' : '手動建立';
+      // The work's name is how it is opened: one target the size of the title and its meta
+      // line, instead of an 開啟 button beside a 管理章節 that opened a second chapter list.
+      // Chapters are managed in the workspace rail, where the work opens.
+      const title = escapeHtml(project.title || '未命名作品');
       card.innerHTML = `
-        <div class="project-library-main">
-          <div class="project-library-title-row">
-            <strong>${escapeHtml(project.title || '未命名作品')}</strong>
+        <button class="project-library-main project-library-open" type="button" aria-label="開啟「${title}」">
+          <span class="project-library-title-row">
+            <strong>${title}</strong>
             <span class="project-type-badge">${visual ? '圖文' : '長文'}</span>
             ${active ? '<span class="project-current-badge">目前作品</span>' : ''}
-          </div>
+          </span>
           <span class="project-library-meta">${visual
             ? `${Number(project.visualEntryCount || 0).toLocaleString()} 則圖文`
             : `${Number(project.chapterCount || 0).toLocaleString()} 個章節 · ${sourceLabel}`}${
             editedLabel(project.updatedAt) ? ` · ${escapeHtml(editedLabel(project.updatedAt))}` : ''}</span>
-        </div>
+        </button>
         ${progressMarkup(project.publishProgress)}
         <div class="project-library-actions">
-          <button class="button tiny ghost project-open-btn" type="button">開啟</button>
           <button class="button tiny ghost project-publish-btn" type="button">管理發布</button>
           <button class="button tiny ghost project-library-delete" type="button">刪除</button>
         </div>`;
 
-      card.querySelector('.project-open-btn').addEventListener('click', () => {
+      card.querySelector('.project-library-open').addEventListener('click', () => {
         api.switchProject?.(project.id, { quiet: true });
         window.StoryFlowNavigate?.('workspace');
       });

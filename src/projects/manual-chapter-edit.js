@@ -199,39 +199,13 @@
     });
   }
 
-  function decorateWorksManager() {
-    document.querySelectorAll('.project-chapter-manager-row').forEach(row => {
-      const chapterId = row.dataset.chapterId;
-      const chapter = chapterById(chapterId);
-      const button = row.querySelector('.project-chapter-rename');
-      if (!button || !chapter || !isManualChapter(chapter)) return;
-      button.textContent = '編輯章節';
-      button.setAttribute('aria-label', `編輯章節「${chapter.title}」`);
-    });
-  }
-
   function sync() {
     ensureCancelButton();
     if (!editingChapterId) resetDialogToAddMode();
     decorateWorkspaceMenus();
-    decorateWorksManager();
   }
 
-  // The existing Works-page rename button has its own target listener. Capture first
-  // and route it into the full title+content editor instead of the old title-only edit.
   document.addEventListener('click', event => {
-    const worksEdit = event.target.closest?.('.project-chapter-rename');
-    if (worksEdit) {
-      const row = worksEdit.closest('.project-chapter-manager-row');
-      const chapterId = row?.dataset.chapterId;
-      if (chapterId) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        openEditor(chapterId);
-      }
-      return;
-    }
-
     const confirm = event.target.closest?.('#confirmManualSourceBtn');
     const dialog = document.getElementById('manualSourceDialog');
     if (confirm && dialog?.dataset.editChapterId) {
