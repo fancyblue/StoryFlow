@@ -262,3 +262,40 @@ test('a folder-capable phone keeps its connect entry and is never told to switch
 
   expect(pageErrors).toEqual([]);
 });
+
+// A phone reads a visual work: the article, its preview and the photo library are there, and
+// nothing that would change the work is offered (REDESIGN_PROPOSAL C7).
+test('a phone reads a visual work without being offered a change', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      get: () => 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36'
+    });
+  });
+  await page.setViewportSize({ width: 412, height: 915 });
+  await page.goto('/');
+  await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'readonly');
+  await page.evaluate(() => {
+    StoryFlowIntegrations.fetchDrivePhoto = async () => {
+      const canvas = new OffscreenCanvas(40, 30);
+      canvas.getContext('2d').fillRect(0, 0, 40, 30);
+      return canvas.convertToBlob({ type: 'image/png' });
+    };
+    StoryFlowProjects.createProject({
+      title: '手機圖文', contentMode: 'visual',
+      visualEntry: { id: 'phone-entry', title: '港口', body: '夜裡的港口。', photoId: 'phone-photo' }
+    }, { quiet: true });
+    state.photos = [StoryFlowContentModel.normalizeVisualPhoto({ id: 'phone-photo', driveFileId: 'drive-phone', name: 'IMG_1.jpg' })];
+    renderAll();
+  });
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await expect(page.locator('#visualReadonlyNote')).toBeVisible();
+  for (const control of ['#visualAddPhotosBtn', '#visualNewEntryBtn', '#visualEntryBody', '#visualEntryTitle', '#visualRemovePhoto', '#visualQuoteFromBody']) {
+    await expect(page.locator(control), control).toBeDisabled();
+  }
+  await page.locator('.visual-pane-switch [data-pane="preview"]').click();
+  await expect(page.locator('#visualPreviewArticle .visual-article-body')).toHaveText('夜裡的港口。');
+  await expect(page.locator('#visualPreviewArticle .visual-article-figure img')).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});

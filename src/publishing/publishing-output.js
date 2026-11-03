@@ -27,14 +27,16 @@
   function visualContentComplete(part) {
     if (!isVisualPart(part)) return true;
     return Boolean(String(part?.title || '').trim())
-      && Boolean(String(part?.body || '').trim() || part?.images?.length);
+      && Boolean(String(part?.body || '').trim() || part?.photoId || part?.images?.length);
   }
 
   // 【待補】／【待確認】 left in what goes out: the article itself and its afterword. The
   // summary and Hashtags are helpers beside the text, not the text.
   function pendingMarks(part) {
-    const body = isVisualPart(part) ? part?.body : (part?.raw || part?.formatted);
-    return window.StoryFlowShared.pendingMarkCount(body, part?.afterword);
+    if (isVisualPart(part)) {
+      return window.StoryFlowShared.pendingMarkCount(part?.quote, part?.caption, part?.body, part?.afterword);
+    }
+    return window.StoryFlowShared.pendingMarkCount(part?.raw || part?.formatted, part?.afterword);
   }
 
   // Marking a platform published while notes remain is allowed, but asked about once: the
@@ -75,12 +77,39 @@
     return typeof own === 'boolean' ? own : part?.includeAfterword !== false;
   }
 
+  // A visual article in reading order (REDESIGN_PROPOSAL C2/C6): quote, the photo, its
+  // caption, the body, the afterword. The live preview, Publishing's preview and the copy all
+  // read it from here, so what is previewed is what is pasted.
+  function visualSections(part, platform = '', includeAfterword = includeAfterwordFor(part, platform)) {
+    const format = value => platform ? platformFormat(value, platform) : webFormat(value);
+    const quote = String(part?.quote || '').trim();
+    const caption = String(part?.caption || '').trim();
+    const afterword = String(part?.afterword || '').trim();
+    const photo = part?.photoId ? (window.StoryFlowVisualPhotos?.byId?.(part.photoId) || null) : null;
+    return {
+      quote: quote ? format(quote) : '',
+      photo,
+      photoMissing: Boolean(part?.photoId && !photo),
+      caption,
+      body: String(part?.body || '').trim() ? format(part.body) : '',
+      afterword: includeAfterword && afterword ? format(afterword) : ''
+    };
+  }
+
   function outputSections(part, platform, includeAfterword = includeAfterwordFor(part, platform)) {
     normalizePublishItem(part);
-    const raw = isVisualPart(part) ? part.body : (part.raw ?? part.formatted ?? '');
     const format = value => platform ? platformFormat(value, platform) : webFormat(value);
-    const body = format(raw);
     const afterword = String(part.afterword || '').trim();
+    if (isVisualPart(part) && (part.photoId || part.quote || part.caption)) {
+      // The photo cannot be pasted as text; its place is marked so the writer knows where to
+      // insert it on the platform.
+      const sections = visualSections(part, platform, includeAfterword);
+      const photoLine = sections.photo ? `〔圖片：${sections.photo.name}〕` : sections.photoMissing ? '〔圖片〕' : '';
+      const body = [sections.quote, photoLine, sections.caption, sections.body].filter(Boolean).join('\n\n');
+      return { body, afterword: sections.afterword };
+    }
+    const raw = isVisualPart(part) ? part.body : (part.raw ?? part.formatted ?? '');
+    const body = format(raw);
     return { body, afterword: includeAfterword && afterword ? format(afterword) : '' };
   }
 
@@ -209,6 +238,7 @@
     normalizePublishItem,
     includeAfterwordFor,
     outputSections,
+    visualSections,
     outputFor,
     afterwordChars,
     platformLabel,

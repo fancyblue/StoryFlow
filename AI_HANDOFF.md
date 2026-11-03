@@ -38,7 +38,7 @@
 
 最後確認目前 default branch、開啟中的 PR、最近 Actions 與必要時的 Pages deployment。
 
-`docs/DESIGN_IMPLEMENTATION_PLAN.md` 是已完成設計紀錄，`docs/DESIGN_DATA_GAPS.md` 與 `docs/REDESIGN_PROPOSAL.md`（全站調整與圖文重新設計）是候選需求；日常修改不需要讀，只在查某個決定的來由或要動工其中一項時讀相關段落。
+`docs/DESIGN_IMPLEMENTATION_PLAN.md` 是已完成設計紀錄，`docs/REDESIGN_PROPOSAL.md`（全站調整與圖文重新設計）也是已完成設計紀錄，`docs/DESIGN_DATA_GAPS.md` 是候選需求；日常修改不需要讀，只在查某個決定的來由或要動工其中一項時讀相關段落。
 
 不要把本文件中的摘要當成即時 GitHub 狀態。branch、PR、CI 與 deployment 必須在接手當下重新查詢。
 
@@ -47,10 +47,10 @@
 StoryFlow 是私人、單人使用的瀏覽器內容工作台：
 
 - 長文：來源建立／同步、Smart Split、切篇確認與多平台發布準備。
-- 圖文：重新設計中（`docs/REDESIGN_PROPOSAL.md`）。舊版工作台已拔除，新版「一圖一文」完成前無法建立；舊資料原樣保留並可在發布頁使用。
+- 圖文：「一圖一文」工作台，照片庫引用 Google Drive 照片（不複製），即時預覽，與長文共用發布流程。
 - 共用能力：作品切換、搜尋、串行保存、Recovery、發布狀態與手機安全唯讀。
 - GitHub Pages 只提供程式；正文、圖片、workspace 與個人整合設定保存在使用者選擇的私人 StoryFlow 資料夾。
-- 全站調整與圖文重新設計依 `docs/REDESIGN_PROPOSAL.md` 的 Phase 0 → A → B → C 進行，每個 Phase 一個 PR。
+- `docs/REDESIGN_PROPOSAL.md` 的 Phase 0、A、B、C 已完成（全站調整與圖文重新設計）。
 
 ## 3. 來源真實性與優先順序
 

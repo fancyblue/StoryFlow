@@ -1,8 +1,8 @@
 # StoryFlow 全站調整與圖文重新設計提案
 
-> 狀態：候選／待驗證（2026-11-03 起草；同日依使用者回饋改為「一圖一文」、照片只引用 Google Drive 不複製）。本文件不是已授權的實作規格；各 Phase 開工時再把定案內容寫進 `UX_FLOW.md`、`UI_SYSTEM.md`、`ARCHITECTURE.md` 與 `CHROME_ACCEPTANCE.md`，並把本文件對應段落標為已完成。
+> 狀態：已完成設計紀錄（2026-11-03 起草並完成 Phase 0、A、B、C）。現行規範已寫入 `UX_FLOW.md`（〈Visual works: one image per article〉、〈Pending marks and the save shortcut〉）、`UI_SYSTEM.md`、`ARCHITECTURE.md` 與 `CHROME_ACCEPTANCE.md`；本文件保留決策與分期紀錄。
 >
-> 取代對象：Phase C 完成後，[`VISUAL_CONTENT_MODE_DESIGN.md`](VISUAL_CONTENT_MODE_DESIGN.md) 改為「已被取代」並指向新的現行規範。
+> 取代對象：[`VISUAL_CONTENT_MODE_DESIGN.md`](VISUAL_CONTENT_MODE_DESIGN.md) 已改為「已被取代」並指向現行規範。
 
 ## 0. 決策摘要
 
@@ -37,7 +37,7 @@
 | 0 ✅ 已完成 | 小型整理：`confirm-continuation.js` 補快取版本、刪 `src/legacy/` 與 `styles/archive/`；`test:static` 拒絕沒有 `?v=` 的已載入資產 | 低 | `test:static` + `test:assets` |
 | A ✅ 已完成 | 拔除現有圖文工作台與專屬流程，保留共用骨架 | 中（發布、搜尋、持久化都有分支） | 完整 `npm test` |
 | B ✅ 已完成 | 全站調整：作品庫、儲存快捷鍵、待補標記（共用照片元件與就地確認移到 C） | 中 | 各項跑對應 spec，B 結束跑完整 `npm test` |
-| C | 新圖文：Drive 照片庫、一圖一文編輯器與即時預覽、發布整合 | 高（Drive 讀取、新資料模型） | 新的 `visual.spec.js` + 完整 `npm test` |
+| C ✅ 已完成 | 新圖文：Drive 照片庫、一圖一文編輯器與即時預覽、發布整合（含原 B4 照片元件與 B5 就地確認） | 高（Drive 讀取、新資料模型） | 新的 `visual.spec.js` + 完整 `npm test` |
 
 每個 Phase 至少一個 PR；B、C 依小節拆成多個 PR。
 
@@ -112,7 +112,14 @@ C 的圖文以 Drive 為讀取來源使用它。長文「文章圖片」維持�
 - 類型篩選只在作品庫同時有兩種作品時顯示（已在 Phase A 完成）。
 - 列上的摘要增加「圖片 1 張 · 待補 N」。
 
-## 5. Phase C：新圖文（一圖一文）
+## 5. Phase C：新圖文（一圖一文）（✅ 已完成）
+
+實作紀錄：
+
+- 依下列 C1–C7 完成，另含原 B4（照片庫與燈箱，只用於圖文）與 B5（移除圖片、移出照片庫的就地確認與「復原」）。
+- 與下文設計的差異：照片庫在 SOURCE 欄（圖文清單下方、可收合）而不是獨立第四欄；縮圖在需要時讀原圖（Drive `alt=media`）並快取在分頁記憶體，未另外取 Drive 縮圖網址；放大檢視用每張縮圖上的 ⤢（或雙擊）。
+- `npm run test:static` 新增檢查：`visual-workspace.js` 不得出現瀏覽器儲存與資料夾寫檔呼叫。`AGENTS.md`〈Product boundaries〉與 `README.md` 已改寫照片的存放邊界。
+
 
 ### C1. 名詞
 

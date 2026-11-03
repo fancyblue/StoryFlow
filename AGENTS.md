@@ -5,7 +5,8 @@ StoryFlow is a private, single-user browser workbench for long-form splitting, v
 ## Product boundaries
 
 - GitHub contains application code, tests and public documentation only.
-- Manuscripts, images, workspace state and personal integration settings belong only in the user-selected StoryFlow folder.
+- Manuscripts, longform article images, workspace state and personal integration settings belong only in the user-selected StoryFlow folder.
+- Visual works' photos stay in the writer's own Google Drive. StoryFlow stores only references to them (Drive file ids and display metadata) and reads an image into the tab's memory when it is shown; it never writes a photo into the StoryFlow folder, GitHub or browser storage (`npm run test:static` refuses storage calls in `visual-workspace.js`), and never edits, moves or deletes a Drive file.
 - StoryFlow prepares and tracks content; it does not automatically publish to third-party platforms.
 - Browser startup must never delete legacy localStorage or IndexedDB. Compatibility APIs may inspect key/database names without reading values, but cleanup requires a future explicit, Recovery-backed migration and user confirmation.
 - Longform and visual projects share navigation, persistence, Recovery, search and Publishing, but keep separate source models and editing workspaces.
@@ -55,7 +56,7 @@ Start a change from its row rather than searching the whole repository; read the
 |---|---|---|---|---|
 | Startup, navigation, dialogs, search, desktop bounds, render pipeline | `src/core/`, `src/ui/` | `styles/layers/`, `domains/dialogs.css`, `domains/global-search.css` | `app-shell.spec.js` | UI_SYSTEM “Dialog behavior”, “Command search”, “Responsive scope”; UX_FLOW “Global search and quick jump” |
 | Works library, longform workspace, chapters, reading/seam, split | `src/projects/`, `src/split/` | `domains/works-library.css`, `workspace*.css`, `chapter-management.css`, `manual-*.css` | `longform.spec.js` | UX_FLOW “Create a work” … “Navigating a long chapter list”; CHROME_ACCEPTANCE §4–5 |
-| Visual works (paused: work-type chooser and old-work notice only, until REDESIGN_PROPOSAL Phase C) | `src/projects/visual-workspace.js`, `content-model.js` | `domains/visual-workspace.css` | `visual-regression.spec.js` (old-work notice), `publishing.spec.js` | `docs/REDESIGN_PROPOSAL.md` |
+| Visual works: one image per article, Drive photo library, live preview | `src/projects/visual-workspace.js`, `content-model.js`; Drive picker and reads in `src/source/google-docs.js`; output in `src/publishing/publishing-output.js` | `domains/visual-workspace.css` | `visual.spec.js` | UX_FLOW “Visual works: one image per article” |
 | Google/manual source, sync, diff, undo | `src/source/` (Google sign-in and Docs import: `google-docs.js`) | `domains/project-source-mode.css`, `source-article-ux.css` | `source-sync.spec.js` | CHROME_ACCEPTANCE §3 |
 | Publishing list, preview/copy, images, afterwords, records | `src/publishing/` (output rules: `publishing-output.js`; longform deletion: `publishing-delete.js`) | `domains/publishing*.css`, `article-images.css` | `publishing.spec.js` | UX_FLOW “Article afterwords” … “Platform publication records”; CHROME_ACCEPTANCE §6 |
 | Settings, platforms, backup center, storage cleanup | `src/settings/` | `domains/settings*.css` | `settings.spec.js` | CHROME_ACCEPTANCE §7 |
@@ -75,9 +76,9 @@ Every file under `src/` and `styles/` is live: the dormant `src/legacy/` scripts
 - Summary, Hashtags and afterword are optional publishing helpers shared by longform and visual content and edited in Publishing rather than source editors. Hashtags remain copyable text; parsed values support search/classification for both content types. The list-level preview is a plain content check; platform title/style and optional helper controls belong only to each platform's preview-and-copy flow.
 - Infrequent or destructive row actions use `⋯` → menu action. Do not add a second always-visible delete button in an editor footer.
 - Closing or canceling a creation dialog must bypass required-field validation and create nothing.
-- Visual content is paused while it is redesigned (`docs/REDESIGN_PROPOSAL.md`); the visual rules below describe what Phase C restores.
 - Visual source editing uses debounced autosave with explicit saving/saved/failure feedback. Entry, work and view switches flush pending writes; destructive actions remain explicit, confirmed and Recovery-backed rather than joining routine autosave.
-- Visual entries have no manual draft/ready state. Publishing completeness is derived from a title plus body text or at least one image; summary, Hashtags and afterword remain optional.
+- Visual entries have no manual draft/ready state. Publishing completeness is derived from a title plus body text or a photo; quote, caption, summary, Hashtags and afterword remain optional.
+- A small removal inside one article (its photo, a library reference) is confirmed on the button itself (再按一次確認) and offers 復原; deleting an article or a work stays a dialog with Recovery.
 - Use the shared `.sf-chevron` for disclosures and the ellipsis pattern for contextual actions.
 - Desktop Chrome is primary, but every changed layout must remain usable at the repository breakpoints and must not introduce horizontal overflow.
 

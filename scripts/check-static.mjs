@@ -32,6 +32,15 @@ if (unversioned.length) {
   throw new Error(`Loaded assets must carry a ?v= cache query:\n${unversioned.join('\n')}`);
 }
 
+// Visual photos stay in the writer's Google Drive (docs/REDESIGN_PROPOSAL.md C3): the visual
+// workspace holds them in tab memory only. It must not reach browser storage or the
+// folder's file writes, where a copy of a private photo would outlive the session.
+const visualWorkspaceSource = readFileSync(join(root, 'src/projects/visual-workspace.js'), 'utf8');
+const visualStorage = visualWorkspaceSource.match(/\b(localStorage|sessionStorage|indexedDB|caches\.open|writeBinaryFile|importVisualImages|importPartImages)\b/g);
+if (visualStorage) {
+  throw new Error(`src/projects/visual-workspace.js must not store photos: ${[...new Set(visualStorage)].join(', ')}`);
+}
+
 const manifestIds = [...loader.matchAll(/\bid:\s*['"]([^'"]+)['"]/g)].map(match => match[1]);
 const duplicates = values => [...new Set(values.filter((value, index) => values.indexOf(value) !== index))];
 const duplicateSources = duplicates(manifestSources);

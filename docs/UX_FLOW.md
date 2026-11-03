@@ -56,7 +56,7 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-07 | Fit more of the prose on this screen | 閱讀設定 | 字級、行高、每行字數、介面密度、還原預設 | Inside 設定 in the workbench, a quiet icon beside 回到工作台 in the reading view; a choice for this browser, never a primary action |
 | WS-07 | Continue processing the remaining chapter | 產生下一篇 | Review the current ending again | Solid only when a valid next suggestion is ready |
 | WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | The row's `⋯` keeps its place and shows with the row on pointer devices (always on touch); edit is first and delete is second |
-| WS-10 | Maintain a visual entry | 編輯即自動儲存 | 預覽圖文、`⋯ → 刪除圖文` | Title, body and summary are all written here and autosave together. Preview opens in a separate dialog; use the same direct-edit plus persistent-overflow pattern and Recovery flow as manual chapters. The editor carries no card of its own, and entry rows follow the shared list contract |
+| WS-10 | Maintain a visual entry | 編輯即自動儲存 | Photo library, live preview, `⋯ → 刪除圖文` | One image per article: title, optional quote, one photo and caption, body — written here and autosaved together; summary, Hashtags and afterword are written in Publishing. The preview sits beside the editor and follows every keystroke. Use the same direct-edit plus persistent-overflow pattern and Recovery flow as manual chapters for deleting an article |
 
 The “切換作品” disclosure lives in the source heading (“作品與章節” / “作品與圖文”) for both content modes and includes “＋ 新增作品”. It opens as a layer anchored under its own button, never in the rail's flow: an offset measured from the panel's top edge instead restates the heading's height, and it stopped being true the first time that heading changed. The longform “作品與章節” rail and visual “作品與圖文” rail use the same outer width and breakpoint contract, and the same unframed shape — on desktop the rail on the page ground and its subject on one sheet of paper, parted by the change of surface alone, with no card around either. “新增文章／新增圖文” sits below the corresponding chapter or entry list, never in the page header or list heading. Both rails head that list the same way — “章節清單 N 章” and “圖文清單 N 則” — so the rail reads as one layout whichever kind of work is open. When a chapter has been split to its last paragraph, the empty split panel says “這一章已全部切完” and points to 發布, rather than keeping whatever it last said.
 
@@ -79,14 +79,14 @@ The Publishing page separates queue navigation from the actual publishing commit
 | P-03 | Verify platform formatting | Pick the platform in the rail | One compact title/content settings card, then body/images, shared summary and effective platform Hashtags | The left column switches in place; nothing opens over the row already open. Platform title style and optional publishing helpers exist only once a platform is picked |
 | P-04 | Copy content to a platform | 複製內容 | Optionally prepend title as heading or bold, 複製標題 | The single solid action at the foot of the left column |
 | P-05 | Store publication time and URL | 保存發布紀錄 | 取消、開啟文章 | The single solid action in the record dialog |
-| P-06 | Edit optional helpers or image metadata | 摘要與 Hashtags／後記／文章圖片, then save the active editor — or just close it: 完成, ✕ and Esc keep pending edits | Preview and ordering controls | Hashtags and afterword are shared by both types; article images remain longform-only. A visual entry's summary is edited in the visual editor instead |
+| P-06 | Edit optional helpers or image metadata | 摘要與 Hashtags／後記／文章圖片, then save the active editor — or just close it: 完成, ✕ and Esc keep pending edits | Preview and ordering controls | Summary, Hashtags and afterword are shared by both types and edited here; article images remain longform-only (a visual entry's photo is chosen in its workspace) |
 | P-07 | Give one platform a different publishing title | 修改此平台標題, then 保存標題 | 改回沿用 | Kept inside that platform's preview panel; never a large article-level form |
 | P-08 | Mark or undo platform publication | 標註已發布／取消已發布 | Publication record | State control, not a global primary action; reversal requires a clear warning |
 | P-09 | Find content by work, type or status | 作品／類型／發布狀態 filters | — | 作品 starts as every work, and a work created later joins it unless the writer has narrowed the selection. Type chips count works, status chips count entries; every filter control shares one typography and height scale. The three questions are separated by space — 20px between groups against 6px between chips — not by changing the chips: grouping is what carries the structure. A hairline did this once, but the groups wrap on narrower windows and a group starting a line carried its hairline to the left edge with nothing before it |
 | P-14 | Work through the queue from either end | 排序：最新在前／章節順序 | — | Not a filter, so it does not take the chip shape and sits with the page action. Neither option reads a timestamp — a longform part carries none — so both are directions through document order. Shown whenever the queue lists longform articles and hidden when it lists none — decided by what is listed, not by which work is active, so a visual work being current does not take the order away from the chapters beside it. When the queue is visual entries alone, which have no chapters and do carry `updatedAt`, the note 最近編輯的圖文顯示在最上面 stands in for it. The choice is the writer's habit, not the work's property: it carries across works |
 | P-10 | Perform infrequent article or visual-entry management | `⋯` | Delete with Recovery | Tertiary overflow and explicit danger confirmation; visual deletion uses the same command and guard in every page |
 | P-11 | Recover from an empty publishing queue | 回到工作台開始切篇 | — | The only solid empty-state action |
-| P-12 | Prepare optional publishing helpers | 摘要與 Hashtags | Click-to-copy rows and a platform Hashtags editor in the preview | The main content and image order come first. Both helpers show their effective value as a click-to-copy row; only Hashtags can be edited there, because a platform may override them, explicitly use none or return to the common value. The summary is a read-only row: a visual entry's is written in the visual editor, a longform part's in this tool. Neither helper enters the body automatically |
+| P-12 | Prepare optional publishing helpers | 摘要與 Hashtags | Click-to-copy rows and a platform Hashtags editor in the preview | The main content and image order come first. Both helpers show their effective value as a click-to-copy row; only Hashtags can be edited there, because a platform may override them, explicitly use none or return to the common value. The summary is a read-only row there; both content types write it in this tool. Neither helper enters the body automatically |
 | P-13 | Reduce a long Publishing queue by work | Small chevron in the work-group heading | Work count remains visible | Defaults expanded; collapse is session-only, keyboard accessible and survives filter rerenders without changing content or publishing state |
 
 The open article's row is marked as the current row; the lightbox itself carries ✕, and its primary fill is kept for the task inside it: the solid emphasis belongs to “複製內容” or “保存發布紀錄” inside the active task. The separate work-group collapse control is icon-only and intentionally smaller: it hides or reveals the whole work body while leaving the title, content-type badge and item count visible. It is a view preference for the current browser session, not workspace data.
@@ -186,12 +186,12 @@ Recovery is the exception where a solid button may appear outside the normal pag
 
 Creating a work is a transaction, not a navigation side effect.
 
-While visual content is redesigned (`docs/REDESIGN_PROPOSAL.md` Phase A–C), the type chooser still opens first but shows “圖文作品” disabled with “新版圖文製作中，完成前暫時無法建立圖文作品。” beside it; “長文作品” continues exactly as below. An old visual work stays in Works and Publishing, and Workspace shows it only as a paused notice with “前往作品”. The type chips in Works and Publishing appear only while the library holds both kinds of work.
+The type chips in Works and Publishing appear only while the library holds both kinds of work.
 
 ```text
-新增作品 → 選擇「長文作品／圖文系列」
+新增作品 → 選擇「長文作品／圖文作品」
           ├─ 長文 → 選來源 → 填寫或選取內容 → 預覽（可選） → 確認 → 建立並切換作品
-          └─ 圖文 → 系列名稱 → 建立空系列／同時新增第一則 → 確認 → 圖文工作台
+          └─ 圖文 → 作品名稱＋第一則圖文標題 → 建立圖文作品 → 圖文工作台
 任何階段取消 → 回到原作品，不寫入
 ```
 
@@ -206,6 +206,28 @@ Rules:
 - Existing-work “新增文章” remains an article action and must not start a new-work transaction.
 
 `StoryFlowStartNewWork()` starts the transaction. `StoryFlowNewWorkFlow.commit()` and `.cancel()` are its only terminal paths. Source modules collect and validate input, then call one of those paths instead of creating projects themselves.
+
+## Visual works: one image per article
+
+```text
+圖文工作台
+├─ 作品與圖文（SOURCE rail）
+│  ├─ 圖文清單 → ＋ 新增圖文
+│  └─ 照片庫（全部／沒用到的／已用）→ 從 Google Drive 加入照片
+├─ 編輯：標題 → 引言（選填）→ 圖片 → 圖說（選填）→ 正文
+└─ 預覽：[手機寬｜桌面寬] ＋ 預覽格式（平台）
+```
+
+- **One image per article.** An article is a title, an optional quote, one photo with an optional caption, and the body. Without a photo it is a text article and still publishable; complete means a title plus body or a photo.
+- **Photos stay in Google Drive.** 從 Google Drive 加入照片 opens the Picker (images only, folders browsable, multi-select) under the existing `drive.file` scope. A picked photo becomes a reference in the work's library — Drive file id, name, size, taken time — and the image is read into this tab's memory when shown. Nothing is copied into the StoryFlow folder or browser storage, and nothing is changed on Drive. Picking a file already in the library adds nothing; an article without a photo takes the first one picked.
+- **One library per work.** Every article in the work draws from it. 沒用到的 lists photos no article uses; each tile names where it is used; a photo may serve two articles, and choosing it says “這張也用在《…》”.
+- **Choosing.** Clicking a tile makes it the open article's photo; dragging a tile onto 圖片 does the same. 換一張 is a mode the library announces (“選一張照片，取代目前圖片”); Esc or 取消 leaves it. ⤢ or a double click opens the lightbox: ← → step through the library, the caption line says the file, taken time and use, 用在《…》 chooses it, the alternative text is edited there (it describes the photo, so every article using it shares it), 在 Google Drive 開啟 opens the original.
+- **Small removals are confirmed in place.** 移除圖片 and the lightbox's 移出照片庫 turn into 再按一次確認 for 2.5 s; once done, 復原 stays offered for 10 s. Taking a photo out of the library removes the reference only and clears it from the articles that used it. Deleting an article stays `⋯ → 刪除圖文` with its dialog and Recovery, and keeps the photos.
+- **A photo Drive cannot give** shows “Google Drive 上找不到這張照片” (deleted, moved or unshared) or “登入 Google 後顯示照片” (signed out). The reference is never removed for it; writing and the preview carry on.
+- **Live preview.** Every keystroke redraws the preview: title, ❝ quote, the photo, its caption, the body, the afterword — the order the copy uses. 手機寬 (about 390 px) is the default and 桌面寬 a page; choosing a platform applies its paragraph, indent and scene rules. Below 1366 px the preview shares the editor's column behind 編輯｜預覽.
+- **從正文第一句帶入** fills the quote with the body's first sentence; it never fills itself.
+- **Publishing.** The article joins the shared queue. Its preview is the same renderer; the copy marks the photo as `〔圖片：<file name>〕` between the quote and the caption, and 下載圖片 saves the photo from Drive for uploading on the platform. StoryFlow does not upload images.
+- **Phone.** Read-only shows the articles, the library and the preview (signing in to Google shows the photos); adding, choosing, editing and deleting are unavailable.
 
 ## Switching works
 

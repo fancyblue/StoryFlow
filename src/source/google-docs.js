@@ -227,8 +227,101 @@
     return { ...chapter, tabTitle: tab.title, warnings: tab.warnings };
   }
 
+  // Photos for visual works stay in the writer's Google Drive (REDESIGN_PROPOSAL C3). The
+  // Picker grants this app the files it returns under the drive.file scope it already holds;
+  // StoryFlow keeps only their ids and reads an image into the tab's memory when it is shown.
+  // Nothing here writes, moves, renames or deletes a Drive file.
+  const DRIVE_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const DRIVE_PHOTO_FIELDS = 'id,name,mimeType,createdTime,imageMediaMetadata(width,height,time)';
+
+  async function ensureGoogleAccess() {
+    if (accessToken) return;
+    const restored = await restoreGoogleAccess();
+    if (!restored) await requestAccessToken();
+  }
+
+  async function pickDrivePhotoFiles() {
+    const key = pickerApiKey();
+    if (!key) throw new Error('請先在整合設定輸入 Google Picker API Key，才能從 Google Drive 選照片。');
+    await ensureGoogleAccess();
+    await loadPickerApi();
+    return new Promise((resolve, reject) => {
+      const view = new google.picker.DocsView(google.picker.ViewId.DOCS_IMAGES)
+        .setMimeTypes(DRIVE_PHOTO_TYPES.join(','))
+        .setIncludeFolders(true).setSelectFolderEnabled(false);
+      const picker = new google.picker.PickerBuilder()
+        .setAppId(window.STORYFLOW_CONFIG.googleProjectNumber)
+        .setOAuthToken(accessToken).setDeveloperKey(key).addView(view)
+        .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+        .setTitle('選擇照片')
+        .setCallback(data => {
+          if (data.action === google.picker.Action.PICKED) resolve(data.docs || []);
+          else if (data.action === google.picker.Action.CANCEL) resolve([]);
+        }).build();
+      picker.setVisible(true);
+    });
+  }
+
+  function drivePhotoFromFile(file) {
+    const meta = file?.imageMediaMetadata || {};
+    // Drive writes the camera's time as "YYYY:MM:DD HH:MM:SS"; anything else falls back to
+    // when the file reached Drive.
+    const taken = /^(\d{4}):(\d{2}):(\d{2}) (\d{2}:\d{2}:\d{2})$/.exec(String(meta.time || ''));
+    return {
+      driveFileId: file.id,
+      name: file.name || '未命名照片',
+      mimeType: file.mimeType || '',
+      width: Number(meta.width) || 0,
+      height: Number(meta.height) || 0,
+      takenAt: taken ? `${taken[1]}-${taken[2]}-${taken[3]}T${taken[4]}` : (file.createdTime || '')
+    };
+  }
+
+  async function fetchDrivePhotoMeta(fileId) {
+    const response = await authenticatedFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?fields=${encodeURIComponent(DRIVE_PHOTO_FIELDS)}`);
+    if (!response.ok) {
+      const error = new Error(`Google Drive 讀取照片資訊失敗（${response.status}）。`);
+      error.status = response.status;
+      throw error;
+    }
+    return drivePhotoFromFile(await response.json());
+  }
+
+  // Picked files, with the metadata the Picker does not return. A file whose metadata cannot
+  // be read is still offered with what the Picker gave, so one failure does not lose the rest.
+  async function pickDrivePhotos() {
+    const picked = await pickDrivePhotoFiles();
+    const photos = [];
+    for (const doc of picked) {
+      if (!DRIVE_PHOTO_TYPES.includes(String(doc.mimeType || '').toLowerCase())) continue;
+      try { photos.push(await fetchDrivePhotoMeta(doc.id)); }
+      catch (_) { photos.push(drivePhotoFromFile({ id: doc.id, name: doc.name, mimeType: doc.mimeType })); }
+    }
+    return photos;
+  }
+
+  // The image bytes, as a Blob held only by the caller. Errors carry the HTTP status so the
+  // editor can tell 找不到 (404) and 沒有權限 (403) apart from a sign-in problem.
+  async function fetchDrivePhoto(fileId) {
+    if (!accessToken && !(await restoreGoogleAccess())) {
+      const error = new Error('登入 Google 後顯示照片');
+      error.code = 'GOOGLE_SIGNED_OUT';
+      throw error;
+    }
+    const response = await authenticatedFetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`);
+    if (!response.ok) {
+      const error = new Error(response.status === 404 || response.status === 403
+        ? 'Google Drive 上找不到這張照片'
+        : `Google Drive 讀取照片失敗（${response.status}）`);
+      error.status = response.status;
+      throw error;
+    }
+    return response.blob();
+  }
+
   Object.assign(StoryFlowIntegrations, {
     requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource,
-    pickerApiKey, setPickerApiKey, hasGoogleToken: () => Boolean(accessToken)
+    pickerApiKey, setPickerApiKey, hasGoogleToken: () => Boolean(accessToken),
+    pickDrivePhotos, fetchDrivePhoto, DRIVE_PHOTO_TYPES
   });
 })();

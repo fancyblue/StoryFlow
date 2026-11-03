@@ -515,7 +515,7 @@ test('works cards report publishing progress per content type using publishing r
   await expect(progress).toHaveAttribute('aria-label', /已完成 1 \/ 1/);
 
   // A visual work counts entries, not chapters. It is created as an existing workspace holds
-  // one; no editor creates one until the new visual workspace lands.
+  // one, directly; visual.spec.js covers the type chooser.
   await page.evaluate(() => StoryFlowProjects.createProject({
     title: '圖文進度', contentMode: 'visual', visualEntry: {
         id: crypto.randomUUID(), title: '月下預告', summary: '', hashtags: '', tags: [], body: '', images: [],
