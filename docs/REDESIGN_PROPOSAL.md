@@ -34,7 +34,7 @@
 
 | Phase | 內容 | 風險 | 測試 |
 | --- | --- | --- | --- |
-| 0 | 小型整理：`confirm-continuation.js` 補快取版本、刪 `src/legacy/` 與 `styles/archive/` | 低 | `test:static` + `test:assets` |
+| 0 ✅ 已完成 | 小型整理：`confirm-continuation.js` 補快取版本、刪 `src/legacy/` 與 `styles/archive/`；`test:static` 拒絕沒有 `?v=` 的已載入資產 | 低 | `test:static` + `test:assets` |
 | A | 拔除現有圖文工作台與專屬流程，保留共用骨架 | 中（發布、搜尋、持久化都有分支） | 完整 `npm test` |
 | B | 全站調整：作品庫、儲存狀態、待補標記、共用照片元件、就地確認 | 中 | 各項跑對應 spec，B 結束跑完整 `npm test` |
 | C | 新圖文：Drive 照片庫、一圖一文編輯器與即時預覽、發布整合 | 高（Drive 讀取、新資料模型） | 新的 `visual.spec.js` + 完整 `npm test` |

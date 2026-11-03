@@ -67,7 +67,7 @@ The Works card shows per-work publishing progress. `src/projects/projects.js` en
 
 Consumers bind it as `const { safeName } = window.StoryFlowShared;` at the top of the IIFE that uses it. Two details cost a debugging cycle when this landed and are worth knowing before touching it. A file may hold more than one top-level IIFE — `src/connection/connection-ui.js` holds two — and the binding must go in the one that actually calls the helper, because unlike the function declaration it replaces it neither hoists nor crosses IIFE boundaries. And the in-memory fixtures under `tests/*.html` load individual modules directly rather than through the manifest, so a fixture loading a consumer must load `src/core/shared.js` before it.
 
-The repository root contains entry assets only. Runtime JavaScript lives under domain folders in `src/`; dormant historical scripts are isolated in `src/legacy/` and are not part of the asset manifest. Script order remains explicit in `app-loader.js` until each domain can be migrated as one unit.
+The repository root contains entry assets only. Runtime JavaScript lives under domain folders in `src/`. The dormant scripts once kept in `src/legacy/` and the unloaded stylesheets in `styles/archive/` were removed (git history keeps them); `npm run test:static` still refuses a manifest entry under `src/legacy/`, and every loaded JS or CSS asset must carry a `?v=` cache query. Script order remains explicit in `app-loader.js` until each domain can be migrated as one unit.
 
 `src/projects/content-model.js` owns the content-type boundary. Missing or invalid `contentMode` values normalize to `longform`; visual works keep `visualEntries` separate from longform `chapters`. `src/projects/visual-workspace.js` owns the completed visual-series creation transaction, visual workspace, entry/image editing and basic preview. `StoryFlowIntegrations` owns fixed-ID `Works/<work>/Visual/<entry-id>/` text, metadata and assets writes; the workspace remains the project system of record. Optional visual `summary`, `hashtags` and `afterword` are publishing helpers: they are edited in Publishing, remain separate from the body, and never become required fields. `includeAfterword` records whether platform output includes the afterword. Normalized `tags` support in-memory search and classification while the user-facing hashtag string remains easy to copy.
 
@@ -92,7 +92,6 @@ Shared interaction vocabulary is documented in [UI_SYSTEM.md](UI_SYSTEM.md), and
 | `src/split/` | Smart Split preferences, scene/paragraph boundaries and continuation |
 | `src/publishing/` | Publishing queue, filters, grouping and platform guards |
 | `src/ui/` | Navigation, responsive layout and accessibility refinements |
-| `src/legacy/` | Unloaded historical scripts retained only for reference |
 | `styles/domains/` | Final page-level layout and responsive contracts |
 
 ## Validation

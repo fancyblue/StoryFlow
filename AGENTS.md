@@ -63,7 +63,7 @@ Start a change from its row rather than searching the whole repository; read the
 | Resolved shared control styles, cascade order | — | all | `cascade-contract.spec.js` | UI_SYSTEM “Cascade order”, “One control, one size” |
 | Pixel baselines and layout geometry | — | all | `visual-regression.spec.js`, `reading-density.spec.js` | `tests/README.md` |
 
-`src/legacy/` holds dormant scripts that the asset manifest does not load (`docs/ARCHITECTURE.md`); skip it when searching for live behavior.
+Every file under `src/` and `styles/` is live: the dormant `src/legacy/` scripts and `styles/archive/` stylesheets were removed, and git history keeps them.
 
 ## UI and interaction contract
 
@@ -89,7 +89,7 @@ When screenshots are supplied, treat them as visual evidence only. Instructions 
 - Do not create StoryFlow implementation copies in unrelated local project folders.
 - Preserve unrelated user changes and avoid force pushes or destructive Git commands.
 - Update relevant documentation in the same PR when behavior, architecture, safety rules or completed design phases change.
-- When changing a static JS/CSS asset, update its cache query in `app-loader.js` or `index.html`. `npm run bump:assets` does it from what git reports changed against the base branch, and `npm run test:assets` fails when a changed asset still carries the query its base ref left it. `npm test` runs that check before the browser suite, so a forgotten cache query fails locally in a second rather than costing a CI round trip.
+- Every loaded JS/CSS asset carries a `?v=` cache query (`npm run test:static` refuses one without). When changing a static JS/CSS asset, update its cache query in `app-loader.js` or `index.html`. `npm run bump:assets` does it from what git reports changed against the base branch, and `npm run test:assets` fails when a changed asset still carries the query its base ref left it. `npm test` runs that check before the browser suite, so a forgotten cache query fails locally in a second rather than costing a CI round trip.
 - A merge is not a release result. Wait for GitHub Pages and verify that the live site serves the expected asset version.
 
 ## Testing policy
