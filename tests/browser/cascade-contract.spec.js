@@ -938,11 +938,10 @@ test('a work resolves to a row in a list, not a card', async ({ page }) => {
     .toEqual({ gap: 1, rowRadius: '0px', listRule: '1px' });
 });
 
-test('works and publishing draw the same hierarchy', async ({ page }) => {
-  // Both pages show 作品 › 章節 (› 篇), and each used to draw it its own way: Works indented a
-  // chapter 21px and separated rows with hairlines, Publishing indented nothing at all. What
-  // a row *contains* is each page's business; how deep it sits, what separates it from its
-  // sibling, and where the current marker goes are not, and that is what this pins.
+test('publishing draws its hierarchy on the shared step', async ({ page }) => {
+  // Publishing shows 作品 › 章節 › 篇 on the shared list-hierarchy rule. Works once drew the same
+  // levels its own way and was pinned against it; it now lists works only (chapters are
+  // managed in the workspace rail), so the rule is pinned on the page that still nests.
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
   await page.evaluate(() => { window.StoryFlowIntegrations.savePart = async () => 'x.md'; });
@@ -981,33 +980,20 @@ test('works and publishing draw the same hierarchy', async ({ page }) => {
     };
   }, [nest, row]);
 
-  await page.locator('.nav-item[data-view="projects"]').click();
-  await page.getByRole('button', { name: '管理章節', exact: true }).click();
-  await expect(page.locator('.project-chapter-manager-row').first()).toBeVisible();
-  // Not the last row: the last one deliberately has no separator, because the level's own
-  // edge already ends it.
-  const works = await hierarchy('.project-chapter-manager-list', '.project-chapter-manager-row:not(:last-child)');
-  const worksDisclosure = await page.getByRole('button', { name: '收合章節', exact: true })
-    .getAttribute('aria-expanded');
-
   await page.locator('.nav-item[data-view="publishing"]').click();
   await expect(page.locator('.publishing-chapter-group').first()).toBeVisible();
   const publishing = await hierarchy('.publishing-chapter-group-rows', '.publishing-chapter-group-rows > .publish-list-item:not(:last-child)');
   const publishingDisclosure = await page.locator('.publishing-project-collapse-btn').first()
     .getAttribute('aria-expanded');
 
-  expect(works, 'works hierarchy is missing').not.toBeNull();
   expect(publishing, 'publishing hierarchy is missing').not.toBeNull();
-  expect(works).toEqual(publishing);
-  // One step, stated once, so a level cannot drift to "about the same depth".
-  expect(works.indent).toBe('16px');
-  expect(works.markerGutter).toBe('2px');
-  expect(works.markerGutterColor).toBe('rgba(0, 0, 0, 0)');
-  expect(works.corner).toBe('0px');
-
-  // Both expanders say what they are; only whether they also carry a label differs, because
-  // a work row's expander is a named action and a chapter group's is not.
-  expect(worksDisclosure).toBe('true');
+  // One step, stated once, so a level cannot drift to "about the same depth". Not the last
+  // row: the last one deliberately has no separator, because the level's own edge ends it.
+  expect(publishing.indent).toBe('16px');
+  expect(publishing.separatorWidth).toBe('1px');
+  expect(publishing.markerGutter).toBe('2px');
+  expect(publishing.markerGutterColor).toBe('rgba(0, 0, 0, 0)');
+  expect(publishing.corner).toBe('0px');
   expect(publishingDisclosure).not.toBeNull();
 });
 
@@ -1086,19 +1072,21 @@ test('on a phone the works row and the manual form keep their primary actions wh
   await page.locator('.nav-item[data-view="projects"]').click();
   const card = page.locator('.project-library-card').first();
   await expect(card).toBeVisible();
-  // 開啟 | 管理發布 | ⋯, then the chapter disclosure across the whole next line — it used to sit
-  // alone in the right half of that line.
-  const layout = await card.locator('.project-library-actions').evaluate(actions => {
-    const box = selector => actions.querySelector(selector).getBoundingClientRect();
-    const open = box('.project-open-btn');
-    const chapters = box('.project-manage-chapters-btn');
+  // 管理發布 | ⋯ on one line under the work's name, which is what opens it; 管理發布 takes the
+  // line and ⋯ keeps its square at the end.
+  const layout = await card.evaluate(row => {
+    const box = selector => row.querySelector(selector).getBoundingClientRect();
+    const name = box('.project-library-open');
+    const publish = box('.project-publish-btn');
     const more = box('.project-library-more-btn');
     return {
-      disclosureBelow: chapters.top >= open.bottom,
-      disclosureSpans: Math.round(chapters.left) === Math.round(open.left) && Math.round(chapters.right) === Math.round(more.right)
+      oneLine: Math.round(publish.top) === Math.round(more.top),
+      underTheName: publish.top >= name.bottom,
+      moreLast: more.left >= publish.right,
+      moreSquare: Math.round(more.width) === Math.round(more.height)
     };
   });
-  expect(layout).toEqual({ disclosureBelow: true, disclosureSpans: true });
+  expect(layout).toEqual({ oneLine: true, underTheName: true, moreLast: true, moreSquare: true });
 
   await page.locator('.nav-item[data-view="workspace"]').click();
   await page.locator('#addChapterBtn').click();
@@ -1219,7 +1207,6 @@ test('the same control resolves alike on Works, Publishing and every dialog', as
   const worksMore = await shapes('.project-library-card .project-library-more-btn');
   const worksChip = await shapes('#worksTypeFilters .content-type-filter:not(.active)');
   const worksChipActive = await shapes('#worksTypeFilters .content-type-filter.active');
-  const worksManage = await shapes('.project-manage-chapters-btn');
 
   await page.locator('#projectsNewWorkBtn').click();
   const typeDialog = page.getByRole('dialog', { name: '選擇作品類型' });
@@ -1259,8 +1246,6 @@ test('the same control resolves alike on Works, Publishing and every dialog', as
   expect(worksMore.map(item => item.square)).toEqual(worksMore.map(() => true));
   expect(worksMore.length).toBeGreaterThan(0);
   expect(publishingMore.map(item => item.square)).toEqual([true]);
-  // 管理章節 rests exactly as 管理發布 does.
-  expect(worksManage[0]).toEqual(publishingManage[0]);
 
   // 全部類型／長文／圖文 is one chip, selected the way the status chips beside it are.
   expect(worksChip[0]).toEqual(publishingChip[0]);

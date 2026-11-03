@@ -362,7 +362,7 @@ test('render functions run one implementation and their hooks in load order', as
     renderSuggestion: {
       before: ['workspace-interactions'],
       impl: 'renderSuggestion',
-      after: ['workspace-interactions', 'smart-split-ui', 'platform-lock', 'boundary-engine', 'app-ux', 'connection-ui', 'reading-settings', 'smart-split-title']
+      after: ['workspace-interactions', 'smart-split-ui', 'platform-lock', 'boundary-engine', 'app-ux', 'connection-ui', 'reading-settings', 'workspace-ux', 'smart-split-title']
     },
     renderParts: {
       before: ['publishing-lightbox-memory'],
@@ -534,16 +534,15 @@ test('global search and five-item navigation fit a narrow Chrome viewport', asyn
 });
 
 test('row menus flip up rather than opening past the bottom of the window', async ({ page }) => {
-  // One shared positioner now serves the chapter rail, the visual list and the works
-  // page. The works-page rows previously had no positioning at all, and the other two
-  // measured against their scroll panel only — a panel can extend past the window, so a
-  // menu could sit inside its panel and still be off screen.
+  // One shared positioner serves the chapter rail and the platform rows. It measures against
+  // the window as well as the scroll panel: a panel can extend past the window, so a menu
+  // could sit inside its panel and still be off screen.
   const pageErrors = await prepare(page);
   await page.setViewportSize({ width: 1440, height: 700 });
   await page.goto('/');
   await page.evaluate(() => {
     StoryFlowProjects.createProject({ title: '選單版面測試' }, { quiet: true });
-    state.chapters = Array.from({ length: 12 }, (_, i) => ({
+    state.chapters = Array.from({ length: 30 }, (_, i) => ({
       id: `menu-chapter-${i + 1}`,
       title: `${String(i + 1).padStart(2, '0')}、章節`,
       draft: `第 ${i + 1} 章。`, confirmedBlockCount: 0, parts: []
@@ -552,20 +551,25 @@ test('row menus flip up rather than opening past the bottom of the window', asyn
     renderAll();
   });
 
-  await page.locator('.nav-item[data-view="projects"]').click();
-  const card = page.locator('.project-library-card', { hasText: '選單版面測試' });
-  await card.getByRole('button', { name: '管理章節', exact: true }).click();
-  const lastRow = page.locator('.project-chapter-manager-row').last();
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  const lastRow = page.locator('#chapterList .chapter-row').last();
   // Put the row hard against the bottom of the window, which is the case that needs the
   // flip. Merely scrolling it into view leaves room below and tests nothing.
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  const rowBottomGap = await lastRow.evaluate(element =>
-    window.innerHeight - element.getBoundingClientRect().bottom);
-  expect(rowBottomGap).toBeLessThan(80);
-
-  await lastRow.getByRole('button', { name: /更多/ }).click();
+  await page.evaluate(() => {
+    const panel = document.querySelector('.workspace-grid .source-panel');
+    panel.scrollTop = panel.scrollHeight;
+    window.scrollTo(0, document.documentElement.scrollHeight);
+  });
+  await lastRow.hover();
+  await lastRow.locator('.chapter-more-button').click();
   const menu = lastRow.locator('.chapter-row-action-menu:not([hidden])');
   await expect(menu).toBeVisible();
+  // Opened downwards from the row's middle, the menu would run past the window.
+  const downwardsOverflows = await menu.evaluate(element => {
+    const row = element.closest('.chapter-row').getBoundingClientRect();
+    return row.top + row.height / 2 + 20 + element.getBoundingClientRect().height > window.innerHeight;
+  });
+  expect(downwardsOverflows).toBe(true);
   await expect(menu).toHaveClass(/opens-up/);
   const fits = await menu.evaluate(element => {
     const box = element.getBoundingClientRect();
@@ -574,5 +578,22 @@ test('row menus flip up rather than opening past the bottom of the window', asyn
   expect(fits.top).toBeGreaterThanOrEqual(0);
   expect(fits.bottom).toBeLessThanOrEqual(fits.viewport);
 
+  expect(pageErrors).toEqual([]);
+});
+
+// ⌘S／Ctrl S writes now instead of opening the browser's "save page" dialog (B2).
+test('the save shortcut writes the workspace now', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await gotoWorkbench(page);
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '快捷鍵作品' }, { quiet: true });
+    window.__saves = 0;
+    const save = StoryFlowIntegrations.saveWorkspace;
+    StoryFlowIntegrations.saveWorkspace = async (...args) => { window.__saves += 1; return save(...args); };
+  });
+  const before = await page.evaluate(() => window.__saves);
+  await page.keyboard.press('Control+s');
+  await expect.poll(() => page.evaluate(() => window.__saves)).toBeGreaterThan(before);
+  await expect(page.locator('#saveState')).toContainText('已保存');
   expect(pageErrors).toEqual([]);
 });

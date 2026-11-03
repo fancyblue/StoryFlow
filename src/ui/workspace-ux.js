@@ -218,6 +218,64 @@
     childList:true, subtree:true, attributes:true, characterData:true
   }));
 
+  // 【待補】／【待確認】 in the article being cut (REDESIGN_PROPOSAL B3). The count sits beside the
+  // split status, in the same pill shape; pressing it selects the next mark in the preview, so
+  // the writer lands on it instead of reading for it. It is a reminder, never a block.
+  let lastMarkIndex = -1;
+  function previewMarks() {
+    const root = document.getElementById('preview');
+    if (!root) return [];
+    const marks = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const pattern = /【待(?:補|確認)[^】\n]{0,40}】?/g;
+      for (let match = pattern.exec(node.data); match; match = pattern.exec(node.data)) {
+        marks.push({ node, start: match.index, end: match.index + match[0].length });
+      }
+    }
+    return marks;
+  }
+
+  function jumpToNextMark() {
+    const marks = previewMarks();
+    if (!marks.length) return;
+    lastMarkIndex = (lastMarkIndex + 1) % marks.length;
+    const { node, start, end } = marks[lastMarkIndex];
+    const range = document.createRange();
+    range.setStart(node, start);
+    range.setEnd(node, end);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    node.parentElement?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  function syncPendingMarks() {
+    const status = document.getElementById('suggestionStatus');
+    if (!status) return;
+    const current = typeof suggestion === 'undefined' ? null : suggestion;
+    const count = current ? window.StoryFlowShared.pendingMarkCount(current.formatted || current.raw || '') : 0;
+    let pill = document.getElementById('suggestionPendingMarks');
+    if (!count) {
+      pill?.remove();
+      lastMarkIndex = -1;
+      return;
+    }
+    if (!pill) {
+      pill = document.createElement('button');
+      pill.id = 'suggestionPendingMarks';
+      pill.type = 'button';
+      pill.className = 'pill sf-pending-pill';
+      pill.addEventListener('click', jumpToNextMark);
+      status.after(pill);
+    }
+    const label = `${count.toLocaleString()} 處待補／待確認`;
+    if (pill.textContent !== label) pill.textContent = label;
+    pill.title = '跳到下一處【待補】／【待確認】';
+    pill.setAttribute('aria-label', `${label}，跳到下一處`);
+  }
+
+  StoryFlowRender.after('renderSuggestion', 'workspace-ux', () => { lastMarkIndex = -1; syncPendingMarks(); });
   StoryFlowRender.after('renderAll', 'workspace-ux', () => queueMicrotask(syncAll));
 
   syncAll();

@@ -23,21 +23,21 @@ folder (no action — the only button available would be one that cannot succeed
 connected yet (連接 StoryFlow 資料夾), or a folder is connected and there are no works yet
 (建立第一個作品). Offering creation before a folder exists invites a work that is gone on
 reload, because nothing can be written.
- Managing chapters or visual entries is the most likely next step for any work. The “目前作品” badge and active-card treatment already communicate selection, so identical management actions must not change color merely because one card is current.
+ Opening a work is the most likely next step, so the work's name is the control: the title and its meta line form one button that makes the work current and enters its workspace. Chapters and entries are managed only in the workspace rail; Works carries no second chapter list. The “目前作品” badge and active-card treatment already communicate selection, so identical actions must not change color merely because one card is current.
 
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
-| W-01 | Review, add, edit or remove a work's chapters or visual entries | 管理章節／管理圖文 | `⋯` for infrequent or destructive row actions | Consistent emphasized light-blue action on every card; expanded state uses a stronger soft selection |
+| W-01 | Review, add, edit or remove a work's chapters or visual entries | Open the work by its name, then the workspace rail | The rail row's `⋯` | Not offered on Works: the chapter list it used to expand there repeated the rail's |
 | W-08 | Judge which work to return to | — | Card metadata: item count, longform source type, last-edited time, and publishing progress | Quiet meta line under the title, then a progress column between identity and actions. Content type decides whether the count reads 章節 or 圖文 and what is enumerated, but whether one item counts as finished is Publishing's rule, asked for rather than recomputed: 已完成 means every platform, matching the 已完成 filter. |
-| W-02 | Return to splitting and writing work | 工作台 | — | Tinted or outlined navigation action |
+| W-02 | Return to splitting and writing work | The work's name | — | Text, not a button frame: the title underlines under the pointer and carries a focus ring; its accessible name is 開啟「作品名」 |
 | W-03 | Jump directly to this work's publishing queue | 管理發布 | — | Tinted secondary shortcut |
-| W-04 | Make another work current | 開啟 | Then manage its chapters or enter its workspace | Both longform and visual works use the same label; selection is shown by the card and badge |
+| W-04 | Make another work current | The work's name | Opens its workspace | The same control for both content types; selection is shown by the card and badge |
 | W-05 | Create another work | ＋ 新作品 | 作品類型、來源與內容表單可逐步返回 | Outlined or tinted while works already exist |
 | W-06 | Create the first work | 建立第一個作品 | ＋ 新增作品 stays in the header, outlined | The only solid action in the empty state; do not show a competing solid header action. Outlined is not competing, so the header action stays visible rather than being hidden — hiding it left the empty state's own button as the only route into creation |
 | W-06b | Understand why creation is unavailable | — | ＋ 新增作品 disabled, with 需要先連接資料夾 beside it | A disabled control states its reason in text next to itself, not only in a `title`: a tooltip is invisible on touch, and unreachable for a keyboard user on a control that cannot take focus while disabled. It must also *look* disabled — see UI_SYSTEM |
 | W-07 | Rename or delete a work | `⋯` | Confirmation and Recovery for deletion | Tertiary overflow; deletion uses the danger treatment only inside the decision |
 
-Every “管理章節” or “管理圖文” control uses the same noticeable light-blue treatment so the same label always communicates the same function. Current-work identity belongs to the card border and badge; no repeated row action uses a solid primary fill.
+A row's actions are 管理發布 and `⋯`, identical on every card. Current-work identity belongs to the card border and badge; no repeated row action uses a solid primary fill.
 
 ### Workspace
 
@@ -110,6 +110,12 @@ The Settings page is a collection of independent decision cards. It may contain 
 | S-09 | Clear browser-held private state | 離開此裝置 | — | Danger outline/text followed by confirmation; never blue primary |
 
 Settings cards may each have a task action, but visual emphasis should follow state: missing setup, dirty values or an active confirmation. Completed configuration is displayed as readable status with quiet maintenance controls.
+
+### Pending marks and the save shortcut
+
+`【待補】` and `【待確認】` (anything opening with `【待補` or `【待確認`) are the writer's own notes in the text. The split panel shows “N 處待補／待確認” beside its status for the article being cut; pressing it selects the next mark in the preview. Publishing shows “待補 N” on the row (article body and afterword; summary and Hashtags are not counted) and asks once before a platform is marked published — from 標註已發布, from the copy prompt and from 保存發布紀錄 — while marks remain. Search has 只找待補, which lists everything still carrying a mark, newest first, and a query narrows it. None of this blocks anything, and copying never strips a mark.
+
+⌘S／Ctrl S writes the workspace now, through the same save path and status line as every other save, instead of opening the browser's save-page dialog. Editing already saves on its own; the shortcut is for the moment the writer wants it on disk before leaving.
 
 ### Global navigation and search
 

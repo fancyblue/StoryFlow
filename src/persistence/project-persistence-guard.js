@@ -169,6 +169,19 @@
   // to finish, without waiting for Google scripts or other external resources.
   window.setTimeout(rehydrateMultiProjectWorkspace, 80);
 
+  // ⌘S／Ctrl S writes now (REDESIGN_PROPOSAL B2). Editing already saves on its own; the
+  // shortcut is for the moment the writer wants it on disk before leaving, and it replaces
+  // the browser's "save page" dialog, which would save a copy of the app rather than the work.
+  // Pending visual-entry autosave is flushed first so the write carries it.
+  document.addEventListener('keydown', event => {
+    if (!(event.metaKey || event.ctrlKey) || event.altKey || event.shiftKey) return;
+    if (String(event.key).toLowerCase() !== 's') return;
+    event.preventDefault();
+    Promise.resolve(window.StoryFlowVisualWorkspace?.flush?.('shortcut-save'))
+      .catch(() => {})
+      .then(() => persistWorkspaceNow('shortcut-save'));
+  });
+
   window.StoryFlowProjectPersistence = {
     flush: persistWorkspaceNow,
     prepareRecovery,

@@ -53,6 +53,8 @@
     isVisualPart,
     visualContentComplete,
     notifyIncompleteVisual,
+    pendingMarks,
+    confirmPendingBeforePublished,
     normalizePublishItem,
     includeAfterwordFor,
     outputSections,
@@ -413,6 +415,7 @@
       notifyIncompleteVisual();
       return false;
     }
+    if (next && !confirmPendingBeforePublished(part, platform)) return false;
     const record = publicationRecord(part, platform);
     if (!next && (record.publishedAt || record.url)) {
       const confirmed = window.confirm(`取消「${platform}」的已發布標記？\n\n這會一併清除已記錄的發布時間與文章網址。`);
@@ -698,7 +701,8 @@
         return;
       }
       if (platform && !part.platformStatus?.[platform] && (!visual || visualContentComplete(part))) {
-        const markPublished = window.confirm(`已複製「${platform}」版本。\n\n要將這個平台標註為已發布嗎？`);
+        const pending = pendingMarks(part);
+        const markPublished = window.confirm(`已複製「${platform}」版本。\n\n${pending ? `這篇還有 ${pending} 處【待補】／【待確認】。\n\n` : ''}要將這個平台標註為已發布嗎？`);
         if (markPublished) {
           setPlatformPublished(part, platform, true);
           renderParts();
@@ -845,6 +849,8 @@
         dateInput.focus();
         return;
       }
+
+      if (!part.platformStatus?.[platform] && !confirmPendingBeforePublished(part, platform)) return;
 
       part.publicationRecords[platform] = { publishedAt: publishedAt.toISOString(), url };
       part.platformStatus ||= {};
@@ -1160,6 +1166,7 @@
     const summaryText = String(part.summary || '').trim();
     const hashtagsText = String(part.hashtags || '').trim();
     const incompleteVisual = visual && !visualContentComplete(part);
+    const pendingCount = pendingMarks(part);
     card.innerHTML = `
       <div class="publish-list-summary" role="button" tabindex="0" aria-expanded="${expanded}">
         <div class="publish-list-title-block">
@@ -1171,6 +1178,7 @@
             ${afterwordCount ? `<span class="publish-afterword-badge">有後記 ${afterwordCount.toLocaleString()} 字</span>` : ''}
             ${imageCount ? `<span class="publish-image-badge">附圖 ${imageCount.toLocaleString()} 張</span>` : ''}
             ${incompleteVisual ? '<span class="publish-readiness-badge incomplete">內容尚未完成</span>' : ''}
+            ${pendingCount ? `<span class="publish-pending-badge" title="正文或後記裡還有【待補】／【待確認】">待補 ${pendingCount.toLocaleString()}</span>` : ''}
           </div>
           ${hasCustomPublishTitle ? `<small class="publish-internal-title">內部名稱：${escapeHtml(part.title)}</small>` : ''}
         </div>

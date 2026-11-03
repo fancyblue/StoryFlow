@@ -36,7 +36,7 @@
 | --- | --- | --- | --- |
 | 0 ✅ 已完成 | 小型整理：`confirm-continuation.js` 補快取版本、刪 `src/legacy/` 與 `styles/archive/`；`test:static` 拒絕沒有 `?v=` 的已載入資產 | 低 | `test:static` + `test:assets` |
 | A ✅ 已完成 | 拔除現有圖文工作台與專屬流程，保留共用骨架 | 中（發布、搜尋、持久化都有分支） | 完整 `npm test` |
-| B | 全站調整：作品庫、儲存狀態、待補標記、共用照片元件、就地確認 | 中 | 各項跑對應 spec，B 結束跑完整 `npm test` |
+| B ✅ 已完成 | 全站調整：作品庫、儲存快捷鍵、待補標記（共用照片元件與就地確認移到 C） | 中 | 各項跑對應 spec，B 結束跑完整 `npm test` |
 | C | 新圖文：Drive 照片庫、一圖一文編輯器與即時預覽、發布整合 | 高（Drive 讀取、新資料模型） | 新的 `visual.spec.js` + 完整 `npm test` |
 
 每個 Phase 至少一個 PR；B、C 依小節拆成多個 PR。
@@ -53,7 +53,15 @@
 - 版面一致性測試（`cascade-contract.spec.js`）中與圖文欄比較的部分暫時移除，只保留長文那一半；Phase C 放回。
 - 文件：`VISUAL_CONTENT_MODE_DESIGN.md` 改為「已被取代」；`README.md`、`AGENTS.md`、`AI_HANDOFF.md`、`ARCHITECTURE.md`、`UX_FLOW.md`、`CHROME_ACCEPTANCE.md` 改寫為暫停中的描述；`AGENTS.md` 表格中 `mobile-visual.css` 移到手機那一列。
 
-## 4. Phase B：全站調整
+## 4. Phase B：全站調整（✅ 已完成）
+
+實作紀錄：
+
+- **B1** 已完成：作品名稱與描述行就是「開啟」按鈕（無框，滑過時標題加底線，無障礙名稱「開啟「作品名」」）；作品列只剩「管理發布」與 `⋯`；作品頁的章節清單與 `chapter-management.js` 中對應的 330 行移除，`test:css` 自動刪除 50 個失效選擇器。
+- **B2** 縮小範圍：全站共用的儲存狀態句早已存在（「尚未保存 · 準備中」「保存中…」「已保存 14:32」「保存失敗 · 請重試」），因此不改字句，只新增 ⌘S／Ctrl S 立即寫入。Esc 取消選取模式留到 C，因為目前沒有選取模式。
+- **B3／B6** 已完成：計數規則在 `src/core/shared.js` 的 `pendingMarkCount()`；切篇面板狀態旁的「N 處待補／待確認」可依序選取預覽中的標記；發布列顯示「待補 N」，標註已發布、複製後標註與保存發布紀錄前都會詢問一次；搜尋新增「只找待補」。
+- **B4、B5 移到 Phase C**：共用照片庫只有新圖文會用（長文文章圖片維持現狀），就地確認與復原的對象也都在圖文編輯器內；在沒有使用者的情況下先做元件沒有意義。
+
 
 ### B1. 作品庫只負責選作品（已確認）
 

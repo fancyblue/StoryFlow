@@ -108,8 +108,9 @@
 .global-search-options{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  gap:12px;
+  justify-content:flex-start;
+  gap:12px 18px;
+  flex-wrap:wrap;
   padding:10px 18px;
   border-bottom:1px solid var(--line);
   background:#fbfaf6;
@@ -118,6 +119,8 @@
   font-weight:700;
 }
 .global-search-options label{display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+/* The options read from the left; the count keeps the far end. */
+.global-search-options > #globalSearchCount{margin-left:auto}
 .global-search-options input{margin:0;accent-color:#4b4557}
 .global-search-results{
   min-height:220px;

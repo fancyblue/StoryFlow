@@ -383,7 +383,7 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .splitter-panel .suggestion-title-row #suggestionStatus{grid-column:1!important;justify-self:start!important}
   .splitter-panel .suggestion-title-row .preview-boundary-controls{grid-column:2!important;justify-self:end!important}
   .project-library-card{padding:16px}
-  .project-library-actions{display:grid!important;grid-template-columns:1fr 1fr!important;width:100%}
+  .project-library-actions{display:grid!important;grid-template-columns:minmax(0,1fr) 40px!important;width:100%}
   .project-library-actions .project-library-delete{grid-column:1/-1}
   .publishing-stats{grid-template-columns:1fr 1fr}
   .publishing-toolbar{align-items:flex-start!important;flex-direction:column}

@@ -30,6 +30,21 @@
       && Boolean(String(part?.body || '').trim() || part?.images?.length);
   }
 
+  // 【待補】／【待確認】 left in what goes out: the article itself and its afterword. The
+  // summary and Hashtags are helpers beside the text, not the text.
+  function pendingMarks(part) {
+    const body = isVisualPart(part) ? part?.body : (part?.raw || part?.formatted);
+    return window.StoryFlowShared.pendingMarkCount(body, part?.afterword);
+  }
+
+  // Marking a platform published while notes remain is allowed, but asked about once: the
+  // marks are the writer's own reminder that something was not finished.
+  function confirmPendingBeforePublished(part, platform) {
+    const count = pendingMarks(part);
+    if (!count) return true;
+    return window.confirm(`這篇還有 ${count} 處【待補】／【待確認】。\n\n仍要將「${platform}」標註為已發布嗎？`);
+  }
+
   function notifyIncompleteVisual() {
     notify('這則圖文尚未完成：請保留標題，並加入正文或至少一張圖片。', true);
   }
@@ -189,6 +204,8 @@
     isVisualPart,
     visualContentComplete,
     notifyIncompleteVisual,
+    pendingMarks,
+    confirmPendingBeforePublished,
     normalizePublishItem,
     includeAfterwordFor,
     outputSections,

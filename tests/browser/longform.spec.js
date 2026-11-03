@@ -142,69 +142,42 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   expect(addLayout.textareaHeight).toBeGreaterThan(addLayout.dialogHeight * 0.45);
 
   await page.locator('#closeManualSourceDialog').click();
+  // Works lists works; chapters are managed in the rail above, where the work opens. The
+  // row carries no 管理章節 and no second chapter list, and the work's name is what opens it.
   await page.locator('.nav-item[data-view="projects"]').click();
-  const manageChapters = page.getByRole('button', { name: '管理章節', exact: true });
-  const managePublishing = page.getByRole('button', { name: /管理發布/ });
-  await expect(manageChapters.first()).toBeVisible();
-  await expect(managePublishing.first()).toBeVisible();
   const activeCard = page.locator('.project-library-card.active');
-  await activeCard.getByRole('button', { name: '管理章節', exact: true }).click();
-  const manualRow = activeCard.locator('.project-chapter-manager-row').last();
-  await expect(manualRow.getByRole('button', { name: /編輯章節/ })).toBeVisible();
-  const manualMore = manualRow.getByRole('button', { name: /更多「.*」操作/ });
-  await expect(manualMore).toBeVisible();
-  await manualMore.click();
-  await expect(manualRow.getByRole('menuitem', { name: /刪除章節/ })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await activeCard.getByRole('button', { name: '收合章節', exact: true }).click();
+  await expect(activeCard).toBeVisible();
+  await expect(page.getByRole('button', { name: /^管理章節$/ })).toHaveCount(0);
+  await expect(page.locator('.project-chapter-manager')).toHaveCount(0);
+  const cardCount = await page.locator('.project-library-card').count();
+  await expect(page.locator('.project-library-actions > .button:visible')).toHaveText(
+    Array(cardCount).fill(['管理發布', '⋯']).flat()
+  );
   await page.evaluate(() => document.activeElement?.blur());
   await page.mouse.move(0, 0);
-  await expect.poll(() => activeCard.getByRole('button', { name: '管理章節', exact: true })
-    .evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgb(236, 233, 224)');
-  // borderColor has its own transition, and the assertions below compare the inactive
-  // card's border against the active one's. Waiting only on the active background left
-  // the inactive border still animating, so the comparison read two different points of
-  // the same fade — rgb(111, 162, 207) against rgb(111, 163, 205).
+  // 管理發布 is one control whichever work is current.
   await expect.poll(() => page.evaluate(() => {
-    const border = selector => getComputedStyle(document.querySelector(selector)).borderColor;
-    return border('.project-library-card.active .project-manage-chapters-btn')
-      === border('.project-library-card:not(.active) .project-manage-chapters-btn');
+    const style = selector => {
+      const element = document.querySelector(selector);
+      const computed = getComputedStyle(element);
+      return [computed.height, computed.borderColor, computed.backgroundColor, computed.color, computed.fontSize].join('|');
+    };
+    return style('.project-library-card.active .project-publish-btn')
+      === style('.project-library-card:not(.active) .project-publish-btn');
   })).toBe(true);
-  const managementStyles = await page.evaluate(() => {
-    const values = element => {
-      const style = getComputedStyle(element);
-      return {
-        height: style.height,
-        borderColor: style.borderColor,
-        backgroundColor: style.backgroundColor,
-        color: style.color,
-        borderRadius: style.borderRadius,
-        fontSize: style.fontSize,
-        fontWeight: style.fontWeight
-      };
-    };
-    return {
-      open: values(document.querySelector('.project-open-btn')),
-      chapters: values(document.querySelector('.project-library-card.active .project-manage-chapters-btn')),
-      inactiveChapters: values(document.querySelector('.project-library-card:not(.active) .project-manage-chapters-btn')),
-      publishing: values(document.querySelector('.project-publish-btn'))
-    };
+  const publishStyle = await page.locator('.project-library-card.active .project-publish-btn').evaluate(button => {
+    const style = getComputedStyle(button);
+    return { height: style.height, fontSize: style.fontSize, backgroundColor: style.backgroundColor, color: style.color };
   });
-  expect(managementStyles.chapters.height).toBe('40px');
-  expect(managementStyles.chapters.fontSize).toBe('14px');
-  expect(managementStyles.chapters.backgroundColor).toBe('rgb(236, 233, 224)');
-  // At rest 管理章節 is Publishing's 管理發布: the ground's fill in --denim-800. Full ink is its
-  // hover and open state, as it is that one's; it used to rest in the open state.
-  expect(managementStyles.chapters.color).toBe('rgb(58, 53, 68)');
-  expect(managementStyles.inactiveChapters.backgroundColor).toBe(managementStyles.chapters.backgroundColor);
-  expect(managementStyles.inactiveChapters.borderColor).toBe(managementStyles.chapters.borderColor);
-  expect(managementStyles.inactiveChapters.color).toBe(managementStyles.chapters.color);
-  expect(managementStyles.publishing.backgroundColor).toBe('rgb(251, 250, 246)');
-  expect(managementStyles.publishing.color).toBe('rgb(58, 53, 68)');
-  expect(managementStyles.open.height).toBe(managementStyles.chapters.height);
-  expect(managementStyles.open.fontSize).toBe(managementStyles.chapters.fontSize);
-  expect(managementStyles.open.fontWeight).toBe(managementStyles.chapters.fontWeight);
-  expect(managementStyles.open.backgroundColor).toBe('rgb(251, 250, 246)');
+  expect(publishStyle).toEqual({ height: '40px', fontSize: '14px', backgroundColor: 'rgb(251, 250, 246)', color: 'rgb(58, 53, 68)' });
+
+  // The name opens the work: the other one becomes current and the workspace shows it.
+  const other = page.locator('.project-library-card:not(.active)').first();
+  await expect(other.locator('.project-library-open')).toHaveAttribute('aria-label', /^開啟「.+」$/);
+  await other.locator('.project-library-open').click();
+  await expect(page.locator('#workspaceView')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => state.projectTitle)).toBe('其他樣式測試作品');
+  await page.locator('.nav-item[data-view="projects"]').click();
 
   const newWorkStyle = await page.locator('#projectsNewWorkBtn').evaluate(button => {
     const rect = button.getBoundingClientRect();
@@ -618,8 +591,8 @@ test('work creation waits for a connected folder and opens once there is one', a
   expect(pageErrors).toEqual([]);
 });
 
-test('the works list keeps its order and its row actions while being managed and filtered', async ({ page }) => {
-  // Managing a work makes it current, and the current work used to be pinned to the top of
+test('the works list keeps its order and its row actions while being opened and filtered', async ({ page }) => {
+  // Opening a work makes it current, and the current work used to be pinned to the top of
   // the list. Opening one from the bottom of a scrolled list therefore teleported it to the
   // first row and re-sorted everything around it, which is the whole reason this is pinned:
   // the row has to stay where the reader left it.
@@ -651,16 +624,17 @@ test('the works list keeps its order and its row actions while being managed and
   const order = await titles();
   expect(order).toHaveLength(3);
 
-  // Manage the last row. It becomes the current work, and it stays where it is.
+  // Open the last row by its name. It becomes the current work, and back on Works it is still
+  // where it was.
   const lastTitle = order[2];
-  await page.locator('.project-library-card').nth(2)
-    .getByRole('button', { name: /^管理(章節|圖文)$/ }).click();
+  await page.locator('.project-library-card').nth(2).locator('.project-library-open').click();
+  await expect(page.locator('#workspaceView')).toBeVisible();
+  await page.locator('.nav-item[data-view="projects"]').click();
   await expect(page.locator('.project-library-card.active .project-library-title-row strong'))
     .toHaveText(lastTitle);
   await expect.poll(titles).toEqual(order);
 
-  // One label whichever work it is; the current one is named by its badge, not by its action.
-  expect([...new Set(await page.locator('.project-open-btn').allTextContents())]).toEqual(['開啟']);
+  // The current one is named by its badge, not by its action.
   await expect(page.locator('.project-library-card.active .project-current-badge')).toHaveText('目前作品');
 
   // The filter narrows the list, and what other modules add to each row survives it: the
@@ -672,12 +646,12 @@ test('the works list keeps its order and its row actions while being managed and
 
   await page.locator('#worksTypeFilters [data-content-type="visual"]').click();
   await expect.poll(titles).toEqual(['排序丙圖文']);
-  await expect(page.locator('.project-manage-chapters-btn')).toHaveCount(1);
+  await expect(page.locator('.project-publish-btn')).toHaveCount(1);
   await expect(page.locator('.project-library-more-btn')).toHaveCount(1);
 
   await page.locator('#worksTypeFilters [data-content-type="longform"]').click();
   await expect.poll(titles).toEqual(order.filter(title => title !== '排序丙圖文'));
-  await expect(page.locator('.project-manage-chapters-btn')).toHaveCount(2);
+  await expect(page.locator('.project-library-more-btn')).toHaveCount(2);
 
   await page.locator('#worksTypeFilters [data-content-type="all"]').click();
   await expect.poll(titles).toEqual(order);
@@ -744,5 +718,78 @@ test('a finished chapter says so, and the reading view centres its scene markers
   await expect(row.locator('#copyPlatformSummary small')).toHaveText('在「摘要與 Hashtags」設定');
   await row.getByRole('button', { name: '摘要與 Hashtags', exact: true }).click();
   await expect(page.locator('.visual-publish-summary-input')).toHaveAttribute('placeholder', '簡短介紹這篇文章');
+  expect(pageErrors).toEqual([]);
+});
+
+// 【待補】／【待確認】 are the writer's own notes in the text (REDESIGN_PROPOSAL B3). They are
+// counted beside the split status and the count jumps to each in turn; Publishing repeats the
+// count on the row and asks once before a platform is marked published; search can list
+// everything still carrying one. None of it blocks anything.
+test('pending marks are counted, jumped to, asked about before publishing and searchable', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await gotoWorkbench(page, '/?visual-regression=1');
+  await page.evaluate(() => { StoryFlowIntegrations.savePart = async () => 'x.md'; });
+  await page.locator('#createProjectManually').click();
+  await page.getByRole('dialog', { name: '選擇作品類型' }).locator('#chooseLongformType').click();
+  await page.locator('#sourceManualBtn').click();
+  await page.locator('#manualProjectTitle').fill('待補作品');
+  await page.locator('#manualSourceTitle').fill('01、出發');
+  await page.locator('#manualSourceText').fill('清晨出門【待補：車站名稱】。\n\n午後抵達【待確認 日期】。');
+  await page.locator('#previewManualSourceBtn').click();
+  await page.locator('#confirmSourcePreviewBtn').click();
+  await expect(page.locator('#suggestionCard')).toBeVisible();
+
+  const pill = page.locator('#suggestionPendingMarks');
+  await expect(pill).toHaveText('2 處待補／待確認');
+  // The preview renders its Markdown after the suggestion; a mark is selected in what is
+  // on screen, so wait for that rendering rather than the raw text it replaces.
+  await expect(page.locator('#preview .sf-preview-rendered-root')).toContainText('【待確認 日期】');
+  // The preview is re-rendered a few times while the new work settles, and each rendering
+  // replaces the text a selection lives in. Wait until it has stopped changing.
+  await page.evaluate(() => {
+    window.__previewChangedAt = performance.now();
+    new MutationObserver(() => { window.__previewChangedAt = performance.now(); })
+      .observe(document.getElementById('preview'), { childList: true, subtree: true, characterData: true });
+  });
+  await expect.poll(() => page.evaluate(() => performance.now() - window.__previewChangedAt), { timeout: 10_000 })
+    .toBeGreaterThan(500);
+  const selected = () => page.evaluate(() => String(window.getSelection()));
+  await pill.click();
+  await expect.poll(selected).toBe('【待補：車站名稱】');
+  await pill.click();
+  await expect.poll(selected).toBe('【待確認 日期】');
+  await pill.click();
+  await expect.poll(selected).toBe('【待補：車站名稱】');
+
+  await page.locator('#confirmBtn').click();
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  const row = page.locator('.publish-list-item').first();
+  await expect(row.locator('.publish-pending-badge')).toHaveText('待補 2');
+
+  // Declining the question leaves the platform unpublished; accepting it marks it.
+  await row.locator('.publish-manage-btn').click();
+  const platform = await page.locator('.publish-platform-row:not([data-platform=""])').first().getAttribute('data-platform');
+  await page.locator(`.publish-platform-row[data-platform="${platform}"] .publish-platform-choose`).click();
+  const questions = [];
+  page.once('dialog', dialog => { questions.push(dialog.message()); dialog.dismiss(); });
+  await page.locator('#togglePlatformPublished').click();
+  await expect.poll(() => questions.length).toBe(1);
+  expect(questions[0]).toContain('還有 2 處【待補】／【待確認】');
+  expect(await page.evaluate(name => state.chapters[0].parts[0].platformStatus?.[name] === true, platform)).toBe(false);
+  page.once('dialog', dialog => { questions.push(dialog.message()); dialog.accept(); });
+  await page.locator('#togglePlatformPublished').click();
+  await expect.poll(() => page.evaluate(name => state.chapters[0].parts[0].platformStatus?.[name] === true, platform)).toBe(true);
+  await page.locator('.publish-lightbox-close').click();
+
+  // Search lists what still carries a mark, without a query.
+  await page.keyboard.press('Control+K');
+  await page.locator('#globalSearchPendingOnly').check();
+  const results = page.locator('#globalSearchResults .global-search-result');
+  await expect(results).toHaveCount(2);
+  await expect(results.first()).toContainText('2 處待補／待確認');
+  await page.locator('#globalSearchInput').fill('沒有這個名字');
+  await expect(results).toHaveCount(0);
+  await expect(page.locator('.global-search-empty')).toContainText('沒有待補內容');
   expect(pageErrors).toEqual([]);
 });

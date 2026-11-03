@@ -12,15 +12,6 @@
 
   function refineLabels(card) {
     const projectTitle = card.querySelector('.project-library-title-row strong')?.textContent?.trim() || '未命名作品';
-    const open = card.querySelector('.project-open-btn');
-    if (open) {
-      // One label, whichever work it is. The action is the same destination either way,
-      // and the row already says which work is current three times over; a label that
-      // changes per row only makes the action column harder to scan.
-      if (open.textContent !== '開啟') open.textContent = '開啟';
-      open.setAttribute('aria-label', `開啟「${projectTitle}」`);
-    }
-
     const publish = card.querySelector('.project-publish-btn');
     if (publish) {
       if (publish.textContent !== '管理發布') publish.textContent = '管理發布';

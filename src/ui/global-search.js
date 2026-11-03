@@ -1,6 +1,6 @@
 // Local-only command search across loaded works, chapters, and publishing articles.
 (function () {
-  const { partKey } = window.StoryFlowShared;
+  const { partKey, pendingMarkCount } = window.StoryFlowShared;
   const trigger = document.getElementById('globalSearchBtn');
   if (!trigger || document.getElementById('globalSearchDialog')) return;
 
@@ -71,7 +71,8 @@
           kind: 'chapter', label: '章節', projectId: project.id, projectTitle,
           chapterId: chapter.id, chapterTitle, title: chapterTitle,
           subtitle: projectTitle, titleFields: [chapterTitle],
-          bodyFields: [chapter.draft || ''], order: orderBase + chapterIndex / 1000
+          bodyFields: [chapter.draft || ''], pendingFields: [chapter.draft || ''],
+          order: orderBase + chapterIndex / 1000
         });
 
         (chapter.parts || []).forEach((part, partIndex) => {
@@ -91,6 +92,7 @@
               ...(window.StoryFlowContentModel?.tagsFromHashtags?.(part.hashtags) || [])
             ])],
             bodyFields: [part.summary || '', part.raw || part.formatted || ''],
+            pendingFields: [part.raw || part.formatted || '', part.afterword || ''],
             order: orderBase + chapterIndex / 1000 + partIndex / 100000
           });
         });
@@ -110,11 +112,31 @@
             ...(window.StoryFlowContentModel?.tagsFromHashtags?.(entry.hashtags) || [])
           ])],
           bodyFields: [entry.summary || '', entry.body || ''],
+          pendingFields: [entry.body || '', entry.afterword || ''],
           order: Date.parse(entry.updatedAt || entry.createdAt || '') || orderBase + entryIndex / 1000
         });
       });
     });
     return records;
+  }
+
+  // 只找待補 narrows to what still carries 【待補】／【待確認】, newest first. A query still
+  // narrows the list further by title (or body, with body search on); the snippet is always
+  // the first mark, since the mark is what the writer is looking for.
+  function searchPending(query, includeBody) {
+    const term = normalize(query);
+    return searchableRecords().map(record => {
+      const fields = record.pendingFields || [];
+      const count = pendingMarkCount(...fields);
+      if (!count) return null;
+      if (term) {
+        const inTitle = record.titleFields.map(normalize).some(value => value.includes(term));
+        const inBody = includeBody && record.bodyFields.some(value => normalize(value).includes(term));
+        if (!inTitle && !inBody) return null;
+      }
+      const source = fields.find(value => pendingMarkCount(value)) || '';
+      return { ...record, matchScope: 'pending', snippet: `${count} 處待補／待確認：${excerpt(source, '【待')}` };
+    }).filter(Boolean).sort((a, b) => b.order - a.order).slice(0, MAX_RESULTS);
   }
 
   function search(query, includeBody) {
@@ -163,6 +185,7 @@
       </div>
       <div class="global-search-options">
         <label><input id="globalSearchIncludeBody" type="checkbox" /><span>同時搜尋正文</span></label>
+        <label><input id="globalSearchPendingOnly" type="checkbox" /><span>只找待補</span></label>
         <span id="globalSearchCount"></span>
       </div>
       <div id="globalSearchResults" class="global-search-results" role="listbox" aria-label="搜尋結果"></div>
@@ -172,6 +195,7 @@
 
   const input = dialog.querySelector('#globalSearchInput');
   const includeBody = dialog.querySelector('#globalSearchIncludeBody');
+  const pendingOnly = dialog.querySelector('#globalSearchPendingOnly');
   const resultList = dialog.querySelector('#globalSearchResults');
   const count = dialog.querySelector('#globalSearchCount');
 
@@ -222,14 +246,18 @@
   }
 
   function renderResults({ preserveSelection = false } = {}) {
-    results = search(input.value, includeBody.checked);
+    results = pendingOnly.checked
+      ? searchPending(input.value, includeBody.checked)
+      : search(input.value, includeBody.checked);
     resultList.replaceChildren();
     const hasQuery = Boolean(normalize(input.value));
-    count.textContent = hasQuery ? `${results.length} 個結果` : '最近內容';
+    count.textContent = hasQuery || pendingOnly.checked ? `${results.length} 個結果` : '最近內容';
     if (!results.length) {
       const empty = document.createElement('div');
       empty.className = 'global-search-empty';
-      empty.innerHTML = hasQuery
+      empty.innerHTML = pendingOnly.checked
+        ? '<strong>沒有待補內容</strong><span>正文與後記裡都沒有【待補】或【待確認】。</span>'
+        : hasQuery
         ? '<strong>找不到符合內容</strong><span>可以換個關鍵字，或開啟「同時搜尋正文」。</span>'
         : '<strong>尚未有可搜尋內容</strong><span>建立作品與文章後，就能從這裡快速開啟。</span>';
       resultList.appendChild(empty);
@@ -286,6 +314,7 @@
     if (blockingDialog) return;
     input.value = '';
     includeBody.checked = false;
+    pendingOnly.checked = false;
     activeIndex = -1;
     renderResults();
     dialog.showModal();
@@ -325,6 +354,7 @@
   dialog.querySelector('#closeGlobalSearch').addEventListener('click', () => dialog.close());
   input.addEventListener('input', () => renderResults());
   includeBody.addEventListener('change', () => renderResults());
+  pendingOnly.addEventListener('change', () => renderResults());
   dialog.addEventListener('keydown', event => {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
