@@ -180,6 +180,8 @@ Recovery is the exception where a solid button may appear outside the normal pag
 
 Creating a work is a transaction, not a navigation side effect.
 
+While visual content is redesigned (`docs/REDESIGN_PROPOSAL.md` Phase A–C), the type chooser still opens first but shows “圖文作品” disabled with “新版圖文製作中，完成前暫時無法建立圖文作品。” beside it; “長文作品” continues exactly as below. An old visual work stays in Works and Publishing, and Workspace shows it only as a paused notice with “前往作品”. The type chips in Works and Publishing appear only while the library holds both kinds of work.
+
 ```text
 新增作品 → 選擇「長文作品／圖文系列」
           ├─ 長文 → 選來源 → 填寫或選取內容 → 預覽（可選） → 確認 → 建立並切換作品

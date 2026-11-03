@@ -160,7 +160,14 @@
         visual: all.filter(project => contentTypeOf(project) === 'visual').length
       };
       const labels = { all: '全部類型', longform: '長文', visual: '圖文' };
-      filters.hidden = all.length === 0;
+      // A type filter only says something when there is more than one type to choose
+      // between; with every work the same kind it was a row of chips that changed nothing.
+      const mixed = counts.longform > 0 && counts.visual > 0;
+      filters.hidden = !mixed;
+      if (!mixed && worksTypeFilter !== 'all') {
+        worksTypeFilter = 'all';
+        return renderProjectsView();
+      }
       filters.querySelectorAll('[data-content-type]').forEach(button => {
         const key = button.dataset.contentType;
         button.textContent = `${labels[key]} ${counts[key]}`;

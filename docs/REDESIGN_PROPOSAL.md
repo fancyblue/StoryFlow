@@ -35,32 +35,23 @@
 | Phase | 內容 | 風險 | 測試 |
 | --- | --- | --- | --- |
 | 0 ✅ 已完成 | 小型整理：`confirm-continuation.js` 補快取版本、刪 `src/legacy/` 與 `styles/archive/`；`test:static` 拒絕沒有 `?v=` 的已載入資產 | 低 | `test:static` + `test:assets` |
-| A | 拔除現有圖文工作台與專屬流程，保留共用骨架 | 中（發布、搜尋、持久化都有分支） | 完整 `npm test` |
+| A ✅ 已完成 | 拔除現有圖文工作台與專屬流程，保留共用骨架 | 中（發布、搜尋、持久化都有分支） | 完整 `npm test` |
 | B | 全站調整：作品庫、儲存狀態、待補標記、共用照片元件、就地確認 | 中 | 各項跑對應 spec，B 結束跑完整 `npm test` |
 | C | 新圖文：Drive 照片庫、一圖一文編輯器與即時預覽、發布整合 | 高（Drive 讀取、新資料模型） | 新的 `visual.spec.js` + 完整 `npm test` |
 
 每個 Phase 至少一個 PR；B、C 依小節拆成多個 PR。
 
-## 3. Phase A：拔除現有圖文
+## 3. Phase A：拔除現有圖文（✅ 已完成）
 
-### 移除
+實作時把範圍收得比原計畫窄，理由是「不能改壞長文」與「Phase C 會在同樣的位置放回圖文」：
 
-- `src/projects/visual-workspace.js`、`styles/domains/visual-workspace.css`、`tests/browser/visual.spec.js`、`tests/visual-content-model-core.html`、`visual-workspace-1440.png` 基準截圖。
-- 建立作品流程中的「長文作品／圖文系列」類型選擇，暫時直接進入長文來源選擇。
-- 作品庫與發布頁的「全部類型／長文／圖文」篩選，以及作品卡、分組上的類型標籤。
-- `publishing-flow.js`、`publishing-project-filter.js`、`publishing-output.js`、`global-search.js`、`chapter-management.js`、`app-ux.js` 裡的圖文專屬分支。
-- `integrations.js` 裡讀寫 `Visual/` 的函式（`visualEntryDirectory`、`writeVisualEntry`、圖文刪除的 Recovery 路徑）與圖文圖片的 assets 讀寫。
-
-### 保留
-
-- `content-model.js` 的 `CONTENT_MODES`、`normalizeContentMode()` 與 publishable view model 介面：發布頁、搜尋與作品庫透過它讀資料，不直接讀 `chapters[].parts`。
-- 讀取端容忍：`workspace.json` 若出現 `contentMode: 'visual'` 或 `visualEntries`，原樣保留在檔案中，不刪除也不編輯；作品庫顯示「此作品是舊版圖文，暫時無法開啟」。啟動時絕不刪除 `Works/<作品>/Visual/`。
-- `styles/layers/mobile-visual.css`：這是全站手機版樣式，與圖文模式無關（同時修正 `AGENTS.md` 表格把它列在圖文那一列的錯誤）。
-
-### 文件
-
-- `VISUAL_CONTENT_MODE_DESIGN.md` 改為「已被取代」並指向本文件。
-- `UX_FLOW.md`、`UI_SYSTEM.md`、`ARCHITECTURE.md`、`CHROME_ACCEPTANCE.md`、`AGENTS.md`、`AI_HANDOFF.md` 中描述圖文的現行規範，改寫為「圖文暫時下架，見 REDESIGN_PROPOSAL」。
+- **拔除的是圖文編輯器**：`visual-workspace.js` 從 905 行縮成只剩作品類型選擇與舊作品暫停說明；條目新增、編輯、圖片匯入、排序、預覽燈箱與條目刪除都移除。`npm run test:css` 自動刪除因此失效的 68 個選擇器。`visual.spec.js` 與 `visual-workspace-1440.png` 基準截圖移除。
+- **作品類型選擇保留**：每個長文作品都經過這個對話框建立，拿掉它會讓長文的建立流程改兩次（現在一次、Phase C 放回一次）。「圖文作品」顯示為停用，旁邊寫「新版圖文製作中，完成前暫時無法建立圖文作品。」。
+- **舊的圖文作品原樣保留**：`workspace.json` 中的 `contentMode: 'visual'` 與 `visualEntries` 不刪除、不轉換；工作台只顯示暫停說明與「前往作品」。
+- **發布、搜尋與 `integrations.js` 的圖文讀取保留**：它們讀的是標題、正文、摘要、Hashtags、後記與平台欄位，新模型也保留這些欄位；先刪再在 Phase C 加回，等於兩次改動發布頁。測試改用 `StoryFlowProjects.createProject({ contentMode: 'visual', visualEntry })` 建立舊格式圖文，繼續覆蓋發布頁的圖文分支。
+- **類型篩選只在同時有兩種作品時出現**（原屬 B6，因拔除後只剩一種作品而提前做）：作品頁與發布頁皆同。
+- 版面一致性測試（`cascade-contract.spec.js`）中與圖文欄比較的部分暫時移除，只保留長文那一半；Phase C 放回。
+- 文件：`VISUAL_CONTENT_MODE_DESIGN.md` 改為「已被取代」；`README.md`、`AGENTS.md`、`AI_HANDOFF.md`、`ARCHITECTURE.md`、`UX_FLOW.md`、`CHROME_ACCEPTANCE.md` 改寫為暫停中的描述；`AGENTS.md` 表格中 `mobile-visual.css` 移到手機那一列。
 
 ## 4. Phase B：全站調整
 
@@ -110,7 +101,7 @@ C 的圖文以 Drive 為讀取來源使用它。長文「文章圖片」維持�
 
 ### B6. 發布頁對齊兩種內容
 
-- 發布清單恢復類型篩選與標籤，但只在作品庫同時有兩種作品時顯示。
+- 類型篩選只在作品庫同時有兩種作品時顯示（已在 Phase A 完成）。
 - 列上的摘要增加「圖片 1 張 · 待補 N」。
 
 ## 5. Phase C：新圖文（一圖一文）
