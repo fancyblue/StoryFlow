@@ -18,6 +18,20 @@ for (const relative of manifestSources) {
   if (!existsSync(join(root, relative))) missing.push(relative);
 }
 
+// GitHub Pages serves these files directly, so a JS or CSS asset without a `?v=` query
+// reaches returning browsers from cache after it changes. bump-assets.mjs --check only
+// looks at assets changed since the base ref, so an asset that never had a query passed
+// it for as long as nobody touched the file.
+const unversioned = [
+  ...[...index.matchAll(/(?:src|href)="\.\/([^"?#]+\.(?:js|css))(\?v=[^"]+)?"/g)]
+    .filter(match => !match[2]).map(match => `index/${match[1]}`),
+  ...[...loader.matchAll(/\bsrc:\s*['"]\.\/([^'"?#]+)(\?v=[^'"]+)?['"]/g)]
+    .filter(match => !match[2]).map(match => `manifest/${match[1]}`)
+];
+if (unversioned.length) {
+  throw new Error(`Loaded assets must carry a ?v= cache query:\n${unversioned.join('\n')}`);
+}
+
 const manifestIds = [...loader.matchAll(/\bid:\s*['"]([^'"]+)['"]/g)].map(match => match[1]);
 const duplicates = values => [...new Set(values.filter((value, index) => values.indexOf(value) !== index))];
 const duplicateSources = duplicates(manifestSources);

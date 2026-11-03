@@ -42,7 +42,7 @@
     { id: 'storyflowBackupCenterJs', src: './src/settings/backup-center.js?v=20260924-a1', owner: 'settings' },
     { id: 'storyflowQuickStartJs', src: './src/connection/quick-start.js?v=20261016-a7', owner: 'connection' },
     { src: './src/ui/navigation.js?v=20260915-a2', owner: 'ui' },
-    { src: './src/split/confirm-continuation.js', owner: 'split' },
+    { src: './src/split/confirm-continuation.js?v=20261103-a1', owner: 'split' },
     { src: './src/ui/preview-mode.js?v=20260918-a1', owner: 'ui' },
     { src: './src/ui/reading-settings.js?v=20261016-a16', owner: 'ui' },
     { src: './src/ui/rail-resize.js?v=20261016-a18', owner: 'ui' },
