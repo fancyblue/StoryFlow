@@ -48,6 +48,17 @@ test('startup and legacy compatibility API preserve browser data', async ({ page
 // be painted for as long as the modules took to load: the topbar, the source panel and
 // the split preview, under a sidebar that already said 作品. Each frame is sampled until
 // DOMContentLoaded, by which point every module has run and the landing view is in place.
+test('the global escapeHtml renders a missing value as nothing, like the shared esc', async ({ page }) => {
+  await prepare(page);
+  await page.goto('/');
+  const results = await page.evaluate(() => [null, undefined, '', 0, '<a href="x">&\'</a>']
+    .map(value => [escapeHtml(value), window.StoryFlowShared.esc(value)]));
+  expect(results).toEqual([
+    ['', ''], ['', ''], ['', ''], ['0', '0'],
+    ['&lt;a href=&quot;x&quot;&gt;&amp;&#039;&lt;/a&gt;', '&lt;a href=&quot;x&quot;&gt;&amp;&#039;&lt;/a&gt;']
+  ]);
+});
+
 test('startup paints no workbench before the landing view is ready', async ({ page }) => {
   const pageErrors = await prepare(page);
   await page.addInitScript(() => {

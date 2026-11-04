@@ -510,8 +510,10 @@ function createChapter() {
   renderAll();
 }
 
+// The shared escape, kept under this global name for its callers. It used to render null and
+// undefined as the words "null" and "undefined"; a missing value now renders as nothing.
 function escapeHtml(value) {
-  return String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#039;', '"':'&quot;' }[char]));
+  return window.StoryFlowShared.esc(value);
 }
 
 async function loginGoogle() {
