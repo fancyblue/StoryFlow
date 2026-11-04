@@ -5,13 +5,13 @@
 // order here makes that dependency explicit without hiding it in one long HTML line.
 (function () {
   const scripts = [
-    { src: './src/core/shared.js?v=20261104-a15', owner: 'core' },
+    { src: './src/core/shared.js?v=20261104-a16', owner: 'core' },
     { src: './src/core/config.js?v=20261104-a3', owner: 'core' },
     { src: './src/projects/content-model.js?v=20261104-a6', owner: 'projects' },
     { src: './src/persistence/integrations.js?v=20261104-a13', owner: 'persistence' },
     { id: 'storyflowFolderAssetsJs', src: './src/persistence/folder-assets.js?v=20261104-a13', owner: 'persistence' },
     { src: './src/source/google-docs.js?v=20261104-a9', owner: 'source' },
-    { src: './src/core/app.js?v=20261104-a15', owner: 'core' },
+    { src: './src/core/app.js?v=20261104-a16', owner: 'core' },
     { src: './src/core/render-pipeline.js?v=20260925-a5', owner: 'core' },
     { src: './src/connection/session-auth.js?v=20261104-a9', owner: 'connection' },
     { src: './src/connection/folder-session.js?v=20260825-p1e', owner: 'connection' },
