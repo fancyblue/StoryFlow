@@ -2,6 +2,8 @@
 // explicit switch back to the exact Markdown text. Existing feature modules keep
 // owning the source text; this layer only changes how preview surfaces present it.
 (function () {
+  // The shared one, under this file's name for it; app.js's global escapeHtml differs.
+  const { esc: escapeHtml } = window.StoryFlowShared;
   const TARGET_SELECTOR = [
     '#preview',
     '#readingFlow',
@@ -24,11 +26,6 @@
   let observer = null;
   let observing = false;
 
-  function escapeHtml(value) {
-    return String(value ?? '').replace(/[&<>"']/g, char => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-    }[char]));
-  }
 
   function escapeAttribute(value) {
     return escapeHtml(value).replace(/`/g, '&#096;');

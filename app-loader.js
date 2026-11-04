@@ -5,7 +5,7 @@
 // order here makes that dependency explicit without hiding it in one long HTML line.
 (function () {
   const scripts = [
-    { src: './src/core/shared.js?v=20261103-a8', owner: 'core' },
+    { src: './src/core/shared.js?v=20261104-a12', owner: 'core' },
     { src: './src/core/config.js?v=20261104-a3', owner: 'core' },
     { src: './src/projects/content-model.js?v=20261104-a6', owner: 'projects' },
     { src: './src/persistence/integrations.js?v=20261104-a12', owner: 'persistence' },
@@ -21,7 +21,7 @@
     { src: './src/persistence/workspace-safety.js?v=20261016-a7', owner: 'persistence' },
     { src: './src/split/smart-split-ui.js?v=20261016-a9', owner: 'split' },
     { src: './src/publishing/platform-lock.js?v=20260925-a5', owner: 'publishing' },
-    { src: './src/source/source-diff.js?v=20260912-a1', owner: 'source' },
+    { src: './src/source/source-diff.js?v=20261104-a12', owner: 'source' },
     { src: './src/source/source-sync-history.js?v=20260825-p1', owner: 'source' },
     { src: './src/source/source-flow.js?v=20261017-a7', owner: 'source' },
     { src: './src/projects/projects.js?v=20261103-a12', owner: 'projects' },
@@ -46,7 +46,7 @@
     { id: 'storyflowQuickStartJs', src: './src/connection/quick-start.js?v=20261016-a7', owner: 'connection' },
     { src: './src/ui/navigation.js?v=20260915-a2', owner: 'ui' },
     { src: './src/split/confirm-continuation.js?v=20261103-a1', owner: 'split' },
-    { src: './src/ui/preview-mode.js?v=20260918-a1', owner: 'ui' },
+    { src: './src/ui/preview-mode.js?v=20261104-a12', owner: 'ui' },
     { src: './src/ui/reading-settings.js?v=20261016-a16', owner: 'ui' },
     { src: './src/ui/rail-resize.js?v=20261016-a18', owner: 'ui' },
     { src: './src/connection/google-auth.js?v=20260825-p2b', owner: 'connection' },
@@ -56,7 +56,7 @@
     { id: 'storyflowPublishingDeleteJs', src: './src/publishing/publishing-delete.js?v=20261017-a10', owner: 'publishing' },
     { id: 'storyflowProjectPersistenceGuardJs', src: './src/persistence/project-persistence-guard.js?v=20261103-a8', owner: 'persistence' },
     { id: 'storyflowMobileSafeModeJs', src: './src/persistence/mobile-safe-mode.js?v=20261103-a12', owner: 'persistence' },
-    { id: 'storyflowProjectSourceSyncJs', src: './src/source/project-source-sync.js?v=20261016-a11', owner: 'source', attributes: { 'data-storyflow-project-source-sync': '' } },
+    { id: 'storyflowProjectSourceSyncJs', src: './src/source/project-source-sync.js?v=20261104-a12', owner: 'source', attributes: { 'data-storyflow-project-source-sync': '' } },
     { id: 'storyflowSourceArticleUxJs', src: './src/source/source-article-ux.js?v=20260925-a5', owner: 'source' },
     { id: 'storyflowChapterManagementJs', src: './src/projects/chapter-management.js?v=20261103-a12', owner: 'projects' },
     { id: 'storyflowManualChapterEditJs', src: './src/projects/manual-chapter-edit.js?v=20261103-a8', owner: 'projects' },
@@ -66,9 +66,9 @@
     { src: './src/projects/workspace-project-ux.js?v=20261016-a16', owner: 'projects' },
     { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20261103-a12', owner: 'ui' },
     { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20261016-a7', owner: 'publishing' },
-    { id: 'storyflowVisualPhotoCacheJs', src: './src/projects/visual-photo-cache.js?v=20261104-a10', owner: 'projects' },
-    { id: 'storyflowVisualFolderBrowserJs', src: './src/projects/visual-folder-browser.js?v=20261104-a10', owner: 'projects' },
-    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20261104-a10', owner: 'projects' }
+    { id: 'storyflowVisualPhotoCacheJs', src: './src/projects/visual-photo-cache.js?v=20261104-a12', owner: 'projects' },
+    { id: 'storyflowVisualFolderBrowserJs', src: './src/projects/visual-folder-browser.js?v=20261104-a12', owner: 'projects' },
+    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20261104-a12', owner: 'projects' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));

@@ -35,9 +35,7 @@
   let autoSaveRevision = 0;
   let pendingAutoSaveEntryId = null;
 
-  const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;'
-  }[char]));
+  const { esc } = window.StoryFlowShared;
 
   // Images are read and cached by visual-photo-cache.js (window.StoryFlowVisualPhotos); the
   // photo folder is chosen in visual-folder-browser.js. Both load before this file.

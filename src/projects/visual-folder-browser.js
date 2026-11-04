@@ -5,9 +5,7 @@
 // caller. It changes nothing itself: the visual workspace applies the folder to the library,
 // with its own read-only guard and 復原.
 (function () {
-  const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;'
-  }[char]));
+  const { esc } = window.StoryFlowShared;
 
   let onChoose = null;
 
