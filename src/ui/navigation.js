@@ -9,7 +9,7 @@
   if (!document.querySelector('link[data-storyflow-sidebar-layout]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = './sidebar-layout.css';
+    link.href = './styles/layers/sidebar-layout.css';
     link.dataset.storyflowSidebarLayout = '1';
     document.head.appendChild(link);
   }
