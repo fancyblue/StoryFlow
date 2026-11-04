@@ -63,7 +63,7 @@
     { src: './src/projects/workspace-project-ux.js?v=20261016-a16', owner: 'projects' },
     { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20261103-a12', owner: 'ui' },
     { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20261016-a7', owner: 'publishing' },
-    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20261103-a12', owner: 'projects' }
+    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20261104-a1', owner: 'projects' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));
