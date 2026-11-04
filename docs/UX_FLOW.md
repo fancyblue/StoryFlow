@@ -213,13 +213,13 @@ Rules:
 圖文工作台
 ├─ 作品與圖文（SOURCE rail）
 │  ├─ 圖文清單 → ＋ 新增圖文
-│  └─ 照片庫（全部／沒用到的／已用）→ 從 Google Drive 加入照片
+│  └─ 照片庫（全部／沒用到的／已用）→ 從 Google Drive 加入照片或資料夾
 ├─ 編輯：標題 → 引言（選填）→ 圖片 → 圖說（選填）→ 正文
 └─ 預覽：[手機寬｜桌面寬] ＋ 預覽格式（平台）
 ```
 
 - **One image per article.** An article is a title, an optional quote, one photo with an optional caption, and the body. Without a photo it is a text article and still publishable; complete means a title plus body or a photo.
-- **Photos stay in Google Drive.** 從 Google Drive 加入照片 opens the Picker (images only, folders browsable, multi-select) under the existing `drive.file` scope. A picked photo becomes a reference in the work's library — Drive file id, name, size, taken time — and the image is read into this tab's memory when shown. Nothing is copied into the StoryFlow folder or browser storage, and nothing is changed on Drive. Picking a file already in the library adds nothing; an article without a photo takes the first one picked.
+- **Photos stay in Google Drive.** 從 Google Drive 加入照片或資料夾 opens the Picker: photos and folders, several at once (⌘／Ctrl or Shift). A picked folder brings every JPEG, PNG, WebP and GIF in it and its subfolders (up to four levels, at most 2000 photos per pick); other formats such as HEIC are counted and reported, not added. Picked files are read under `drive.file`; a folder's contents are listed under `drive.readonly`, and a session signed in before that permission existed is asked once more with Google's consent screen. Library tiles are read when they scroll into view and kept as small copies; full-size images are read only for the article's photo, the preview and the lightbox. A picked photo becomes a reference in the work's library — Drive file id, name, size, taken time — and the image is read into this tab's memory when shown. Nothing is copied into the StoryFlow folder or browser storage, and nothing is changed on Drive. Picking a file already in the library adds nothing; an article without a photo takes the first one picked.
 - **One library per work.** Every article in the work draws from it. 沒用到的 lists photos no article uses; each tile names where it is used; a photo may serve two articles, and choosing it says “這張也用在《…》”.
 - **Choosing.** Clicking a tile makes it the open article's photo; dragging a tile onto 圖片 does the same. 換一張 is a mode the library announces (“選一張照片，取代目前圖片”); Esc or 取消 leaves it. ⤢ or a double click opens the lightbox: ← → step through the library, the caption line says the file, taken time and use, 用在《…》 chooses it, the alternative text is edited there (it describes the photo, so every article using it shares it), 在 Google Drive 開啟 opens the original.
 - **Small removals are confirmed in place.** 移除圖片 and the lightbox's 移出照片庫 turn into 再按一次確認 for 2.5 s; once done, 復原 stays offered for 10 s. Taking a photo out of the library removes the reference only and clears it from the articles that used it. Deleting an article stays `⋯ → 刪除圖文` with its dialog and Recovery, and keeps the photos.

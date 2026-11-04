@@ -11,6 +11,8 @@ export async function standInForDrivePhotos(page, files = [
     window.__driveReads = [];
     window.__driveMissing = new Set();
     window.__driveSignedOut = new Set();
+    // The real one is kept for a test that drives the Picker and Drive listing itself.
+    window.__realPickDrivePhotos ||= StoryFlowIntegrations.pickDrivePhotos;
     StoryFlowIntegrations.pickDrivePhotos = async () => window.__drivePicks.map(file => ({ ...file }));
     StoryFlowIntegrations.fetchDrivePhoto = async fileId => {
       window.__driveReads.push(fileId);

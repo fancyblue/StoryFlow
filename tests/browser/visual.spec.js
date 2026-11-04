@@ -283,3 +283,76 @@ test('the visual workspace lays out without sideways scrolling from phone to wid
   }
   expect(pageErrors).toEqual([]);
 });
+
+// A picked folder brings every photo in it and its subfolders (REDESIGN_PROPOSAL C3, folder
+// import). This drives the real Picker handling and Drive listing in google-docs.js against a
+// stubbed Picker and stubbed Drive responses: a session token from before the folder
+// permission is answered 403 once and asked again with the consent screen.
+test('a picked folder adds all of its photos, including subfolders, and says what it left out', async ({ page }) => {
+  const pageErrors = await openVisualWorkspace(page);
+  const listed = [];
+  await page.route('https://www.googleapis.com/drive/v3/files?**', async route => {
+    const url = new URL(route.request().url());
+    const q = url.searchParams.get('q') || '';
+    listed.push(q);
+    const auth = route.request().headers().authorization;
+    if (auth === 'Bearer token-1') return route.fulfill({ status: 403, body: '{}' });
+    const files = q.includes("'trip-folder' in parents") ? [
+      { id: 'p-2', name: 'IMG_0002.jpg', mimeType: 'image/jpeg', imageMediaMetadata: { time: '2023:02:18 10:00:00' } },
+      { id: 'p-1', name: 'IMG_0001.jpg', mimeType: 'image/jpeg', imageMediaMetadata: { time: '2023:02:18 09:00:00' } },
+      { id: 'heic-1', name: 'IMG_0003.HEIC', mimeType: 'image/heic' },
+      { id: 'day-2', name: 'Day 2', mimeType: 'application/vnd.google-apps.folder' }
+    ] : q.includes("'day-2' in parents") ? [
+      { id: 'p-3', name: 'IMG_0101.png', mimeType: 'image/png', imageMediaMetadata: { time: '2023:02:19 08:00:00' } }
+    ] : [];
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ files }) });
+  });
+  await page.evaluate(() => {
+    let tokens = 0;
+    window.__consents = [];
+    window.STORYFLOW_CONFIG.googleClientId ||= 'test-client.apps.googleusercontent.com';
+    StoryFlowIntegrations.setPickerApiKey('test-picker-key');
+    const chain = target => new Proxy(target, { get: (object, key) => key in object ? object[key] : () => chain(object) });
+    window.google = {
+      accounts: { oauth2: { initTokenClient: config => ({
+        callback: config.callback,
+        requestAccessToken({ prompt } = {}) {
+          window.__consents.push(prompt);
+          tokens += 1;
+          this.callback({ access_token: `token-${tokens}` });
+        }
+      }) } },
+      picker: {
+        ViewId: { DOCS_IMAGES: 'images', FOLDERS: 'folders' },
+        Feature: { MULTISELECT_ENABLED: 'multi' },
+        Action: { PICKED: 'picked', CANCEL: 'cancel' },
+        DocsView: function () { return chain({}); },
+        PickerBuilder: function () {
+          let callback = null;
+          const builder = chain({
+            setCallback(fn) { callback = fn; return builder; },
+            build: () => ({ setVisible: () => callback({ action: 'picked', docs: [{ id: 'trip-folder', name: '北海道', mimeType: 'application/vnd.google-apps.folder' }] }) })
+          });
+          return builder;
+        }
+      }
+    };
+    window.gapi = { load: (_, options) => options.callback() };
+    // The Picker and Drive listing are the real code; image reads stay with the stand-in.
+    StoryFlowIntegrations.pickDrivePhotos = window.__realPickDrivePhotos;
+  });
+  await createVisualWork(page);
+  await page.locator('#visualAddPhotosBtn').click();
+
+  await expect(page.locator('#visualPhotoGrid .visual-photo-tile')).toHaveCount(3);
+  // Sorted by when they were taken, across the folder and its subfolder.
+  expect(await page.evaluate(() => [...state.photos]
+    .sort((a, b) => a.takenAt.localeCompare(b.takenAt)).map(photo => photo.name)))
+    .toEqual(['IMG_0001.jpg', 'IMG_0002.jpg', 'IMG_0101.png']);
+  await expect(page.locator('#visualPhotoGrid .visual-photo-choose').first()).toHaveAttribute('aria-label', /IMG_0001\.jpg/);
+  await expect(page.locator('.storyflow-toast').last()).toContainText('1 個其他格式的檔案');
+  // The first listing was refused and the consent screen asked once more.
+  expect(await page.evaluate(() => window.__consents)).toContain('consent');
+  expect(listed.some(q => q.includes("'day-2' in parents"))).toBe(true);
+  expect(pageErrors).toEqual([]);
+});

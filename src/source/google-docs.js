@@ -227,12 +227,18 @@
     return { ...chapter, tabTitle: tab.title, warnings: tab.warnings };
   }
 
-  // Photos for visual works stay in the writer's Google Drive (REDESIGN_PROPOSAL C3). The
-  // Picker grants this app the files it returns under the drive.file scope it already holds;
-  // StoryFlow keeps only their ids and reads an image into the tab's memory when it is shown.
+  // Photos for visual works stay in the writer's Google Drive (REDESIGN_PROPOSAL C3). StoryFlow
+  // keeps only their ids and reads an image into the tab's memory when it is shown. Photos are
+  // picked one by one or a whole folder at a time; a folder's photos are listed with the
+  // drive.readonly scope, because drive.file grants a picked folder but not what is in it.
   // Nothing here writes, moves, renames or deletes a Drive file.
   const DRIVE_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const DRIVE_FOLDER_TYPE = 'application/vnd.google-apps.folder';
   const DRIVE_PHOTO_FIELDS = 'id,name,mimeType,createdTime,imageMediaMetadata(width,height,time)';
+  const DRIVE_READONLY_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
+  // A trip is a few hundred photos; this bounds a mistaken pick of a whole Drive.
+  const FOLDER_PHOTO_LIMIT = 2000;
+  const FOLDER_DEPTH_LIMIT = 4;
 
   async function ensureGoogleAccess() {
     if (accessToken) return;
@@ -246,14 +252,17 @@
     await ensureGoogleAccess();
     await loadPickerApi();
     return new Promise((resolve, reject) => {
-      const view = new google.picker.DocsView(google.picker.ViewId.DOCS_IMAGES)
+      // Photos, with folders shown and selectable beside them, and a view of folders alone.
+      const photosView = new google.picker.DocsView(google.picker.ViewId.DOCS_IMAGES)
         .setMimeTypes(DRIVE_PHOTO_TYPES.join(','))
-        .setIncludeFolders(true).setSelectFolderEnabled(false);
+        .setIncludeFolders(true).setSelectFolderEnabled(true);
+      const foldersView = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+        .setIncludeFolders(true).setSelectFolderEnabled(true);
       const picker = new google.picker.PickerBuilder()
         .setAppId(window.STORYFLOW_CONFIG.googleProjectNumber)
-        .setOAuthToken(accessToken).setDeveloperKey(key).addView(view)
+        .setOAuthToken(accessToken).setDeveloperKey(key).addView(photosView).addView(foldersView)
         .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
-        .setTitle('選擇照片')
+        .setTitle('選擇照片或資料夾')
         .setCallback(data => {
           if (data.action === google.picker.Action.PICKED) resolve(data.docs || []);
           else if (data.action === google.picker.Action.CANCEL) resolve([]);
@@ -287,16 +296,84 @@
     return drivePhotoFromFile(await response.json());
   }
 
-  // Picked files, with the metadata the Picker does not return. A file whose metadata cannot
-  // be read is still offered with what the Picker gave, so one failure does not lose the rest.
+  // A session token from before the folder permission existed lacks drive.readonly; listing
+  // then answers 403, and asking once more with the consent screen adds it.
+  async function driveListFetch(url) {
+    let response = await authenticatedFetch(url);
+    if (response.status === 403) {
+      await requestAccessToken({ prompt: 'consent' });
+      response = await authenticatedFetch(url);
+    }
+    if (!response.ok) {
+      const error = new Error(response.status === 403
+        ? '需要允許 StoryFlow 讀取 Google Drive，才能加入整個資料夾。'
+        : `Google Drive 讀取資料夾失敗（${response.status}）。`);
+      error.status = response.status;
+      throw error;
+    }
+    return response.json();
+  }
+
+  // Every photo in a folder and its subfolders, oldest-first by Drive's own order is not
+  // promised; the library sorts by taken time. Other image types (HEIC, RAW) are counted so
+  // the writer is told what was left out.
+  async function listFolderPhotos(folderId, result) {
+    const queue = [{ id: folderId, depth: 0 }];
+    const seen = new Set();
+    while (queue.length && result.photos.length < FOLDER_PHOTO_LIMIT) {
+      const { id, depth } = queue.shift();
+      if (seen.has(id)) continue;
+      seen.add(id);
+      let pageToken = '';
+      do {
+        const query = `'${id.replace(/'/g, "\\'")}' in parents and trashed = false and (mimeType = '${DRIVE_FOLDER_TYPE}' or mimeType contains 'image/')`;
+        const url = 'https://www.googleapis.com/drive/v3/files?' + new URLSearchParams({
+          q: query,
+          fields: `nextPageToken,files(${DRIVE_PHOTO_FIELDS})`,
+          pageSize: '1000',
+          supportsAllDrives: 'true',
+          includeItemsFromAllDrives: 'true',
+          ...(pageToken ? { pageToken } : {})
+        });
+        const page = await driveListFetch(url);
+        for (const file of page.files || []) {
+          const type = String(file.mimeType || '').toLowerCase();
+          if (type === DRIVE_FOLDER_TYPE) {
+            if (depth + 1 <= FOLDER_DEPTH_LIMIT) queue.push({ id: file.id, depth: depth + 1 });
+          } else if (DRIVE_PHOTO_TYPES.includes(type)) {
+            if (result.photos.length >= FOLDER_PHOTO_LIMIT) { result.truncated = true; break; }
+            result.photos.push(drivePhotoFromFile(file));
+          } else {
+            result.unsupported += 1;
+          }
+        }
+        pageToken = page.nextPageToken || '';
+      } while (pageToken && result.photos.length < FOLDER_PHOTO_LIMIT);
+    }
+    if (queue.length) result.truncated = true;
+  }
+
+  // Picked photos and the photos in picked folders, with the metadata the Picker does not
+  // return. A file whose metadata cannot be read is still offered with what the Picker gave,
+  // so one failure does not lose the rest. The array carries what was left out.
   async function pickDrivePhotos() {
     const picked = await pickDrivePhotoFiles();
-    const photos = [];
+    const result = { photos: [], unsupported: 0, truncated: false, folders: 0 };
     for (const doc of picked) {
-      if (!DRIVE_PHOTO_TYPES.includes(String(doc.mimeType || '').toLowerCase())) continue;
-      try { photos.push(await fetchDrivePhotoMeta(doc.id)); }
-      catch (_) { photos.push(drivePhotoFromFile({ id: doc.id, name: doc.name, mimeType: doc.mimeType })); }
+      const type = String(doc.mimeType || '').toLowerCase();
+      if (type === DRIVE_FOLDER_TYPE || doc.type === 'folder') {
+        result.folders += 1;
+        await listFolderPhotos(doc.id, result);
+        continue;
+      }
+      if (!DRIVE_PHOTO_TYPES.includes(type)) { result.unsupported += 1; continue; }
+      try { result.photos.push(await fetchDrivePhotoMeta(doc.id)); }
+      catch (_) { result.photos.push(drivePhotoFromFile({ id: doc.id, name: doc.name, mimeType: doc.mimeType })); }
     }
+    const photos = result.photos;
+    photos.unsupported = result.unsupported;
+    photos.truncated = result.truncated;
+    photos.folders = result.folders;
     return photos;
   }
 
@@ -322,6 +399,6 @@
   Object.assign(StoryFlowIntegrations, {
     requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource,
     pickerApiKey, setPickerApiKey, hasGoogleToken: () => Boolean(accessToken),
-    pickDrivePhotos, fetchDrivePhoto, DRIVE_PHOTO_TYPES
+    pickDrivePhotos, fetchDrivePhoto, DRIVE_PHOTO_TYPES, DRIVE_READONLY_SCOPE
   });
 })();

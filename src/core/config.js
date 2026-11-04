@@ -16,8 +16,11 @@
   window.STORYFLOW_CONFIG = {
     googleClientId: clientId || null,
     googleProjectNumber: projectNumber || null,
+    // drive.file reads the Google Docs and photos picked in the Picker; drive.readonly lists
+    // the photos inside a picked folder (visual works). StoryFlow never writes to Drive.
     googleScopes: [
-      "https://www.googleapis.com/auth/drive.file"
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/drive.readonly"
     ],
     googlePickerApiKey: null
   };
