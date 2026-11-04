@@ -48,6 +48,15 @@ npm run test:browser
 
 When a change is meant to be visually inert — removing dead declarations, for example — prove it rather than trusting a pass. Capture every element's computed style on each surface before and after and diff them; the 171-declaration removal in this repository was verified that way across 13,726 elements and 45 properties on seven surfaces at two widths. An earlier attempt at 609 declarations looked equally safe and the same diff caught 184 real changes, because the cascade order is not the document order (see `docs/UI_SYSTEM.md`).
 
+`npm run css:fingerprint` does that capture and diff. Record the tree before the change, make it, then compare:
+
+```sh
+npm run css:fingerprint -- capture /tmp/before.json
+npm run css:fingerprint -- compare /tmp/before.json
+```
+
+`compare` exits 1 and names every element whose computed style (including `::before`/`::after`) or box differs. It covers everything under `<body>` in 24 states: Works, the longform and visual workspaces, the publishing list, the lightbox with a platform's title and Hashtags editors open, the visual lightbox, Settings and the work-type dialog, each at 1440, 800 and 390 px (`tests/css-fingerprint/fingerprint.spec.js`). The toast stack (`#storyflowToastStack`) is left out: whether a toast is showing varies between two runs of the same tree. It lives outside `tests/browser`, so `npm test` never runs it. Two runs of an unchanged tree give 0 differences; a single `letter-spacing` added to `.nav-label` gives 153. Use it for moving, splitting or reordering stylesheets and for removing rules believed dead, where the intended difference is none. It cannot judge a change that is meant to look different. Set `STORYFLOW_CHROMIUM` to a Chromium executable to run it with a browser other than the pinned Playwright's, such as a container's preinstalled one.
+
 `npm run test:assets` is a separate, fast check that every asset changed against the base branch also had its `?v=` cache query updated; GitHub Pages serves this repository directly, so a stale query means returning browsers keep the previous file. `npm run bump:assets` performs the update.
 
 `npm test` runs both the static checks and browser suite. Reserve it for the higher-risk or cross-flow cases described above. The Playwright web server starts the local static site automatically.
