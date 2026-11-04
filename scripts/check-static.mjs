@@ -85,6 +85,13 @@ if (missing.length) {
   throw new Error(`index.html references missing files:\n${[...new Set(missing)].join('\n')}`);
 }
 
+// The repository root holds entry assets only: stylesheets live under styles/layers/ (global
+// foundations) or styles/domains/ (feature-owned rules).
+const rootStylesheets = readdirSync(root).filter(name => name.endsWith('.css')).sort();
+if (rootStylesheets.length) {
+  throw new Error(`Stylesheets belong under styles/layers/ or styles/domains/, not the root:\n${rootStylesheets.join('\n')}`);
+}
+
 const rootScripts = readdirSync(root).filter(name => name.endsWith('.js')).sort();
 const unexpectedRootScripts = rootScripts.filter(name => name !== 'app-loader.js');
 const loadedLegacyScripts = manifestSources.filter(source => source.startsWith('src/legacy/'));
