@@ -35,8 +35,12 @@ async function fingerprint(page) {
     };
     const props = style => [...style].sort().map(name => `${name}:${style.getPropertyValue(name)}`).join(';');
     const out = {};
+    // A toast comes and goes on its own clock, so whether one is showing differs between two
+    // runs of the same tree. Its rules are not covered here.
+    const transient = document.getElementById('storyflowToastStack');
     document.body.querySelectorAll('*').forEach(el => {
       if (['SCRIPT', 'STYLE', 'LINK', 'TEMPLATE'].includes(el.tagName)) return;
+      if (transient?.contains(el)) return;
       let text = props(getComputedStyle(el));
       ['::before', '::after'].forEach(pseudo => { text += `${pseudo}{${props(getComputedStyle(el, pseudo))}}`; });
       const box = el.getBoundingClientRect();
