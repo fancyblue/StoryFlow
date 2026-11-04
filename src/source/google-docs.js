@@ -88,16 +88,25 @@
     });
   }
 
+  // Sign-in goes through StoryFlowIntegrations, not this file's own functions: session-auth.js
+  // wraps those to keep the token for this browser session and to mark the sidebar signed in.
+  // Called directly, a token obtained here worked but was invisible to both — Settings said
+  // 已登入 while the sidebar said otherwise, and a reload lost it.
+  async function signIn({ prompt } = {}) {
+    if (prompt) return StoryFlowIntegrations.requestAccessToken({ prompt });
+    const restored = await StoryFlowIntegrations.restoreGoogleAccess();
+    if (!restored) await StoryFlowIntegrations.requestAccessToken();
+  }
+
   async function authenticatedFetch(url) {
-    if (!accessToken) {
-      const restored = await restoreGoogleAccess();
-      if (!restored) await requestAccessToken();
-    }
+    if (!accessToken) await signIn();
     let response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
     if (response.status === 401) {
+      // The session's cached token has expired too; forget it so restoring does not hand the
+      // same token back, and ask again.
       accessToken = null;
-      const restored = await restoreGoogleAccess();
-      if (!restored) await requestAccessToken();
+      window.StoryFlowSessionAuth?.forgetSession?.();
+      await signIn();
       response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
     }
     return response;
@@ -241,9 +250,7 @@
   const FOLDER_DEPTH_LIMIT = 4;
 
   async function ensureGoogleAccess() {
-    if (accessToken) return;
-    const restored = await restoreGoogleAccess();
-    if (!restored) await requestAccessToken();
+    if (!accessToken) await signIn();
   }
 
   async function pickDrivePhotoFiles() {
@@ -300,7 +307,7 @@
   async function driveListFetch(url) {
     let response = await authenticatedFetch(url);
     if (response.status === 403) {
-      await requestAccessToken({ prompt: 'consent' });
+      await signIn({ prompt: 'consent' });
       response = await authenticatedFetch(url);
     }
     if (!response.ok) {
@@ -435,7 +442,7 @@
   // The image bytes, as a Blob held only by the caller. Errors carry the HTTP status so the
   // editor can tell 找不到 (404) and 沒有權限 (403) apart from a sign-in problem.
   async function fetchDrivePhoto(fileId) {
-    if (!accessToken && !(await restoreGoogleAccess())) {
+    if (!accessToken && !(await StoryFlowIntegrations.restoreGoogleAccess())) {
       const error = new Error('登入 Google 後顯示照片');
       error.code = 'GOOGLE_SIGNED_OUT';
       throw error;

@@ -409,7 +409,9 @@
 }
 .settings-view .platform-setting-row{
   display:grid!important;
-  grid-template-columns:minmax(160px,220px) minmax(200px,280px) max-content max-content var(--sf-control-sm)!important;
+  /* The format select holds one short phrase (段首跟隨預設); it does not need the width of a
+     text field, and at 280px it outweighed the platform's own name. */
+  grid-template-columns:minmax(140px,200px) minmax(150px,180px) max-content max-content var(--sf-control-sm)!important;
   justify-content:start;
   align-items:center!important;
   padding:10px 0!important;
@@ -499,7 +501,7 @@
 
 @media(max-width:1180px){
   .settings-view .platform-setting-row{
-    grid-template-columns:minmax(140px,190px) minmax(180px,240px) max-content max-content var(--sf-control-sm)!important;
+    grid-template-columns:minmax(130px,180px) minmax(150px,180px) max-content max-content var(--sf-control-sm)!important;
     gap:10px!important;
   }
 }
