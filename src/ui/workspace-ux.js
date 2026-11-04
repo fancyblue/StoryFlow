@@ -236,18 +236,39 @@
     return marks;
   }
 
-  function jumpToNextMark() {
+  // The preview redraws itself when the work is saved or its settings settle, which replaces
+  // the text a selection lives in. A jump made just before that is made again on the new text,
+  // for a few seconds only, so it never takes over a selection the writer makes afterwards.
+  let lastJumpAt = 0;
+  function selectMark(index) {
     const marks = previewMarks();
     if (!marks.length) return;
-    lastMarkIndex = (lastMarkIndex + 1) % marks.length;
-    const { node, start, end } = marks[lastMarkIndex];
+    const { node, start, end } = marks[index % marks.length];
     const range = document.createRange();
     range.setStart(node, start);
     range.setEnd(node, end);
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
-    node.parentElement?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  function jumpToNextMark() {
+    const marks = previewMarks();
+    if (!marks.length) return;
+    lastMarkIndex = (lastMarkIndex + 1) % marks.length;
+    lastJumpAt = Date.now();
+    selectMark(lastMarkIndex);
+    marks[lastMarkIndex].node.parentElement?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  const previewNode = document.getElementById('preview');
+  if (previewNode) {
+    new MutationObserver(() => {
+      if (lastMarkIndex < 0 || Date.now() - lastJumpAt > 4000) return;
+      const selection = window.getSelection();
+      if (selection.rangeCount && previewNode.contains(selection.anchorNode) && String(selection)) return;
+      selectMark(lastMarkIndex);
+    }).observe(previewNode, { childList: true, subtree: true, characterData: true });
   }
 
   function syncPendingMarks() {

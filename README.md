@@ -40,7 +40,7 @@ Repo **不包含任何人的 Google OAuth Client ID 或 Picker API Key**。每�
 第一次使用：
 
 1. 在 Google Cloud 建立自己的 Web OAuth Client ID，並把實際使用 StoryFlow 的網址 origin 加到 Authorized JavaScript origins（例如自己的 GitHub Pages 網址，或本機開發伺服器 origin）。
-2. 啟用 StoryFlow 所需的 Google Docs / Picker 相關 API，建立 Picker API Key。
+2. 啟用 StoryFlow 所需的 Google Docs、Google Drive 與 Picker API，建立 Picker API Key。在 OAuth 同意畫面加入 `drive.file` 與 `drive.readonly` 兩個範圍（圖文作品選整個照片資料夾需要後者）；應用程式維持「測試」狀態時，把自己的 Google 帳號加為測試使用者，登入時看到「Google 尚未驗證這個應用程式」是預期的，選「繼續」即可。
 3. 開啟 StoryFlow，選擇一個本機 `StoryFlow` 資料夾。
 4. 到「設定 → Google 整合」填入 OAuth Client ID 與 Picker API Key，按「保存 Google 整合設定」。
 5. 設定會寫入該資料夾的 `settings.json`，之後不需要把個人設定 commit 到 repo。
@@ -49,7 +49,7 @@ Repo **不包含任何人的 Google OAuth Client ID 或 Picker API Key**。每�
 
 OAuth Client ID 對 Web 應用本身不是 client secret，但把它從 repo 設定移出去可以讓 fork / clone 的使用者更容易帶入自己的 Google Cloud 專案，也避免不同部署共用同一組 OAuth 設定。
 
-隱私權政策在 [`privacy.html`](privacy.html)（部署後為 `<StoryFlow 網址>/privacy.html`，設定頁「裝置與隱私」也有連結），可填入 Google Cloud OAuth 同意畫面的「應用程式隱私權政策連結」。它描述 StoryFlow 程式本身怎麼處理資料：只申請 `drive.file`、不修改 Google 文件、作品只寫進使用者選的資料夾、沒有伺服器與追蹤。StoryFlow 處理資料的方式改變時，這一頁要在同一個 PR 更新。fork 後自己部署的人，請把頁面上的聯絡方式改成自己的。
+隱私權政策在 [`privacy.html`](privacy.html)（部署後為 `<StoryFlow 網址>/privacy.html`，設定頁「裝置與隱私」也有連結），可填入 Google Cloud OAuth 同意畫面的「應用程式隱私權政策連結」。它描述 StoryFlow 程式本身怎麼處理資料：只申請 `drive.file` 與 `drive.readonly` 兩個唯讀範圍、不修改 Google 雲端硬碟裡的任何檔案、作品只寫進使用者選的資料夾、沒有伺服器與追蹤。StoryFlow 處理資料的方式改變時，這一頁要在同一個 PR 更新。fork 後自己部署的人，請把頁面上的聯絡方式改成自己的。
 
 ## 手機 / 新裝置
 

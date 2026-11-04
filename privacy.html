@@ -35,14 +35,19 @@
   <a class="back" href="./">← 回到 StoryFlow</a>
   <article class="card">
     <h1>StoryFlow 隱私權政策</h1>
-    <p class="meta">最後更新：2026 年 10 月 16 日</p>
+    <p class="meta">最後更新：2026 年 11 月 4 日</p>
 
     <p>StoryFlow 是在你的瀏覽器中執行的個人寫作工作台，用來把長篇原稿切成適合發布的篇幅，並整理各平台的發布稿。網站只是一組由 GitHub Pages 提供的靜態檔案：StoryFlow 沒有自己的伺服器、帳號系統、分析工具或廣告追蹤，也不使用 Cookie 追蹤你。</p>
 
     <h2>StoryFlow 會存取哪些 Google 資料</h2>
-    <p>連接 Google 時，StoryFlow 只申請一項權限：<code>https://www.googleapis.com/auth/drive.file</code>。這項權限只能存取你透過 Google 檔案選擇器（Google Picker）<strong>主動選取</strong>的檔案，看不到你雲端硬碟裡的其他檔案。</p>
+    <p>連接 Google 時，StoryFlow 申請兩項<strong>只用來讀取</strong>的權限：</p>
     <ul>
-      <li>StoryFlow 用它讀取你選的 Google 文件內容，轉成可以切篇的文字。</li>
+      <li><code>https://www.googleapis.com/auth/drive.file</code>：存取你透過 Google 檔案選擇器（Google Picker）<strong>主動選取</strong>的檔案。StoryFlow 用它讀取你選的 Google 文件內容，轉成可以切篇的文字，以及讀取你選的照片。</li>
+      <li><code>https://www.googleapis.com/auth/drive.readonly</code>：唯讀存取雲端硬碟。只有在你為圖文作品<strong>選取一個資料夾</strong>時使用，用來列出並讀取那個資料夾（含子資料夾）裡的照片；StoryFlow 不會瀏覽或讀取你沒有選的資料夾。</li>
+    </ul>
+    <ul>
+      <li>圖文作品的照片<strong>留在你的雲端硬碟</strong>：StoryFlow 只記住是哪一個檔案（檔案 ID、檔名與拍攝時間），顯示時才把照片讀進這個瀏覽器分頁的記憶體，關閉分頁後就不存在；照片不會被複製到 StoryFlow 資料夾、瀏覽器儲存空間或任何伺服器。</li>
+      <li>StoryFlow <strong>不會新增、修改、移動或刪除</strong>你雲端硬碟裡的任何檔案。</li>
       <li>StoryFlow <strong>不會修改或刪除</strong>你的 Google 文件；Google 文件永遠只是來源。</li>
       <li>讀取到的內容只在你的瀏覽器裡處理，接著寫進你選擇的 StoryFlow 資料夾（見下一節），不會傳送到 StoryFlow 或任何第三方的伺服器。</li>
     </ul>
@@ -86,10 +91,10 @@
 
     <h2 lang="en">Privacy Policy (English summary)</h2>
     <div lang="en">
-      <p class="meta">Last updated: October 16, 2026</p>
+      <p class="meta">Last updated: November 4, 2026</p>
       <p>StoryFlow is a personal writing workbench that runs entirely in your browser. It is served as static files from GitHub Pages and has no server, accounts, analytics or advertising trackers of its own.</p>
       <h3>Google data</h3>
-      <p>StoryFlow requests a single OAuth scope, <code>https://www.googleapis.com/auth/drive.file</code>, which only grants access to files you explicitly pick in the Google Picker. It reads the content of the Google Docs you select so it can split them into publishable parts. It never modifies or deletes your Google Docs, and the content is processed in your browser and written only to a folder on your device that you choose. It is never sent to StoryFlow or any third-party server.</p>
+      <p>StoryFlow requests two read-only OAuth scopes. <code>https://www.googleapis.com/auth/drive.file</code> grants access to files you explicitly pick in the Google Picker: StoryFlow reads the Google Docs you select so it can split them into publishable parts, and the photos you select for visual works. <code>https://www.googleapis.com/auth/drive.readonly</code> is used only when you pick a folder for a visual work, to list and read the photos in that folder and its subfolders; StoryFlow does not browse folders you did not pick. Photos stay in your Drive: StoryFlow remembers only which file (id, name, taken time) and reads an image into the browser tab's memory to show it; photos are never copied to your StoryFlow folder, browser storage or any server. StoryFlow never creates, modifies, moves or deletes anything in your Drive. Document content is processed in your browser and written only to a folder on your device that you choose; it is never sent to StoryFlow or any third-party server.</p>
       <h3>Where your data is stored</h3>
       <p>Manuscripts, progress, generated articles, images and settings (including the Google OAuth Client ID and Picker API Key you provide) are stored in the StoryFlow folder you select, through the browser's File System Access API. The browser itself keeps only session data (the Google access token and its expiry, imported integration settings, connection state), interface preferences, and a handle to the folder you chose. “Leave this device” in Settings clears the sign-in, cached settings and folder connection.</p>
       <h3>Sharing and use</h3>
