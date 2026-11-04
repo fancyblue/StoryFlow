@@ -252,17 +252,16 @@
     await ensureGoogleAccess();
     await loadPickerApi();
     return new Promise((resolve, reject) => {
-      // Photos, with folders shown and selectable beside them, and a view of folders alone.
+      // Individual photos only: a whole folder is chosen in StoryFlow's own folder browser,
+      // where folders are one level at a time instead of every folder side by side.
       const photosView = new google.picker.DocsView(google.picker.ViewId.DOCS_IMAGES)
         .setMimeTypes(DRIVE_PHOTO_TYPES.join(','))
-        .setIncludeFolders(true).setSelectFolderEnabled(true);
-      const foldersView = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
-        .setIncludeFolders(true).setSelectFolderEnabled(true);
+        .setIncludeFolders(true).setSelectFolderEnabled(false);
       const picker = new google.picker.PickerBuilder()
         .setAppId(window.STORYFLOW_CONFIG.googleProjectNumber)
-        .setOAuthToken(accessToken).setDeveloperKey(key).addView(photosView).addView(foldersView)
+        .setOAuthToken(accessToken).setDeveloperKey(key).addView(photosView)
         .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
-        .setTitle('選擇照片或資料夾')
+        .setTitle('選擇照片')
         .setCallback(data => {
           if (data.action === google.picker.Action.PICKED) resolve(data.docs || []);
           else if (data.action === google.picker.Action.CANCEL) resolve([]);
@@ -353,6 +352,62 @@
     if (queue.length) result.truncated = true;
   }
 
+  // ---------- The folder browser (visual works' photo folder) ----------
+  // StoryFlow's own browser lists folders one level at a time under drive.readonly: Google's
+  // Picker lays every folder in the Drive out side by side, which is hard to find one in.
+
+  function folderQueryUrl(query, fields, pageSize = 200, extra = {}) {
+    return 'https://www.googleapis.com/drive/v3/files?' + new URLSearchParams({
+      q: query, fields, pageSize: String(pageSize), orderBy: 'name_natural',
+      supportsAllDrives: 'true', includeItemsFromAllDrives: 'true', ...extra
+    });
+  }
+
+  const quoted = value => `'${String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+
+  // Folders inside a folder ('root' is 我的雲端硬碟), or shared with the writer, or matching
+  // a name anywhere they can read.
+  async function listDriveFolders({ parentId = 'root', shared = false, search = '' } = {}) {
+    const conditions = [`mimeType = '${DRIVE_FOLDER_TYPE}'`, 'trashed = false'];
+    if (search) conditions.push(`name contains ${quoted(search)}`);
+    else if (shared) conditions.push('sharedWithMe');
+    else conditions.push(`${quoted(parentId)} in parents`);
+    const folders = [];
+    let pageToken = '';
+    do {
+      const page = await driveListFetch(folderQueryUrl(conditions.join(' and '), 'nextPageToken,files(id,name)', 500, pageToken ? { pageToken } : {}));
+      folders.push(...(page.files || []).map(file => ({ id: file.id, name: file.name })));
+      pageToken = page.nextPageToken || '';
+    } while (pageToken && folders.length < 2000);
+    return folders;
+  }
+
+  // What a folder holds at its own level: how many photos, the first few to show, and how
+  // many subfolders (whose photos come along when the folder is used).
+  async function describeDriveFolder(folderId) {
+    const page = await driveListFetch(folderQueryUrl(
+      `${quoted(folderId)} in parents and trashed = false and (mimeType = '${DRIVE_FOLDER_TYPE}' or mimeType contains 'image/')`,
+      'nextPageToken,files(id,name,mimeType)', 1000));
+    const files = page.files || [];
+    const photos = files.filter(file => DRIVE_PHOTO_TYPES.includes(String(file.mimeType).toLowerCase()));
+    return {
+      photoCount: photos.length,
+      more: Boolean(page.nextPageToken),
+      subfolderCount: files.filter(file => file.mimeType === DRIVE_FOLDER_TYPE).length,
+      samples: photos.slice(0, 6).map(file => ({ driveFileId: file.id, name: file.name }))
+    };
+  }
+
+  // Every usable photo in a folder and its subfolders, with what was left out.
+  async function listDriveFolderPhotos(folderId) {
+    const result = { photos: [], unsupported: 0, truncated: false, folders: 1 };
+    await listFolderPhotos(folderId, result);
+    const photos = result.photos;
+    photos.unsupported = result.unsupported;
+    photos.truncated = result.truncated;
+    return photos;
+  }
+
   // Picked photos and the photos in picked folders, with the metadata the Picker does not
   // return. A file whose metadata cannot be read is still offered with what the Picker gave,
   // so one failure does not lose the rest. The array carries what was left out.
@@ -399,6 +454,7 @@
   Object.assign(StoryFlowIntegrations, {
     requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource,
     pickerApiKey, setPickerApiKey, hasGoogleToken: () => Boolean(accessToken),
-    pickDrivePhotos, fetchDrivePhoto, DRIVE_PHOTO_TYPES, DRIVE_READONLY_SCOPE
+    pickDrivePhotos, fetchDrivePhoto, listDriveFolders, describeDriveFolder, listDriveFolderPhotos,
+    DRIVE_PHOTO_TYPES, DRIVE_READONLY_SCOPE
   });
 })();

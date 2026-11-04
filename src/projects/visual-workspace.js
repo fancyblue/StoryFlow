@@ -454,12 +454,19 @@
               <h3 id="visualPhotoLibraryTitle">照片庫</h3><span id="visualPhotoCount" class="muted"></span><span class="sf-chevron" aria-hidden="true"></span>
             </button>
             <div id="visualPhotoLibraryBody" class="visual-photo-library-body">
+              <div id="visualPhotoSource" class="visual-photo-source">
+                <div class="visual-photo-source-name"><span>照片來源</span><strong id="visualPhotoFolderName"></strong></div>
+                <div class="visual-photo-source-actions">
+                  <button id="visualChooseFolderBtn" class="button tiny ghost" type="button">選擇照片資料夾</button>
+                  <button id="visualRefreshFolderBtn" class="button tiny ghost" type="button">重新整理</button>
+                  <button id="visualAddPhotosBtn" class="button tiny ghost sf-quiet visual-add-photos" type="button">加入個別照片</button>
+                </div>
+              </div>
               <div id="visualPhotoFilters" class="content-type-filters visual-photo-filters" role="group" aria-label="篩選照片"></div>
               <p id="visualPhotoHint" class="visual-photo-hint"></p>
               <div id="visualPhotoMode" class="visual-photo-mode" role="status" hidden><span>選一張照片，取代目前圖片</span><button id="visualPhotoModeCancel" class="button tiny ghost" type="button">取消</button></div>
               <div id="visualPhotoGrid" class="visual-photo-grid"></div>
-              <button id="visualAddPhotosBtn" class="button tiny ghost visual-add-photos" type="button">從 Google Drive 加入照片或資料夾</button>
-              <p class="visual-photo-note">選一個資料夾就加入裡面（含子資料夾）所有照片；也可以按住 ⌘／Ctrl 或 Shift 一次選多張。照片留在你的 Google Drive，StoryFlow 只記住是哪一張。支援 JPEG、PNG、WebP、GIF；HEIC 請先在 Drive 轉成 JPEG。</p>
+              <p class="visual-photo-note">照片留在你的 Google Drive，StoryFlow 只記住是哪一張。支援 JPEG、PNG、WebP、GIF；HEIC 請先在 Drive 轉成 JPEG。</p>
             </div>
           </section>
         </aside>
@@ -555,6 +562,32 @@
       dialog.querySelector('#newVisualEntryTitle').addEventListener('keydown', event => {
         if (event.key === 'Enter') { event.preventDefault(); createEntryFromDialog(); }
       });
+    }
+
+    if (!document.getElementById('visualFolderDialog')) {
+      const dialog = document.createElement('dialog');
+      dialog.id = 'visualFolderDialog';
+      dialog.className = 'visual-folder-dialog';
+      dialog.setAttribute('aria-labelledby', 'visualFolderDialogTitle');
+      dialog.innerHTML = `<div class="dialog-card visual-folder-dialog-card">
+        <div class="panel-head"><div><h3 id="visualFolderDialogTitle">選擇照片資料夾</h3></div><button class="icon-button" type="button" data-folder-close aria-label="關閉">×</button></div>
+        <div class="visual-folder-toolbar">
+          <div class="sf-preview-mode-segment visual-folder-places" role="group" aria-label="位置">
+            <button type="button" data-folder-place="mine" aria-pressed="true">我的雲端硬碟</button>
+            <button type="button" data-folder-place="shared" aria-pressed="false">與我共用</button>
+            <button type="button" data-folder-place="recent" aria-pressed="false">最近使用</button>
+          </div>
+          <label class="sf-visually-hidden" for="visualFolderSearch">搜尋資料夾名稱</label>
+          <input id="visualFolderSearch" class="text-input visual-folder-search" type="search" placeholder="搜尋資料夾名稱" autocomplete="off" />
+        </div>
+        <nav id="visualFolderPath" class="visual-folder-path" aria-label="資料夾路徑"></nav>
+        <div class="visual-folder-body">
+          <div id="visualFolderList" class="visual-folder-list" aria-live="polite"></div>
+          <aside id="visualFolderSummary" class="visual-folder-summary" aria-live="polite"></aside>
+        </div>
+      </div>`;
+      document.body.appendChild(dialog);
+      bindFolderDialog(dialog);
     }
 
     if (!document.getElementById('visualPhotoDialog')) {
@@ -773,6 +806,227 @@
     });
   }
 
+  // ---------- The work's photo folder ----------
+
+  // Folders used before, newest work first, for 最近使用.
+  function recentFolders() {
+    const seen = new Set();
+    const list = [];
+    const add = folder => {
+      if (!folder?.id || seen.has(folder.id)) return;
+      seen.add(folder.id);
+      list.push(folder);
+    };
+    add(state?.photoFolder);
+    sessionFolders.forEach(add);
+    (window.StoryFlowProjects?.searchSnapshot?.() || []).forEach(project => add(project.state?.photoFolder));
+    return list;
+  }
+  const sessionFolders = [];
+
+  function leftOutText(listed) {
+    return [
+      listed.unsupported ? `${listed.unsupported} 個其他格式的檔案（例如 HEIC）沒有加入` : '',
+      listed.truncated ? '資料夾太大，只加入了前 2000 張' : ''
+    ].filter(Boolean).join('；');
+  }
+
+  // Make a folder the work's photo source, or bring the current one up to date. Changing it
+  // takes the old folder's photos that no article uses out of the library — references only,
+  // so 復原 puts them back — and keeps every photo an article uses. Refreshing only adds.
+  async function applyFolder(folder, { refresh = false } = {}) {
+    if (isReadOnly()) return notify('手機目前為唯讀，無法更改照片資料夾。', true);
+    if (!folder?.id) return;
+    const status = document.getElementById('visualPhotoHint');
+    if (status) status.textContent = `正在讀取「${folder.name}」裡的照片…`;
+    let listed;
+    try {
+      listed = await StoryFlowIntegrations.listDriveFolderPhotos(folder.id);
+    } catch (error) {
+      notify(`無法讀取資料夾「${folder.name}」：${error.message}`, true);
+      renderLibrary();
+      return;
+    }
+    const library = photos();
+    const used = usage();
+    const previous = state.photoFolder ? { ...state.photoFolder } : null;
+    const removed = [];
+    if (!refresh && previous && previous.id !== folder.id) {
+      for (let index = library.length - 1; index >= 0; index -= 1) {
+        const photo = library[index];
+        if (photo.sourceFolderId === previous.id && !used.has(photo.id)) removed.unshift({ index, photo: library.splice(index, 1)[0] });
+      }
+    }
+    const known = new Set(library.map(photo => photo.driveFileId));
+    const now = new Date().toISOString();
+    const added = listed
+      .filter(item => item?.driveFileId && !known.has(item.driveFileId) && known.add(item.driveFileId))
+      .map(item => StoryFlowContentModel.normalizeVisualPhoto({ ...item, id: crypto.randomUUID(), addedAt: now, sourceFolderId: folder.id }));
+    library.push(...added);
+    state.photoFolder = { id: folder.id, name: folder.name };
+    if (!sessionFolders.some(item => item.id === folder.id)) sessionFolders.unshift({ id: folder.id, name: folder.name });
+    markChanged(refresh ? '照片資料夾已重新整理' : '照片資料夾已更換', { immediate: true });
+    photoFilter = 'all';
+    render();
+    const leftOut = leftOutText(listed);
+    const message = refresh
+      ? `已重新整理「${folder.name}」：${added.length ? `新增 ${added.length} 張照片` : '沒有新照片'}`
+      : `照片來源改為「${folder.name}」：加入 ${added.length} 張照片${removed.length ? `，移出 ${removed.length} 張舊資料夾裡沒用到的照片` : ''}`;
+    notify(leftOut ? `${message}；${leftOut}` : message);
+    if (!refresh && (removed.length || added.length || previous?.id !== folder.id)) {
+      offerUndo(`照片來源已改為「${folder.name}」`, () => {
+        const addedIds = new Set(added.map(photo => photo.id));
+        for (let index = library.length - 1; index >= 0; index -= 1) {
+          if (addedIds.has(library[index].id)) library.splice(index, 1);
+        }
+        removed.forEach(({ index, photo }) => library.splice(Math.min(index, library.length), 0, photo));
+        state.photoFolder = previous;
+        markChanged('照片資料夾已還原', { immediate: true });
+        render();
+      });
+    }
+  }
+
+  // ---------- Folder browser ----------
+
+  const folderNav = { place: 'mine', path: [], search: '', token: 0, summaryToken: 0 };
+  let folderSearchTimer = null;
+
+  function currentFolder() {
+    const last = folderNav.path[folderNav.path.length - 1];
+    return last?.id && last.id !== 'root' ? last : null;
+  }
+
+  function openFolderDialog() {
+    if (isReadOnly()) return notify('手機目前為唯讀，無法選擇照片資料夾。', true);
+    ensureDialogs();
+    const dialog = document.getElementById('visualFolderDialog');
+    dialog.querySelector('#visualFolderSearch').value = '';
+    folderNav.search = '';
+    const recent = recentFolders();
+    if (state.photoFolder?.id) showFolderPlace('recent', { open: state.photoFolder });
+    else showFolderPlace(recent.length ? 'recent' : 'mine');
+    if (!dialog.open) dialog.showModal();
+    dialog.querySelector('#visualFolderSearch').focus({ preventScroll: true });
+  }
+
+  function showFolderPlace(place, { open = null } = {}) {
+    folderNav.place = place;
+    const root = place === 'mine' ? { id: 'root', name: '我的雲端硬碟' }
+      : place === 'shared' ? { id: '', name: '與我共用' }
+        : { id: '', name: '最近使用' };
+    folderNav.path = open ? [root, open] : [root];
+    renderFolderBrowser();
+  }
+
+  function renderFolderPath() {
+    const nav = document.getElementById('visualFolderPath');
+    nav.innerHTML = folderNav.path.map((item, index) => index === folderNav.path.length - 1
+      ? `<span aria-current="location">${esc(item.name)}</span>`
+      : `<button type="button" data-folder-depth="${index}">${esc(item.name)}</button><span aria-hidden="true">›</span>`).join('');
+    document.querySelectorAll('#visualFolderDialog [data-folder-place]').forEach(button =>
+      button.setAttribute('aria-pressed', String(!folderNav.search && button.dataset.folderPlace === folderNav.place)));
+  }
+
+  function folderRows(folders, empty) {
+    return folders.length
+      ? folders.map(folder => `<button type="button" class="visual-folder-row${state.photoFolder?.id === folder.id ? ' is-current' : ''}" data-folder-id="${esc(folder.id)}" data-folder-name="${esc(folder.name)}"><span class="visual-folder-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.7v9.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/></svg></span><span class="visual-folder-name">${esc(folder.name)}</span>${state.photoFolder?.id === folder.id ? '<small>目前的照片來源</small>' : ''}<span aria-hidden="true">›</span></button>`).join('')
+      : `<p class="visual-folder-empty">${empty}</p>`;
+  }
+
+  async function renderFolderBrowser() {
+    renderFolderPath();
+    const list = document.getElementById('visualFolderList');
+    const token = ++folderNav.token;
+    const current = currentFolder();
+    renderFolderSummary(current);
+    if (!folderNav.search && folderNav.place === 'recent' && !current) {
+      list.innerHTML = folderRows(recentFolders(), '還沒有用過的照片資料夾。到「我的雲端硬碟」找一個吧。');
+      return;
+    }
+    list.innerHTML = '<p class="visual-folder-empty">讀取中…</p>';
+    try {
+      const folders = folderNav.search
+        ? await StoryFlowIntegrations.listDriveFolders({ search: folderNav.search })
+        : await StoryFlowIntegrations.listDriveFolders(current
+          ? { parentId: current.id }
+          : folderNav.place === 'shared' ? { shared: true } : { parentId: 'root' });
+      if (token !== folderNav.token) return;
+      list.innerHTML = folderRows(folders, folderNav.search ? '沒有名稱符合的資料夾。' : current ? '這裡沒有子資料夾。' : '這裡沒有資料夾。');
+    } catch (error) {
+      if (token !== folderNav.token) return;
+      list.innerHTML = `<p class="visual-folder-empty error-text">讀不到資料夾：${esc(error.message)}</p>`;
+    }
+  }
+
+  async function renderFolderSummary(folder) {
+    const aside = document.getElementById('visualFolderSummary');
+    const token = ++folderNav.summaryToken;
+    if (!folder) {
+      aside.innerHTML = '<p class="visual-folder-empty">點左邊的資料夾，這裡會顯示裡面有幾張照片。</p>';
+      return;
+    }
+    aside.innerHTML = `<strong class="visual-folder-summary-name">${esc(folder.name)}</strong><p class="visual-folder-empty">讀取中…</p>`;
+    try {
+      const info = await StoryFlowIntegrations.describeDriveFolder(folder.id);
+      if (token !== folderNav.summaryToken) return;
+      const current = state.photoFolder?.id === folder.id;
+      aside.innerHTML = `
+        <strong class="visual-folder-summary-name">${esc(folder.name)}</strong>
+        <p class="visual-folder-summary-count">這一層 ${info.photoCount}${info.more ? '+' : ''} 張照片${info.subfolderCount ? ` · ${info.subfolderCount} 個子資料夾（裡面的照片也會一併加入）` : ''}</p>
+        <div class="visual-folder-samples">${info.samples.map(sample => `<span class="visual-photo-thumb" data-drive-thumb="${esc(sample.driveFileId)}"><span>${esc(sample.name)}</span></span>`).join('')}</div>
+        <button id="visualUseFolderBtn" class="button primary" type="button" ${current ? 'disabled' : ''}>${current ? '已是目前的照片來源' : '使用這個資料夾'}</button>`;
+      aside.querySelectorAll('[data-drive-thumb]').forEach(slot => {
+        loadThumb({ driveFileId: slot.dataset.driveThumb }).then(url => {
+          if (url && slot.isConnected) slot.innerHTML = `<img src="${url}" alt="" />`;
+        });
+      });
+    } catch (error) {
+      if (token !== folderNav.summaryToken) return;
+      aside.innerHTML = `<strong class="visual-folder-summary-name">${esc(folder.name)}</strong><p class="visual-folder-empty error-text">讀不到這個資料夾：${esc(error.message)}</p>`;
+    }
+  }
+
+  function bindFolderDialog(dialog) {
+    dialog.querySelector('[data-folder-close]').addEventListener('click', () => dialog.close());
+    dialog.querySelector('.visual-folder-places').addEventListener('click', event => {
+      const button = event.target.closest('[data-folder-place]');
+      if (!button) return;
+      dialog.querySelector('#visualFolderSearch').value = '';
+      folderNav.search = '';
+      showFolderPlace(button.dataset.folderPlace);
+    });
+    dialog.querySelector('#visualFolderSearch').addEventListener('input', event => {
+      clearTimeout(folderSearchTimer);
+      folderSearchTimer = window.setTimeout(() => {
+        folderNav.search = event.target.value.trim();
+        folderNav.path = [{ id: '', name: folderNav.search ? `搜尋「${folderNav.search}」` : '我的雲端硬碟' }];
+        if (!folderNav.search) return showFolderPlace('mine');
+        renderFolderBrowser();
+      }, 300);
+    });
+    dialog.querySelector('#visualFolderPath').addEventListener('click', event => {
+      const button = event.target.closest('[data-folder-depth]');
+      if (!button) return;
+      folderNav.path = folderNav.path.slice(0, Number(button.dataset.folderDepth) + 1);
+      renderFolderBrowser();
+    });
+    dialog.querySelector('#visualFolderList').addEventListener('click', event => {
+      const row = event.target.closest('[data-folder-id]');
+      if (!row) return;
+      folderNav.search = '';
+      folderNav.path = [...folderNav.path, { id: row.dataset.folderId, name: row.dataset.folderName }];
+      renderFolderBrowser();
+    });
+    dialog.querySelector('#visualFolderSummary').addEventListener('click', async event => {
+      if (!event.target.closest('#visualUseFolderBtn')) return;
+      const folder = currentFolder();
+      if (!folder) return;
+      dialog.close();
+      await applyFolder(folder);
+    });
+  }
+
   // ---------- Lightbox ----------
 
   function openPhotoDialog(photoId) {
@@ -961,7 +1215,7 @@
       `<button type="button" class="content-type-filter${photoFilter === key ? ' active' : ''}" data-photo-filter="${key}" aria-pressed="${photoFilter === key}">${label} ${counts[key]}</button>`).join('');
     const entry = activeEntry();
     root.querySelector('#visualPhotoHint').textContent = !all.length
-      ? '還沒有照片。從 Google Drive 加入後，點一張就會成為目前圖文的圖片。'
+      ? '還沒有照片。選一個 Google Drive 照片資料夾，整趟的照片都會進來；點一張就會成為目前圖文的圖片。'
       : entry ? `點照片會設為《${entry.title || '未命名圖文'}》的圖片；也可以直接拖到圖片欄。` : '先新增一則圖文，再從這裡選它的圖片。';
     root.querySelector('#visualPhotoMode').hidden = !replacing;
     const list = filteredPhotos();
@@ -979,6 +1233,12 @@
       </div>`;
     }).join('') : `<p class="visual-photo-empty">${all.length ? '沒有符合篩選的照片。' : ''}</p>`;
     root.querySelector('#visualAddPhotosBtn').disabled = isReadOnly();
+    const folder = state.photoFolder;
+    root.querySelector('#visualPhotoFolderName').textContent = folder?.name || '尚未選擇資料夾';
+    root.querySelector('#visualChooseFolderBtn').textContent = folder ? '更換資料夾' : '選擇照片資料夾';
+    root.querySelector('#visualChooseFolderBtn').disabled = isReadOnly();
+    root.querySelector('#visualRefreshFolderBtn').hidden = !folder;
+    root.querySelector('#visualRefreshFolderBtn').disabled = isReadOnly();
     fillPhotoSlots(grid);
   }
 
@@ -1009,7 +1269,7 @@
       slot.innerHTML = `<button type="button" class="visual-entry-photo-open" aria-label="放大檢視圖片"><span class="visual-photo-thumb" data-photo-slot="${esc(entry.photoId)}"></span></button>`;
       fillPhotoSlots(slot);
     } else {
-      slot.innerHTML = `<button type="button" class="visual-entry-photo-pick" ${isReadOnly() ? 'disabled' : ''}>${photos().length ? '從照片庫選一張，或把照片拖到這裡' : '從 Google Drive 加入照片'}</button>`;
+      slot.innerHTML = `<button type="button" class="visual-entry-photo-pick" ${isReadOnly() ? 'disabled' : ''}>${photos().length ? '從照片庫選一張，或把照片拖到這裡' : '選擇照片資料夾'}</button>`;
     }
     const others = photo ? (usage().get(photo.id) || []).filter(item => item.id !== entry.id) : [];
     root.querySelector('#visualEntryPhotoMeta').textContent = photo
@@ -1244,7 +1504,7 @@
     photoSlot.addEventListener('click', event => {
       if (event.target.closest('.visual-entry-photo-open')) return openPhotoDialog(activeEntry()?.photoId);
       if (event.target.closest('.visual-entry-photo-pick')) {
-        if (!photos().length) return addPhotosFromDrive();
+        if (!photos().length) return openFolderDialog();
         libraryOpen = true;
         renderLibrary();
         root.querySelector('#visualPhotoGrid .visual-photo-choose')?.focus();
@@ -1295,6 +1555,8 @@
       event.dataTransfer.effectAllowed = 'copy';
     });
     root.querySelector('#visualAddPhotosBtn').addEventListener('click', addPhotosFromDrive);
+    root.querySelector('#visualChooseFolderBtn').addEventListener('click', openFolderDialog);
+    root.querySelector('#visualRefreshFolderBtn').addEventListener('click', () => applyFolder(state.photoFolder, { refresh: true }));
 
     root.querySelector('#visualPreviewWidths').addEventListener('click', event => {
       const button = event.target.closest('[data-preview-width]');
