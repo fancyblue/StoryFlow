@@ -399,11 +399,15 @@
             </div>
             <div class="visual-field visual-photo-field">
               <span id="visualEntryPhotoLabel">圖片</span>
-              <div id="visualEntryPhoto" class="visual-entry-photo" aria-labelledby="visualEntryPhotoLabel"></div>
-              <div class="visual-entry-photo-actions">
-                <button id="visualReplacePhoto" class="button tiny ghost" type="button">換一張</button>
-                <button id="visualRemovePhoto" class="button tiny ghost" type="button">移除圖片</button>
-                <small id="visualEntryPhotoMeta" class="muted"></small>
+              <div class="visual-entry-photo-row">
+                <div id="visualEntryPhoto" class="visual-entry-photo" aria-labelledby="visualEntryPhotoLabel"></div>
+                <div class="visual-entry-photo-actions">
+                  <small id="visualEntryPhotoMeta" class="muted"></small>
+                  <div class="visual-entry-photo-buttons">
+                    <button id="visualReplacePhoto" class="button tiny ghost" type="button">換一張</button>
+                    <button id="visualRemovePhoto" class="button tiny ghost" type="button">移除圖片</button>
+                  </div>
+                </div>
               </div>
             </div>
             <label class="visual-field"><span>圖說 <small>選填</small></span><input id="visualEntryCaption" class="text-input" maxlength="300" placeholder="例如：2010 年攝於東京" /></label>

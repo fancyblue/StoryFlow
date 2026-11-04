@@ -98,14 +98,18 @@
 .visual-editor-form .visual-quote-input { min-height: 72px !important; line-height: 1.7 !important; }
 .visual-quote-from-body { justify-self: start; }
 .visual-editor-form .visual-body-input { min-height: 360px !important; line-height: 1.75 !important; }
-.visual-entry-photo { display: grid; min-height: 120px; border: 1px dashed #c8c1b0; border-radius: 10px; background: #fbfaf6; overflow: hidden; }
+/* The editor only says which photo the article uses; the preview beside it is where the photo is
+   seen at size. A thumbnail with its name and actions beside it, not a second full-size image. */
+.visual-entry-photo-row { display: grid; grid-template-columns: 136px minmax(0, 1fr); align-items: center; gap: 14px; }
+.visual-entry-photo-row:has(.visual-entry-photo-pick) { grid-template-columns: minmax(0, 1fr); }
+.visual-entry-photo { display: grid; min-height: 96px; border: 1px dashed #c8c1b0; border-radius: 10px; background: #fbfaf6; overflow: hidden; }
 .visual-entry-photo.is-drop-target { border-color: #4b4557; background: #e8e5eb; }
 .visual-entry-photo-open { display: block; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
-.visual-entry-photo-open .visual-photo-thumb { aspect-ratio: auto; max-height: 360px; }
-.visual-entry-photo-open .visual-photo-thumb img { height: auto; max-height: 360px; object-fit: contain; }
-.visual-entry-photo-pick { min-height: 120px; padding: 18px; border: 0; background: transparent; color: #4b4557; font: inherit; font-weight: 700; cursor: pointer; }
+.visual-entry-photo-open .visual-photo-thumb { aspect-ratio: 4 / 3; }
+.visual-entry-photo-pick { min-height: 96px; padding: 18px; border: 0; background: transparent; color: #4b4557; font: inherit; font-weight: 700; cursor: pointer; }
 .visual-entry-photo-pick:disabled { color: #968f80; cursor: default; }
-.visual-entry-photo-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.visual-entry-photo-actions { display: grid; gap: 8px; min-width: 0; }
+.visual-entry-photo-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
 .visual-entry-photo-actions small { overflow-wrap: anywhere; }
 .visual-entry-photo-actions .is-armed, .visual-dialog-actions .is-armed { border-color: #a8443a !important; color: #a8443a !important; }
 .visual-editor-footer { padding-top: 12px; border-top: 1px solid #ded9cc; font-size: 13px; }
