@@ -18,6 +18,8 @@
     "source-flow.css",
     "projects.css",
     "styles/domains/publishing.css",
+    "styles/domains/publishing-preview.css",
+    "styles/domains/publishing-lightbox.css",
     "sidebar-layout.css",
     "app-ux.css",
     "connection-ui.css",
