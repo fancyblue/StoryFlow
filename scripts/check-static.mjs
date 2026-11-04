@@ -33,12 +33,15 @@ if (unversioned.length) {
 }
 
 // Visual photos stay in the writer's Google Drive (docs/REDESIGN_PROPOSAL.md C3): the visual
-// workspace holds them in tab memory only. It must not reach browser storage or the
-// folder's file writes, where a copy of a private photo would outlive the session.
-const visualWorkspaceSource = readFileSync(join(root, 'src/projects/visual-workspace.js'), 'utf8');
-const visualStorage = visualWorkspaceSource.match(/\b(localStorage|sessionStorage|indexedDB|caches\.open|writeBinaryFile|importVisualImages|importPartImages)\b/g);
-if (visualStorage) {
-  throw new Error(`src/projects/visual-workspace.js must not store photos: ${[...new Set(visualStorage)].join(', ')}`);
+// workspace and the modules that read and choose its photos hold them in tab memory only.
+// They must not reach browser storage or the folder's file writes, where a copy of a private
+// photo would outlive the session.
+for (const visualModule of ['src/projects/visual-workspace.js', 'src/projects/visual-photo-cache.js', 'src/projects/visual-folder-browser.js']) {
+  const visualStorage = readFileSync(join(root, visualModule), 'utf8')
+    .match(/\b(localStorage|sessionStorage|indexedDB|caches\.open|writeBinaryFile|importVisualImages|importPartImages)\b/g);
+  if (visualStorage) {
+    throw new Error(`${visualModule} must not store photos: ${[...new Set(visualStorage)].join(', ')}`);
+  }
 }
 
 const manifestIds = [...loader.matchAll(/\bid:\s*['"]([^'"]+)['"]/g)].map(match => match[1]);

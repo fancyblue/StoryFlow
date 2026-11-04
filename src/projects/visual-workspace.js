@@ -35,15 +35,13 @@
   let autoSaveRevision = 0;
   let pendingAutoSaveEntryId = null;
 
-  // Session memory only: Drive file id → object URL, or the error that reading it gave.
-  const photoUrls = new Map();
-  const photoErrors = new Map();
-  const photoLoads = new Map();
-  let photoUrlsProject = null;
-
   const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;'
   }[char]));
+
+  // Images are read and cached by visual-photo-cache.js (window.StoryFlowVisualPhotos); the
+  // photo folder is chosen in visual-folder-browser.js. Both load before this file.
+  const fillPhotoSlots = root => window.StoryFlowVisualPhotos.fill(root);
 
   function isVisual() {
     return state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL;
@@ -105,163 +103,6 @@
     return new Intl.DateTimeFormat('zh-TW', {
       year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
     }).format(date);
-  }
-
-  // ---------- Photo loading (Drive → memory) ----------
-
-  // Library tiles keep small copies: a whole trip can be hundreds of photos, and holding each
-  // at full size in memory to draw a 90-pixel tile would not survive it. Full-size images are
-  // read only for the article's own photo, the preview and the lightbox.
-  const THUMB_WIDTH = 320;
-  const thumbUrls = new Map();
-  const thumbLoads = new Map();
-  let tileObserver = null;
-
-  // At most three Drive reads at a time, so opening a large library does not start hundreds.
-  const DRIVE_READS = 3;
-  let activeReads = 0;
-  const readQueue = [];
-  function queuedRead(fileId) {
-    return new Promise((resolve, reject) => {
-      readQueue.push({ fileId, resolve, reject });
-      pumpReads();
-    });
-  }
-  function pumpReads() {
-    while (activeReads < DRIVE_READS && readQueue.length) {
-      const { fileId, resolve, reject } = readQueue.shift();
-      activeReads += 1;
-      Promise.resolve()
-        .then(() => StoryFlowIntegrations.fetchDrivePhoto(fileId))
-        .then(resolve, reject)
-        .finally(() => { activeReads -= 1; pumpReads(); });
-    }
-  }
-
-  function releasePhotoUrls() {
-    photoUrls.forEach(url => URL.revokeObjectURL(url));
-    thumbUrls.forEach(url => URL.revokeObjectURL(url));
-    photoUrls.clear();
-    thumbUrls.clear();
-    photoErrors.clear();
-    photoLoads.clear();
-    thumbLoads.clear();
-    readQueue.length = 0;
-  }
-
-  function ensurePhotoCacheForProject() {
-    const projectId = window.StoryFlowProjects?.activeId?.() || '';
-    if (photoUrlsProject !== projectId) {
-      releasePhotoUrls();
-      photoUrlsProject = projectId;
-    }
-  }
-
-  function loadPhoto(photo) {
-    if (!photo?.driveFileId) return Promise.resolve(null);
-    if (photoUrls.has(photo.driveFileId)) return Promise.resolve(photoUrls.get(photo.driveFileId));
-    if (photoLoads.has(photo.driveFileId)) return photoLoads.get(photo.driveFileId);
-    const load = queuedRead(photo.driveFileId)
-      .then(blob => {
-        const url = URL.createObjectURL(blob);
-        photoUrls.set(photo.driveFileId, url);
-        photoErrors.delete(photo.driveFileId);
-        return url;
-      })
-      .catch(error => {
-        photoErrors.set(photo.driveFileId, error);
-        return null;
-      })
-      .finally(() => photoLoads.delete(photo.driveFileId));
-    photoLoads.set(photo.driveFileId, load);
-    return load;
-  }
-
-  async function shrink(blob) {
-    try {
-      const bitmap = await createImageBitmap(blob, { resizeWidth: THUMB_WIDTH, resizeQuality: 'medium' });
-      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-      canvas.getContext('2d').drawImage(bitmap, 0, 0);
-      bitmap.close?.();
-      return await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.82 });
-    } catch (_) {
-      return blob;
-    }
-  }
-
-  function loadThumb(photo) {
-    if (!photo?.driveFileId) return Promise.resolve(null);
-    if (thumbUrls.has(photo.driveFileId)) return Promise.resolve(thumbUrls.get(photo.driveFileId));
-    if (photoUrls.has(photo.driveFileId)) return Promise.resolve(photoUrls.get(photo.driveFileId));
-    if (thumbLoads.has(photo.driveFileId)) return thumbLoads.get(photo.driveFileId);
-    const load = queuedRead(photo.driveFileId)
-      .then(shrink)
-      .then(blob => {
-        const url = URL.createObjectURL(blob);
-        thumbUrls.set(photo.driveFileId, url);
-        photoErrors.delete(photo.driveFileId);
-        return url;
-      })
-      .catch(error => {
-        photoErrors.set(photo.driveFileId, error);
-        return null;
-      })
-      .finally(() => thumbLoads.delete(photo.driveFileId));
-    thumbLoads.set(photo.driveFileId, load);
-    return load;
-  }
-
-  function photoProblem(photo) {
-    if (!photo) return '找不到這張照片';
-    const error = photoErrors.get(photo.driveFileId);
-    if (!error) return '';
-    if (error.code === 'GOOGLE_SIGNED_OUT') return '登入 Google 後顯示照片';
-    return error.status === 404 || error.status === 403 ? 'Google Drive 上找不到這張照片' : '照片暫時讀不到';
-  }
-
-  // Fill every [data-photo-slot] inside root once its photo is in memory. A slot shows the
-  // file name until then, and the reason when it cannot be read. A thumbnail slot
-  // (data-photo-size="thumb") is read only once it scrolls near the view.
-  function fillPhotoSlots(root) {
-    root?.querySelectorAll('[data-photo-slot]').forEach(slot => {
-      if (slot.dataset.photoSize === 'thumb' && 'IntersectionObserver' in window) {
-        tileObserver ||= new IntersectionObserver(entries => entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          tileObserver.unobserve(entry.target);
-          fillSlot(entry.target);
-        }), { rootMargin: '240px' });
-        const photo = photoById(slot.dataset.photoSlot);
-        const ready = photo && (thumbUrls.get(photo.driveFileId) || photoUrls.get(photo.driveFileId));
-        if (ready || photoErrors.has(photo?.driveFileId)) return fillSlot(slot);
-        tileObserver.observe(slot);
-        return;
-      }
-      fillSlot(slot);
-    });
-  }
-
-  function fillSlot(slot) {
-    const photo = photoById(slot.dataset.photoSlot) || window.StoryFlowVisualPhotos?.byId?.(slot.dataset.photoSlot) || null;
-    // Publishing renders into a panel before attaching it, so a detached slot is filled
-    // too; a slot that has since been given another photo is left alone.
-    const wanted = slot.dataset.photoSlot;
-    const show = url => {
-      if (slot.dataset.photoSlot !== wanted) return;
-      if (url) {
-        slot.innerHTML = `<img src="${url}" alt="${esc(photo?.alt || '')}" draggable="false" />`;
-        slot.classList.remove('is-missing');
-      } else {
-        slot.innerHTML = `<span>${esc(photoProblem(photo) || photo?.name || '照片')}</span>`;
-        slot.classList.toggle('is-missing', Boolean(photoProblem(photo)));
-      }
-    };
-    if (!photo) return show(null);
-    const thumb = slot.dataset.photoSize === 'thumb';
-    const cached = photoUrls.get(photo.driveFileId) || (thumb ? thumbUrls.get(photo.driveFileId) : null);
-    if (cached) return show(cached);
-    if (photoErrors.has(photo.driveFileId)) return show(null);
-    slot.innerHTML = `<span>${esc(photo.name)}</span>`;
-    (thumb ? loadThumb(photo) : loadPhoto(photo)).then(show);
   }
 
   // ---------- Autosave ----------
@@ -565,31 +406,6 @@
       });
     }
 
-    if (!document.getElementById('visualFolderDialog')) {
-      const dialog = document.createElement('dialog');
-      dialog.id = 'visualFolderDialog';
-      dialog.className = 'visual-folder-dialog';
-      dialog.setAttribute('aria-labelledby', 'visualFolderDialogTitle');
-      dialog.innerHTML = `<div class="dialog-card visual-folder-dialog-card">
-        <div class="panel-head"><div><h3 id="visualFolderDialogTitle">選擇照片資料夾</h3></div><button class="icon-button" type="button" data-folder-close aria-label="關閉">×</button></div>
-        <div class="visual-folder-toolbar">
-          <div class="sf-preview-mode-segment visual-folder-places" role="group" aria-label="位置">
-            <button type="button" data-folder-place="mine" aria-pressed="true">我的雲端硬碟</button>
-            <button type="button" data-folder-place="shared" aria-pressed="false">與我共用</button>
-            <button type="button" data-folder-place="recent" aria-pressed="false">最近使用</button>
-          </div>
-          <label class="sf-visually-hidden" for="visualFolderSearch">搜尋資料夾名稱</label>
-          <input id="visualFolderSearch" class="text-input visual-folder-search" type="search" placeholder="搜尋資料夾名稱" autocomplete="off" />
-        </div>
-        <nav id="visualFolderPath" class="visual-folder-path" aria-label="資料夾路徑"></nav>
-        <div class="visual-folder-body">
-          <div id="visualFolderList" class="visual-folder-list" aria-live="polite"></div>
-          <aside id="visualFolderSummary" class="visual-folder-summary" aria-live="polite"></aside>
-        </div>
-      </div>`;
-      document.body.appendChild(dialog);
-      bindFolderDialog(dialog);
-    }
 
     if (!document.getElementById('visualPhotoDialog')) {
       const dialog = document.createElement('dialog');
@@ -809,22 +625,6 @@
 
   // ---------- The work's photo folder ----------
 
-  // Folders used before, newest work first, for 最近使用.
-  function recentFolders() {
-    const seen = new Set();
-    const list = [];
-    const add = folder => {
-      if (!folder?.id || seen.has(folder.id)) return;
-      seen.add(folder.id);
-      list.push(folder);
-    };
-    add(state?.photoFolder);
-    sessionFolders.forEach(add);
-    (window.StoryFlowProjects?.searchSnapshot?.() || []).forEach(project => add(project.state?.photoFolder));
-    return list;
-  }
-  const sessionFolders = [];
-
   function leftOutText(listed) {
     return [
       listed.unsupported ? `${listed.unsupported} 個其他格式的檔案（例如 HEIC）沒有加入` : '',
@@ -865,7 +665,7 @@
       .map(item => StoryFlowContentModel.normalizeVisualPhoto({ ...item, id: crypto.randomUUID(), addedAt: now, sourceFolderId: folder.id }));
     library.push(...added);
     state.photoFolder = { id: folder.id, name: folder.name };
-    if (!sessionFolders.some(item => item.id === folder.id)) sessionFolders.unshift({ id: folder.id, name: folder.name });
+    window.StoryFlowVisualFolderBrowser.remember(folder);
     markChanged(refresh ? '照片資料夾已重新整理' : '照片資料夾已更換', { immediate: true });
     photoFilter = 'all';
     render();
@@ -888,151 +688,9 @@
     }
   }
 
-  // ---------- Folder browser ----------
-
-  const folderNav = { place: 'mine', path: [], search: '', token: 0, summaryToken: 0 };
-  let folderSearchTimer = null;
-
-  function currentFolder() {
-    const last = folderNav.path[folderNav.path.length - 1];
-    return last?.id && last.id !== 'root' ? last : null;
-  }
-
   function openFolderDialog() {
     if (isReadOnly()) return notify('手機目前為唯讀，無法選擇照片資料夾。', true);
-    ensureDialogs();
-    const dialog = document.getElementById('visualFolderDialog');
-    dialog.querySelector('#visualFolderSearch').value = '';
-    folderNav.search = '';
-    const recent = recentFolders();
-    if (state.photoFolder?.id) showFolderPlace('recent', { open: state.photoFolder });
-    else showFolderPlace(recent.length ? 'recent' : 'mine');
-    if (!dialog.open) dialog.showModal();
-    dialog.querySelector('#visualFolderSearch').focus({ preventScroll: true });
-  }
-
-  function showFolderPlace(place, { open = null } = {}) {
-    folderNav.place = place;
-    const root = place === 'mine' ? { id: 'root', name: '我的雲端硬碟' }
-      : place === 'shared' ? { id: '', name: '與我共用' }
-        : { id: '', name: '最近使用' };
-    folderNav.path = open ? [root, open] : [root];
-    renderFolderBrowser();
-  }
-
-  function renderFolderPath() {
-    const nav = document.getElementById('visualFolderPath');
-    nav.innerHTML = folderNav.path.map((item, index) => index === folderNav.path.length - 1
-      ? `<span aria-current="location">${esc(item.name)}</span>`
-      : `<button type="button" data-folder-depth="${index}">${esc(item.name)}</button><span aria-hidden="true">›</span>`).join('');
-    document.querySelectorAll('#visualFolderDialog [data-folder-place]').forEach(button =>
-      button.setAttribute('aria-pressed', String(!folderNav.search && button.dataset.folderPlace === folderNav.place)));
-  }
-
-  function folderRows(folders, empty) {
-    return folders.length
-      ? folders.map(folder => `<button type="button" class="visual-folder-row${state.photoFolder?.id === folder.id ? ' is-current' : ''}" data-folder-id="${esc(folder.id)}" data-folder-name="${esc(folder.name)}"><span class="visual-folder-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.7v9.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/></svg></span><span class="visual-folder-name">${esc(folder.name)}</span>${state.photoFolder?.id === folder.id ? '<small>目前的照片來源</small>' : ''}<span aria-hidden="true">›</span></button>`).join('')
-      : `<p class="visual-folder-empty">${empty}</p>`;
-  }
-
-  async function renderFolderBrowser() {
-    renderFolderPath();
-    const list = document.getElementById('visualFolderList');
-    const token = ++folderNav.token;
-    const current = currentFolder();
-    renderFolderSummary(current);
-    if (!folderNav.search && folderNav.place === 'recent' && !current) {
-      list.innerHTML = folderRows(recentFolders(), '還沒有用過的照片資料夾。到「我的雲端硬碟」找一個吧。');
-      return;
-    }
-    list.innerHTML = '<p class="visual-folder-empty">讀取中…</p>';
-    try {
-      const folders = folderNav.search
-        ? await StoryFlowIntegrations.listDriveFolders({ search: folderNav.search })
-        : await StoryFlowIntegrations.listDriveFolders(current
-          ? { parentId: current.id }
-          : folderNav.place === 'shared' ? { shared: true } : { parentId: 'root' });
-      if (token !== folderNav.token) return;
-      list.innerHTML = folderRows(folders, folderNav.search ? '沒有名稱符合的資料夾。' : current ? '這裡沒有子資料夾。' : '這裡沒有資料夾。');
-    } catch (error) {
-      if (token !== folderNav.token) return;
-      list.innerHTML = `<p class="visual-folder-empty error-text">讀不到資料夾：${esc(error.message)}</p>`;
-    }
-  }
-
-  async function renderFolderSummary(folder) {
-    const aside = document.getElementById('visualFolderSummary');
-    const token = ++folderNav.summaryToken;
-    if (!folder) {
-      aside.innerHTML = '<p class="visual-folder-empty">點左邊的資料夾，這裡會顯示裡面有幾張照片。</p>';
-      return;
-    }
-    aside.innerHTML = `<strong class="visual-folder-summary-name">${esc(folder.name)}</strong><p class="visual-folder-empty">讀取中…</p>`;
-    try {
-      const info = await StoryFlowIntegrations.describeDriveFolder(folder.id);
-      if (token !== folderNav.summaryToken) return;
-      const current = state.photoFolder?.id === folder.id;
-      aside.innerHTML = `
-        <strong class="visual-folder-summary-name">${esc(folder.name)}</strong>
-        <p class="visual-folder-summary-count">這一層 ${info.photoCount}${info.more ? '+' : ''} 張照片${info.subfolderCount ? ` · ${info.subfolderCount} 個子資料夾（裡面的照片也會一併加入）` : ''}</p>
-        <div class="visual-folder-samples">${info.samples.map(sample => `<span class="visual-photo-thumb" data-drive-thumb="${esc(sample.driveFileId)}"><span>${esc(sample.name)}</span></span>`).join('')}</div>
-        <button id="visualUseFolderBtn" class="button primary" type="button" ${current ? 'disabled' : ''}>${current ? '已是目前的照片來源' : '使用這個資料夾'}</button>`;
-      aside.querySelectorAll('[data-drive-thumb]').forEach(slot => {
-        const sample = { driveFileId: slot.dataset.driveThumb };
-        loadThumb(sample).then(url => {
-          if (!slot.isConnected) return;
-          // A preview that cannot be read says why, rather than leaving only the file name.
-          if (url) slot.innerHTML = `<img src="${url}" alt="" />`;
-          else {
-            slot.classList.add('is-missing');
-            slot.innerHTML = `<span>${esc(photoProblem(sample) || '照片暫時讀不到')}</span>`;
-          }
-        });
-      });
-    } catch (error) {
-      if (token !== folderNav.summaryToken) return;
-      aside.innerHTML = `<strong class="visual-folder-summary-name">${esc(folder.name)}</strong><p class="visual-folder-empty error-text">讀不到這個資料夾：${esc(error.message)}</p>`;
-    }
-  }
-
-  function bindFolderDialog(dialog) {
-    dialog.querySelector('[data-folder-close]').addEventListener('click', () => dialog.close());
-    dialog.querySelector('.visual-folder-places').addEventListener('click', event => {
-      const button = event.target.closest('[data-folder-place]');
-      if (!button) return;
-      dialog.querySelector('#visualFolderSearch').value = '';
-      folderNav.search = '';
-      showFolderPlace(button.dataset.folderPlace);
-    });
-    dialog.querySelector('#visualFolderSearch').addEventListener('input', event => {
-      clearTimeout(folderSearchTimer);
-      folderSearchTimer = window.setTimeout(() => {
-        folderNav.search = event.target.value.trim();
-        folderNav.path = [{ id: '', name: folderNav.search ? `搜尋「${folderNav.search}」` : '我的雲端硬碟' }];
-        if (!folderNav.search) return showFolderPlace('mine');
-        renderFolderBrowser();
-      }, 300);
-    });
-    dialog.querySelector('#visualFolderPath').addEventListener('click', event => {
-      const button = event.target.closest('[data-folder-depth]');
-      if (!button) return;
-      folderNav.path = folderNav.path.slice(0, Number(button.dataset.folderDepth) + 1);
-      renderFolderBrowser();
-    });
-    dialog.querySelector('#visualFolderList').addEventListener('click', event => {
-      const row = event.target.closest('[data-folder-id]');
-      if (!row) return;
-      folderNav.search = '';
-      folderNav.path = [...folderNav.path, { id: row.dataset.folderId, name: row.dataset.folderName }];
-      renderFolderBrowser();
-    });
-    dialog.querySelector('#visualFolderSummary').addEventListener('click', async event => {
-      if (!event.target.closest('#visualUseFolderBtn')) return;
-      const folder = currentFolder();
-      if (!folder) return;
-      dialog.close();
-      await applyFolder(folder);
-    });
+    window.StoryFlowVisualFolderBrowser.open({ onChoose: folder => applyFolder(folder) });
   }
 
   // ---------- Lightbox ----------
@@ -1388,7 +1046,7 @@
     const root = ensureWorkspace();
     ensureDialogs();
     if (!root || !isVisual()) return hide();
-    ensurePhotoCacheForProject();
+    window.StoryFlowVisualPhotos.ensureForProject();
     root.hidden = false;
     syncSharedWorkspaceHeader(true);
     document.querySelectorAll('#workspaceView > .workspace-grid').forEach(node => {
@@ -1652,23 +1310,6 @@
     return true;
   }
 
-  // Every photo reference across the works, for Publishing and the folder export, which
-  // may describe an entry of a work that is not the open one.
-  window.StoryFlowVisualPhotos = {
-    byId(id) {
-      if (!id) return null;
-      const own = (state?.photos || []).find(photo => photo.id === id);
-      if (own) return own;
-      for (const project of window.StoryFlowProjects?.searchSnapshot?.() || []) {
-        const found = (project.state?.photos || []).find(photo => photo.id === id);
-        if (found) return found;
-      }
-      return null;
-    },
-    load: photo => loadPhoto(photo),
-    fill: root => fillPhotoSlots(root)
-  };
-
   window.addEventListener('storyflow:projects-changed', () => {
     activeEntryId = null;
     replacing = false;
@@ -1683,10 +1324,9 @@
   // Signing in to Google makes photos that could not be read readable.
   window.addEventListener('storyflow:connection-changed', () => {
     if (!isVisual() || !StoryFlowIntegrations.hasGoogleToken?.()) return;
-    photoErrors.forEach((error, fileId) => { if (error?.code === 'GOOGLE_SIGNED_OUT') photoErrors.delete(fileId); });
+    window.StoryFlowVisualPhotos.clearSignedOutErrors();
     queueMicrotask(render);
   });
-  window.addEventListener('storyflow:session-cleared', releasePhotoUrls);
 
   document.addEventListener('click', event => {
     if (!event.target.closest?.('#visualProjectSwitchBtn, #visualProjectMenu')) closeProjectMenu();
