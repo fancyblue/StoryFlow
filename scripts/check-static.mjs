@@ -44,6 +44,18 @@ for (const visualModule of ['src/projects/visual-workspace.js', 'src/projects/vi
   }
 }
 
+// StoryFlowFolderIO is integrations.js's raw folder writes, without the api's permission,
+// Recovery and write-queue guards. Only persistence modules may build on it.
+const folderIoUsers = manifestSources.filter(source => !source.startsWith('src/persistence/')
+  && readFileSync(join(root, source), 'utf8').includes('StoryFlowFolderIO'));
+if (folderIoUsers.length) {
+  throw new Error(`Only src/persistence/ may use StoryFlowFolderIO:\n${folderIoUsers.join('\n')}`);
+}
+const folderAssetsIndex = manifestSources.indexOf('src/persistence/folder-assets.js');
+if (folderAssetsIndex !== manifestSources.indexOf('src/persistence/integrations.js') + 1) {
+  throw new Error('src/persistence/folder-assets.js must load immediately after integrations.js.');
+}
+
 const manifestIds = [...loader.matchAll(/\bid:\s*['"]([^'"]+)['"]/g)].map(match => match[1]);
 const duplicates = values => [...new Set(values.filter((value, index) => values.indexOf(value) !== index))];
 const duplicateSources = duplicates(manifestSources);
