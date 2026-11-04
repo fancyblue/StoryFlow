@@ -14,9 +14,7 @@
   const photoLoads = new Map();
   let photoUrlsProject = null;
 
-  const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;'
-  }[char]));
+  const { esc } = window.StoryFlowShared;
 
   // Every photo reference across the works, for Publishing and the folder export, which
   // may describe an entry of a work that is not the open one.

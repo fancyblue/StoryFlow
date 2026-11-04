@@ -74,5 +74,14 @@
     return texts.reduce((total, text) => total + (String(text || '').match(PENDING_MARK)?.length || 0), 0);
   }
 
-  window.StoryFlowShared = { safeName, normalizeTitle, partKey, hasConnectedFolder, platformNames, fillPlatformSelect, pendingMarkCount };
+  // Text placed into HTML built as a string. Six modules carried their own copy, identical in
+  // what they return; a missing value is an empty string. app.js's global escapeHtml() is not
+  // one of them: it turns null into "null", so folding it in would change what it renders.
+  function esc(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    }[char]));
+  }
+
+  window.StoryFlowShared = { safeName, normalizeTitle, partKey, hasConnectedFolder, platformNames, fillPlatformSelect, pendingMarkCount, esc };
 })();
