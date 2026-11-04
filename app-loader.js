@@ -7,9 +7,9 @@
   const scripts = [
     { src: './src/core/shared.js?v=20261103-a8', owner: 'core' },
     { src: './src/core/config.js?v=20261104-a3', owner: 'core' },
-    { src: './src/projects/content-model.js?v=20261103-a12', owner: 'projects' },
+    { src: './src/projects/content-model.js?v=20261104-a6', owner: 'projects' },
     { src: './src/persistence/integrations.js?v=20261103-a12', owner: 'persistence' },
-    { src: './src/source/google-docs.js?v=20261104-a3', owner: 'source' },
+    { src: './src/source/google-docs.js?v=20261104-a6', owner: 'source' },
     { src: './src/core/app.js?v=20261017-a5', owner: 'core' },
     { src: './src/core/render-pipeline.js?v=20260925-a5', owner: 'core' },
     { src: './src/connection/session-auth.js?v=20260817-1522', owner: 'connection' },
@@ -63,7 +63,7 @@
     { src: './src/projects/workspace-project-ux.js?v=20261016-a16', owner: 'projects' },
     { id: 'storyflowGlobalSearchJs', src: './src/ui/global-search.js?v=20261103-a12', owner: 'ui' },
     { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20261016-a7', owner: 'publishing' },
-    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20261104-a3', owner: 'projects' }
+    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20261104-a6', owner: 'projects' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));

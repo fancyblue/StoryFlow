@@ -93,7 +93,9 @@
       height: number(photo.height),
       takenAt: typeof photo.takenAt === 'string' ? photo.takenAt : '',
       alt: typeof photo.alt === 'string' ? photo.alt : '',
-      addedAt: typeof photo.addedAt === 'string' ? photo.addedAt : ''
+      addedAt: typeof photo.addedAt === 'string' ? photo.addedAt : '',
+      // The Drive folder the photo was brought in with; empty for a photo picked on its own.
+      sourceFolderId: typeof photo.sourceFolderId === 'string' ? photo.sourceFolderId : ''
     };
   }
 
@@ -144,6 +146,11 @@
       .filter(item => item && typeof item === 'object')
       .map(normalizeVisualPhoto)
       .filter(photo => photo.driveFileId && !seenFiles.has(photo.driveFileId) && seenFiles.add(photo.driveFileId));
+    // The one Drive folder the work's library follows (更換資料夾／重新整理), if any.
+    const folder = record(project.photoFolder);
+    project.photoFolder = typeof folder.id === 'string' && folder.id
+      ? { id: folder.id, name: typeof folder.name === 'string' && folder.name ? folder.name : '未命名資料夾' }
+      : null;
     // An entry whose photoId names no photo keeps it: normalising must not drop a reference
     // because something else went wrong. The editor shows it as missing instead.
     return project;

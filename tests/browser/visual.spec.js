@@ -61,7 +61,7 @@ test('photos come from Drive as references, are chosen from the library and show
   // A reference holds no image: no data, blob or base64 in the work.
   const stored = await page.evaluate(() => JSON.stringify(state.photos));
   expect(stored).not.toMatch(/blob:|data:|base64/);
-  expect(Object.keys(JSON.parse(stored)[0]).sort()).toEqual(['addedAt', 'alt', 'driveFileId', 'height', 'id', 'mimeType', 'name', 'takenAt', 'width']);
+  expect(Object.keys(JSON.parse(stored)[0]).sort()).toEqual(['addedAt', 'alt', 'driveFileId', 'height', 'id', 'mimeType', 'name', 'sourceFolderId', 'takenAt', 'width']);
 
   // Picking the same files again adds nothing.
   await page.locator('#visualAddPhotosBtn').click();
@@ -284,75 +284,97 @@ test('the visual workspace lays out without sideways scrolling from phone to wid
   expect(pageErrors).toEqual([]);
 });
 
-// A picked folder brings every photo in it and its subfolders (REDESIGN_PROPOSAL C3, folder
-// import). This drives the real Picker handling and Drive listing in google-docs.js against a
-// stubbed Picker and stubbed Drive responses: a session token from before the folder
-// permission is answered 403 once and asked again with the consent screen.
-test('a picked folder adds all of its photos, including subfolders, and says what it left out', async ({ page }) => {
+// The work follows one Drive photo folder, chosen in StoryFlow's own folder browser
+// (REDESIGN_PROPOSAL C3, folder import). This drives the real Drive listing in google-docs.js
+// against stubbed Drive responses; a session token from before the read-only permission is
+// answered 403 once and asked again with the consent screen.
+test('the folder browser chooses, changes and refreshes the work’s photo folder', async ({ page }) => {
   const pageErrors = await openVisualWorkspace(page);
-  const listed = [];
-  await page.route('https://www.googleapis.com/drive/v3/files?**', async route => {
-    const url = new URL(route.request().url());
-    const q = url.searchParams.get('q') || '';
-    listed.push(q);
-    const auth = route.request().headers().authorization;
-    if (auth === 'Bearer token-1') return route.fulfill({ status: 403, body: '{}' });
-    const files = q.includes("'trip-folder' in parents") ? [
+  const drive = {
+    root: [{ id: 'trip', name: '北海道', mimeType: 'application/vnd.google-apps.folder' },
+      { id: 'tokyo', name: '東京', mimeType: 'application/vnd.google-apps.folder' }],
+    trip: [
       { id: 'p-2', name: 'IMG_0002.jpg', mimeType: 'image/jpeg', imageMediaMetadata: { time: '2023:02:18 10:00:00' } },
       { id: 'p-1', name: 'IMG_0001.jpg', mimeType: 'image/jpeg', imageMediaMetadata: { time: '2023:02:18 09:00:00' } },
       { id: 'heic-1', name: 'IMG_0003.HEIC', mimeType: 'image/heic' },
       { id: 'day-2', name: 'Day 2', mimeType: 'application/vnd.google-apps.folder' }
-    ] : q.includes("'day-2' in parents") ? [
-      { id: 'p-3', name: 'IMG_0101.png', mimeType: 'image/png', imageMediaMetadata: { time: '2023:02:19 08:00:00' } }
-    ] : [];
+    ],
+    'day-2': [{ id: 'p-3', name: 'IMG_0101.png', mimeType: 'image/png', imageMediaMetadata: { time: '2023:02:19 08:00:00' } }],
+    tokyo: [
+      { id: 't-1', name: 'TKY_01.jpg', mimeType: 'image/jpeg', imageMediaMetadata: { time: '2010:05:01 12:00:00' } },
+      { id: 't-2', name: 'TKY_02.jpg', mimeType: 'image/jpeg', imageMediaMetadata: { time: '2010:05:01 13:00:00' } }
+    ]
+  };
+  await page.route('https://www.googleapis.com/drive/v3/files?**', async route => {
+    if (route.request().headers().authorization === 'Bearer token-1') return route.fulfill({ status: 403, body: '{}' });
+    const q = new URL(route.request().url()).searchParams.get('q') || '';
+    const parent = /'([^']+)' in parents/.exec(q)?.[1];
+    const name = /name contains '([^']+)'/.exec(q)?.[1];
+    let files = parent ? (drive[parent] || []) : [];
+    if (name) files = Object.values(drive).flat().filter(file => file.mimeType.endsWith('folder') && file.name.includes(name));
+    if (q.includes(`mimeType = 'application/vnd.google-apps.folder' and trashed = false`) && !q.includes('contains')) {
+      files = files.filter(file => file.mimeType.endsWith('folder'));
+    }
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ files }) });
   });
   await page.evaluate(() => {
     let tokens = 0;
     window.__consents = [];
     window.STORYFLOW_CONFIG.googleClientId ||= 'test-client.apps.googleusercontent.com';
-    StoryFlowIntegrations.setPickerApiKey('test-picker-key');
-    const chain = target => new Proxy(target, { get: (object, key) => key in object ? object[key] : () => chain(object) });
-    window.google = {
-      accounts: { oauth2: { initTokenClient: config => ({
-        callback: config.callback,
-        requestAccessToken({ prompt } = {}) {
-          window.__consents.push(prompt);
-          tokens += 1;
-          this.callback({ access_token: `token-${tokens}` });
-        }
-      }) } },
-      picker: {
-        ViewId: { DOCS_IMAGES: 'images', FOLDERS: 'folders' },
-        Feature: { MULTISELECT_ENABLED: 'multi' },
-        Action: { PICKED: 'picked', CANCEL: 'cancel' },
-        DocsView: function () { return chain({}); },
-        PickerBuilder: function () {
-          let callback = null;
-          const builder = chain({
-            setCallback(fn) { callback = fn; return builder; },
-            build: () => ({ setVisible: () => callback({ action: 'picked', docs: [{ id: 'trip-folder', name: '北海道', mimeType: 'application/vnd.google-apps.folder' }] }) })
-          });
-          return builder;
-        }
+    window.google = { accounts: { oauth2: { initTokenClient: config => ({
+      callback: config.callback,
+      requestAccessToken({ prompt } = {}) {
+        window.__consents.push(prompt);
+        tokens += 1;
+        this.callback({ access_token: `token-${tokens}` });
       }
-    };
-    window.gapi = { load: (_, options) => options.callback() };
-    // The Picker and Drive listing are the real code; image reads stay with the stand-in.
-    StoryFlowIntegrations.pickDrivePhotos = window.__realPickDrivePhotos;
+    }) } } };
   });
   await createVisualWork(page);
-  await page.locator('#visualAddPhotosBtn').click();
+  const names = () => page.evaluate(() => [...state.photos]
+    .sort((a, b) => a.takenAt.localeCompare(b.takenAt)).map(photo => photo.name));
 
-  await expect(page.locator('#visualPhotoGrid .visual-photo-tile')).toHaveCount(3);
-  // Sorted by when they were taken, across the folder and its subfolder.
-  expect(await page.evaluate(() => [...state.photos]
-    .sort((a, b) => a.takenAt.localeCompare(b.takenAt)).map(photo => photo.name)))
-    .toEqual(['IMG_0001.jpg', 'IMG_0002.jpg', 'IMG_0101.png']);
-  await expect(page.locator('#visualPhotoGrid .visual-photo-choose').first()).toHaveAttribute('aria-label', /IMG_0001\.jpg/);
+  // Browse: 我的雲端硬碟 lists its folders; opening one shows what it holds.
+  await page.locator('#visualChooseFolderBtn').click();
+  const dialog = page.locator('#visualFolderDialog');
+  await expect(dialog.locator('.visual-folder-row')).toHaveText(['北海道›', '東京›']);
+  await dialog.locator('.visual-folder-row', { hasText: '北海道' }).click();
+  await expect(dialog.locator('#visualFolderPath')).toContainText('我的雲端硬碟›北海道');
+  await expect(dialog.locator('.visual-folder-summary-count')).toHaveText('這一層 2 張照片 · 1 個子資料夾（裡面的照片也會一併加入）');
+  await expect(dialog.locator('.visual-folder-row')).toHaveText(['Day 2›']);
+  await dialog.locator('#visualUseFolderBtn').click();
+  await expect(dialog).toBeHidden();
+  await expect.poll(names).toEqual(['IMG_0001.jpg', 'IMG_0002.jpg', 'IMG_0101.png']);
+  await expect(page.locator('#visualPhotoFolderName')).toHaveText('北海道');
+  await expect(page.locator('#visualChooseFolderBtn')).toHaveText('更換資料夾');
   await expect(page.locator('.storyflow-toast').last()).toContainText('1 個其他格式的檔案');
-  // The first listing was refused and the consent screen asked once more.
   expect(await page.evaluate(() => window.__consents)).toContain('consent');
-  expect(listed.some(q => q.includes("'day-2' in parents"))).toBe(true);
+  // A whole folder does not decide an article's photo for it.
+  expect(await page.evaluate(() => state.visualEntries[0].photoId)).toBe('');
+
+  // Use one photo, then change folders: the used photo stays, the old folder's unused ones go.
+  await page.locator('#visualPhotoGrid .visual-photo-choose').first().click();
+  await page.locator('#visualChooseFolderBtn').click();
+  await expect(dialog.locator('#visualFolderPath')).toContainText('最近使用›北海道');
+  await dialog.locator('[data-folder-place="mine"]').click();
+  await dialog.locator('.visual-folder-row', { hasText: '東京' }).click();
+  await dialog.locator('#visualUseFolderBtn').click();
+  await expect.poll(names).toEqual(['TKY_01.jpg', 'TKY_02.jpg', 'IMG_0001.jpg']);
+  await expect(page.locator('#visualPhotoFolderName')).toHaveText('東京');
+  await expect(page.locator('#visualUndoBar')).toContainText('照片來源已改為「東京」');
+  await page.locator('#visualUndoBar button').click();
+  await expect.poll(names).toEqual(['IMG_0001.jpg', 'IMG_0002.jpg', 'IMG_0101.png']);
+  await expect(page.locator('#visualPhotoFolderName')).toHaveText('北海道');
+
+  // Refresh adds what was put in the folder since.
+  drive.trip.push({ id: 'p-4', name: 'IMG_0004.jpg', mimeType: 'image/jpeg', imageMediaMetadata: { time: '2023:02:18 11:00:00' } });
+  await page.locator('#visualRefreshFolderBtn').click();
+  await expect.poll(names).toEqual(['IMG_0001.jpg', 'IMG_0002.jpg', 'IMG_0004.jpg', 'IMG_0101.png']);
+  await expect(page.locator('.storyflow-toast').last()).toContainText('新增 1 張照片');
+
+  // Search finds a folder by name wherever it is.
+  await page.locator('#visualChooseFolderBtn').click();
+  await dialog.locator('#visualFolderSearch').fill('東');
+  await expect(dialog.locator('.visual-folder-row')).toHaveText(['東京›']);
   expect(pageErrors).toEqual([]);
 });
