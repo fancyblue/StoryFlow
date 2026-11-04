@@ -349,6 +349,10 @@ test('the folder browser chooses, changes and refreshes the work’s photo folde
   await expect(page.locator('#visualChooseFolderBtn')).toHaveText('更換資料夾');
   await expect(page.locator('.storyflow-toast').last()).toContainText('1 個其他格式的檔案');
   expect(await page.evaluate(() => window.__consents)).toContain('consent');
+  // The token the Drive listing obtained is the session's: the sidebar says signed in and a
+  // reload in this tab would keep it.
+  await expect(page.locator('#googleDot')).toHaveClass(/connected/);
+  expect(await page.evaluate(() => sessionStorage.getItem('storyflow.google.access-token.v1'))).toBe('token-2');
   // A whole folder does not decide an article's photo for it.
   expect(await page.evaluate(() => state.visualEntries[0].photoId)).toBe('');
 

@@ -229,7 +229,7 @@
     return restoreInFlight;
   };
 
-  ['inspectGoogleDoc', 'refreshChapterSource'].forEach(name => {
+  ['inspectGoogleDoc', 'refreshChapterSource', 'pickDrivePhotos', 'listDriveFolders', 'describeDriveFolder', 'listDriveFolderPhotos'].forEach(name => {
     const base = StoryFlowIntegrations[name];
     if (typeof base !== 'function') return;
     StoryFlowIntegrations[name] = async function rememberIntegrationSession(...args) {

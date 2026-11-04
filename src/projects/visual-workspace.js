@@ -978,8 +978,15 @@
         <div class="visual-folder-samples">${info.samples.map(sample => `<span class="visual-photo-thumb" data-drive-thumb="${esc(sample.driveFileId)}"><span>${esc(sample.name)}</span></span>`).join('')}</div>
         <button id="visualUseFolderBtn" class="button primary" type="button" ${current ? 'disabled' : ''}>${current ? '已是目前的照片來源' : '使用這個資料夾'}</button>`;
       aside.querySelectorAll('[data-drive-thumb]').forEach(slot => {
-        loadThumb({ driveFileId: slot.dataset.driveThumb }).then(url => {
-          if (url && slot.isConnected) slot.innerHTML = `<img src="${url}" alt="" />`;
+        const sample = { driveFileId: slot.dataset.driveThumb };
+        loadThumb(sample).then(url => {
+          if (!slot.isConnected) return;
+          // A preview that cannot be read says why, rather than leaving only the file name.
+          if (url) slot.innerHTML = `<img src="${url}" alt="" />`;
+          else {
+            slot.classList.add('is-missing');
+            slot.innerHTML = `<span>${esc(photoProblem(sample) || '照片暫時讀不到')}</span>`;
+          }
         });
       });
     } catch (error) {
