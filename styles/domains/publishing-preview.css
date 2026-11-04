@@ -1,0 +1,261 @@
+/* Publishing preview: the preview-and-copy panel inside the article being managed
+   (src/publishing/publishing-preview.js), its optional publishing helpers and a visual
+   entry's image upload order. Loaded right after publishing.css. */
+
+.visual-upload-order{display:grid;gap:12px;width:100%;min-width:0;margin-top:18px;padding-top:16px;border-top:1px solid #ded9cc}
+.visual-upload-order>div{display:grid;gap:3px}
+.visual-upload-order>div span{color:var(--muted);font-size:12px}
+.visual-upload-order ol{display:grid;gap:10px;margin:0;padding:0;list-style:none;counter-reset:visual-upload}
+.visual-upload-order li{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:center;min-width:0;counter-increment:visual-upload}
+.visual-upload-order li>div:last-child{display:grid;gap:3px;min-width:0}
+.visual-upload-order li strong::before{content:counter(visual-upload) '. ';color:#6a6357}
+.visual-upload-order li strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.visual-upload-order li small{color:var(--muted)}
+.visual-upload-order li em{width:max-content;padding:2px 6px;border-radius:999px;background:#eef0e4;color:#59703f;font-size:10px;font-style:normal;font-weight:700}
+.visual-upload-thumb{aspect-ratio:4/3;display:grid;place-items:center;overflow:hidden;border-radius:8px;background:#f4f1e9}
+.visual-upload-thumb img{width:100%;height:100%;object-fit:cover}
+.visual-upload-thumb span{padding:5px;color:#6a6357;font-size:10px;text-align:center}
+.visual-upload-thumb .missing{color:#a8443a}
+.visual-upload-empty{display:block!important;color:var(--muted)}
+.visual-publish-copy{white-space:pre-wrap}
+.visual-publish-copy .visual-publish-scene{display:inline-block;width:100%;color:#6a6357;font-size:.88em;letter-spacing:.15em;text-align:center}
+
+.platform-preview-visual-extras{
+  display:grid;
+  gap:8px;
+  margin:4px 0 0;
+  padding-top:16px;
+  border-top:1px solid #ded9cc;
+}
+.platform-preview-visual-extras-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:2px;
+}
+.platform-preview-visual-extras-head strong{color:#221f1a;font-size:13px}
+.platform-preview-visual-extras-head span{color:#6a6357;font-size:10px;line-height:1.45;text-align:right}
+.platform-preview-hashtags-block{display:grid;gap:8px}
+.platform-preview-hashtags-block[hidden]{display:none!important}
+.platform-preview-hashtags-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:stretch;
+}
+.platform-preview-hashtags-row>.button{min-width:64px}
+.platform-preview-extra-copy:disabled{
+  cursor:default;
+  opacity:1;
+  color:#6a6357;
+}
+.platform-preview-extra-copy:disabled:hover{background:transparent;outline:none}
+.platform-preview-extra-copy{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:10px;
+  align-items:start;
+  width:100%;
+  padding:8px 0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.platform-preview-extra-copy:hover,.platform-preview-extra-copy:focus-visible{background:var(--paper-2,#f4f1e9);outline:none}
+.platform-preview-extra-copy span{color:#6a6357;font-size:11px;font-weight:700}
+.platform-preview-extra-copy p{margin:0;color:#221f1a;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.platform-preview-extra-copy small{color:var(--muted);font-size:10px;white-space:nowrap}
+
+
+/* Visual publishing helpers: optional metadata belongs with publishing controls. */
+.visual-publish-helpers{
+  display:grid;
+  gap:14px;
+  margin:12px 0 18px;
+  padding:16px;
+  border:1px solid #ded9cc;
+  border-radius:13px;
+  background:#fbfaf6;
+}
+.visual-publish-helper-field small{color:var(--muted);font-size:11.5px;line-height:1.5}
+.visual-publish-helper-field{display:grid;gap:7px}
+.visual-publish-helper-field > span{color:#221f1a;font-size:13px;font-weight:700}
+.visual-publish-summary-input.text-input{
+  height:auto!important;
+  min-height:82px!important;
+  padding:12px 14px!important;
+  line-height:1.55!important;
+  resize:vertical;
+}
+.visual-publish-hashtags-input{width:100%}
+.visual-publish-helper-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+@media(max-width:560px){
+  .visual-publish-helpers{padding:14px}
+  .visual-publish-helper-actions{display:grid}
+  .visual-publish-helper-actions .button{width:100%}
+}
+
+
+/* Compact visual publishing preview: keep metadata secondary and editors contained. */
+.publish-preview-panel .sf-preview-mode-control[hidden],
+.platform-preview-meta[hidden],
+.platform-preview-visual-extras[hidden],
+.platform-preview-extra-block[hidden],
+.platform-preview-extra-editor[hidden]{display:none!important}
+.publish-preview-panel .platform-preview-title-copy{
+  align-items:center;
+  gap:12px;
+  padding:9px 11px;
+  border:1px solid #ded9cc;
+  border-radius:10px;
+  background:#fbfaf6;
+}
+.platform-preview-title-actions .button{
+  min-height:34px;
+  height:34px;
+  padding:0 11px!important;
+}
+.publish-preview-panel .platform-preview-options summary{
+  min-height:36px;
+  padding:0 11px;
+}
+.publish-preview-panel .platform-preview-content-head{margin:3px 0 -2px}
+.platform-preview-extra-block{display:grid;gap:8px;min-width:0}
+.platform-preview-extra-row,
+.platform-preview-hashtags-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  min-width:0;
+  padding:2px;
+}
+.platform-preview-extra-row>.button,
+.platform-preview-hashtags-row>.button{
+  box-sizing:border-box;
+  align-self:center;
+  min-width:56px;
+  min-height:36px;
+  height:36px;
+  padding:0 10px!important;
+}
+.platform-preview-extra-row>.button:focus-visible,
+.platform-preview-hashtags-row>.button:focus-visible{
+  outline:2px solid rgba(75,69,87,.28);
+  outline-offset:2px;
+  box-shadow:none;
+}
+.platform-preview-extra-copy{min-width:0}
+.platform-preview-extra-copy p{min-width:0}
+.platform-preview-extra-editor,
+.platform-preview-platform-hashtags{
+  display:grid;
+  gap:8px;
+  padding:12px;
+  border:1px solid #ded9cc;
+  border-radius:10px;
+  background:#fbfaf6;
+}
+.platform-preview-extra-editor>label,
+.platform-preview-extra-editor-head label{
+  color:#4b4557;
+  font-size:12px;
+  font-weight:700;
+}
+.platform-preview-extra-editor-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.platform-preview-extra-editor-head span{color:#6a6357;font-size:10px;font-weight:700}
+.platform-preview-extra-editor .text-input{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  min-height:38px;
+  padding:8px 10px!important;
+}
+.platform-preview-extra-editor textarea.text-input{
+  min-height:72px;
+  line-height:1.55;
+  resize:vertical;
+}
+.platform-preview-extra-editor-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.platform-preview-extra-editor>small{color:#6a6357;font-size:10px;line-height:1.5}
+@media(max-width:680px){
+  .publish-preview-panel .platform-preview-body{padding:12px 0 16px}
+  /* The label, the value and the copy hint stack rather than compete for a phone's width.
+     The same overrides earlier in this file sat before the base rules and never applied. */
+  .platform-preview-extra-copy{grid-template-columns:minmax(0,1fr);gap:4px}
+  .platform-preview-visual-extras-head{display:grid;gap:3px}
+  .platform-preview-visual-extras-head span{text-align:left}
+  .platform-preview-extra-row,
+  .platform-preview-hashtags-row{grid-template-columns:minmax(0,1fr) auto}
+  .platform-preview-extra-row>.button,
+  .platform-preview-hashtags-row>.button{width:auto}
+}
+
+/* Publishing preview uses one compact settings card for title and content composition. */
+/* Title and copy options are one group, ended by a rule rather than boxed. */
+.platform-preview-settings{
+  display:grid;
+  overflow:visible;
+  border:0;
+  border-bottom:1px solid var(--rule-1,#ded9cc);
+  border-radius:0;
+  background:transparent;
+}
+.platform-preview-settings .platform-preview-title-copy{
+  gap:12px;
+  margin:0;
+  padding:0 0 9px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+.platform-preview-settings .platform-preview-title-editor{
+  margin:0 0 11px;
+}
+.platform-preview-settings .platform-preview-options{
+  margin:0;
+  border:0;
+  border-top:1px solid #ded9cc;
+  border-radius:0;
+  background:#fbfaf6;
+}
+.platform-preview-settings .platform-preview-options-body{
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  padding:8px 12px 10px;
+  border-top:0;
+}
+.platform-preview-settings .platform-preview-copy-title-option{
+  grid-template-columns:minmax(0,1fr) 112px;
+  padding-top:0;
+}
+@media(max-width:680px){
+  .platform-preview-settings .platform-preview-title-copy{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .platform-preview-title-actions{width:100%}
+  .platform-preview-title-actions .button{flex:1 1 0}
+  .platform-preview-settings .platform-preview-options-body{
+    grid-template-columns:1fr;
+    align-items:stretch;
+  }
+  .platform-preview-settings .platform-preview-copy-title-option{
+    grid-template-columns:1fr;
+  }
+}
