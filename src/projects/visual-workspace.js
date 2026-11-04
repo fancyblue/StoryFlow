@@ -513,7 +513,8 @@
             <strong>預覽</strong>
             <div id="visualPreviewWidths" class="sf-preview-mode-segment" role="group" aria-label="預覽寬度"></div>
             <label class="sf-visually-hidden" for="visualPreviewPlatform">預覽格式</label>
-            <select id="visualPreviewPlatform" class="select"></select>
+            <select id="visualPreviewPlatform" class="text-input"></select>
+            <small id="visualPreviewScale" class="visual-preview-scale" aria-live="polite"></small>
           </div>
           <div class="visual-preview-stage"><article id="visualPreviewArticle" class="visual-article-preview" data-width="phone"></article></div>
         </section>
@@ -1304,14 +1305,16 @@
   function renderPreviewControls() {
     const root = document.getElementById('visualWorkspace');
     root.querySelector('#visualPreviewWidths').innerHTML = PREVIEW_WIDTHS.map(([key, label]) =>
-      `<button type="button" data-preview-width="${key}" aria-pressed="${previewWidth === key}">${label}</button>`).join('');
+      `<button type="button" data-preview-width="${key}" class="${previewWidth === key ? 'active' : ''}" aria-pressed="${previewWidth === key}">${label}</button>`).join('');
     const select = root.querySelector('#visualPreviewPlatform');
     window.StoryFlowShared.fillPlatformSelect(select);
     if ([...select.options].some(option => option.value === previewPlatform)) select.value = previewPlatform;
     else previewPlatform = select.value;
     root.querySelector('.visual-workspace-layout').dataset.pane = narrowPane;
-    root.querySelectorAll('.visual-pane-switch [data-pane]').forEach(button =>
-      button.setAttribute('aria-pressed', String(button.dataset.pane === narrowPane)));
+    root.querySelectorAll('.visual-pane-switch [data-pane]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.pane === narrowPane));
+      button.classList.toggle('active', button.dataset.pane === narrowPane);
+    });
   }
 
   // Text as it will be copied, line for line, with a scene-marker line centred the way the
@@ -1351,6 +1354,27 @@
       return;
     }
     renderArticle(article, entry, { platform: previewPlatform });
+    fitPreview();
+  }
+
+  // Scale the page to the column it sits in, never up; say so when it is smaller than life.
+  const PREVIEW_WIDTH_PX = { phone: 390, desktop: 760 };
+  let previewResize = null;
+  function fitPreview() {
+    const root = document.getElementById('visualWorkspace');
+    const stage = root?.querySelector('.visual-preview-stage');
+    const article = root?.querySelector('#visualPreviewArticle');
+    const label = root?.querySelector('#visualPreviewScale');
+    if (!stage || !article || !label) return;
+    if (!previewResize && 'ResizeObserver' in window) {
+      previewResize = new ResizeObserver(() => fitPreview());
+      previewResize.observe(stage);
+    }
+    const width = PREVIEW_WIDTH_PX[previewWidth] || 390;
+    const available = stage.clientWidth - 8;
+    const scale = available > 0 ? Math.min(1, available / width) : 1;
+    article.style.zoom = scale < 1 ? scale.toFixed(3) : '';
+    label.textContent = `${previewWidth === 'phone' ? '手機' : '桌面'}寬 ${width}px${scale < 1 ? `，縮小為 ${Math.round(scale * 100)}% 顯示` : ''}`;
   }
 
   function render() {

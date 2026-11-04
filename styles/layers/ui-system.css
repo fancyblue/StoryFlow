@@ -257,7 +257,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .splitter-panel .smart-split-mini-settings .range-grid input:focus,.splitter-panel .scene-marker-compact #sceneMarker:focus{border-color:var(--sf-primary)!important;background:#fbfaf6;box-shadow:var(--sf-focus)!important}
 /* The format bar sits in the panel head's actions, beside 切篇偏好, at the head's 34px height. */
 .splitter-panel .suggestion-platform-bar{margin:0!important;gap:8px!important}
-.splitter-panel .suggestion-platform-bar select.text-input{height:var(--sf-control-sm)!important;min-height:var(--sf-control-sm)!important;border:1px solid transparent!important;background:#f4f1e9!important;font-size:14px!important;border-radius:8px!important}
+.splitter-panel .suggestion-platform-bar select.text-input,.visual-preview-head select.text-input{height:var(--sf-control-sm)!important;min-height:var(--sf-control-sm)!important;border:1px solid transparent!important;background:#f4f1e9!important;font-size:14px!important;border-radius:8px!important}
 #splitPlatformBar .sf-preview-mode-segment,.sf-preview-mode-segment{padding:3px!important;border:0!important;border-radius:8px!important;background:#f4f1e9!important}
 #splitPlatformBar .sf-preview-mode-segment button,.sf-preview-mode-segment button{min-height:calc(var(--sf-control-sm) - 6px)!important;padding:0 11px!important;border-radius:6px!important;font-size:14px!important;font-weight:700!important;color:var(--sf-muted-strong,#3f3930)!important;white-space:nowrap}
 #splitPlatformBar .sf-preview-mode-segment button.active,.sf-preview-mode-segment button.active{background:#fbfaf6!important;color:var(--denim-700,#4b4557)!important}

@@ -378,3 +378,30 @@ test('the folder browser chooses, changes and refreshes the work’s photo folde
   await expect(dialog.locator('.visual-folder-row')).toHaveText(['東京›']);
   expect(pageErrors).toEqual([]);
 });
+
+// The two preview widths are real widths: the selected one is marked like every segment, and
+// a 760px page in a narrower column is scaled down and says so.
+test('the preview widths differ and the selected one is marked', async ({ page }) => {
+  const pageErrors = await openVisualWorkspace(page);
+  await createVisualWork(page);
+  await page.locator('#visualEntryBody').fill('一段正文。');
+  const phone = page.locator('#visualPreviewWidths [data-preview-width="phone"]');
+  const desktop = page.locator('#visualPreviewWidths [data-preview-width="desktop"]');
+  await expect(phone).toHaveClass(/active/);
+  await expect(page.locator('#visualPreviewScale')).toHaveText('手機寬 390px');
+  await desktop.click();
+  await expect(desktop).toHaveClass(/active/);
+  await expect(phone).not.toHaveClass(/active/);
+  await expect(page.locator('#visualPreviewScale')).toHaveText(/^桌面寬 760px，縮小為 \d+% 顯示$/);
+  const widths = await page.locator('#visualPreviewArticle').evaluate(node => ({
+    css: node.offsetWidth, zoom: Number(getComputedStyle(node).zoom)
+  }));
+  expect(widths.css).toBe(760);
+  expect(widths.zoom).toBeLessThan(1);
+  // The format select is the split toolbar's control.
+  const select = await page.locator('#visualPreviewPlatform').evaluate(node => ({
+    height: getComputedStyle(node).height, radius: getComputedStyle(node).borderTopLeftRadius
+  }));
+  expect(select).toEqual({ height: '34px', radius: '8px' });
+  expect(pageErrors).toEqual([]);
+});

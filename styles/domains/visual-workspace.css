@@ -151,10 +151,15 @@
 .visual-preview-panel { position: sticky; top: 16px; display: grid; gap: 12px; padding: 0 8px 24px 0; }
 .visual-preview-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .visual-preview-head > strong { margin-right: auto; font-size: 13px; }
-.visual-preview-head .select { min-height: 34px; }
+.visual-preview-head select.text-input { width: auto; max-width: 160px; flex: 0 0 auto; }
+.visual-preview-scale { flex-basis: 100%; color: #6f6759; font-size: 12px; }
 .visual-preview-stage { display: grid; justify-items: center; max-height: calc(100vh - 140px); overflow: auto; padding: 4px; border-radius: 12px; background: #f4f1e9; }
 .visual-article-preview { width: 100%; max-width: 680px; padding: 28px 24px 36px; border-radius: 10px; background: #fbfaf6; color: #221f1a; }
-.visual-article-preview[data-width="phone"] { max-width: 390px; padding: 24px 18px 32px; }
+/* In the workspace the two widths are real widths — a 390px phone and a 760px page — and the
+   page is scaled down to fit the column (visual-workspace.js sets zoom), so line lengths and
+   the photo's proportion read as they will. */
+.visual-preview-stage > .visual-article-preview { flex: none; width: 760px; max-width: none; }
+.visual-preview-stage > .visual-article-preview[data-width="phone"] { width: 390px; padding: 24px 18px 32px; }
 .visual-article-title { margin: 0 0 20px; font-size: 22px; line-height: 1.4; }
 .visual-article-quote { margin: 8px 0 28px; padding: 0; border: 0; color: #6a6357; text-align: center; }
 .visual-article-quote > span { display: block; margin-bottom: 8px; color: #968f80; font-size: 34px; line-height: 1; }
