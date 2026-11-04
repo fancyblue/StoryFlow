@@ -31,21 +31,6 @@
   // mid-flow.
   let previewOptions = { includeTitle: false, titleStyle: 'heading' };
   let articleToolContext = null;
-  let visualPreviewUrls = [];
-
-  // 管理發布 opens the selected article in a lightbox over the queue rather than unfolding it
-  // inside the list: a whole chapter of preview between two rows made the queue a page several
-  // screens long, and the platforms and 複製內容 scrolled away with it. The lightbox is still the
-  // expanded row's own element, so everything that looks inside the row keeps finding it. Its
-  // size is a habit of this browser, kept like the sidebar collapse.
-  const LIGHTBOX_SIZE_KEY = 'storyflow.ui.publishLightboxMaximized';
-  let lightboxMaximized = (() => {
-    try { return localStorage.getItem(LIGHTBOX_SIZE_KEY) === '1'; } catch (_) { return false; }
-  })();
-  // renderParts() rebuilds the row, lightbox included, on every change made inside it. What the
-  // person was looking at — how far down the manuscript and the rail, and which control had
-  // focus — is carried across the rebuild so a save or a platform switch does not jump.
-  let lightboxMemory = null;
 
   // Output and status rules live in publishing-output.js.
   const {
@@ -74,6 +59,11 @@
     normalizePartStatus,
     statusFor
   } = window.StoryFlowPublishingOutput;
+
+  // The preview-and-copy panel is publishing-preview.js; the lightbox's size, memory across
+  // rebuilds and Esc are publishing-lightbox.js. Both load before this file.
+  const Preview = window.StoryFlowPublishingPreview;
+  const Lightbox = window.StoryFlowPublishingLightbox;
 
   // Workspace data is appended chronologically. The publishing list is intentionally
   // rendered in reverse so the most recently confirmed content is easiest to reach.
@@ -193,106 +183,6 @@
 
     return { workspaceView, publishingView, publishingPanel };
   }
-
-  // Preview and copy is a panel inside the row being managed, not a dialog over it. The
-  // rail on the right picks which version the panel shows; nothing opens on top of the
-  // thing you already opened.
-  function buildPublishPreviewPanel() {
-    const panel = document.createElement('section');
-    panel.className = 'publish-preview-panel';
-    panel.setAttribute('aria-live', 'polite');
-    panel.innerHTML = `
-      <div class="publish-preview-panel-head">
-        <h3 id="platformPreviewTitle">預覽與複製</h3>
-      </div>
-      <div class="platform-preview-body">
-        <p id="platformPreviewMeta" class="muted platform-preview-meta" hidden></p>
-        <section id="platformPreviewSettings" class="platform-preview-settings" aria-label="發布與複製設定">
-          <div class="platform-preview-title-copy" aria-label="發布標題">
-          <div>
-            <span id="platformPreviewTitleSource">發布標題</span>
-            <strong id="platformPreviewPublishTitle"></strong>
-          </div>
-          <div class="platform-preview-title-actions">
-            <button id="copyPlatformTitle" class="button tiny ghost" type="button" aria-label="複製標題">複製</button>
-            <button id="editPlatformTitle" class="button tiny ghost" type="button" aria-label="修改此平台標題">編輯</button>
-          </div>
-          </div>
-        <div id="platformPreviewTitleEditor" class="platform-preview-title-editor" hidden>
-          <label class="field-label" for="platformPreviewTitleInput">此平台標題</label>
-          <div class="platform-preview-title-editor-controls">
-            <input id="platformPreviewTitleInput" class="text-input" type="text" maxlength="200" />
-            <button id="savePlatformPreviewTitle" class="button primary" type="button">保存標題</button>
-            <button id="resetPlatformPreviewTitle" class="button ghost" type="button">改回沿用</button>
-          </div>
-          <small>只影響目前平台，不修改來源文章名稱或 Markdown 檔名。</small>
-        </div>
-        <div id="platformPreviewOptions" class="platform-preview-options">
-          <span id="platformPreviewOptionsSummary" hidden>使用預設</span>
-          <div class="platform-preview-options-body">
-            <div class="platform-preview-copy-title-option">
-              <label>
-                <input id="platformPreviewIncludeTitle" type="checkbox" />
-                <span>內容前附上標題</span>
-              </label>
-              <select id="platformPreviewTitleStyle" class="text-input" disabled aria-label="標題格式">
-                <option value="heading">大標題</option>
-                <option value="bold">粗體</option>
-              </select>
-            </div>
-            <label id="platformPreviewAfterwordOption" class="platform-preview-afterword-option" hidden>
-              <input id="platformPreviewIncludeAfterword" type="checkbox" />
-              <span>附上後記</span>
-              <small id="platformPreviewAfterwordCount"></small>
-            </label>
-          </div>
-        </div>
-        </section>
-        <div class="platform-preview-content-head"><strong>內容預覽</strong><span>主要內容</span></div>
-        <div id="platformPreviewContent" class="platform-preview-content"></div>
-        <section id="platformPreviewVisualExtras" class="platform-preview-visual-extras" aria-label="選填發布資訊" hidden>
-          <div class="platform-preview-visual-extras-head">
-            <strong>選填發布資訊</strong>
-            <span>主要內容與圖片確認後，再依需要複製或調整。</span>
-          </div>
-          <div id="platformPreviewSummaryBlock" class="platform-preview-extra-block" hidden>
-            <div class="platform-preview-extra-row">
-              <button id="copyPlatformSummary" class="platform-preview-extra-copy" type="button">
-                <span>摘要</span><p id="platformPreviewSummary"></p><small>點一下複製</small>
-              </button>
-            </div>
-          </div>
-          <div id="platformPreviewHashtagsBlock" class="platform-preview-extra-block platform-preview-hashtags-block" hidden>
-            <div class="platform-preview-extra-row platform-preview-hashtags-row">
-              <button id="copyPlatformHashtags" class="platform-preview-extra-copy" type="button">
-                <span>Hashtags</span><p id="platformPreviewHashtags"></p><small>點一下複製</small>
-              </button>
-              <button id="editPlatformPreviewHashtags" class="button tiny ghost" type="button" aria-expanded="false">編輯</button>
-            </div>
-            <section id="platformPreviewHashtagsEditor" class="platform-preview-extra-editor platform-preview-platform-hashtags" hidden>
-              <div class="platform-preview-extra-editor-head platform-preview-platform-hashtags-head">
-                <label for="platformPreviewHashtagsInput">此平台 Hashtags</label>
-                <span id="platformPreviewHashtagsState"></span>
-              </div>
-              <input id="platformPreviewHashtagsInput" class="text-input" type="text" maxlength="500" placeholder="#創作 #小說" />
-              <div class="platform-preview-extra-editor-actions platform-preview-platform-hashtags-actions">
-                <button id="savePlatformPreviewHashtags" class="button tiny primary" type="button">儲存</button>
-                <button id="resetPlatformPreviewHashtags" class="button tiny ghost" type="button">沿用共用</button>
-              </div>
-              <small>未自訂時沿用共用值；儲存空白代表此平台不使用 Hashtags。</small>
-            </section>
-          </div>
-        </section>
-      </div>
-      <div class="platform-preview-actions">
-        <button id="platformPreviewRecordBtn" class="button ghost" type="button" hidden>記錄發布</button>
-        <button id="togglePlatformPublished" class="button ghost" type="button">標註已發布</button>
-        <span class="platform-preview-actions-spacer"></span>
-        <button id="confirmPlatformCopy" class="button primary" type="button">複製內容</button>
-      </div>`;
-    return panel;
-  }
-
 
   function rebuildArticleToolDialog() {
     document.getElementById('publishingArticleToolDialog')?.remove();
@@ -427,298 +317,6 @@
     return true;
   }
 
-  function renderPublishPreview(panel, part, platform, contentMode = '') {
-    const visual = contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL || isVisualPart(part);
-    const platformSpecific = Boolean(platform);
-    normalizePartStatus(part);
-    const entry = allEntries().find(item => item.part === part);
-    const toggle = panel.querySelector('#togglePlatformPublished');
-    const settings = panel.querySelector('#platformPreviewSettings');
-    const afterwordOption = panel.querySelector('#platformPreviewAfterwordOption');
-    const includeAfterword = panel.querySelector('#platformPreviewIncludeAfterword');
-    const includeTitle = panel.querySelector('#platformPreviewIncludeTitle');
-    const titleStyle = panel.querySelector('#platformPreviewTitleStyle');
-    const titleEditor = panel.querySelector('#platformPreviewTitleEditor');
-    const titleInput = panel.querySelector('#platformPreviewTitleInput');
-    const options = panel.querySelector('#platformPreviewOptions');
-    const optionsSummary = panel.querySelector('#platformPreviewOptionsSummary');
-    const editTitle = panel.querySelector('#editPlatformTitle');
-    const summaryBlock = panel.querySelector('#platformPreviewSummaryBlock');
-    const hashtagsBlock = panel.querySelector('#platformPreviewHashtagsBlock');
-    const hashtagsEditor = panel.querySelector('#platformPreviewHashtagsEditor');
-    const hashtagsInput = panel.querySelector('#platformPreviewHashtagsInput');
-    const hashtagsState = panel.querySelector('#platformPreviewHashtagsState');
-    const editHashtags = panel.querySelector('#editPlatformPreviewHashtags');
-    const resetHashtags = panel.querySelector('#resetPlatformPreviewHashtags');
-    const visualExtras = panel.querySelector('#platformPreviewVisualExtras');
-    const summaryCard = panel.querySelector('#copyPlatformSummary');
-    const hashtagsCard = panel.querySelector('#copyPlatformHashtags');
-    let summaryText = String(part.summary || '').trim();
-    let hashtagsText = hashtagsFor(part, platform);
-    const afterwordCount = afterwordChars(part);
-    const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
-
-    const refreshContent = () => {
-      const container = panel.querySelector('#platformPreviewContent');
-      const sections = outputSections(part, platform, includeAfterword.checked);
-      if (visual && !part.images?.length) {
-        renderOneImagePreview(container, part, includeTitle.checked ? titleStyle.value : '', platform, includeAfterword.checked);
-      } else if (visual) {
-        renderVisualPublishPreview(container, part, outputFor(part, platform, includeAfterword.checked), includeTitle.checked ? titleStyle.value : '', platform);
-      } else if (window.StoryFlowArticleImages?.renderPreview) {
-        window.StoryFlowArticleImages.renderPreview(container, part, sections, {
-          projectTitle: state.projectTitle,
-          chapterTitle: allEntries().find(entry => entry.part === part)?.chapter?.title || ''
-        });
-      } else {
-        container.textContent = outputFor(part, platform, includeAfterword.checked);
-      }
-      if (includeTitle.checked && !visual) {
-        if (container.dataset.sfPreviewManaged === 'article-images') {
-          const titleNode = document.createElement(titleStyle.value === 'bold' ? 'strong' : 'h1');
-          titleNode.className = `platform-preview-included-title ${titleStyle.value}`;
-          titleNode.textContent = publishTitleFor(part, platform);
-          container.prepend(titleNode);
-        } else {
-          container.textContent = outputWithTitle(part, platform, includeAfterword.checked, titleStyle.value);
-        }
-      }
-      window.StoryFlowPreviewMode?.refresh?.();
-    };
-
-    const refreshTitle = () => {
-      const currentTitle = publishTitleFor(part, platform);
-      const platformOverride = platform && String(part.platformTitles?.[platform] || '').trim();
-      const legacyOverride = String(part.publishTitle || '').trim();
-      panel.querySelector('#platformPreviewTitle').textContent = platformSpecific
-        ? `預覽與複製 · ${platformLabel(platform)}`
-        : '預覽';
-      panel.querySelector('#platformPreviewPublishTitle').textContent = currentTitle;
-      panel.querySelector('#platformPreviewTitleSource').textContent = platformOverride
-        ? '發布標題 · 此平台自訂'
-        : legacyOverride ? '發布標題 · 沿用既有共用標題' : `發布標題 · 沿用${visual ? '圖文' : '文章'}名稱`;
-      titleInput.value = platformOverride || '';
-      refreshContent();
-    };
-
-    const previewMeta = panel.querySelector('#platformPreviewMeta');
-    previewMeta.textContent = platform
-      ? `${platform} · ${visual ? '文字與圖片順序' : '貼文內容'}`
-      : '預設輸出預覽 · 不會變更發布狀態';
-    if (publishTitleFor(part, platform) !== part.title) {
-      previewMeta.textContent += ` · 內部名稱：${part.title}`;
-    }
-    previewMeta.hidden = true;
-    settings.hidden = !platformSpecific;
-    settings.classList.toggle('hidden', !platformSpecific);
-    editTitle.hidden = !platformSpecific;
-    titleEditor.hidden = true;
-    hashtagsEditor.hidden = true;
-    editHashtags.hidden = !platformSpecific;
-    editHashtags.setAttribute('aria-expanded', 'false');
-    editHashtags.textContent = '編輯';
-    summaryBlock.hidden = !platformSpecific;
-    summaryBlock.classList.toggle('hidden', !platformSpecific);
-    visualExtras.hidden = !platformSpecific;
-    visualExtras.classList.toggle('hidden', !platformSpecific);
-
-    const setExtraEditorExpanded = (button, editor, expanded, input) => {
-      editor.hidden = !expanded;
-      button.setAttribute('aria-expanded', String(expanded));
-      button.textContent = expanded ? '收合' : '編輯';
-      if (expanded) {
-        input.focus();
-        editor.scrollIntoView({ block: 'nearest' });
-      }
-    };
-
-    const refreshSummaryView = () => {
-      summaryText = String(part.summary || '').trim();
-      summaryCard.disabled = !summaryText;
-      panel.querySelector('#platformPreviewSummary').textContent = summaryText || '尚未設定';
-      // Both content types write their summary in one place: 摘要與 Hashtags, beside the text
-      // rather than in the editor of it.
-      summaryCard.querySelector('small').textContent = summaryText ? '點一下複製' : '在「摘要與 Hashtags」設定';
-      summaryCard.onclick = async () => {
-        if (!summaryText) return;
-        try {
-          await writeClipboard(summaryText);
-          notify('已複製摘要');
-        } catch (error) {
-          notify(`複製摘要失敗：${error.message}`, true);
-        }
-      };
-    };
-    refreshSummaryView();
-    const refreshHashtagsView = () => {
-      hashtagsText = hashtagsFor(part, platform);
-      const overridden = hasPlatformHashtagsOverride(part, platform);
-      hashtagsBlock.hidden = !platformSpecific;
-      hashtagsBlock.classList.toggle('hidden', !platformSpecific);
-      hashtagsCard.disabled = !hashtagsText;
-      visualExtras.hidden = !platformSpecific;
-      visualExtras.classList.toggle('hidden', !platformSpecific);
-      panel.querySelector('#platformPreviewHashtags').textContent = hashtagsText || '尚未設定';
-      // Empty, the value already reads 尚未設定 and 編輯 sits beside it; a hint repeating it adds nothing.
-      hashtagsCard.querySelector('small').textContent = hashtagsText ? '點一下複製' : '';
-      hashtagsInput.value = hashtagsText;
-      hashtagsState.textContent = overridden
-        ? (hashtagsText ? '此平台自訂' : '此平台不使用')
-        : '沿用共用';
-      resetHashtags.disabled = !overridden;
-      panel.querySelector('#copyPlatformHashtags').onclick = async () => {
-        if (!hashtagsText) return;
-        try {
-          await writeClipboard(hashtagsText);
-          notify('已複製 Hashtags');
-        } catch (error) {
-          notify(`複製 Hashtags 失敗：${error.message}`, true);
-        }
-      };
-    };
-    refreshHashtagsView();
-    includeTitle.checked = Boolean(previewOptions.includeTitle);
-    titleStyle.value = previewOptions.titleStyle || 'heading';
-    titleStyle.disabled = !includeTitle.checked;
-    const refreshOptionsSummary = () => {
-      const labels = [];
-      if (includeTitle.checked) labels.push(titleStyle.value === 'bold' ? '含粗體標題' : '含大標題');
-      if (!afterwordOption.hidden && includeAfterword.checked) labels.push('含後記');
-      optionsSummary.textContent = labels.length ? labels.join(' · ') : '使用預設';
-    };
-    editTitle.onclick = () => {
-      titleEditor.hidden = !titleEditor.hidden;
-      if (!titleEditor.hidden) titleInput.focus();
-    };
-    editHashtags.onclick = () => {
-      if (!platformSpecific) return;
-      setExtraEditorExpanded(editHashtags, hashtagsEditor, hashtagsEditor.hidden, hashtagsInput);
-    };
-    panel.querySelector('#savePlatformPreviewTitle').onclick = async () => {
-      if (!entry || !platform) return;
-      await savePlatformTitle(entry.chapter, part, platform, titleInput);
-      titleEditor.hidden = true;
-      refreshTitle();
-    };
-    panel.querySelector('#resetPlatformPreviewTitle').onclick = async () => {
-      if (!entry || !platform) return;
-      titleInput.value = '';
-      await savePlatformTitle(entry.chapter, part, platform, titleInput);
-      titleEditor.hidden = true;
-      refreshTitle();
-    };
-    panel.querySelector('#savePlatformPreviewHashtags').onclick = async () => {
-      if (!entry || !platformSpecific) return;
-      await savePlatformHashtags(entry.chapter, entry.part, platform, hashtagsInput);
-      refreshHashtagsView();
-      refreshOptionsSummary();
-      setExtraEditorExpanded(editHashtags, hashtagsEditor, false, hashtagsInput);
-    };
-    resetHashtags.onclick = async () => {
-      if (!entry || !platformSpecific) return;
-      await savePlatformHashtags(entry.chapter, entry.part, platform, hashtagsInput, true);
-      refreshHashtagsView();
-      refreshOptionsSummary();
-      setExtraEditorExpanded(editHashtags, hashtagsEditor, false, hashtagsInput);
-    };
-    panel.querySelector('#copyPlatformTitle').onclick = async () => {
-      try {
-        await writeClipboard(publishTitleFor(part, platform));
-        notify('已複製發布標題');
-      } catch (error) {
-        notify(`複製標題失敗：${error.message}`, true);
-      }
-    };
-    includeTitle.onchange = () => {
-      previewOptions.includeTitle = includeTitle.checked;
-      titleStyle.disabled = !includeTitle.checked;
-      refreshOptionsSummary();
-      refreshContent();
-    };
-    titleStyle.onchange = () => {
-      previewOptions.titleStyle = titleStyle.value;
-      refreshOptionsSummary();
-      refreshContent();
-    };
-    afterwordOption.hidden = !platformSpecific || afterwordCount === 0;
-    includeAfterword.checked = includeAfterwordFor(part, platform);
-    panel.querySelector('#platformPreviewAfterwordCount').textContent = `${afterwordCount.toLocaleString()} 字`;
-    includeAfterword.onchange = async () => {
-      if (!platformSpecific) return;
-      // This platform's own choice. Choosing what the shared default already says drops the
-      // platform's entry, so it goes back to following the article.
-      part.platformIncludeAfterword ||= {};
-      if (includeAfterword.checked === (part.includeAfterword !== false)) delete part.platformIncludeAfterword[platform];
-      else part.platformIncludeAfterword[platform] = includeAfterword.checked;
-      saveState('後記輸出設定已更新');
-      // Rebuilt rather than refreshed: the rail notes which platforms decided differently.
-      renderParts();
-      const entry = allEntries().find(item => item.part === part);
-      if (!entry) return;
-      try {
-        const updated = visual ? await writeVisualEntry(part) : await writeArticleMarkdown(entry.chapter, part);
-        if (updated) notify('後記輸出設定已更新');
-        else notify('輸出設定目前只保留在畫面；請重新連接資料夾後再調整一次。', true);
-      } catch (error) {
-        notify(`輸出設定已更新，但文章 Markdown 尚未寫入：${error.message}`, true);
-      }
-    };
-    refreshOptionsSummary();
-    refreshTitle();
-    const blockedByIncompleteVisual = Boolean(platform && visual && !isPublished && !visualContentComplete(part));
-    const recordButton = panel.querySelector('#platformPreviewRecordBtn');
-    recordButton.hidden = !platform;
-    recordButton.textContent = isPublished ? '發布紀錄' : '記錄發布';
-    recordButton.setAttribute('aria-label', `${isPublished ? '查看' : '記錄'}「${platform}」發布紀錄`);
-    recordButton.disabled = blockedByIncompleteVisual;
-    recordButton.title = blockedByIncompleteVisual ? '請先完成圖文內容' : '';
-    recordButton.onclick = () => {
-      if (!entry || !platform) return;
-      openPublicationRecord(entry.chapter, part, platform);
-    };
-    toggle.hidden = !platform;
-    toggle.textContent = isPublished ? '取消已發布標記' : '標註已發布';
-    // The button's text is about the selected version; its accessible name has to say
-    // which one, because nothing in the sentence "取消已發布標記" names a platform.
-    toggle.setAttribute('aria-label', `${isPublished ? '取消' : '標註'}「${platform}」已發布`);
-    toggle.classList.toggle('is-published', isPublished);
-    toggle.disabled = blockedByIncompleteVisual;
-    toggle.title = toggle.disabled ? '請先完成圖文標題，並加入正文或至少一張圖片' : '';
-
-    panel.querySelector('#confirmPlatformCopy').onclick = async () => {
-      try {
-        const selectedTitleStyle = includeTitle.checked ? titleStyle.value : '';
-        await writeClipboard(
-          outputWithTitle(part, platform, includeAfterword.checked, selectedTitleStyle),
-          richOutputHtml(part, platform, includeAfterword.checked, selectedTitleStyle)
-        );
-        notify(visual
-          ? `已複製 ${platformLabel(platform)} 文字；圖片請依下方順序手動上傳`
-          : `已複製 ${platformLabel(platform)} 內容`);
-      } catch (error) {
-        notify(`複製失敗：${error.message}`, true);
-        return;
-      }
-      if (platform && !part.platformStatus?.[platform] && (!visual || visualContentComplete(part))) {
-        const pending = pendingMarks(part);
-        const markPublished = window.confirm(`已複製「${platform}」版本。\n\n${pending ? `這篇還有 ${pending} 處【待補】／【待確認】。\n\n` : ''}要將這個平台標註為已發布嗎？`);
-        if (markPublished) {
-          setPlatformPublished(part, platform, true);
-          renderParts();
-          await persistPublicationChange(part, `${platform} 已標註為已發布並記錄時間`);
-        }
-      }
-    };
-
-    toggle.onclick = () => {
-      if (!platform) return;
-      togglePlatformPublished(part, platform);
-    };
-
-    window.StoryFlowPreviewMode?.refresh?.();
-    return panel;
-  }
-
   // Selecting a part and a platform is the whole of "preview": the expanded row's left
   // column renders whichever pairing is selected, so callers say what to show rather than
   // what to open.
@@ -760,75 +358,6 @@
     await StoryFlowIntegrations.saveVisualEntry({ projectTitle: state.projectTitle, entry });
     saveState('圖文發布資料已更新');
     return true;
-  }
-
-  // A visual entry's copy is plain text rather than the Markdown preview a longform part
-  // gets, so its scene marker used to sit at the left margin while the same marker in an
-  // article above it was centred. Marker lines are centred here the way the Markdown preview
-  // centres them; every other line stays exactly the text that will be copied.
-  function visualCopyHTML(body) {
-    const marker = String(state?.sceneMarker || '').trim();
-    return String(body || '').split('\n').map(line => {
-      const value = line.trim();
-      const isMarker = value && ((marker && value === marker) || /^[＊*]{3,}$/.test(value));
-      return isMarker ? `<span class="visual-publish-scene">${escapeHtml(value)}</span>` : escapeHtml(line);
-    }).join('<br>');
-  }
-
-  // A one-image article (REDESIGN_PROPOSAL C6) is previewed as the reader will see it — the
-  // same renderer as the workspace's live preview — with its photo read from Google Drive
-  // into memory. The photo cannot travel in the copied text, so it can be downloaded here and
-  // uploaded on the platform at the 〔圖片〕 mark.
-  function renderOneImagePreview(container, entry, titleStyle, platform, includeAfterword) {
-    container.dataset.sfPreviewManaged = 'visual';
-    container.innerHTML = '<article class="visual-article-preview visual-publish-article" data-width="desktop"></article><section class="visual-upload-order visual-photo-download"></section>';
-    window.StoryFlowVisualWorkspace?.renderArticle?.(container.querySelector('article'), entry, {
-      platform, includeAfterword, titleStyle: titleStyle ? 'heading' : ''
-    });
-    const photo = window.StoryFlowVisualPhotos?.byId?.(entry.photoId);
-    const download = container.querySelector('.visual-photo-download');
-    if (!photo) {
-      download.innerHTML = `<div><strong>圖片</strong><span>${entry.photoId ? '照片庫裡已沒有這張照片。' : '這則圖文沒有圖片。'}</span></div>`;
-      return;
-    }
-    download.innerHTML = `<div><strong>圖片</strong><span>圖片不會被複製或自動上傳；請在平台上、〔圖片〕的位置自行上傳這張照片。</span></div>
-      <button class="button tiny ghost visual-photo-download-btn" type="button">下載圖片</button>`;
-    download.querySelector('button').addEventListener('click', async event => {
-      event.stopPropagation();
-      const url = await window.StoryFlowVisualPhotos.load(photo);
-      if (!url) return notify('無法從 Google Drive 讀取這張照片；請確認已登入 Google，且照片仍在 Drive。', true);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = photo.name;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    });
-  }
-
-  function renderVisualPublishPreview(container, entry, body, titleStyle, platform) {
-    visualPreviewUrls.forEach(url => URL.revokeObjectURL(url));
-    visualPreviewUrls = [];
-    const title = titleStyle ? publishTitleFor(entry, platform) : '';
-    container.dataset.sfPreviewManaged = 'visual';
-    container.innerHTML = `
-      ${title ? `<${titleStyle === 'bold' ? 'strong' : 'h1'} class="platform-preview-included-title ${titleStyle}">${escapeHtml(title)}</${titleStyle === 'bold' ? 'strong' : 'h1'}>` : ''}
-      <div class="visual-publish-copy">${visualCopyHTML(body)}</div>
-      <section class="visual-upload-order">
-        <div><strong>圖片上傳順序</strong><span>圖片不會被複製或自動上傳，請依序手動選取。</span></div>
-        <ol>${entry.images.length ? entry.images.map(image => `<li data-visual-publish-image="${escapeHtml(image.id)}"><div class="visual-upload-thumb"><span>載入中</span></div><div><strong>${escapeHtml(image.storedName)}</strong>${entry.coverImageId === image.id ? '<em>封面</em>' : ''}<small>${escapeHtml(image.alt || '尚未填寫替代文字')}${image.caption ? ` · ${escapeHtml(image.caption)}` : ''}</small></div></li>`).join('') : '<li class="visual-upload-empty">這則圖文沒有圖片。</li>'}</ol>
-      </section>`;
-    entry.images.forEach(async image => {
-      const item = container.querySelector(`[data-visual-publish-image="${CSS.escape(image.id)}"]`);
-      try {
-        const file = await StoryFlowIntegrations.getVisualImageFile({ projectTitle: state.projectTitle, entryId: entry.id, storedName: image.storedName });
-        const url = URL.createObjectURL(file);
-        visualPreviewUrls.push(url);
-        if (item?.isConnected) item.querySelector('.visual-upload-thumb').innerHTML = `<img src="${url}" alt="${escapeHtml(image.alt || '')}" />`;
-      } catch (_) {
-        if (item?.isConnected) item.querySelector('.visual-upload-thumb').innerHTML = '<span class="missing">找不到圖片檔</span>';
-      }
-    });
   }
 
   function openPublicationRecord(chapter, part, platform) {
@@ -1221,7 +750,7 @@
           <span class="sf-chevron publish-expand-indicator" aria-hidden="true"></span>
         </div>
       </div>
-      <div class="publish-lightbox ${lightboxMaximized ? 'is-maximized' : ''}" role="dialog" aria-label="管理發布「${escapeHtml(publishTitle)}」" ${expanded ? '' : 'hidden'}>
+      <div class="publish-lightbox ${Lightbox.isMaximized() ? 'is-maximized' : ''}" role="dialog" aria-label="管理發布「${escapeHtml(publishTitle)}」" ${expanded ? '' : 'hidden'}>
       <div class="publish-lightbox-window">
       ${expanded ? `
       <header class="publish-lightbox-head">
@@ -1233,7 +762,7 @@
         <div class="publish-lightbox-controls">
           <button class="publish-lightbox-button publish-lightbox-step" type="button" data-step="-1" aria-label="上一篇" title="上一篇"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
           <button class="publish-lightbox-button publish-lightbox-step" type="button" data-step="1" aria-label="下一篇" title="下一篇"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
-          <button class="publish-lightbox-button publish-lightbox-size" type="button" aria-pressed="${lightboxMaximized}" aria-label="${lightboxMaximized ? '縮小視窗' : '放大視窗'}" title="${lightboxMaximized ? '縮小視窗' : '放大視窗'}"><svg class="publish-lightbox-grow" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg><svg class="publish-lightbox-shrink" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14h6v6M20 10h-6V4M10 14l-7 7M14 10l7-7"/></svg></button>
+          <button class="publish-lightbox-button publish-lightbox-size" type="button" aria-pressed="${Lightbox.isMaximized()}" aria-label="${Lightbox.isMaximized() ? '縮小視窗' : '放大視窗'}" title="${Lightbox.isMaximized() ? '縮小視窗' : '放大視窗'}"><svg class="publish-lightbox-grow" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg><svg class="publish-lightbox-shrink" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14h6v6M20 10h-6V4M10 14l-7 7M14 10l7-7"/></svg></button>
           <button class="publish-lightbox-button publish-lightbox-close" type="button" aria-label="關閉" title="關閉（Esc）"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
         </div>
       </header>` : ''}
@@ -1329,7 +858,7 @@
       });
       lightbox.querySelector('.publish-lightbox-size').addEventListener('click', event => {
         event.stopPropagation();
-        setLightboxMaximized(!lightboxMaximized);
+        Lightbox.setMaximized(!Lightbox.isMaximized());
       });
       card.querySelector('.publish-helper-tool-btn')?.addEventListener('click', event => {
         event.stopPropagation();
@@ -1361,27 +890,19 @@
       }
 
       if (selectedPlatformKey && !platforms.includes(selectedPlatformKey)) selectedPlatformKey = '';
-      const panel = buildPublishPreviewPanel();
+      const panel = Preview.buildPanel();
       card.querySelector('.publish-preview-host').appendChild(panel);
-      renderPublishPreview(panel, part, selectedPlatformKey, entry.contentMode);
+      Preview.render(panel, part, selectedPlatformKey, entry.contentMode);
     }
 
     return card;
-  }
-
-  // The rows of the active work, in the order the queue shows them. Rows of other works are
-  // stand-ins that switch work first, so stepping stays inside the work that is open.
-  function lightboxOrder() {
-    return [...(els.partsList?.querySelectorAll('.publish-list-item:not(.publishing-combined-row)') || [])]
-      .map(card => card.dataset.partKey)
-      .filter(Boolean);
   }
 
   // ‹ › step to the neighbouring article and keep the platform: publishing a run of chapters to
   // one platform is the usual reason to step. Opening a row from the list still starts on the
   // default output, because there the platform was chosen for a different article.
   function stepLightbox(key, delta) {
-    const order = lightboxOrder();
+    const order = Lightbox.order();
     const index = order.indexOf(key);
     const next = index < 0 ? null : order[index + delta];
     if (!next) return;
@@ -1389,93 +910,6 @@
     previewOptions = { includeTitle: false, titleStyle: 'heading' };
     renderParts();
   }
-
-  function setLightboxMaximized(value) {
-    lightboxMaximized = Boolean(value);
-    try { localStorage.setItem(LIGHTBOX_SIZE_KEY, lightboxMaximized ? '1' : '0'); } catch (_) {}
-    const label = lightboxMaximized ? '縮小視窗' : '放大視窗';
-    els.partsList?.querySelectorAll('.publish-lightbox').forEach(box => {
-      box.classList.toggle('is-maximized', lightboxMaximized);
-      const button = box.querySelector('.publish-lightbox-size');
-      button?.setAttribute('aria-pressed', String(lightboxMaximized));
-      button?.setAttribute('aria-label', label);
-      if (button) button.title = label;
-    });
-  }
-
-  function openLightbox() {
-    const box = els.partsList?.querySelector('.publish-lightbox:not([hidden])');
-    return box && box.getClientRects().length ? box : null;
-  }
-
-  function focusSelectorWithin(box) {
-    const active = document.activeElement;
-    if (!active || active === box || !box.contains(active)) return '';
-    if (active.id) return `#${CSS.escape(active.id)}`;
-    if (active.dataset.step) return `.publish-lightbox-step[data-step="${active.dataset.step}"]`;
-    const name = [...active.classList].find(item => item.startsWith('publish-'));
-    if (!name) return '';
-    const row = active.closest('.publish-platform-row');
-    return row
-      ? `.publish-platform-row[data-platform="${CSS.escape(row.dataset.platform || '')}"] .${name}`
-      : `.${name}`;
-  }
-
-  StoryFlowRender.before('renderParts', 'publishing-lightbox-memory', () => {
-    const box = openLightbox();
-    if (!box) {
-      lightboxMemory = null;
-      return;
-    }
-    lightboxMemory = {
-      key: box.closest('.publish-list-item')?.dataset.partKey || '',
-      platform: box.querySelector('.publish-platform-row.is-current')?.dataset.platform || '',
-      mainTop: box.querySelector('.publish-manuscript-column')?.scrollTop || 0,
-      railTop: box.querySelector('.publish-platform-rail')?.scrollTop || 0,
-      detailsTop: box.querySelector('.publish-platform-details')?.scrollTop || 0,
-      focus: focusSelectorWithin(box)
-    };
-  });
-
-  // Runs once the whole render has finished, after the project filter has regrouped the rows.
-  function syncLightbox() {
-    const box = openLightbox();
-    document.documentElement.classList.toggle('sf-publish-lightbox-open', Boolean(box));
-    const memory = lightboxMemory;
-    lightboxMemory = null;
-    if (!box) return;
-    const key = box.closest('.publish-list-item')?.dataset.partKey || '';
-    const order = lightboxOrder();
-    const index = order.indexOf(key);
-    box.querySelector('.publish-lightbox-step[data-step="-1"]').disabled = index <= 0;
-    box.querySelector('.publish-lightbox-step[data-step="1"]').disabled = index < 0 || index >= order.length - 1;
-    if (!memory) return;
-    // The same version of the same article keeps its place; another one starts at the top.
-    if (memory.key === key && memory.platform === (box.querySelector('.publish-platform-row.is-current')?.dataset.platform || '')) {
-      const column = box.querySelector('.publish-manuscript-column');
-      const rail = box.querySelector('.publish-platform-rail');
-      const details = box.querySelector('.publish-platform-details');
-      if (column) column.scrollTop = memory.mainTop;
-      if (rail) rail.scrollTop = memory.railTop;
-      if (details) details.scrollTop = memory.detailsTop;
-    }
-    if (memory.focus) {
-      const target = box.querySelector(memory.focus);
-      (target && !target.disabled ? target : box.querySelector('.publish-lightbox-close'))?.focus({ preventScroll: true });
-    }
-  }
-
-  StoryFlowRender.after('renderParts', 'publishing-lightbox-sync', () => queueMicrotask(syncLightbox));
-  window.addEventListener('storyflow:view-changed', () => queueMicrotask(syncLightbox));
-
-  // Esc closes the lightbox, unless a dialog opened from inside it is the one on top.
-  document.addEventListener('keydown', event => {
-    if (event.key !== 'Escape' || event.defaultPrevented) return;
-    const box = openLightbox();
-    if (!box || document.querySelector('dialog:modal')) return;
-    event.preventDefault();
-    box.querySelector('.publish-lightbox-close')?.click();
-  });
 
   function refreshHeaderAndSummary(entries) {
     const counts = dashboardCounts(entries);
@@ -1549,8 +983,7 @@
     refreshHeaderAndSummary(entries);
     // The preview panel lives inside the list, so emptying it discards whatever object URLs
     // a visual preview was holding. The dialog's close handler used to do this.
-    visualPreviewUrls.forEach(url => URL.revokeObjectURL(url));
-    visualPreviewUrls = [];
+    Preview.releaseUrls();
     els.partsList.innerHTML = '';
 
     const filtered = currentFilter === 'all'
@@ -1616,6 +1049,19 @@
       return true;
     }
   };
+
+  Preview.configure({
+    entryFor: part => allEntries().find(item => item.part === part),
+    options: () => previewOptions,
+    savePlatformTitle,
+    savePlatformHashtags,
+    openPublicationRecord,
+    setPlatformPublished,
+    persistPublicationChange,
+    togglePlatformPublished,
+    writeArticleMarkdown,
+    writeVisualEntry
+  });
 
   ensureViewStructure();
   renderParts();
