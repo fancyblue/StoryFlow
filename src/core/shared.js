@@ -75,8 +75,8 @@
   }
 
   // Text placed into HTML built as a string. Six modules carried their own copy, identical in
-  // what they return; a missing value is an empty string. app.js's global escapeHtml() is not
-  // one of them: it turns null into "null", so folding it in would change what it renders.
+  // what they return; a missing value is an empty string. app.js's global escapeHtml() now
+  // returns this too, where it used to render a missing value as "null" or "undefined".
   function esc(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
