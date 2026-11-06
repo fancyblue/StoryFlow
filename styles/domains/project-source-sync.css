@@ -33,7 +33,7 @@
   border-bottom:1px solid var(--line);
 }
 .project-source-diff-head h3{margin:0;font-size:21px}
-.project-source-diff-head .muted{margin:6px 0 0;line-height:1.55}
+.project-source-diff-head .muted{margin:6px 0 0}
 .project-source-diff-summary{
   display:flex;
   align-items:baseline;
@@ -95,9 +95,7 @@
   font-weight:700;
   white-space:nowrap;
 }
-.project-source-diff-badge.missing{background:#f4f1e9;color:#4b4557}
 .project-source-diff-badge.changed{background:#f5eddc;color:#a8443a}
-.project-source-diff-badge.relink{background:#fbfaf6;color:#4b4557}
 .project-source-diff-badge.warning{background:#f4f1e9;color:#6a6357}
 .project-source-diff-copy{display:grid;gap:4px;min-width:0}
 .project-source-diff-copy strong{font-size:13px;line-height:1.4}

@@ -17,10 +17,9 @@
   align-items:flex-start;
   justify-content:space-between;
   gap:24px;
-  margin-bottom:16px;
 }
 .publishing-page-head h1{margin:0}
-.publishing-page-subtitle{margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
+.publishing-page-subtitle{margin:7px 0 0;font-size:13px}
 .publishing-project-badge{
   min-width:180px;
   max-width:320px;
@@ -72,7 +71,7 @@
   border-bottom:1px solid var(--line);
 }
 .publishing-dashboard-panel>.panel-head h2{line-height:1.3}
-.publishing-dashboard-panel>.panel-head .muted{display:block;margin-top:6px;line-height:1.5;max-width:760px}
+.publishing-dashboard-panel>.panel-head .muted{display:block;margin-top:6px;max-width:760px}
 
 /* Collapsed, an article is a row among rows: the hairline is the whole of its boundary.
    Expanded, it holds a region of controls that has to read as belonging to it, so that one
@@ -132,28 +131,21 @@
 }
 .publish-list-meta{display:flex;align-items:center;justify-content:flex-end}
 .publish-overall-status{
-  display:inline-flex;
-  align-items:center;
-  padding:4px 8px;
   border:1px solid var(--line);
   border-radius:999px;
   background:#fbfaf6;
   color:var(--muted);
-  font-size:10px;
-  font-weight:700;
   white-space:nowrap;
 }
 .publish-overall-status.complete{border-color:#d7dec6;background:#eef0e4;color:#59703f}
 
 .publish-list-actions{
   display:flex;
-  align-items:center;
   justify-content:flex-end;
   gap:6px;
   white-space:nowrap;
 }
 .publish-list-actions .button{white-space:nowrap}
-.publish-delete-btn{color:#a8443a}
 .publish-expand-indicator{
   display:grid;
   place-items:center;
@@ -208,7 +200,7 @@
 .publish-article-tools-copy strong{color:var(--sf-text);font-size:12px}
 .publish-article-tools-copy span{margin-top:3px;color:#6a6357;font-size:10px;line-height:1.45}
 .publish-article-tool-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}
-.publish-article-tool-actions .button{min-height:34px;white-space:nowrap}
+.publish-article-tool-actions .button{white-space:nowrap}
 .publish-afterword-editor{
   padding:13px 14px;
   border:1px solid #ded9cc;
@@ -270,7 +262,6 @@
   border-bottom:1px solid var(--line);
 }
 .publish-platform-details-head strong{letter-spacing:.02em;}
-.publish-platform-details-head .muted{line-height:1.45}
 .publish-platform-list{display:grid;padding:4px}
 .publish-platform-row{
   display:grid;
@@ -330,13 +321,9 @@
 }
 .publish-platform-title-summary{color:#4b4557;font-size:10px;line-height:1.4}
 .publish-platform-status{
-  display:inline-flex;
-  padding:3px 7px;
   border-radius:999px;
   background:#f4f1e9;
   color:var(--muted);
-  font-size:9px;
-  font-weight:700;
   white-space:nowrap;
 }
 .publish-platform-status.done{background:#eef0e4;color:#59703f}
@@ -493,7 +480,6 @@
 }
 .platform-preview-actions .button[hidden]{display:none!important}
 .platform-preview-actions-spacer{flex:1 1 auto}
-.platform-preview-actions .button{min-height:40px}
 
 .publishing-article-tool-dialog{
   width:min(880px,calc(100vw - 32px));
@@ -524,7 +510,6 @@
 .publishing-article-tool-body>.publish-afterword-editor,
 .publishing-article-tool-body>.visual-publish-helpers{margin:0;padding:0;border:0;background:transparent}
 .publishing-article-tool-actions{display:flex;justify-content:flex-end;padding:12px 24px 16px;border-top:1px solid var(--line);background:#fbfaf6}
-.publishing-article-tool-actions .button{min-height:40px}
 
 .publication-record-dialog{
   width:min(560px,calc(100vw - 24px));
@@ -562,7 +547,7 @@
   border-top:1px solid var(--line);
 }
 .publication-record-actions-spacer{flex:1 1 auto}
-.publication-record-actions .button{min-height:40px;white-space:nowrap}
+.publication-record-actions .button{white-space:nowrap}
 
 @media(max-width:920px){
   .publish-list-summary{grid-template-columns:minmax(0,1fr) auto}

@@ -92,7 +92,6 @@
   display:flex !important;
   gap:6px !important;
 }
-.preview-boundary-controls .button { padding:6px 9px; }
 
 
 @media (max-width:700px) {
