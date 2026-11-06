@@ -241,6 +241,7 @@
       images: normalized.images,
       platformTitles: normalized.platformTitles,
       platformHashtags: normalized.platformHashtags,
+      platformSummaries: normalized.platformSummaries,
       platformIncludeAfterword: normalized.platformIncludeAfterword,
       platformStatus: normalized.platformStatus,
       publicationRecords: normalized.publicationRecords,

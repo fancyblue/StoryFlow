@@ -69,7 +69,8 @@ function loadState() {
           parsed.formatting.platforms[platform] = {
             indent: current.indent || 'inherit',
             paragraphSpacing: typeof current.paragraphSpacing === 'boolean' ? current.paragraphSpacing : parsed.formatting.defaultParagraphSpacing,
-            sceneSeparator: typeof current.sceneSeparator === 'boolean' ? current.sceneSeparator : parsed.formatting.defaultSceneSeparator
+            sceneSeparator: typeof current.sceneSeparator === 'boolean' ? current.sceneSeparator : parsed.formatting.defaultSceneSeparator,
+            ...(current.copyTitle === 'heading' || current.copyTitle === 'bold' ? { copyTitle: current.copyTitle } : {})
           };
         });
         return parsed;

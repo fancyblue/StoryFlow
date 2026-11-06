@@ -436,6 +436,8 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await expect(preview.locator('#platformPreviewSettings')).toBeVisible();
   await expect(preview.locator('#platformPreviewOptions')).toBeVisible();
   await expect(preview.locator('#platformPreviewSummary')).toHaveText('長文共用摘要');
+  // A longform summary is shared by every platform; only a visual one can differ.
+  await expect(preview.locator('#editPlatformPreviewSummary')).toBeHidden();
   await expect(preview.locator('#platformPreviewHashtags')).toHaveText('#長文 #共用');
   await preview.getByRole('button', { name: '複製標題', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('給讀者看的正式標題');
@@ -444,13 +446,18 @@ test('platform titles stay separate and copy can prepend heading or bold title',
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('# 給讀者看的正式標題\n\n只應出現在內容區的正文。');
 
-  // Copy options belong to one article-and-platform pairing. Leaving the platform and
-  // coming back is a fresh decision, so they start from the default again.
+  // Whether a copy starts with the title is the platform's habit: it is remembered with the
+  // platform's formatting, so leaving and coming back finds it still chosen, while another
+  // platform and the StoryFlow default keep their own.
+  expect(await page.evaluate(() => state.formatting.platforms['巴哈小屋'].copyTitle)).toBe('heading');
+  await card.locator('.publish-platform-row[data-platform="方格子"] .publish-platform-choose').click();
+  await expect(preview.getByRole('checkbox', { name: '內容前附上標題' })).not.toBeChecked();
   await card.locator('.publish-platform-row[data-platform=""] .publish-platform-choose').click();
   await card.locator('.publish-platform-row[data-platform="巴哈小屋"] .publish-platform-choose').click();
-  await expect(preview.getByRole('checkbox', { name: '內容前附上標題' })).not.toBeChecked();
-  await preview.getByRole('checkbox', { name: '內容前附上標題' }).check();
+  await expect(preview.getByRole('checkbox', { name: '內容前附上標題' })).toBeChecked();
+  await expect(preview.locator('#platformPreviewTitleStyle')).toHaveValue('heading');
   await preview.locator('#platformPreviewTitleStyle').selectOption('bold');
+  expect(await page.evaluate(() => state.formatting.platforms['巴哈小屋'].copyTitle)).toBe('bold');
   await expect(preview.locator('#platformPreviewContent strong')).toHaveText('給讀者看的正式標題');
   await preview.getByRole('button', { name: '複製內容', exact: true }).click();
   await expect.poll(() => page.evaluate(() => window.__copiedPublishingValue)).toBe('**給讀者看的正式標題**\n\n只應出現在內容區的正文。');
