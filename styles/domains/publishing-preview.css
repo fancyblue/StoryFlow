@@ -215,7 +215,7 @@
   margin:0;
   padding:0 0 9px!important;
   border:0!important;
-  border-radius:0!important;
+  border-radius:0;
   background:transparent!important;
 }
 .platform-preview-settings .platform-preview-title-editor{

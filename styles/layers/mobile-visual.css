@@ -71,7 +71,7 @@
   .sidebar-connection-row.restoring {
     min-height:40px !important;
     padding:4px 6px !important;
-    justify-content:center !important;
+    justify-content:center;
     border:0 !important;
     border-radius:8px !important;
     background:transparent !important;
@@ -85,8 +85,8 @@
   .sidebar-connection-row.restoring:hover,
   .sidebar-connection-row.restoring:focus-visible {
     background:#4b4557 !important;
-    border:0 !important;
-    outline:none !important;
+    border:0;
+    outline:none;
     box-shadow:none !important;
   }
   .sidebar-connection-copy {
@@ -105,7 +105,7 @@
     letter-spacing:.01em;
   }
   .sidebar-connection-copy small {
-    max-width:none !important;
+    max-width:none;
     overflow:hidden !important;
     color:#fbfaf6 !important;
     line-height:1.15 !important;
@@ -133,7 +133,7 @@
      enough to read as destructive, without turning into a loud filled CTA. */
   .sidebar-utility-actions {
     display:grid !important;
-    align-items:center !important;
+    align-items:center;
     justify-content:end;
   }
   .sidebar-settings-button,

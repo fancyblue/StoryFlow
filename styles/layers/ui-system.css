@@ -180,7 +180,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .text-input:hover:not(:disabled),.range-grid input:hover:not(:disabled),select:hover:not(:disabled),textarea:hover:not(:disabled){border-color:#c8c1b0!important}
 .text-input:focus,.title-input:focus,.range-grid input:focus,.compact-select:focus,select:focus,textarea:focus{border-color:var(--sf-primary)!important;box-shadow:var(--sf-focus)!important;outline:none}
 .format-check{gap:8px;color:var(--sf-text);font-size:13.5px;font-weight:500;line-height:1.4}
-.format-check input[type="checkbox"],.platform-inline-check input[type="checkbox"]{width:18px!important;height:18px!important;flex:0 0 18px;margin:0}
+.format-check input[type="checkbox"],.platform-inline-check input[type="checkbox"]{width:18px;height:18px;flex:0 0 18px;margin:0}
 
 /* Universal focus: visible, consistent, never purple. */
 :where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:none!important;box-shadow:var(--sf-focus)!important}
@@ -265,7 +265,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .splitter-panel #suggestionChars{font-size:15px;font-weight:700;color:var(--denim-700,#4b4557);white-space:nowrap}
 /* The suggestion's status (建議／低於偏好) is a state, not an action: a dot and its word, with
    none of the fill the toolbar's controls carry, so it cannot be mistaken for one of them. */
-.splitter-panel .suggestion-title-row .pill{gap:6px;min-height:30px;padding:0;background:transparent;color:var(--ink-2,#6a6357)!important;border:0!important;font-size:13px;font-weight:500;white-space:nowrap;word-break:keep-all}
+.splitter-panel .suggestion-title-row .pill{gap:6px;min-height:30px;padding:0;background:transparent;color:var(--ink-2,#6a6357)!important;border:0;font-size:13px;font-weight:500;white-space:nowrap;word-break:keep-all}
 .splitter-panel .suggestion-title-row .pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--dai-700,#4b4557)}
 .split-preview-shell .preview{border-radius:14px;font-size:16px;line-height:1.95;box-shadow:none}
 /* The scene buttons end the article's title row; they carry no frame of their own. */
@@ -367,9 +367,9 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .sidebar .nav-item{border-radius:11px;font-size:18px}
   .sidebar .nav-item span{font-size:13.5px;font-weight:700}
   .sidebar-connection-status{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 74px!important;padding-top:3px!important}
-  .sidebar-connection-row{height:32px!important;min-height:32px!important;padding:0 4px!important;border-radius:7px!important}
+  .sidebar-connection-row{height:32px;min-height:32px!important;padding:0 4px!important;border-radius:7px!important}
   .sidebar-connection-copy small{font-size:11.5px!important;font-weight:700}
-  .sidebar-status-dot{width:7px!important;height:7px!important;flex:0 0 7px!important}
+  .sidebar-status-dot{width:7px!important;height:7px;flex:0 0 7px!important}
   .sidebar-utility-actions{grid-template-columns:repeat(2,34px);gap:3px!important;width:71px}
   .sidebar-settings-button,.sidebar-logout{width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;border-radius:8px!important}
   .sidebar-settings-button>.sidebar-utility-icon,.sidebar-logout>.sidebar-utility-icon,.sidebar-settings-button svg,.sidebar-logout svg{width:18px!important;height:18px!important}
@@ -381,7 +381,7 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .splitter-panel .suggestion-title-row #suggestionStatus{grid-column:1;justify-self:start}
   .splitter-panel .suggestion-title-row .preview-boundary-controls{grid-column:2!important;justify-self:end!important}
   .project-library-card{padding:16px}
-  .project-library-actions{display:grid!important;grid-template-columns:minmax(0,1fr) 40px!important;width:100%}
+  .project-library-actions{display:grid!important;grid-template-columns:minmax(0,1fr) 40px;width:100%}
   .project-library-actions .project-library-delete{grid-column:1/-1}
   .publishing-stats{grid-template-columns:1fr 1fr}
   .publishing-toolbar{align-items:flex-start!important;flex-direction:column}

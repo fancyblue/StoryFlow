@@ -410,7 +410,7 @@
   border-top:1px solid var(--line)!important;
 }
 .settings-view .platform-setting-row:first-child{
-  border-top:1px solid var(--line)!important;
+  border-top:1px solid var(--line);
 }
 /* The default row is a row like the platforms under it. Pulled 10px wider with rounded
    corners, its top rule bent down at both ends into a box that had no sides or bottom. */

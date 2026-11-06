@@ -58,8 +58,8 @@ input.text-input:focus{
   line-height:1.35;
 }
 .format-check input[type="checkbox"]{
-  width:16px!important;
-  height:16px!important;
+  width:16px;
+  height:16px;
   flex:0 0 16px;
   margin:0;
 }
@@ -216,8 +216,8 @@ input.text-input:focus{
     font-size:13px!important;
   }
   .format-check input[type="checkbox"]{
-    width:18px!important;
-    height:18px!important;
+    width:18px;
+    height:18px;
     flex-basis:18px;
   }
 
