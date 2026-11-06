@@ -170,7 +170,7 @@ input.text-input:focus{
 }
 .compact-select{
   min-height:34px!important;
-  height:34px!important;
+  height:34px;
   font-size:12px!important;
 }
 
@@ -212,7 +212,7 @@ input.text-input:focus{
   }
   .compact-select{
     min-height:40px!important;
-    height:40px!important;
+    height:40px;
     font-size:13px!important;
   }
   .format-check input[type="checkbox"]{

@@ -24,7 +24,7 @@
 }
 .project-library-meta{display:block;}
 .project-library-delete{color:#a8443a}
-.project-library-delete:hover{background:#f6e9e6!important;border-color:#e6cdc7!important}
+.project-library-delete:hover{background:#f6e9e6;border-color:#e6cdc7!important}
 
 /* Prevent the old inline publishing section and old editor source buttons from
    appearing before the dedicated app views finish booting. */

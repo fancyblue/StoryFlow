@@ -79,7 +79,7 @@
   cursor:pointer!important;
 }
 .project-library-main:hover .project-library-title-row strong{text-decoration:underline;text-underline-offset:3px}
-.project-library-main:focus-visible{outline:3px solid rgba(75,69,87,.2)!important;outline-offset:2px!important;border-radius:6px!important}
+.project-library-main:focus-visible{outline:3px solid rgba(75,69,87,.2);outline-offset:2px;border-radius:6px}
 .project-library-title-row{gap:7px!important}
 .project-library-title-row strong{
   color:var(--sf-text)!important;
@@ -244,10 +244,10 @@
 @media(max-width:560px){
   /* 管理發布 | ⋯ on one line (the grid itself is ui-system.css's phone row): the work itself
      is opened from its name above them. */
-  .project-library-actions > .project-publish-btn{grid-column:1!important;grid-row:1!important;width:100%!important}
+  .project-library-actions > .project-publish-btn{grid-column:1!important;grid-row:1;width:100%!important}
   .project-library-more-btn{
     grid-column:2!important;
-    grid-row:1!important;
+    grid-row:1;
   }
 }
 

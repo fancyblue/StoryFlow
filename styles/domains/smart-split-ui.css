@@ -145,7 +145,7 @@
 .splitter-panel .smart-split-mini-settings .range-grid input:focus,
 .splitter-panel .scene-marker-compact #sceneMarker:focus {
   border-color:#c8c1b0 !important;
-  background:#fbfaf6 !important;
+  background:#fbfaf6;
   box-shadow:0 0 0 3px rgba(34,31,26,.12) !important;
 }
 
@@ -185,7 +185,7 @@
 }
 #splitPlatformBar .sf-preview-mode-label { display:none !important; }
 #splitPlatformBar .sf-preview-mode-segment {
-  gap:2px !important;
+  gap:2px;
   padding:2px !important;
   border:0 !important;
   border-radius:8px !important;
@@ -222,7 +222,7 @@
     gap:8px !important;
     padding-bottom:12px !important;
     overflow-x:auto;
-    flex-wrap:nowrap !important;
+    flex-wrap:nowrap;
   }
   .splitter-panel .smart-split-mini-settings .range-grid { flex:0 0 auto !important; }
   .splitter-panel .smart-split-mini-settings .range-grid label,

@@ -52,11 +52,11 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
   /* The prose measure plus the flow's padding, border and scrollbar: 36 x 16px + 84px = 660px. */
   --sf-reading-column:calc(var(--sf-reading-chars, 36) * var(--sf-reading-size, 16px) + 84px);
   display:flex!important;
-  flex-direction:column!important;
-  gap:8px!important;
+  flex-direction:column;
+  gap:8px;
   min-height:0!important;
   /* 28px of page padding above and below, and the 24px save-state line the topbar shrinks to. */
-  height:calc(100dvh - 80px)!important;
+  height:calc(100dvh - 80px);
 }
 /* One column, one left edge: head, hint, text and actions all start together and the
    width left over is right-hand margin. The width is a length, not an em: these children
@@ -65,37 +65,37 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
 .reading-view>*{width:100%!important;max-width:var(--sf-reading-column)!important;margin-inline:auto!important}
 .reading-view-head{
   display:flex!important;
-  flex-wrap:wrap!important;
-  align-items:center!important;
-  justify-content:space-between!important;
-  gap:6px 14px!important;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px 14px;
   padding:0 0 8px!important;
 }
 /* Title and progress share one line, so the head costs one line of text. */
 .reading-view-heading{flex:1 1 320px!important;min-width:0!important;display:flex!important;align-items:baseline!important;gap:10px!important}
 .reading-view-head #closeReadingViewBtn{flex:0 0 auto!important;order:1!important}
 .reading-view-heading h2{flex:0 1 auto!important;min-width:0!important;margin:0!important;overflow:hidden!important;font-size:18px!important;line-height:1.35!important;text-overflow:ellipsis!important;white-space:nowrap!important}
-.reading-view-progress{flex:0 1 auto!important;min-width:0!important;margin:0!important;overflow:hidden!important;color:var(--ink-2,#6a6357)!important;font-size:12.5px!important;font-weight:500!important;line-height:1.4!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.reading-view-progress{flex:0 1 auto;min-width:0!important;margin:0!important;overflow:hidden!important;color:var(--ink-2,#6a6357)!important;font-size:12.5px!important;font-weight:500!important;line-height:1.4!important;text-overflow:ellipsis;white-space:nowrap!important}
 /* The way back belongs with the page title; the format controls get their own row so
    preview-mode's 顯示 switch can append without pushing it around. */
-.reading-view-controls{flex:1 1 100%!important;display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px 10px!important;order:2!important}
+.reading-view-controls{flex:1 1 100%!important;display:flex!important;flex-wrap:wrap;align-items:center!important;gap:8px 10px!important;order:2}
 .reading-view-controls .format-summary-text{max-width:none!important;min-height:0!important}
 .reading-view-controls .platform-select-field{min-width:0!important}
 .reading-view-controls select.text-input{min-height:var(--sf-control-sm)!important;height:var(--sf-control-sm)!important;padding:0 30px 0 10px!important;border-color:transparent!important;border-radius:8px!important;background:#f4f1e9!important;font-size:14px!important;font-weight:500!important}
 /* The format summary is a sentence, not a control: it ends the toolbar line and is cut short
    rather than wrapping mid-phrase between two buttons. The whole sentence is its title. */
-.reading-view-controls .suggestion-platform-settings{flex:1 1 0!important;order:3!important;display:flex!important;align-items:center!important;min-width:0!important}
-.reading-view-controls .suggestion-platform-settings .format-summary-text{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.reading-view-controls .suggestion-platform-settings{flex:1 1 0!important;order:3;display:flex!important;align-items:center!important;min-width:0!important}
+.reading-view-controls .suggestion-platform-settings .format-summary-text{display:block!important;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap!important}
 .reading-view-switch{display:inline-flex!important;gap:2px!important;padding:3px!important;border-radius:8px!important;background:var(--paper-2,#f4f1e9)!important}
-.reading-view-switch button{min-height:calc(var(--sf-control-sm) - 6px)!important;padding:0 13px!important;border:0!important;border-radius:6px!important;background:transparent!important;color:var(--ink-2,#6a6357)!important;font:inherit!important;font-size:14px!important;font-weight:700!important;cursor:pointer!important}
+.reading-view-switch button{min-height:calc(var(--sf-control-sm) - 6px)!important;padding:0 13px!important;border:0!important;border-radius:6px;background:transparent!important;color:var(--ink-2,#6a6357)!important;font:inherit!important;font-size:14px!important;font-weight:700!important;cursor:pointer!important}
 .reading-view-switch button.active{background:var(--paper-1,#fbfaf6)!important;color:var(--dai-700,#4b4557)!important}
-.reading-view-hint{margin-block:0!important;padding:0!important;border:0!important;background:transparent!important;color:var(--ink-2,#6a6357)!important;font-size:12px!important;font-weight:500!important;line-height:1.5!important}
+.reading-view-hint{margin-block:0;padding:0!important;border:0!important;background:transparent!important;color:var(--ink-2,#6a6357)!important;font-size:12px!important;font-weight:500!important;line-height:1.5!important}
 .reading-view-hint[hidden]{display:none!important}
 .reading-flow{
-  flex:1 1 auto!important;
+  flex:1 1 auto;
   min-height:0!important;
   overflow:auto!important;
-  margin-block:0!important;
+  margin-block:0;
   padding:var(--sf-reading-flow-pad, 18px 20px)!important;
   border:0!important;
   border-radius:14px!important;
@@ -110,7 +110,7 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
 .reading-flow .reading-scene-separator{display:inline-block;width:100%;color:var(--ink-2,#6a6357);text-align:center}
 .reading-view-actions{
   display:flex!important;
-  flex-wrap:wrap!important;
+  flex-wrap:wrap;
   align-items:center!important;
   gap:8px 10px!important;
   padding:8px 0 0!important;
@@ -140,7 +140,7 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
 .manual-boundary-target:hover,.manual-boundary-target:focus-visible{border-color:#968f80;color:#4b4557;opacity:1;outline:none}
 .manual-boundary-target:hover .manual-boundary-label,.manual-boundary-target:focus-visible .manual-boundary-label{background:#f4f1e9;opacity:1}
 .manual-boundary-target.is-scene-boundary:not(.is-current){height:18px;margin:3px 0;border-top:3px double #c8c1b0;opacity:.65}
-.manual-boundary-target.is-current{height:20px;min-height:20px;margin:3px 0;padding:0;border:0!important;border-top:2px solid #968f80!important;border-radius:0!important;background:transparent!important;color:#4b4557!important;cursor:grab;opacity:1;touch-action:none;box-shadow:none!important}
+.manual-boundary-target.is-current{height:20px;min-height:20px;margin:3px 0;padding:0;border:0!important;border-top:2px solid #968f80!important;border-radius:0;background:transparent!important;color:#4b4557!important;cursor:grab;opacity:1;touch-action:none;box-shadow:none!important}
 .manual-boundary-target.is-current .manual-boundary-label{right:8px;padding:3px 8px;background:#f4f1e9;opacity:1}
 .manual-boundary-target.is-current:active{cursor:grabbing}
 .manual-boundary-target.is-current .manual-boundary-handle{position:absolute;top:0;left:8px;display:block;padding:0 5px;background:#fbfaf6;color:#5e5769;font-size:13px;line-height:1;letter-spacing:-3px;transform:translateY(-50%) rotate(90deg)}
@@ -187,24 +187,24 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
   white-space:nowrap!important;
 }
 .splitter-panel .suggestion-title-row #suggestionStatus{
-  grid-column:3!important;
-  justify-self:end!important;
+  grid-column:3;
+  justify-self:end;
   width:auto!important;
-  min-width:max-content!important;
+  min-width:max-content;
   max-width:none!important;
   padding:6px 12px!important;
   white-space:nowrap!important;
-  word-break:keep-all!important;
-  overflow-wrap:normal!important;
+  word-break:keep-all;
+  overflow-wrap:normal;
   text-align:center!important;
 }
 .splitter-panel .suggestion-title-row .preview-boundary-controls{grid-column:4!important;justify-self:end!important}
 
 @media(max-width:820px){
-  .reading-view{height:calc(100dvh - 128px)!important}
+  .reading-view{height:calc(100dvh - 128px)}
   .reading-view-head{align-items:flex-start!important}
   .reading-view-controls{width:100%!important}
-  .reading-view-controls .platform-select-field{flex:1 1 140px!important}
+  .reading-view-controls .platform-select-field{flex:1 1 140px}
   /* Below 820px the page itself is paper, so the manuscript states its edge with a hairline. */
   .reading-flow{padding:15px 16px!important;border:1px solid var(--rule-1,#ded9cc)!important}
   /* Relative, the sticky `top:20px` would shift the stacked rail 20px down onto SMART SPLIT. */
@@ -214,9 +214,9 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
   .splitter-panel .suggestion-title-row .pill{font-size:13px!important;min-height:30px!important}
 }
 @media(max-width:560px){
-  .splitter-panel .suggestion-title-row{grid-template-columns:minmax(0,1fr) auto!important}
-  .splitter-panel .suggestion-title-row #suggestionStatus{grid-column:1!important;justify-self:start!important}
-  .splitter-panel .suggestion-title-row .preview-boundary-controls{grid-column:2!important;justify-self:end!important}
+  .splitter-panel .suggestion-title-row{grid-template-columns:minmax(0,1fr) auto}
+  .splitter-panel .suggestion-title-row #suggestionStatus{grid-column:1;justify-self:start}
+  .splitter-panel .suggestion-title-row .preview-boundary-controls{grid-column:2;justify-self:end}
 }
 
 /* 設定 (src/projects/workspace-project-ux.js): 閱讀設定 and 切篇偏好 behind one disclosure in the

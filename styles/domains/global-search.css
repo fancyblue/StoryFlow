@@ -35,7 +35,7 @@
   color:#c8c1b0;
   font:700 10px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
 }
-.nav-search-trigger:active{transform:none!important}
+.nav-search-trigger:active{transform:none}
 
 .global-search-dialog{
   width:min(760px,calc(100vw - 24px));
@@ -200,7 +200,7 @@
 .global-search-foot strong{margin-left:auto;color:#6a6357;font-weight:700}
 
 @media(max-width:820px){
-  body .sidebar .nav{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+  body .sidebar .nav{grid-template-columns:repeat(5,minmax(0,1fr))}
   .sidebar .nav .nav-search-trigger{display:grid!important}
   .nav-search-trigger kbd{display:none}
   .nav-search-trigger .nav-label{display:block!important;width:auto}
