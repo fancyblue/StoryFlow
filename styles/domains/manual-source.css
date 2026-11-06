@@ -4,8 +4,8 @@
    detached block of blank space below the buttons. */
 
 #manualSourceDialog#manualSourceDialog{
-  width:min(760px,calc(100vw - 32px))!important;
-  max-width:760px!important;
+  width:min(760px,calc(100vw - 32px));
+  max-width:760px;
   height:min(900px,calc(100dvh - 32px));
   max-height:calc(100dvh - 32px);
   margin:auto!important;
@@ -14,9 +14,9 @@
 }
 
 #manualSourceDialog#manualSourceDialog > .source-editor-card{
-  width:100%!important;
+  width:100%;
   height:100%;
-  max-width:none!important;
+  max-width:none;
   min-height:0!important;
   max-height:none!important;
   margin:0!important;
@@ -28,7 +28,7 @@
 }
 
 #manualSourceDialog#manualSourceDialog .sticky-dialog-head{
-  flex:0 0 auto!important;
+  flex:0 0 auto;
   margin:0!important;
   padding:18px 22px 16px!important;
 }
@@ -105,8 +105,8 @@
 
 @media(max-width:700px){
   #manualSourceDialog#manualSourceDialog{
-    width:calc(100vw - 12px)!important;
-    max-width:none!important;
+    width:calc(100vw - 12px);
+    max-width:none;
     height:calc(100dvh - 12px);
     max-height:calc(100dvh - 12px);
   }
@@ -147,6 +147,6 @@
     margin:14px 0 0!important;
     padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px))!important;
   }
-  #manualSourceDialog#manualSourceDialog .source-flow-actions .button{flex:1 1 0;width:auto!important;min-width:0!important}
+  #manualSourceDialog#manualSourceDialog .source-flow-actions .button{flex:1 1 0;width:auto;min-width:0}
   #manualSourceDialog#manualSourceDialog .source-flow-actions .button.primary{flex-basis:100%;order:99}
 }

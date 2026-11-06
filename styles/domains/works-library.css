@@ -68,7 +68,7 @@
   min-width:0!important;
   display:grid!important;
   justify-items:start!important;
-  width:100%!important;
+  width:100%;
   margin:0!important;
   padding:4px 0!important;
   border:0!important;
@@ -244,9 +244,9 @@
 @media(max-width:560px){
   /* 管理發布 | ⋯ on one line (the grid itself is ui-system.css's phone row): the work itself
      is opened from its name above them. */
-  .project-library-actions > .project-publish-btn{grid-column:1!important;grid-row:1;width:100%!important}
+  .project-library-actions > .project-publish-btn{grid-column:1;grid-row:1;width:100%!important}
   .project-library-more-btn{
-    grid-column:2!important;
+    grid-column:2;
     grid-row:1;
   }
 }

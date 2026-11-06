@@ -19,14 +19,14 @@
   min-width:0;
   margin:0 0 22px!important;
   padding:0!important;
-  border:0!important;
-  border-radius:0!important;
+  border:0;
+  border-radius:0;
   background:transparent!important;
-  overflow:visible!important;
+  overflow:visible;
 }
 #publishingView .publishing-project-group:last-child{margin-bottom:0!important}
 #publishingView .publishing-project-group:has(.publishing-project-current){
-  border-color:#c8c1b0!important;
+  border-color:#c8c1b0;
 }
 
 #publishingView .publishing-project-group-head{
@@ -136,8 +136,8 @@
 #publishingView .publishing-chapter-group-head{
   min-height:40px!important;
   padding:8px 2px 7px!important;
-  border-bottom:1px solid var(--rule-1,#ded9cc)!important;
-  border-radius:0!important;
+  border-bottom:1px solid var(--rule-1,#ded9cc);
+  border-radius:0;
   background:transparent!important;
 }
 #publishingView .publishing-chapter-group-head strong{
@@ -158,17 +158,17 @@ html body #publishingView .publish-list-actions>.publish-delete-btn,
 html body #publishingView button.publish-delete-btn,
 html body #publishingView .publish-delete-btn[hidden]{
   display:none!important;
-  visibility:hidden!important;
-  position:absolute!important;
-  width:0!important;
-  min-width:0!important;
+  visibility:hidden;
+  position:absolute;
+  width:0;
+  min-width:0;
   height:0!important;
   min-height:0!important;
   margin:0!important;
   padding:0!important;
   border:0!important;
-  overflow:hidden!important;
-  pointer-events:none!important;
+  overflow:hidden;
+  pointer-events:none;
 }
 
 /* Platform status actions use color as a quick semantic cue.

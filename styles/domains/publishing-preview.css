@@ -115,8 +115,6 @@
   background:#fbfaf6;
 }
 .platform-preview-title-actions .button{
-  min-height:34px;
-  height:34px;
   padding:0 11px!important;
 }
 .publish-preview-panel .platform-preview-options summary{
@@ -139,8 +137,6 @@
   box-sizing:border-box;
   align-self:center;
   min-width:56px;
-  min-height:36px;
-  height:36px;
   padding:0 10px!important;
 }
 .platform-preview-extra-row>.button:focus-visible,
@@ -182,7 +178,6 @@
 }
 .platform-preview-extra-editor textarea.text-input{
   min-height:72px;
-  line-height:1.55;
   resize:vertical;
 }
 .platform-preview-extra-editor-actions{
@@ -220,7 +215,7 @@
   margin:0;
   padding:0 0 9px!important;
   border:0!important;
-  border-radius:0!important;
+  border-radius:0;
   background:transparent!important;
 }
 .platform-preview-settings .platform-preview-title-editor{

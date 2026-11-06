@@ -19,14 +19,11 @@
   align-items:flex-start;
   justify-content:space-between;
   gap:18px;
-  margin-bottom:18px;
 }
 .settings-page-head h1{margin-bottom:6px}
 .settings-page-subtitle{
   margin:0;
-  color:var(--muted);
   font-size:12px;
-  line-height:1.65;
 }
 
 /* Reuse the existing settings controls, but render the dialog as ordinary page content. */
@@ -110,8 +107,6 @@
 }
 .settings-view .platform-add-row .button{
   width:auto;
-  min-height:42px;
-  padding:9px 14px;
   white-space:nowrap;
 }
 .settings-view .managed-platform-list{
@@ -184,8 +179,6 @@
 .sidebar-settings-button,
 .sidebar-logout{
   position:relative;
-  display:inline-flex;
-  align-items:center;
   justify-content:center;
   gap:6px;
   margin:0!important;
@@ -237,7 +230,6 @@
     gap:4px;
   }
   .app-shell.sidebar-collapsed .sidebar-settings-button{
-    width:40px;
     min-height:40px!important;
     font-size:20px!important;
   }
@@ -356,12 +348,12 @@
 .backup-storage-card>small{color:var(--muted);line-height:1.5}
 .backup-cleanup-controls{display:flex;align-items:center;gap:8px;margin-top:14px}
 .backup-cleanup-controls label{color:var(--muted);font-size:13px;font-weight:500}
-.backup-cleanup-controls .compact-select{width:auto;min-width:96px;min-height:36px;padding:0 32px 0 10px}
+.backup-cleanup-controls .compact-select{width:auto;min-width:96px;padding:0 32px 0 10px}
 .backup-cleanup-preview{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-top:12px;padding:14px 16px;border:1px solid #8a6526;border-radius:12px;background:#f5eddc}
 .backup-cleanup-preview[hidden]{display:none!important}
 .backup-cleanup-preview p{margin:5px 0!important;color:var(--ink)!important;font-size:13px;line-height:1.5}
 .backup-cleanup-preview small{color:var(--muted);line-height:1.55}
-.button.backup-cleanup-confirm{flex:0 0 auto;border-color:#a8443a;background:#fbfaf6;color:#a8443a}
+.button.backup-cleanup-confirm{flex:0 0 auto;background:#fbfaf6;color:#a8443a}
 .button.backup-cleanup-confirm:hover{border-color:#a8443a;background:#f6e9e6;color:#a8443a}
 .settings-device-privacy{margin-top:14px}
 @media(max-width:860px){
@@ -418,7 +410,7 @@
   border-top:1px solid var(--line)!important;
 }
 .settings-view .platform-setting-row:first-child{
-  border-top:1px solid var(--line)!important;
+  border-top:1px solid var(--line);
 }
 /* The default row is a row like the platforms under it. Pulled 10px wider with rounded
    corners, its top rule bent down at both ends into a box that had no sides or bottom. */
@@ -547,11 +539,7 @@
   border:1px solid #ded9cc;
   border-radius:12px;
 }
-.settings-bootstrap-panel.configured{
-  border-color:#ded9cc;
-}
 .settings-bootstrap-panel.authenticated{
-  border-color:#d7dec6;
   background:#eef0e4;
 }
 .settings-bootstrap-copy{

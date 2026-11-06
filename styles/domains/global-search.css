@@ -77,11 +77,11 @@
    clear cross sat next to the close cross — two ✕ one pixel row apart meaning different
    things. Clearing is a select-all away; closing is the button. */
 .global-search-head #globalSearchInput{
-  height:auto!important;
+  height:auto;
   min-height:0!important;
   padding:0!important;
   border:0!important;
-  border-radius:0!important;
+  border-radius:0;
   background:transparent!important;
   box-shadow:none!important;
   outline:0!important;

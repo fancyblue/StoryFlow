@@ -34,12 +34,9 @@
   min-width:0;
 }
 .project-switcher-actions .button{
-  min-height:30px;
-  padding:4px 7px;
   border:0;
   background:transparent;
   box-shadow:none;
-  font-size:11px;
 }
 .project-switcher-actions .button:hover{
   background:#fbfaf6;

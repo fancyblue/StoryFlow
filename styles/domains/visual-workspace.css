@@ -4,7 +4,7 @@
    (--sf-workspace-source-columns) and unframed shape, so switching between the two kinds of
    work moves nothing on the left. */
 .visual-workspace[hidden], .visual-workspace [hidden], .visual-workspace .hidden { display: none !important; }
-.visual-workspace-suppressed { display: none !important; }
+.visual-workspace-suppressed { display: none; }
 .visual-workspace { display: grid; gap: 16px; }
 .visual-readonly-note { padding: 10px 14px; border: 1px solid #ecdfc4; border-radius: 10px; background: #f5eddc; color: #8a6526; font-size: 13px; }
 

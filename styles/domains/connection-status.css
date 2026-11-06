@@ -24,7 +24,7 @@
     flex-wrap:wrap;
     align-items:center!important;
     gap:3px!important;
-    width:100%!important;
+    width:100%;
     min-width:0!important;
     margin-top:auto!important;
     padding-top:9px!important;
@@ -51,7 +51,7 @@
   #sidebarConnectionStatus .sidebar-connection-row:hover,
   #sidebarConnectionStatus .sidebar-connection-row:focus-visible{
     background:rgba(255,255,255,.06)!important;
-    outline:none!important;
+    outline:none;
   }
   #sidebarConnectionStatus .sidebar-connection-copy{
     display:flex!important;
@@ -69,7 +69,7 @@
     font-weight:500!important;
     line-height:1!important;
     white-space:nowrap!important;
-    text-overflow:clip!important;
+    text-overflow:clip;
   }
 
   /* Connection state must not rest on hue alone: the sidebar row shows only the

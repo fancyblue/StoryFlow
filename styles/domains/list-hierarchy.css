@@ -41,7 +41,7 @@
 /* A level's header line: what the level is, then its count or controls at the far end. */
 .sf-hier-head{
   display:flex!important;
-  align-items:center!important;
+  align-items:center;
   gap:9px!important;
   border-bottom:1px solid var(--rule-1,#ded9cc)!important;
 }
