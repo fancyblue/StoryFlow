@@ -26,13 +26,19 @@
 - 影響：需要新增 `platformIncludeAfterword`（boolean record），並讓 `outputSections(part, platform, includeAfterword)` 依平台取值。
 - 待確認：共用值與平台值的優先順序，以及是否需要像 hashtags 一樣的「刻意關閉」第三態。
 
-### 2. 分平台的「複製時附上標題」開關
+### 2. 分平台的「複製時附上標題」開關（已完成：2026-11-06）
+
+> 作者決定記在**平台**而不是每篇文章：這是平台的習慣（例如方格子一律帶大標題），設定一次就套用到所有文章。
+> 因此沒有新增 `platformCopyTitle` 文章欄位，而是平台排版設定裡的 `copyTitle`（`settings.json`）。現行行為見 `docs/UX_FLOW.md`〈Publishing titles〉。以下保留提出時的紀錄。
 
 - 現況：平台預覽對話框的複製標題選項是單一設定，不隨平台保存。
 - 需求：每個平台各自決定複製內容時要不要帶標題。
 - 影響：需要 `platformCopyTitle`（boolean record），並與既有的 `outputWithTitle(part, platform, includeAfterword, titleStyle)` 串接。
 
-### 3. 分平台的摘要
+### 3. 分平台的摘要（已完成：2026-11-06，只有圖文）
+
+> 作者決定只有圖文需要。已實作為圖文的 `platformSummaries`：有值就是該平台的摘要，沒有就沿用共用摘要；長文的摘要仍是共用的。
+> 現行行為見 `docs/UX_FLOW.md` 的 P-12 與 `docs/ARCHITECTURE.md`。以下保留提出時的紀錄。
 
 - 現況：`summary` 是單一字串（`content-model.js:92`），沒有 `platformSummaries`。
 - 需求：不同平台可以有不同的摘要／描述。
@@ -95,11 +101,11 @@
 實作前逐項確認，不要整批視為已核可：
 
 - [x] 1. `platformIncludeAfterword` —— **已完成（階段 4-19）**
-- [ ] 2. `platformCopyTitle`
-- [ ] 3. `platformSummaries`
-- [ ] 4. `confirmedAt`（只有在想讓排序變成全域確認時間時才需要；目前文案與實作相符，不做也沒錯。第 5 項已用不依賴時間戳記的做法完成，所以這一項仍然不做）
+- [x] 2. 複製時附上標題 —— **已完成（2026-11-06）**，改記在平台排版設定（`copyTitle`），不是文章欄位
+- [x] 3. `platformSummaries` —— **已完成（2026-11-06）**，只有圖文
+- [ ] 4. `confirmedAt`（只有在想讓排序變成全域確認時間時才需要；目前文案與實作相符，不做也沒錯。第 5 項已用不依賴時間戳記的做法完成，所以這一項仍然不做。2026-11-06 作者再次確認：先不做）
 - [x] 5. 發布佇列排序偏好 —— **已完成，未動資料模型**（見上）
-- [ ] 6. 「未切」的計算方式，以及「最新那一個還沒切的章」的定義
+- [ ] 6. 「未切」的計算方式，以及「最新那一個還沒切的章」的定義（2026-11-06 作者決定：先不做）
 
 每一項通過後，才更新 `docs/ARCHITECTURE.md` 的資料所有權說明與 `docs/UX_FLOW.md` 的任務順序。
 

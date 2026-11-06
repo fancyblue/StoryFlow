@@ -17,6 +17,10 @@
     platformLabel,
     publishTitleFor,
     hasPlatformHashtagsOverride,
+    hasPlatformSummaryOverride,
+    summaryFor,
+    copyTitleStyleFor,
+    setCopyTitleStyle,
     hashtagsFor,
     outputWithTitle,
     richOutputHtml,
@@ -24,8 +28,8 @@
     normalizePartStatus
   } = window.StoryFlowPublishingOutput;
 
-  // Set by publishing-flow.js: entryFor, options, savePlatformTitle, savePlatformHashtags,
-  // openPublicationRecord, setPlatformPublished, persistPublicationChange,
+  // Set by publishing-flow.js: entryFor, savePlatformTitle, savePlatformHashtags,
+  // savePlatformSummary, openPublicationRecord, setPlatformPublished, persistPublicationChange,
   // togglePlatformPublished, writeArticleMarkdown, writeVisualEntry.
   let actions = null;
 
@@ -97,7 +101,20 @@
               <button id="copyPlatformSummary" class="platform-preview-extra-copy" type="button">
                 <span>摘要</span><p id="platformPreviewSummary"></p><small>點一下複製</small>
               </button>
+              <button id="editPlatformPreviewSummary" class="button tiny ghost" type="button" aria-expanded="false" hidden>編輯</button>
             </div>
+            <section id="platformPreviewSummaryEditor" class="platform-preview-extra-editor" hidden>
+              <div class="platform-preview-extra-editor-head">
+                <label for="platformPreviewSummaryInput">此平台摘要</label>
+                <span id="platformPreviewSummaryState"></span>
+              </div>
+              <textarea id="platformPreviewSummaryInput" class="text-input" rows="3" maxlength="500"></textarea>
+              <div class="platform-preview-extra-editor-actions">
+                <button id="savePlatformPreviewSummary" class="button tiny primary" type="button">儲存</button>
+                <button id="resetPlatformPreviewSummary" class="button tiny ghost" type="button">沿用共用</button>
+              </div>
+              <small>未自訂時沿用共用摘要；儲存空白也會改回沿用。</small>
+            </section>
           </div>
           <div id="platformPreviewHashtagsBlock" class="platform-preview-extra-block platform-preview-hashtags-block" hidden>
             <div class="platform-preview-extra-row platform-preview-hashtags-row">
@@ -132,7 +149,7 @@
 
   function renderPublishPreview(panel, part, platform, contentMode = '') {
     const {
-      entryFor, options: currentOptions, savePlatformTitle, savePlatformHashtags, openPublicationRecord,
+      entryFor, savePlatformTitle, savePlatformHashtags, savePlatformSummary, openPublicationRecord,
       setPlatformPublished, persistPublicationChange, togglePlatformPublished,
       writeArticleMarkdown, writeVisualEntry
     } = actions;
@@ -160,8 +177,15 @@
     const resetHashtags = panel.querySelector('#resetPlatformPreviewHashtags');
     const visualExtras = panel.querySelector('#platformPreviewVisualExtras');
     const summaryCard = panel.querySelector('#copyPlatformSummary');
+    const summaryEditor = panel.querySelector('#platformPreviewSummaryEditor');
+    const summaryInput = panel.querySelector('#platformPreviewSummaryInput');
+    const summaryState = panel.querySelector('#platformPreviewSummaryState');
+    const editSummary = panel.querySelector('#editPlatformPreviewSummary');
+    const resetSummary = panel.querySelector('#resetPlatformPreviewSummary');
+    // Only a visual article's summary can differ by platform; a longform one is shared.
+    const summaryEditable = platformSpecific && visual;
     const hashtagsCard = panel.querySelector('#copyPlatformHashtags');
-    let summaryText = String(part.summary || '').trim();
+    let summaryText = summaryFor(part, platform);
     let hashtagsText = hashtagsFor(part, platform);
     const afterwordCount = afterwordChars(part);
     const isPublished = platform ? Boolean(part.platformStatus[platform]) : false;
@@ -222,6 +246,10 @@
     editTitle.hidden = !platformSpecific;
     titleEditor.hidden = true;
     hashtagsEditor.hidden = true;
+    summaryEditor.hidden = true;
+    editSummary.hidden = !summaryEditable;
+    editSummary.setAttribute('aria-expanded', 'false');
+    editSummary.textContent = '編輯';
     editHashtags.hidden = !platformSpecific;
     editHashtags.setAttribute('aria-expanded', 'false');
     editHashtags.textContent = '編輯';
@@ -241,12 +269,16 @@
     };
 
     const refreshSummaryView = () => {
-      summaryText = String(part.summary || '').trim();
+      summaryText = summaryFor(part, platform);
+      const ownSummary = hasPlatformSummaryOverride(part, platform);
       summaryCard.disabled = !summaryText;
       panel.querySelector('#platformPreviewSummary').textContent = summaryText || '尚未設定';
-      // Both content types write their summary in one place: 摘要與 Hashtags, beside the text
-      // rather than in the editor of it.
-      summaryCard.querySelector('small').textContent = summaryText ? '點一下複製' : '在「摘要與 Hashtags」設定';
+      // Both content types write their shared summary in one place: 摘要與 Hashtags, beside the
+      // text rather than in the editor of it. A visual platform may then write its own here.
+      summaryCard.querySelector('small').textContent = summaryText ? '點一下複製' : summaryEditable ? '' : '在「摘要與 Hashtags」設定';
+      summaryInput.value = summaryText;
+      summaryState.textContent = ownSummary ? '此平台自訂' : '沿用共用';
+      resetSummary.disabled = !ownSummary;
       summaryCard.onclick = async () => {
         if (!summaryText) return;
         try {
@@ -285,9 +317,17 @@
       };
     };
     refreshHashtagsView();
-    includeTitle.checked = Boolean(currentOptions().includeTitle);
-    titleStyle.value = currentOptions().titleStyle || 'heading';
+    // Whether the copy starts with the title is the platform's own habit, remembered in its
+    // formatting; the StoryFlow default output never carries one.
+    const savedTitleStyle = copyTitleStyleFor(platform);
+    includeTitle.checked = Boolean(savedTitleStyle);
+    titleStyle.value = savedTitleStyle || 'heading';
     titleStyle.disabled = !includeTitle.checked;
+    const rememberTitleStyle = () => {
+      if (!platformSpecific) return;
+      setCopyTitleStyle(platform, includeTitle.checked ? titleStyle.value : '');
+      saveState('複製標題設定已更新');
+    };
     const refreshOptionsSummary = () => {
       const labels = [];
       if (includeTitle.checked) labels.push(titleStyle.value === 'bold' ? '含粗體標題' : '含大標題');
@@ -297,6 +337,22 @@
     editTitle.onclick = () => {
       titleEditor.hidden = !titleEditor.hidden;
       if (!titleEditor.hidden) titleInput.focus();
+    };
+    editSummary.onclick = () => {
+      if (!summaryEditable) return;
+      setExtraEditorExpanded(editSummary, summaryEditor, summaryEditor.hidden, summaryInput);
+    };
+    panel.querySelector('#savePlatformPreviewSummary').onclick = async () => {
+      if (!summaryEditable) return;
+      await savePlatformSummary(part, platform, summaryInput);
+      refreshSummaryView();
+      setExtraEditorExpanded(editSummary, summaryEditor, false, summaryInput);
+    };
+    resetSummary.onclick = async () => {
+      if (!summaryEditable) return;
+      await savePlatformSummary(part, platform, summaryInput, true);
+      refreshSummaryView();
+      setExtraEditorExpanded(editSummary, summaryEditor, false, summaryInput);
     };
     editHashtags.onclick = () => {
       if (!platformSpecific) return;
@@ -338,13 +394,13 @@
       }
     };
     includeTitle.onchange = () => {
-      currentOptions().includeTitle = includeTitle.checked;
+      rememberTitleStyle();
       titleStyle.disabled = !includeTitle.checked;
       refreshOptionsSummary();
       refreshContent();
     };
     titleStyle.onchange = () => {
-      currentOptions().titleStyle = titleStyle.value;
+      rememberTitleStyle();
       refreshOptionsSummary();
       refreshContent();
     };

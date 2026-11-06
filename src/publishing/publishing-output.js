@@ -55,6 +55,7 @@
     if (isVisualPart(part)) {
       part.platformTitles ||= {};
       part.platformHashtags ||= {};
+      part.platformSummaries ||= {};
       part.platformStatus ||= {};
       part.publicationRecords ||= {};
       part.images ||= [];
@@ -142,6 +143,34 @@
     normalizePublishItem(part);
     if (hasPlatformHashtagsOverride(part, platform)) return String(part.platformHashtags[platform] || '').trim();
     return String(part.hashtags || '').trim();
+  }
+
+  // Visual only: a platform may write its own summary; one that has not follows the shared one.
+  function hasPlatformSummaryOverride(part, platform) {
+    return Boolean(platform) && isVisualPart(part)
+      && Boolean(String(part?.platformSummaries?.[platform] || '').trim());
+  }
+
+  function summaryFor(part, platform = '') {
+    normalizePublishItem(part);
+    if (hasPlatformSummaryOverride(part, platform)) return String(part.platformSummaries[platform]).trim();
+    return String(part.summary || '').trim();
+  }
+
+  // Whether, and how, a platform's copy starts with the title. It is the platform's habit rather
+  // than an article's, so it lives with the platform's formatting in settings.json:
+  // '' (no title), 'heading' or 'bold'.
+  function copyTitleStyleFor(platform = '') {
+    const value = platform ? state.formatting?.platforms?.[platform]?.copyTitle : '';
+    return value === 'heading' || value === 'bold' ? value : '';
+  }
+
+  function setCopyTitleStyle(platform, style) {
+    if (!platform) return;
+    state.formatting.platforms ||= {};
+    const config = state.formatting.platforms[platform] ||= {};
+    if (style === 'heading' || style === 'bold') config.copyTitle = style;
+    else delete config.copyTitle;
   }
 
   function outputWithTitle(part, platform, includeAfterword, titleStyle = '') {
@@ -244,6 +273,10 @@
     platformLabel,
     publishTitleFor,
     hasPlatformHashtagsOverride,
+    hasPlatformSummaryOverride,
+    summaryFor,
+    copyTitleStyleFor,
+    setCopyTitleStyle,
     hashtagsFor,
     outputWithTitle,
     richOutputHtml,

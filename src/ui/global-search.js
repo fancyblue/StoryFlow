@@ -113,7 +113,7 @@
             ...(Array.isArray(entry.tags) ? entry.tags : []),
             ...(window.StoryFlowContentModel?.tagsFromHashtags?.(entry.hashtags) || [])
           ])],
-          bodyFields: [entry.summary || '', entry.quote || '', entry.caption || '', entry.body || ''],
+          bodyFields: [entry.summary || '', ...Object.values(entry.platformSummaries || {}), entry.quote || '', entry.caption || '', entry.body || ''],
           pendingFields: [entry.quote || '', entry.caption || '', entry.body || '', entry.afterword || ''],
           order: Date.parse(entry.updatedAt || entry.createdAt || '') || orderBase + entryIndex / 1000
         });

@@ -125,6 +125,8 @@
       images,
       platformTitles: normalizeStringRecord(entry.platformTitles),
       platformHashtags: normalizeStringRecord(entry.platformHashtags, { keepEmpty: true }),
+      // Visual only: a platform's own summary. A missing key follows the shared summary.
+      platformSummaries: normalizeStringRecord(entry.platformSummaries),
       platformIncludeAfterword: normalizeBooleanRecord(entry.platformIncludeAfterword),
       platformStatus: normalizeBooleanRecord(entry.platformStatus),
       publicationRecords: normalizePublicationRecords(entry.publicationRecords),
@@ -257,6 +259,7 @@
       coverImageId: sourceEntry.coverImageId,
       images: clone(sourceEntry.images),
       ...publishingFields(sourceEntry),
+      platformSummaries: clone(sourceEntry.platformSummaries),
       source: { kind: CONTENT_MODES.VISUAL, entryId: sourceEntry.id }
     };
   }

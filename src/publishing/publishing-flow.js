@@ -26,10 +26,6 @@
   // Which platform the expanded row's left column is showing. '' is the StoryFlow default
   // output — the rail's first entry, not an absence of one.
   let selectedPlatformKey = '';
-  // The copy options belong to the pairing of one part with one platform, not to the panel
-  // element: the panel is rebuilt by any renderParts() and would otherwise forget them
-  // mid-flow.
-  let previewOptions = { includeTitle: false, titleStyle: 'heading' };
   let articleToolContext = null;
 
   // Output and status rules live in publishing-output.js.
@@ -48,6 +44,7 @@
     platformLabel,
     publishTitleFor,
     hasPlatformHashtagsOverride,
+    hasPlatformSummaryOverride,
     hashtagsFor,
     outputWithTitle,
     richOutputHtml,
@@ -326,7 +323,6 @@
     const key = partKey(entry.part);
     const nextPlatform = platform || '';
     if (selectedPartKey !== key || selectedPlatformKey !== nextPlatform) {
-      previewOptions = { includeTitle: false, titleStyle: 'heading' };
       selectedPartKey = key;
       selectedPlatformKey = nextPlatform;
       renderParts();
@@ -491,6 +487,32 @@
     }
   }
 
+  // Visual only. Saving an empty field, the shared text or 沿用共用 removes the platform's own
+  // summary, so the platform follows the shared one again.
+  async function savePlatformSummary(part, platform, input, reset = false) {
+    if (!isVisualPart(part)) return false;
+    normalizePublishItem(part);
+    const next = reset ? '' : input.value.trim();
+    if (next && next !== String(part.summary || '').trim()) part.platformSummaries[platform] = next;
+    else delete part.platformSummaries[platform];
+    const custom = Boolean(part.platformSummaries[platform]);
+    saveState('平台摘要已更新');
+    renderParts();
+
+    try {
+      const updated = await writeVisualEntry(part);
+      if (!updated) {
+        notify('平台摘要目前只保留在工作區；請重新連接資料夾後再保存一次。', true);
+        return false;
+      }
+      notify(custom ? `${platform} 的摘要已保存` : `${platform} 已改回沿用共用摘要`);
+      return true;
+    } catch (error) {
+      notify(`平台摘要已更新，但檔案尚未寫入：${error.message}`, true);
+      return false;
+    }
+  }
+
   function createAfterwordEditor(chapter, part, { onSaved } = {}) {
     normalizePublishItem(part);
     const section = document.createElement('section');
@@ -620,6 +642,7 @@
     // Said only where the platform has decided differently from the article's default.
     const ownAfterword = isDefault || !afterwordChars(part) ? undefined : part.platformIncludeAfterword?.[platform];
     const afterwordSummary = typeof ownAfterword === 'boolean' ? (ownAfterword ? '此平台附上後記' : '此平台不附後記') : '';
+    const ownSummary = !isDefault && hasPlatformSummaryOverride(part, platform);
 
     const row = document.createElement('div');
     row.className = `publish-platform-row${isDefault ? ' is-default-output' : ''}${current ? ' is-current' : ''}`;
@@ -632,6 +655,7 @@
         </span>
         ${hasPlatformTitle ? `<small class="publish-platform-title-summary">自訂標題：${escapeHtml(platformTitle)}</small>` : ''}
         ${hashtagsOverridden && !hashtagsText ? '<small class="publish-platform-hashtags-summary">此平台不使用 Hashtags</small>' : ''}
+        ${ownSummary ? '<small class="publish-platform-summary-note">此平台自訂摘要</small>' : ''}
         ${afterwordSummary ? `<small class="publish-platform-afterword-summary">${afterwordSummary}</small>` : ''}
         ${recordSummary ? `<small class="publish-platform-record-summary">${escapeHtml(recordSummary)}</small>` : ''}
       </button>
@@ -798,7 +822,6 @@
       // would preselect a version of an article nobody asked about.
       if (selectedPartKey !== key) {
         selectedPlatformKey = '';
-        previewOptions = { includeTitle: false, titleStyle: 'heading' };
       }
       selectedPartKey = selectedPartKey === key ? null : key;
       renderParts();
@@ -907,7 +930,6 @@
     const next = index < 0 ? null : order[index + delta];
     if (!next) return;
     selectedPartKey = next;
-    previewOptions = { includeTitle: false, titleStyle: 'heading' };
     renderParts();
   }
 
@@ -1052,9 +1074,9 @@
 
   Preview.configure({
     entryFor: part => allEntries().find(item => item.part === part),
-    options: () => previewOptions,
     savePlatformTitle,
     savePlatformHashtags,
+    savePlatformSummary,
     openPublicationRecord,
     setPlatformPublished,
     persistPublicationChange,

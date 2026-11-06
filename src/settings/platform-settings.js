@@ -34,7 +34,7 @@
   }
 
   // Everything an article or visual entry keeps per platform, keyed by the platform's name.
-  const PLATFORM_FIELDS = ['platformStatus', 'publicationRecords', 'platformTitles', 'platformHashtags', 'platformIncludeAfterword'];
+  const PLATFORM_FIELDS = ['platformStatus', 'publicationRecords', 'platformTitles', 'platformHashtags', 'platformSummaries', 'platformIncludeAfterword'];
 
   function publishableItems(projectState) {
     return [

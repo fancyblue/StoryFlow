@@ -260,6 +260,54 @@ test('Publishing previews and copies the article in reading order with the photo
   expect(pageErrors).toEqual([]);
 });
 
+test('a visual article can give one platform its own summary, and 沿用共用 returns it', async ({ page }) => {
+  const pageErrors = await openVisualWorkspace(page);
+  await createVisualWork(page);
+  await page.locator('#visualEntryBody').fill('正文。');
+  await expect(page.locator('#visualEditorSaveStatus')).toContainText('已儲存');
+  await page.evaluate(() => {
+    window.__savedVisualEntries = [];
+    StoryFlowIntegrations.saveVisualEntry = async ({ entry }) => {
+      window.__savedVisualEntries.push(structuredClone(entry));
+      return 'saved';
+    };
+    state.visualEntries[0].summary = '共用的摘要';
+  });
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  const row = page.locator('.publish-list-item', { hasText: '函館夜景' });
+  await row.locator('.publish-manage-btn').click();
+  const preview = page.locator('.publish-preview-panel');
+  await page.locator('.publish-platform-row[data-platform="巴哈小屋"] .publish-platform-choose').click();
+  await expect(preview.locator('#platformPreviewSummary')).toHaveText('共用的摘要');
+  await expect(preview.locator('#platformPreviewSummaryState')).toHaveText('沿用共用');
+  await preview.locator('#editPlatformPreviewSummary').click();
+  await preview.getByRole('textbox', { name: '此平台摘要', exact: true }).fill('只給巴哈小屋的摘要');
+  await preview.locator('#savePlatformPreviewSummary').click();
+
+  await expect(preview.locator('#platformPreviewSummary')).toHaveText('只給巴哈小屋的摘要');
+  await expect(page.locator('.publish-platform-row[data-platform="巴哈小屋"] .publish-platform-summary-note')).toHaveText('此平台自訂摘要');
+  await expect.poll(() => page.evaluate(() => window.__savedVisualEntries.at(-1)?.platformSummaries))
+    .toEqual({ 巴哈小屋: '只給巴哈小屋的摘要' });
+  const other = await page.evaluate(() => ({
+    own: StoryFlowPublishingOutput.summaryFor(state.visualEntries[0], '巴哈小屋'),
+    other: StoryFlowPublishingOutput.summaryFor(state.visualEntries[0], '方格子'),
+    shared: state.visualEntries[0].summary,
+    kept: StoryFlowContentModel.normalizeVisualEntry(state.visualEntries[0]).platformSummaries
+  }));
+  expect(other).toEqual({ own: '只給巴哈小屋的摘要', other: '共用的摘要', shared: '共用的摘要', kept: { 巴哈小屋: '只給巴哈小屋的摘要' } });
+
+  await page.locator('.publish-platform-row[data-platform="方格子"] .publish-platform-choose').click();
+  await expect(preview.locator('#platformPreviewSummary')).toHaveText('共用的摘要');
+  await page.locator('.publish-platform-row[data-platform="巴哈小屋"] .publish-platform-choose').click();
+  await preview.locator('#editPlatformPreviewSummary').click();
+  await preview.locator('#resetPlatformPreviewSummary').click();
+  await expect(preview.locator('#platformPreviewSummary')).toHaveText('共用的摘要');
+  await expect(page.locator('.publish-platform-summary-note')).toHaveCount(0);
+  expect(await page.evaluate(() => state.visualEntries[0].platformSummaries)).toEqual({});
+  expect(pageErrors).toEqual([]);
+});
+
 test('the visual workspace lays out without sideways scrolling from phone to wide desktop', async ({ page }) => {
   const pageErrors = await openVisualWorkspace(page);
   await createVisualWork(page);
