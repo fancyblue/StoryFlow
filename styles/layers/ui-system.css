@@ -194,11 +194,11 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
   .sidebar{background:var(--paper-0,#ece9e0);border-right:1px solid var(--rule-1,#ded9cc);color:var(--ink-1,#221f1a)}
   .sidebar .brand span{color:var(--ink-2,#6a6357)}
   .sidebar .brand-mark{color:var(--paper-1,#fbfaf6)}
-  .sidebar .nav{gap:2px!important}
+  .sidebar .nav{gap:2px}
   .sidebar .nav-item{min-height:36px!important;padding:0 10px;gap:10px;border-radius:8px;color:var(--ink-1-soft,#3f3930);font-size:14px;font-weight:500;line-height:1}
   .sidebar .nav-item.active{background:var(--paper-1,#fbfaf6)!important;color:var(--ink-1,#221f1a)}
-  .sidebar .nav-item:hover{background:var(--paper-2,#f4f1e9)!important;color:var(--ink-1,#221f1a)}
-  .sidebar .nav-item.active:hover{background:var(--paper-1,#fbfaf6)!important}
+  .sidebar .nav-item:hover{background:var(--paper-2,#f4f1e9);color:var(--ink-1,#221f1a)}
+  .sidebar .nav-item.active:hover{background:var(--paper-1,#fbfaf6)}
   .sidebar-note{font-size:12.5px!important;line-height:1.6!important}
   .sidebar-toggle{width:28px;height:28px;border-radius:8px;background:transparent;border-color:transparent;box-shadow:none;color:var(--ink-2,#6a6357)!important}
   .sidebar-toggle:hover,.sidebar-toggle:focus-visible{background:var(--paper-2,#f4f1e9)}
@@ -206,13 +206,13 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
   .sidebar-settings-button:hover{background:var(--paper-2,#f4f1e9)!important;color:var(--ink-1,#221f1a)}
   .sidebar-settings-button.active{background:var(--paper-1,#fbfaf6)!important;color:var(--ink-1,#221f1a)}
   .sidebar-logout{color:var(--vermilion,#a8443a)!important}
-  .sidebar-logout:hover,.sidebar-logout:focus-visible{color:var(--vermilion,#a8443a)!important}
+  .sidebar-logout:hover,.sidebar-logout:focus-visible{color:var(--vermilion,#a8443a)}
   .sidebar-connection-status{border-top-color:var(--rule-1,#ded9cc)}
   .sidebar-connection-copy b{color:var(--ink-2,#6a6357)}
   #sidebarConnectionStatus .sidebar-connection-copy small,
   #sidebarConnectionStatus .sidebar-connection-row.connected .sidebar-connection-copy small,
   #sidebarConnectionStatus .sidebar-connection-row.restoring .sidebar-connection-copy small{color:var(--ink-1-soft,#3f3930)!important}
-  .sidebar-connection-row:focus-visible{background:var(--paper-2,#f4f1e9)!important}
+  .sidebar-connection-row:focus-visible{background:var(--paper-2,#f4f1e9)}
   .nav-search-trigger kbd{border-color:var(--rule-1,#ded9cc);background:var(--paper-1,#fbfaf6);color:var(--ink-2,#6a6357)}
 }
 
@@ -290,7 +290,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .button.sf-soft,.icon-button.sf-soft{border-color:transparent!important;background:#f4f1e9!important;box-shadow:none!important}
 .button.sf-soft:hover:not(:disabled),.icon-button.sf-soft:hover:not(:disabled),.button.sf-soft[aria-expanded="true"],.icon-button.sf-soft[aria-expanded="true"]{border-color:transparent!important;background:#fbfaf6!important}
 .button.sf-quiet,.icon-button.sf-quiet{border-color:transparent!important;background:transparent!important;box-shadow:none!important}
-.button.sf-quiet:hover:not(:disabled),.icon-button.sf-quiet:hover:not(:disabled),.button.sf-quiet[aria-expanded="true"],.icon-button.sf-quiet[aria-expanded="true"]{border-color:transparent!important;background:#f4f1e9!important}
+.button.sf-quiet:hover:not(:disabled),.icon-button.sf-quiet:hover:not(:disabled),.button.sf-quiet[aria-expanded="true"],.icon-button.sf-quiet[aria-expanded="true"]{border-color:transparent!important;background:#f4f1e9}
 .format-summary-text{font-size:13px;line-height:1.45!important}
 
 /* Works library */
@@ -372,7 +372,7 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .sidebar-connection-row{height:32px!important;min-height:32px!important;padding:0 4px!important;border-radius:7px!important}
   .sidebar-connection-copy small{font-size:11.5px!important;font-weight:700}
   .sidebar-status-dot{width:7px!important;height:7px!important;flex:0 0 7px!important}
-  .sidebar-utility-actions{grid-template-columns:repeat(2,34px)!important;gap:3px!important;width:71px}
+  .sidebar-utility-actions{grid-template-columns:repeat(2,34px);gap:3px!important;width:71px}
   .sidebar-settings-button,.sidebar-logout{width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;border-radius:8px!important}
   .sidebar-settings-button>.sidebar-utility-icon,.sidebar-logout>.sidebar-utility-icon,.sidebar-settings-button svg,.sidebar-logout svg{width:18px!important;height:18px!important}
   .quick-switch-project-btn,.splitter-panel .smart-split-header-actions #openReadingViewBtn{height:40px!important;min-height:40px!important;font-size:14px!important}
@@ -380,7 +380,7 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .splitter-panel .smart-split-mini-settings .range-grid label,.splitter-panel .scene-marker-compact{font-size:12px!important}
   .splitter-panel .smart-split-mini-settings .range-grid input,.splitter-panel .scene-marker-compact #sceneMarker{height:42px!important;min-height:42px!important}
   .splitter-panel .suggestion-title-row{grid-template-columns:minmax(0,1fr) auto!important;row-gap:8px!important}
-  .splitter-panel .suggestion-title-row #suggestionStatus{grid-column:1!important;justify-self:start!important}
+  .splitter-panel .suggestion-title-row #suggestionStatus{grid-column:1;justify-self:start}
   .splitter-panel .suggestion-title-row .preview-boundary-controls{grid-column:2!important;justify-self:end!important}
   .project-library-card{padding:16px}
   .project-library-actions{display:grid!important;grid-template-columns:minmax(0,1fr) 40px!important;width:100%}
@@ -396,8 +396,8 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
 @media(max-width:390px){
   .sidebar-connection-copy small{font-size:11px!important}
   .sidebar-connection-status{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 68px!important}
-  .sidebar-utility-actions{grid-template-columns:repeat(2,32px)!important;width:67px}
-  .sidebar-settings-button,.sidebar-logout{width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important}
+  .sidebar-utility-actions{grid-template-columns:repeat(2,32px);width:67px}
+  .sidebar-settings-button,.sidebar-logout{width:32px!important;min-width:32px!important;height:32px;min-height:32px!important}
 }
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1}}

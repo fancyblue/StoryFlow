@@ -200,7 +200,7 @@
   color:#6a6357!important;
 }
 .project-source-diff-row.manual-row{
-  cursor:default!important;
+  cursor:default;
   background:#fbfaf6;
 }
 .project-source-diff-row.manual-row .project-source-diff-copy strong{

@@ -85,7 +85,7 @@ h3{letter-spacing:-.01em}
 .sidebar .brand-mark{width:28px;height:28px;border-radius:8px}
 .sidebar .brand strong{font-size:14px}
 .sidebar .brand span{font-size:10px}
-.sidebar .nav{gap:6px!important}
+.sidebar .nav{gap:6px}
 .sidebar .nav-item{
   min-height:42px!important;
   padding:10px 12px;

@@ -31,7 +31,7 @@
 
 /* Reuse the existing settings controls, but render the dialog as ordinary page content. */
 .settings-view .settings-page-dialog{
-  position:static!important;
+  position:static;
   inset:auto!important;
   display:block!important;
   width:100%!important;
@@ -531,7 +531,7 @@
   .settings-view .platform-indent-select,
   .settings-view .platform-inline-check,
   .settings-view .platform-row-actions{
-    grid-column:1!important;
+    grid-column:1;
   }
 }
 

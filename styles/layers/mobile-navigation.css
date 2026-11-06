@@ -27,7 +27,7 @@
   }
 
   .sidebar-utility-actions {
-    justify-self: end !important;
+    justify-self: end;
     margin-left: 0 !important;
   }
 
@@ -39,7 +39,7 @@
   }
 
   .sidebar {
-    padding-inline: 8px !important;
+    padding-inline: 8px;
   }
 
   .sidebar-connection-status {
@@ -47,6 +47,6 @@
   }
 
   .sidebar-connection-row {
-    padding-inline: 5px !important;
+    padding-inline: 5px;
   }
 }

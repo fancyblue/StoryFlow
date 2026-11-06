@@ -104,7 +104,7 @@
 }
 #publishingView .publish-list-actions>.publish-manage-btn:focus-visible{
   box-shadow:0 0 0 3px rgba(34,31,26,.2)!important;
-  outline:none!important;
+  outline:none;
 }
 #publishingView .publish-list-actions>.publish-manage-btn[aria-expanded="true"]{
   border-color:#968f80!important;
@@ -202,5 +202,5 @@ html body #publishingView .publish-delete-btn[hidden]{
   #publishingView .publishing-project-group-title{gap:6px;flex-wrap:wrap}
   #publishingView .publishing-project-group-head strong{font-size:15px!important}
   #publishingView .publishing-project-group-title::before{font-size:9px}
-  #publishingView .publish-list-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px!important}
+  #publishingView .publish-list-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px}
 }

@@ -21,7 +21,7 @@
        the status labels have nowhere to go and run into each other. The foot wraps instead,
        status on the first line and utilities on the second, which is also how the rail foot
        is drawn in the design. */
-    flex-wrap:wrap!important;
+    flex-wrap:wrap;
     align-items:center!important;
     gap:3px!important;
     width:100%!important;
@@ -94,7 +94,7 @@
   #sidebarConnectionStatus .sidebar-utility-actions{
     display:flex!important;
     align-items:center!important;
-    flex:1 0 100%!important;
+    flex:1 0 100%;
     gap:3px!important;
     width:100%!important;
     margin-left:0!important;

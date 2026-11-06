@@ -1149,12 +1149,12 @@ body #publishingView #publishingProjectFilterBtn,
 body #publishingView #publishingContentTypeFilters .content-type-filter,
 body #publishingView #publishingFilters .publishing-filter,
 body #projectsView #worksTypeFilters .content-type-filter{
-  box-sizing:border-box!important;
+  box-sizing:border-box;
   display:inline-flex!important;
   align-items:center!important;
-  justify-content:center!important;
+  justify-content:center;
   min-height:34px!important;
-  height:34px!important;
+  height:34px;
   padding:0 10px!important;
   font-size:12px!important;
   line-height:1!important;
@@ -1171,7 +1171,7 @@ body #publishingView #publishingProjectFilterBtn strong{
   body #publishingView #publishingFilters .publishing-filter,
   body #projectsView #worksTypeFilters .content-type-filter{
     min-height:36px!important;
-    height:36px!important;
+    height:36px;
   }
 }
 

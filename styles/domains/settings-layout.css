@@ -8,13 +8,13 @@
    The settings form used to live inside a fixed-height dialog. After moving it to a
    full app page, those legacy dialog dimensions must not constrain the page grid. */
 .settings-view #settingsDialog.settings-page-dialog{
-  height:auto!important;
+  height:auto;
   min-height:0!important;
-  max-height:none!important;
+  max-height:none;
 }
 
 .settings-view #settingsDialog > .settings-dialog.settings-page-form{
-  height:auto!important;
+  height:auto;
   min-height:0!important;
   max-height:none!important;
   overflow:visible!important;
@@ -25,9 +25,9 @@
 .settings-view .settings-section,
 .settings-view .security-note{
   min-width:0;
-  height:auto!important;
+  height:auto;
   min-height:0!important;
-  max-height:none!important;
+  max-height:none;
   overflow:visible!important;
 }
 

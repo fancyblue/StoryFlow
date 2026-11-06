@@ -130,6 +130,6 @@
 
   .workspace-grid.workspace-empty-mode {
     grid-template-columns: var(--sf-workspace-source-columns) !important;
-    gap: var(--sf-workspace-column-gap) !important;
+    gap: var(--sf-workspace-column-gap);
   }
 }

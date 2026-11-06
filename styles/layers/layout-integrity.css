@@ -253,7 +253,7 @@
 
   /* Mobile bottom navigation carries destinations only. Connection utilities stay in Settings. */
   .sidebar{
-    grid-template-rows:56px!important;
+    grid-template-rows:56px;
     gap:0!important;
     padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
   }
@@ -262,7 +262,7 @@
   .sidebar #sidebarConnectionStatus{display:none!important}
   .sidebar .nav{
     display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    grid-template-columns:repeat(4,minmax(0,1fr));
     gap:5px!important;
   }
   .sidebar .nav .nav-item[data-view="settings"]{display:grid!important}
