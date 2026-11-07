@@ -5,16 +5,23 @@ and the reading surface. */
 .source-panel>.panel-head{flex-wrap:wrap!important;align-items:center!important}
 .source-panel>.panel-head>div:first-child{flex:1 1 auto;min-width:0}
 .source-heading-title-row h2{flex:1 1 auto;}
-.quick-switch-project-btn{flex:0 0 auto;min-height:30px;margin-left:auto;padding:0 10px;border:1px solid transparent;border-radius:8px;background:#f4f1e9;color:var(--denim-700,#4b4557);font-size:11.5px;font-weight:700;line-height:1;cursor:pointer}
-.quick-switch-project-btn:hover,.quick-switch-project-btn:focus-visible,.quick-switch-project-btn[aria-expanded="true"]{border-color:transparent;background:#fbfaf6;color:var(--denim-800,#4b4557);outline:none}
-.splitter-panel .smart-split-header-actions #openReadingViewBtn{min-height:30px!important;margin-left:auto!important;padding:0 10px!important;border:1px solid transparent!important;border-radius:8px!important;background:#f4f1e9!important;color:var(--denim-700,#4b4557)!important;box-shadow:none!important;font-size:11.5px!important;font-weight:700!important;line-height:1!important}
+/* The rail's label stays one toolbar control tall without 切換作品 beside it, so it keeps the
+   centre line of the 切篇預覽 head's controls. */
+.source-heading-title-row{min-height:34px}
+.splitter-panel .smart-split-header-actions #openReadingViewBtn{margin-left:auto!important;border:1px solid transparent!important;background:#f4f1e9!important;color:var(--denim-700,#4b4557)!important;box-shadow:none!important;font-weight:700!important;}
 .splitter-panel .smart-split-header-actions #openReadingViewBtn:hover,.splitter-panel .smart-split-header-actions #openReadingViewBtn:focus-visible{border-color:transparent!important;background:#fbfaf6!important;color:var(--denim-800,#4b4557)!important;outline:none!important;box-shadow:none!important}
-/* The disclosure opens against its own trigger, not against the panel box. A fixed
-   58px from the panel's top edge was a reading of one heading height: the SOURCE head
-   grew a title row, and the menu began covering the heading it belongs to. Anchoring to
-   .source-heading-actions keeps it under the button in both content modes and survives
-   the next heading change. */
-.source-heading-actions{position:relative}
+/* 切換作品 is the page head's 作品 · <work name> ⌄ in both content modes. The name stands where
+   the page title stood, so it takes the title's size rather than a toolbar control's. The menu
+   opens against its own trigger, from its left edge: anchored to anything larger, its offset
+   restated that box's height, and stopped being true the first time the box changed. */
+.workspace-title-crumb{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;min-width:0;font-size:var(--sf-font-page);line-height:1.25}
+.workspace-title-root,.workspace-title-sep{color:var(--ink-2,#6a6357);font-weight:500}
+.workspace-title-switch{position:relative;display:flex;min-width:0}
+.workspace-title-button{display:inline-flex;align-items:center;gap:8px;min-width:0;max-width:100%;margin:0;padding:2px 8px;border:0;border-radius:8px;background:transparent;color:var(--ink-1,#221f1a);font:inherit;font-weight:700;cursor:pointer}
+.workspace-title-button>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.workspace-title-button:hover,.workspace-title-button[aria-expanded="true"]{background:#f4f1e9}
+.workspace-title-button:focus-visible{background:#f4f1e9;outline:none;box-shadow:var(--focus)}
+.workspace-title-switch>.workspace-project-quick-switch{left:0;right:auto}
 .workspace-project-quick-switch{position:absolute;top:calc(100% + 6px);right:0;z-index:40;display:grid;gap:4px;width:max-content;min-width:232px;max-width:min(320px,calc(100vw - 48px));max-height:min(320px,55vh);overflow:auto;padding:8px;border:1px solid #c8c1b0;border-radius:12px;background:#fbfaf6;}
 .workspace-project-quick-switch[hidden]{display:none!important}
 .workspace-project-quick-switch-title{padding:5px 7px 7px;color:var(--sf-muted);font-size:10px;font-weight:700;letter-spacing:.04em}

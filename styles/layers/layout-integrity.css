@@ -111,13 +111,6 @@
 .source-heading-actions #newChapterBtn{
   display:none;
 }
-.source-heading-actions .quick-switch-project-btn{
-  margin:0;
-  min-width:0;
-  max-width:112px;
-  padding-inline:10px!important;
-  white-space:nowrap;
-}
 
 /* The manual action actually exists in the DOM. A legacy UX layer hid it; keep it visible so
    the rail offers an explicit manual path. It is a quiet control (`.sf-quiet`): adding an
@@ -301,7 +294,6 @@
     grid-template-columns:minmax(0,1fr) auto!important;
     gap:10px;
   }
-  .source-heading-actions .quick-switch-project-btn,
   .splitter-panel .smart-split-header-actions #openReadingViewBtn,
   .splitter-panel .smart-split-header-actions #splitSettingsToggle{
     min-height:40px!important;
@@ -313,7 +305,6 @@
 @media(max-width:390px){
   .source-heading-title-row,
   .splitter-panel > .panel-head{gap:8px}
-  .source-heading-actions .quick-switch-project-btn,
   .splitter-panel .smart-split-header-actions #openReadingViewBtn,
   .splitter-panel .smart-split-header-actions #splitSettingsToggle{
     min-height:36px!important;

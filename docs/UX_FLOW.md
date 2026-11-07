@@ -58,7 +58,7 @@ The Workspace is a staged flow rather than a page with one permanently primary b
 | WS-09 | Maintain a manual chapter | 編輯章節 | 刪除章節 | The row's `⋯` keeps its place and shows with the row on pointer devices (always on touch); edit is first and delete is second |
 | WS-10 | Maintain a visual entry | 編輯即自動儲存 | Photo library, live preview, `⋯ → 刪除圖文` | One image per article: title, optional quote, one photo and caption, body — written here and autosaved together; summary, Hashtags and afterword are written in Publishing. The preview sits beside the editor and follows every keystroke. Use the same direct-edit plus persistent-overflow pattern and Recovery flow as manual chapters for deleting an article |
 
-The “切換作品” disclosure lives in the source heading (“作品與章節” / “作品與圖文”) for both content modes and includes “＋ 新增作品”. It opens as a layer anchored under its own button, never in the rail's flow: an offset measured from the panel's top edge instead restates the heading's height, and it stopped being true the first time that heading changed. The longform “作品與章節” rail and visual “作品與圖文” rail use the same outer width and breakpoint contract, and the same unframed shape — on desktop the rail on the page ground and its subject on one sheet of paper, parted by the change of surface alone, with no card around either. “新增文章／新增圖文” sits below the corresponding chapter or entry list, never in the page header or list heading. Both rails head that list the same way — “章節清單 N 章” and “圖文清單 N 則” — so the rail reads as one layout whichever kind of work is open. When a chapter has been split to its last paragraph, the empty split panel says “這一章已全部切完” and points to 發布, rather than keeping whatever it last said.
+The “切換作品” disclosure is the workspace page head — “作品 · <work name> ⌄”, standing where the page title stood — for both content modes, and includes “＋ 新增作品”. The rail keeps its “作品與章節” / “作品與圖文” label and the work name as the field that renames it; the head follows that field as it is typed. The menu opens as a layer anchored under its own trigger, from its left edge, never in the rail's flow: an offset measured from a larger box restates that box's height, and stops being true the first time it changes. The longform “作品與章節” rail and visual “作品與圖文” rail use the same outer width and breakpoint contract, and the same unframed shape — on desktop the rail on the page ground and its subject on one sheet of paper, parted by the change of surface alone, with no card around either. “新增文章／新增圖文” sits below the corresponding chapter or entry list, never in the page header or list heading. Both rails head that list the same way — “章節清單 N 章” and “圖文清單 N 則” — so the rail reads as one layout whichever kind of work is open. When a chapter has been split to its last paragraph, the empty split panel says “這一章已全部切完” and points to 發布, rather than keeping whatever it last said.
 
 Coming into a longform workspace — from the menu, by opening a work on Works, or through 切換作品 — lands where the splitting is. The chapter last worked on stays chosen while it still has text to split; once it is split to the end, the newest chapter after it with text left is chosen instead, so a chapter a source update added is not one scroll and one click away. An earlier chapter left unsplit is not jumped back to. Working inside the workspace never moves the selection, and a search result opens the chapter it names.
 
@@ -234,9 +234,9 @@ Rules:
 
 ## Switching works
 
-- “切換作品” is available from the workspace header.
+- “切換作品” is the workspace page head, “作品 · <work name> ⌄”, in both content modes.
 - The current work is visibly selected in the menu.
-- “新增作品” is the final menu action and opens the transactional flow above.
+- “新增作品” is the first menu action, under the menu's heading, and opens the transactional flow above.
 - Canceling creation returns to the same active work and chapter without adding an empty “未命名作品”.
 
 ## Split confirmation and manual boundaries

@@ -89,7 +89,7 @@ Current shared disclosures include workspace work switching, the split head's �
 
 - Primary: the single action that advances or confirms the current task.
 - Ghost/secondary: preview, return, cancel or supporting actions.
-- Soft (`.sf-soft`): a toolbar control — the segment's `--paper-2` fill, no frame, `--paper-1` under the pointer or while its disclosure is open. The format select, 設定, 讀稿檢視, 回到工作台, the reading view's 閱讀設定 icon and 切換作品 are soft.
+- Soft (`.sf-soft`): a toolbar control — the segment's `--paper-2` fill, no frame, `--paper-1` under the pointer or while its disclosure is open. The format select, 設定, 讀稿檢視, 回到工作台 and the reading view's 閱讀設定 icon are soft. 切換作品 is not a toolbar control: it is the page head's “作品 · <work name> ⌄”, at the page title's size, with no fill until the pointer or its open menu gives it `--paper-2`.
 - Quiet (`.sf-quiet`): a control used rarely enough to rest as text, taking the hover fill only under the pointer. 更新作品來源 and ＋ 新增文章／＋ 新增圖文 are quiet.
 - Overflow (`⋯`): infrequent row management and destructive actions.
 - Close (`×`): dismisses a dialog; in pending creation it also cancels the transaction.
@@ -132,7 +132,7 @@ label in the row look undersized.
 | Segmented control | outer box `--sf-control-sm`; inner buttons `calc(var(--sf-control-sm) - 6px)` |
 
 `.button.tiny` is this tier, so it applies wherever that class is used, and the select, the
-segment, 設定, 讀稿檢視, 切換作品, 更新作品來源 and the scene button group all resolve to it.
+segment, 設定, 讀稿檢視, 更新作品來源 and the scene button group all resolve to it.
 A control that needs a different height belongs on a different row. `cascade-contract.spec.js`
 measures the split head and the source head together and fails if any of them drifts.
 
@@ -683,7 +683,7 @@ A control is built in one place. Five modules each filled the platform `<select>
 
 A value is authored in one place. Summary and Hashtags are publishing helpers for both content types, written in the article-level 摘要與 Hashtags tool; neither editor carries them. A visual article's quote and caption are part of the article and are written in its editor, which autosaves them with the title and body.
 
-Surfaces that sit side by side agree on their lines. The 作品與章節 and 切篇預覽 heads share one height, so their rules read as one line across the workbench, and both titles sit centred in a row as tall as 切換作品, so they share one top edge too; the split head's buttons sit beside its title, where 切換作品 sits in the source head. Both rails head their list the same way — name and count over the rule the rows start under: “章節清單 N 章” in longform, “圖文清單 N 則” in visual — and the work name above them is an ordinary field in both, not a bold heading in one. Opening 切換作品 changes nothing in the rail: the rail stops clipping so the menu can hang past it, and holds the width its scrollbar gutter reserved so its fields do not widen.
+Surfaces that sit side by side agree on their lines. The 作品與章節 and 切篇預覽 heads share one height, so their rules read as one line across the workbench, and both titles sit centred in a row one toolbar control tall, so they share one centre line too; the split head's buttons sit beside its title, and the source head's label row keeps that height without a control of its own (切換作品 is in the page head). Both rails head their list the same way — name and count over the rule the rows start under: “章節清單 N 章” in longform, “圖文清單 N 則” in visual — and the work name above them is an ordinary field in both, not a bold heading in one. Opening 切換作品 from the page head changes nothing in the rail: the menu is a layer under the head, and the rail's fields neither move nor widen.
 
 A dialog's head is part of its card: the same paper, and a rule that reaches the card's edge. It was a white band, and a scrollbar gutter the card reserved whether or not it scrolled stopped the rule 15px short. A preview box inside a dialog stops short of the pinned action bar's rule rather than sitting on it. Two text fields stacked in one form read as one kind of field, so 手動建立's chapter title takes the work name's size and weight. The global search head is its own field — no second box or focus ring inside it, and no browser clear cross beside the close cross; its selected result is tinted like any current row rather than boxed, and every result kind wears the same neutral label (green means published, which none of them do).
 

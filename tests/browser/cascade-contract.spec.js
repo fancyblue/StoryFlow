@@ -422,7 +422,7 @@ function railShape(page, selector) {
   });
 }
 
-// What the disclosure has to be: a layer over the rail, under the button that opens it,
+// What the disclosure has to be: a layer under the page head's 作品 · 名稱 ⌄ that opens it,
 // carrying its own surface — and leaving the rail's own fields exactly where they were.
 async function switcherShape(page, { button, menu, fieldBelow }) {
   const fieldTopBefore = await page.locator(fieldBelow).evaluate(el => Math.round(el.getBoundingClientRect().top));
@@ -438,8 +438,8 @@ async function switcherShape(page, { button, menu, fieldBelow }) {
       position: style.position,
       ownSurface: style.backgroundColor !== 'rgba(0, 0, 0, 0)' && parseFloat(style.borderTopWidth) > 0,
       belowTrigger: Math.round(rect.top - trigger.bottom),
-      alignedToTrigger: Math.round(rect.right - trigger.right),
-      overlaps: rect.top < document.querySelector(ids.fieldBelow).getBoundingClientRect().top
+      alignedToTrigger: Math.round(rect.left - trigger.left),
+      inPageHead: Boolean(el.closest('#workspaceView > .topbar') && document.querySelector(ids.button).closest('#workspaceView > .topbar'))
     };
   }, { button, fieldBelow });
   const fieldTopAfter = await page.locator(fieldBelow).evaluate(el => Math.round(el.getBoundingClientRect().top));
@@ -449,7 +449,7 @@ async function switcherShape(page, { button, menu, fieldBelow }) {
   return { ...shape, movedTheRail: fieldTopAfter - fieldTopBefore, widenedTheRail: fieldWidthAfter - fieldWidthBefore };
 }
 
-test('both content modes draw one SOURCE rail and open one work switcher over it', async ({ page }) => {
+test('both content modes draw one SOURCE rail and switch works from the page head', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
 
@@ -459,6 +459,9 @@ test('both content modes draw one SOURCE rail and open one work switcher over it
     menu: '#workspaceProjectQuickSwitch',
     fieldBelow: '#projectTitle'
   });
+  await page.keyboard.press('Escape');
+  // The page head names the work; the rail keeps the field that renames it.
+  const longformHead = await page.locator('#workspaceView > .topbar .workspace-title-crumb').innerText();
 
   await visualWorkspace(page);
   const visualRail = await railShape(page, '.visual-entry-list-panel');
@@ -467,6 +470,13 @@ test('both content modes draw one SOURCE rail and open one work switcher over it
     menu: '#visualProjectMenu',
     fieldBelow: '#visualProjectTitle'
   });
+  await page.keyboard.press('Escape');
+  const visualHead = await page.locator('#workspaceView > .topbar .workspace-title-crumb').innerText();
+  expect(longformHead.replace(/\s+/g, ' ')).toMatch(/^作品 · \S/);
+  expect(visualHead.replace(/\s+/g, ' ')).toMatch(/^作品 · \S/);
+  expect(visualHead).not.toBe(longformHead);
+  await expect(page.locator('#quickSwitchProjectBtn')).toBeHidden();
+  await expect(page.locator('#visualProjectSwitchBtn')).toBeVisible();
 
   // One rail, the same in both modes: unframed, on the ground, with no line of its own — the
   // page turns from ground to paper where it ends (the view's background, checked below).
@@ -485,16 +495,16 @@ test('both content modes draw one SOURCE rail and open one work switcher over it
     ownSurface: true,
     belowTrigger: 6,
     alignedToTrigger: 0,
-    overlaps: true,
+    inPageHead: true,
     movedTheRail: 0,
     widenedTheRail: 0
   });
 });
 
 // The 作品與章節 and 切篇預覽 heads stand side by side, so they read as one line across the
-// workbench — or as two lines 11px apart, which is what they were: the source head carries 切換作品
-// beside its title and stood taller. The rail's head is now a small label and the split head a
-// title, so they share a centre line rather than a top. Both rails also head their list the same way.
+// workbench — or as two lines 11px apart, which is what they were when the source head carried
+// 切換作品 beside its title and stood taller (切換作品 is now in the page head). The rail's head is a
+// small label and the split head a title, so they share a centre line rather than a top. Both rails also head their list the same way.
 test('the workbench heads share one line and both rails head their list alike', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
@@ -538,7 +548,7 @@ test('a toolbar row resolves to one control height, label size and radius', asyn
   await longformWorkspace(page);
 
   const row = ['#suggestionPlatformSelect', '.splitter-panel .sf-preview-mode-segment', '#splitSettingsToggle',
-    '#openReadingViewBtn', '#quickSwitchProjectBtn', '.splitter-panel .preview-boundary-controls'];
+    '#openReadingViewBtn', '.splitter-panel .preview-boundary-controls'];
   const boxes = await page.evaluate(selectors => selectors.map(selector => {
     const el = document.querySelector(selector);
     return { selector, height: Math.round(el.getBoundingClientRect().height), radius: getComputedStyle(el).borderTopLeftRadius };
@@ -546,12 +556,12 @@ test('a toolbar row resolves to one control height, label size and radius', asyn
   for (const box of boxes) expect(box, box.selector).toEqual({ selector: box.selector, height: 34, radius: '8px' });
 
   for (const selector of ['#suggestionPlatformSelect', '.splitter-panel .sf-preview-mode-segment button', '#splitSettingsToggle',
-    '#openReadingViewBtn', '#quickSwitchProjectBtn', '#shrinkBtn']) {
+    '#openReadingViewBtn', '#shrinkBtn']) {
     await expectStyle(page, selector, { fontSize: '14px' });
   }
   // A toolbar's controls are one family: the segment's fill and no frame, for the select, 設定 and
   // 讀稿檢視 alike. The scene buttons are one control, so neither half draws a frame.
-  for (const selector of ['#suggestionPlatformSelect', '#splitSettingsToggle', '#openReadingViewBtn', '#quickSwitchProjectBtn']) {
+  for (const selector of ['#suggestionPlatformSelect', '#splitSettingsToggle', '#openReadingViewBtn']) {
     await expectStyle(page, selector, { borderTopColor: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgb(244, 241, 233)' });
   }
   // The suggestion's status is a state, not a control: no fill.

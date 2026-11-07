@@ -71,7 +71,7 @@ Every file under `src/` and `styles/` is live: the dormant `src/legacy/` scripts
 - The same label must have the same position, visual weight and behavior across pages.
 - Reuse shared controls and CSS variables before adding page-specific variants.
 - Longform “作品與章節” and visual “作品與圖文” use the same SOURCE column-width contract.
-- Work switching belongs in the SOURCE heading and includes “新增作品”.
+- Work switching is the workspace page head’s “作品 · <work name> ⌄” in both content modes and includes “新增作品”; the SOURCE rail keeps the editable work name.
 - Content creation belongs with the relevant chapter or visual-entry list.
 - Summary, Hashtags and afterword are optional publishing helpers shared by longform and visual content and edited in Publishing rather than source editors. Hashtags remain copyable text; parsed values support search/classification for both content types. The list-level preview is a plain content check; platform title/style and optional helper controls belong only to each platform's preview-and-copy flow.
 - Infrequent or destructive row actions use `⋯` → menu action. Do not add a second always-visible delete button in an editor footer.
