@@ -31,7 +31,7 @@ export function buildMeta(root) {
       meta.push({
         id, file, line: lineAt(text, r.open), selector: r.selector, context: r.context, body,
         decls: r.decls.map((d, di) => ({
-          k: `${id}-${di}`, prop: d.prop, value: d.value, important: d.important, line: lineAt(text, d.start),
+          k: `${id}-${di}`, prop: d.prop, value: d.value, important: d.important, line: lineAt(text, d.start + Math.max(0, text.slice(d.start, d.end).search(/[^\s;]/))),
           ...(d.important ? { impS: d.impStart + shift, impE: d.impEnd + shift, srcS: d.impStart, srcE: d.impEnd } : {})
         }))
       });
