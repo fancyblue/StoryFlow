@@ -52,7 +52,6 @@
 .chapter-delete-button:hover,
 .chapter-delete-button:focus-visible{
   opacity:1;
-  color:#a8443a;
   background:#f6e9e6;
   border-color:#e6cdc7;
   outline:none;

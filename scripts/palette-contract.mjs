@@ -48,8 +48,6 @@ const PALETTE = {
   '#e6cdc7': 'vermilion line',
   '#eddad5': 'vermilion fill',
   '#f6e9e6': 'vermilion soft',
-  '#d08b80': 'vermilion on the dark rail',
-  '#e0a49a': 'vermilion on the dark rail, hover',
   '#d4796d': 'connection dot, disconnected',
   '#8a6526': 'ochre — warning',
   '#ecdfc4': 'ochre fill',

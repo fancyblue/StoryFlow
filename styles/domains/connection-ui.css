@@ -84,7 +84,6 @@
 }
 .sidebar-connection-row:hover,
 .sidebar-connection-row:focus-visible{
-  border-color:rgba(255,255,255,.12);
   outline:none;
 }
 .sidebar-status-dot{

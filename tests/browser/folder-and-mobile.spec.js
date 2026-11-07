@@ -299,3 +299,26 @@ test('a phone reads a visual work without being offered a change', async ({ page
   await expect(page.locator('#visualPreviewArticle .visual-article-figure img')).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
+
+test('the sidebar connection row shows where the pointer and the keyboard are', async ({ page }) => {
+  // The desktop rail is paper-coloured ground. Its hover and focus wash was written for the
+  // old dark rail, white at 6%, and could not be seen: a keyboard user tabbing onto this row
+  // got no mark at all, because the row also sets outline:none.
+  const pageErrors = await prepare(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const row = page.locator('#sidebarConnectionStatus .sidebar-connection-row').first();
+  await expect(row).toBeVisible();
+  const background = () => row.evaluate(el => getComputedStyle(el).backgroundColor);
+  await expect.poll(background).toBe('rgba(0, 0, 0, 0)');
+
+  await row.focus();
+  await page.keyboard.press('Shift');
+  await expect.poll(() => row.evaluate(el => el.matches(':focus-visible'))).toBe(true);
+  await expect.poll(background).toBe('rgb(244, 241, 233)');
+
+  await row.evaluate(el => el.blur());
+  await row.hover();
+  await expect.poll(background).toBe('rgb(244, 241, 233)');
+  expect(pageErrors).toEqual([]);
+});

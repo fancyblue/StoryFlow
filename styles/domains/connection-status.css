@@ -48,9 +48,12 @@
     background:transparent!important;
     box-shadow:none!important;
   }
+  /* The desktop rail is paper-coloured ground: a row under the pointer or the keyboard takes
+     --paper-2 like the menu items above it. The white wash written for the old dark rail
+     could not be seen here, which left keyboard focus on this row with no mark at all. */
   #sidebarConnectionStatus .sidebar-connection-row:hover,
   #sidebarConnectionStatus .sidebar-connection-row:focus-visible{
-    background:rgba(255,255,255,.06)!important;
+    background:var(--paper-2,#f4f1e9)!important;
     outline:none;
   }
   #sidebarConnectionStatus .sidebar-connection-copy{
