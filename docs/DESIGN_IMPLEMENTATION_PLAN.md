@@ -21,7 +21,8 @@
    `publishing-queue-1440`、`settings-1440`、`publishing-detail-1440`、`platform-preview-1440`、
    `visual-workspace-1440`。2026-11-07 補上原本未涵蓋的：作品類型、手動建立作品、內容預覽、編輯章節、
    來源比對、摘要與 Hashtags、後記、發布紀錄等對話框，以及設定頁摺線下方的備份中心（`dialog-*-1440`、
-   `settings-backup-center-1440`）。仍未涵蓋的是圖文的對話框（新增圖文、照片燈箱、照片資料夾）與手機版面。
+   `settings-backup-center-1440`），以及圖文的對話框（新增圖文、照片燈箱、照片資料夾，`dialog-visual-*-1440`）與手機版面
+   （作品、工作台、發布、發布燈箱，`phone-*-390`）。
 4. **每個改到靜態資產的 PR 都要更新 cache query**，否則 `npm run test:assets` 失敗。
    用 `npm run bump:assets` 依 git diff 自動處理。
 
