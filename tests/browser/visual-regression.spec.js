@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { standInForConnectedFolder } from './support/folder.js';
+import { standInForDrivePhotos } from './support/drive-photos.js';
 
 const visualCss = `
   *, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }
@@ -518,5 +519,120 @@ test('the source comparison dialog keeps its composition', async ({ page }) => {
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText('1 個內容更新');
   await expect(dialog).toHaveScreenshot('dialog-source-comparison-1440.png');
+});
+});
+
+// The visual works' dialogs and the phone layout were the last surfaces without a baseline.
+test.describe('visual dialogs and the phone layout', () => {
+test.use({ timezoneId: 'Asia/Taipei' });
+
+const DRIVE_FOLDERS = {
+  root: [{ id: 'trip', name: '北海道', mimeType: 'application/vnd.google-apps.folder' },
+    { id: 'tokyo', name: '東京', mimeType: 'application/vnd.google-apps.folder' }],
+  trip: [
+    { id: 'p-1', name: 'IMG_0001.jpg', mimeType: 'image/jpeg', imageMediaMetadata: { time: '2023:02:18 09:00:00' } },
+    { id: 'p-2', name: 'IMG_0002.jpg', mimeType: 'image/jpeg', imageMediaMetadata: { time: '2023:02:18 10:00:00' } },
+    { id: 'day-2', name: 'Day 2', mimeType: 'application/vnd.google-apps.folder' }
+  ],
+  'day-2': [],
+  tokyo: []
+};
+
+// Drive and Google sign-in stood in for as visual.spec.js does for the folder browser.
+async function standInForDriveFolders(page) {
+  await page.route('https://www.googleapis.com/drive/v3/files?**', async route => {
+    const q = new URL(route.request().url()).searchParams.get('q') || '';
+    const parent = /'([^']+)' in parents/.exec(q)?.[1];
+    let files = parent ? (DRIVE_FOLDERS[parent] || []) : [];
+    if (q.includes(`mimeType = 'application/vnd.google-apps.folder' and trashed = false`) && !q.includes('contains')) {
+      files = files.filter(file => file.mimeType.endsWith('folder'));
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ files }) });
+  });
+  await page.evaluate(() => {
+    window.STORYFLOW_CONFIG.googleClientId ||= 'test-client.apps.googleusercontent.com';
+    window.google = { accounts: { oauth2: { initTokenClient: config => ({
+      callback: config.callback,
+      requestAccessToken() { this.callback({ access_token: 'visual-regression-token' }); }
+    }) } } };
+  });
+}
+
+test('visual works dialogs keep their composition', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.clock.setFixedTime(new Date('2026-01-05T09:30:00+08:00'));
+  await openVisualWork(page);
+  await standInForDrivePhotos(page);
+  await standInForDriveFolders(page);
+
+  await page.locator('#visualNewEntryBtn').click();
+  const entryDialog = page.locator('#visualEntryDialog');
+  await expect(entryDialog).toBeVisible();
+  await expectDialogContained(entryDialog);
+  await expect(entryDialog).toHaveScreenshot('dialog-visual-new-entry-1440.png');
+  await page.keyboard.press('Escape');
+  await expect(entryDialog).toBeHidden();
+
+  await page.locator('#visualAddPhotosBtn').click();
+  await expect(page.locator('.visual-photo-tile')).toHaveCount(3);
+  await page.locator('.visual-photo-tile .visual-photo-zoom').first().click({ force: true });
+  const photoDialog = page.locator('#visualPhotoDialog');
+  await expect(photoDialog).toBeVisible();
+  await expect.poll(() => photoDialog.locator('img').first().evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+  await expect(photoDialog).toHaveScreenshot('dialog-visual-photo-1440.png');
+  await page.keyboard.press('Escape');
+  await expect(photoDialog).toBeHidden();
+
+  await page.locator('#visualChooseFolderBtn').click();
+  const folderDialog = page.locator('#visualFolderDialog');
+  await expect(folderDialog.locator('.visual-folder-row')).toHaveText(['北海道›', '東京›']);
+  await expect(folderDialog).toHaveScreenshot('dialog-visual-folder-1440.png');
+});
+
+test.describe('on a phone', () => {
+test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+// A phone starts read-only, so the works are written in directly rather than created.
+async function openPhone(page) {
+  await page.clock.setFixedTime(new Date('2026-01-05T09:30:00+08:00'));
+  await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  await standInForConnectedFolder(page);
+  await page.goto('/?visual-regression=1');
+  await page.addStyleTag({ content: visualCss });
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '手機版面測試' }, { quiet: true });
+    const chapter = state.chapters[0];
+    chapter.title = '08、印紋';
+    chapter.draft = '鐘聲停下後，長廊只剩窗外落雨的聲音。\n\n她攤開掌心，淡銀色的印紋沿著指節亮起。\n\n門後沒有回答。';
+    chapter.confirmedBlockCount = 2;
+    chapter.parts = [1, 2].map(index => ({
+      id: `phone-part-${index}`, title: `08、印紋（${index}）`, chars: 18, startBlock: index - 1, endBlock: index,
+      raw: '鐘聲停下後，長廊只剩窗外落雨的聲音。', formatted: '鐘聲停下後，長廊只剩窗外落雨的聲音。',
+      summary: '', hashtags: '', afterword: '', images: [], published: false, platformStatus: { 方格子: index === 1 }
+    }));
+    renderAll();
+  });
+}
+
+test('works, workspace and publishing keep their phone composition', async ({ page }) => {
+  await openPhone(page);
+  await expectDocumentBounded(page);
+  await expect(page).toHaveScreenshot('phone-works-390.png');
+
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expectDocumentBounded(page);
+  await expect(page).toHaveScreenshot('phone-workspace-390.png');
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expectDocumentBounded(page);
+  await expect(page).toHaveScreenshot('phone-publishing-390.png');
+
+  await page.locator('.publish-list-item .publish-manage-btn').first().click();
+  await expect(page.locator('.publish-lightbox:not([hidden])')).toBeVisible();
+  await expectDocumentBounded(page);
+  await expect(page).toHaveScreenshot('phone-publishing-lightbox-390.png');
+});
 });
 });
