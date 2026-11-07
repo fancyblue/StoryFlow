@@ -206,13 +206,11 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
   .sidebar-settings-button:hover{background:var(--paper-2,#f4f1e9)!important;color:var(--ink-1,#221f1a)}
   .sidebar-settings-button.active{background:var(--paper-1,#fbfaf6)!important;color:var(--ink-1,#221f1a)}
   .sidebar-logout{color:var(--vermilion,#a8443a)!important}
-  .sidebar-logout:hover,.sidebar-logout:focus-visible{color:var(--vermilion,#a8443a)}
   .sidebar-connection-status{border-top-color:var(--rule-1,#ded9cc)}
   .sidebar-connection-copy b{color:var(--ink-2,#6a6357)}
   #sidebarConnectionStatus .sidebar-connection-copy small,
   #sidebarConnectionStatus .sidebar-connection-row.connected .sidebar-connection-copy small,
   #sidebarConnectionStatus .sidebar-connection-row.restoring .sidebar-connection-copy small{color:var(--ink-1-soft,#3f3930)!important}
-  .sidebar-connection-row:focus-visible{background:var(--paper-2,#f4f1e9)}
   .nav-search-trigger kbd{border-color:var(--rule-1,#ded9cc);background:var(--paper-1,#fbfaf6);color:var(--ink-2,#6a6357)}
 }
 

@@ -172,7 +172,6 @@
   .sidebar-logout:focus-visible {
     background:rgba(168,68,58,.24) !important;
     border-color:#a8443a !important;
-    color:#f6e9e6;
     outline:none;
   }
 

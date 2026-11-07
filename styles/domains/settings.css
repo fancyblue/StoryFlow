@@ -354,7 +354,7 @@
 .backup-cleanup-preview p{margin:5px 0!important;color:var(--ink)!important;font-size:13px;line-height:1.5}
 .backup-cleanup-preview small{color:var(--muted);line-height:1.55}
 .button.backup-cleanup-confirm{flex:0 0 auto;background:#fbfaf6;color:#a8443a}
-.button.backup-cleanup-confirm:hover{border-color:#a8443a;background:#f6e9e6;color:#a8443a}
+.button.backup-cleanup-confirm:hover{background:#f6e9e6;color:#a8443a}
 .settings-device-privacy{margin-top:14px}
 @media(max-width:860px){
   .backup-center-status-grid,.backup-storage-grid{grid-template-columns:1fr}

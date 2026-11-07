@@ -219,7 +219,7 @@ regardless of what it was trying to say.
 
 **One value per role.** Before this palette the loaded stylesheets held 408 distinct colours,
 most of them a few percent of lightness apart: fifteen pale blues for "a surface", a dozen for
-"a line". They are now 32, and `npm run test:palette` fails on the thirty-third. Adding one is
+"a line". They are now 30, and `npm run test:palette` fails on the thirty-first. Adding one is
 a deliberate act — put it in `PALETTE` in `scripts/palette-contract.mjs` with the role it
 serves, and the diff records the decision.
 
@@ -228,9 +228,11 @@ the ramp does not match the design sketch exactly. The sketch's third ink step, 
 3.1:1 on paper — below 4.5:1 at reading size — so the step is split: `--ink-3` (`#6f6759`) is
 the readable one for units, timestamps and placeholders, and `--ink-faint` keeps `#968f80` for
 the two places where the requirement does not apply, inactive controls and hairline borders.
-The same rule forces the dark rail to carry its own destructive colour: `--vermilion` clears
-5.7:1 on paper but 2.5:1 on the rail, so `.sidebar-logout` uses a lightened pigment rather than
-the rail being made lighter.
+The desktop rail is paper-coloured ground, so `.sidebar-logout` uses `--vermilion` (5.7:1)
+like every other destructive control; the lightened pigments the old dark rail needed are gone.
+The only dark surface left is the phone's bottom bar, which carries no destructive control.
+On the rail, a row under the pointer or keyboard focus takes `--paper-2`, as the menu items do —
+the sidebar connection row included, which sets `outline:none` and so has no other focus mark.
 
 ### One elevation, and it is for overlays only
 
