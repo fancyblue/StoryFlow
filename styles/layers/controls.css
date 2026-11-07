@@ -8,6 +8,14 @@
 .button{
   letter-spacing:0!important;
 }
+/* A link dressed as a button (在 Google Drive 開啟, 開啟文章) does not centre its label the way a
+   <button> does, and keeps the link underline: give it the button's centring instead. */
+a.button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+}
 .button.tiny{
   min-height:30px!important;
   padding:5px 9px!important;
