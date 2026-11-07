@@ -1125,21 +1125,20 @@ test('on a phone the works row and the manual form keep their primary actions wh
   await page.locator('.nav-item[data-view="projects"]').click();
   const card = page.locator('.project-library-card').first();
   await expect(card).toBeVisible();
-  // 管理發布 | ⋯ on one line under the work's name, which is what opens it; 管理發布 takes the
-  // line and ⋯ keeps its square at the end.
+  // The row's only action, ⋯, sits beside the work's name, which is what opens it, keeps its
+  // square, and does not take a line of its own above the progress bar.
   const layout = await card.evaluate(row => {
     const box = selector => row.querySelector(selector).getBoundingClientRect();
     const name = box('.project-library-open');
-    const publish = box('.project-publish-btn');
     const more = box('.project-library-more-btn');
+    const progress = box('.project-progress');
     return {
-      oneLine: Math.round(publish.top) === Math.round(more.top),
-      underTheName: publish.top >= name.bottom,
-      moreLast: more.left >= publish.right,
-      moreSquare: Math.round(more.width) === Math.round(more.height)
+      besideTheName: more.left >= name.right - 1 && more.top < name.bottom,
+      moreSquare: Math.round(more.width) === Math.round(more.height),
+      progressBelow: progress.top >= Math.max(name.bottom, more.bottom) - 1
     };
   });
-  expect(layout).toEqual({ oneLine: true, underTheName: true, moreLast: true, moreSquare: true });
+  expect(layout).toEqual({ besideTheName: true, moreSquare: true, progressBelow: true });
 
   await page.locator('.nav-item[data-view="workspace"]').click();
   await page.locator('#addChapterBtn').click();

@@ -16,7 +16,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const RECORDED = 1756;
+const RECORDED = 1745;
 
 const args = process.argv.slice(2);
 const rootIndex = args.indexOf('--root');

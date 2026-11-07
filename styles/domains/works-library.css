@@ -100,27 +100,6 @@
   font-weight:700!important;
   white-space:nowrap!important;
 }
-/* Keep identical actions identical across cards. The active work is already shown
-   by its card and badge; chapter management gets the stronger soft treatment, while
-   publishing remains a quieter shortcut. 管理章節 rests exactly as Publishing's 管理發布
-   does — the ground's fill on the ordinary frame — and takes the darker frame and ink only
-   under the pointer or while open, as that one does; it used to rest in its open state. */
-.project-library-card .project-library-actions > .project-publish-btn{
-  border-color:#c8c1b0!important;
-  background:#fbfaf6!important;
-  color:var(--denim-800,#4b4557)!important;
-  box-shadow:none!important;
-}
-.project-library-card .project-publish-btn[hidden]{
-  display:none!important;
-}
-.project-library-card .project-library-actions > .project-publish-btn:hover,
-.project-library-card .project-library-actions > .project-publish-btn:focus-visible{
-  border-color:#c8c1b0!important;
-  background:var(--sf-primary-soft,#f4f1e9)!important;
-  color:var(--denim-900,#221f1a)!important;
-}
-
 .project-library-actions .project-library-delete{display:none!important}
 
 /* Overflow is always the final visible action. */
@@ -174,17 +153,20 @@
   border:0;
   border-radius:7px;
   background:transparent;
-  color:#a8443a;
+  color:#221f1a;
   font-size:12.5px;
   font-weight:700;
   text-align:left;
 }
 .project-library-overflow-menu button:hover,
 .project-library-overflow-menu button:focus-visible{
-  background:#f6e9e6;
-  color:#a8443a;
+  background:#f4f1e9;
   outline:none;
 }
+/* Only 刪除作品 is destructive; it alone takes the vermilion. */
+.project-library-overflow-menu button.is-destructive{color:#a8443a}
+.project-library-overflow-menu button.is-destructive:hover,
+.project-library-overflow-menu button.is-destructive:focus-visible{background:#f6e9e6}
 
 /* Publishing progress on a work card. The bar is decorative: the accessible name on
    the container carries the same numbers, so screen readers get one reading, not three. */
@@ -222,17 +204,16 @@
 .project-progress.is-empty .project-progress-label{font-weight:700}
 
 @media(max-width:1080px){
+  /* Narrower, progress moves under the identity block and spans the row, while the ⋯ —
+     the row's only action — stays beside the work's name rather than taking a line of
+     its own. */
   .project-library-card{
-    grid-template-columns:1fr!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
     gap:12px!important;
   }
-  /* The card is one column here, so progress sits under the identity block rather
-     than competing for a column that no longer exists. */
-  .project-progress{margin-top:2px}
-  .project-library-actions{
-    justify-content:flex-start!important;
-    flex-wrap:wrap!important;
-  }
+  .project-library-main{grid-column:1;grid-row:1}
+  .project-library-actions{grid-column:2;grid-row:1;align-self:start}
+  .project-progress{grid-column:1 / -1;grid-row:2;margin-top:2px}
 }
 @media(max-width:820px){
   .projects-page-head{
@@ -242,9 +223,7 @@
   .project-library-more-btn{flex:0 0 40px!important}
 }
 @media(max-width:560px){
-  /* 管理發布 | ⋯ on one line (the grid itself is ui-system.css's phone row): the work itself
-     is opened from its name above them. */
-  .project-library-actions > .project-publish-btn{grid-column:1;grid-row:1;width:100%!important}
+  /* ⋯ in the phone row's square column (the grid itself is ui-system.css's phone row). */
   .project-library-more-btn{
     grid-column:2;
     grid-row:1;

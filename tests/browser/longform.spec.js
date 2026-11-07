@@ -151,25 +151,21 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   await expect(page.locator('.project-chapter-manager')).toHaveCount(0);
   const cardCount = await page.locator('.project-library-card').count();
   await expect(page.locator('.project-library-actions > .button:visible')).toHaveText(
-    Array(cardCount).fill(['管理發布', '⋯']).flat()
+    Array(cardCount).fill('⋯')
   );
   await page.evaluate(() => document.activeElement?.blur());
   await page.mouse.move(0, 0);
-  // 管理發布 is one control whichever work is current.
+  // A row's one action is ⋯, the same control whichever work is current. Works is for
+  // seeing the list, so 管理發布 waits in that menu, above the one destructive item.
   await expect.poll(() => page.evaluate(() => {
     const style = selector => {
       const element = document.querySelector(selector);
       const computed = getComputedStyle(element);
       return [computed.height, computed.borderColor, computed.backgroundColor, computed.color, computed.fontSize].join('|');
     };
-    return style('.project-library-card.active .project-publish-btn')
-      === style('.project-library-card:not(.active) .project-publish-btn');
+    return style('.project-library-card.active .project-library-more-btn')
+      === style('.project-library-card:not(.active) .project-library-more-btn');
   })).toBe(true);
-  const publishStyle = await page.locator('.project-library-card.active .project-publish-btn').evaluate(button => {
-    const style = getComputedStyle(button);
-    return { height: style.height, fontSize: style.fontSize, backgroundColor: style.backgroundColor, color: style.color };
-  });
-  expect(publishStyle).toEqual({ height: '40px', fontSize: '14px', backgroundColor: 'rgb(251, 250, 246)', color: 'rgb(58, 53, 68)' });
 
   // The name opens the work: the other one becomes current and the workspace shows it.
   const other = page.locator('.project-library-card:not(.active)').first();
@@ -177,6 +173,21 @@ test('long chapter rail stays stable and manual add/edit share a large filled ed
   await other.locator('.project-library-open').click();
   await expect(page.locator('#workspaceView')).toBeVisible();
   await expect.poll(() => page.evaluate(() => state.projectTitle)).toBe('其他樣式測試作品');
+  await page.locator('.nav-item[data-view="projects"]').click();
+
+  // 管理發布 in another work's ⋯ makes that work current and opens its publishing queue.
+  // Only 刪除作品 takes the destructive colour.
+  const backTo = page.locator('.project-library-card:not(.active)').first();
+  const backToTitle = (await backTo.locator('.project-library-title-row strong').textContent()).trim();
+  await backTo.locator('.project-library-more-btn').click();
+  const items = backTo.locator('.project-library-overflow-menu [role="menuitem"]');
+  await expect(items).toHaveText(['↗管理發布', '×刪除作品']);
+  const colours = await items.evaluateAll(buttons => buttons.map(button => getComputedStyle(button).color));
+  expect(colours).toEqual(['rgb(34, 31, 26)', 'rgb(168, 68, 58)']);
+  await expect(items.first()).toHaveAttribute('aria-label', `管理發布「${backToTitle}」`);
+  await items.first().click();
+  await expect(page.locator('#publishingView')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => state.projectTitle)).toBe(backToTitle);
   await page.locator('.nav-item[data-view="projects"]').click();
 
   const newWorkStyle = await page.locator('#projectsNewWorkBtn').evaluate(button => {
@@ -646,7 +657,6 @@ test('the works list keeps its order and its row actions while being opened and 
 
   await page.locator('#worksTypeFilters [data-content-type="visual"]').click();
   await expect.poll(titles).toEqual(['排序丙圖文']);
-  await expect(page.locator('.project-publish-btn')).toHaveCount(1);
   await expect(page.locator('.project-library-more-btn')).toHaveCount(1);
 
   await page.locator('#worksTypeFilters [data-content-type="longform"]').click();
@@ -791,5 +801,44 @@ test('pending marks are counted, jumped to, asked about before publishing and se
   await page.locator('#globalSearchInput').fill('沒有這個名字');
   await expect(results).toHaveCount(0);
   await expect(page.locator('.global-search-empty')).toContainText('沒有待補內容');
+  expect(pageErrors).toEqual([]);
+});
+
+// Coming into the workspace lands where the splitting is: the chapter last worked on stays
+// while it has text left, and once it is split to the end the newest chapter after it with
+// text left takes its place. Working in the workspace never moves the selection.
+test('coming into the workspace moves past a finished chapter to the newest one left to split', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await gotoWorkbench(page);
+  await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '進場章節測試' }, { quiet: true });
+    const chapter = (id, confirmed) => ({ id, title: id, draft: '第一段。\n\n第二段。', confirmedBlockCount: confirmed, parts: [], source: null });
+    state.chapters = [chapter('一', 2), chapter('二', 0), chapter('三', 2), chapter('四', 0), chapter('五', 2)];
+    state.activeChapterId = '三';
+    renderAll();
+  });
+  const active = () => page.evaluate(() => state.activeChapterId);
+
+  // Within the workspace nothing moves, even onto the same menu item.
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  expect(await active()).toBe('三');
+
+  // From elsewhere: 三 is finished, so the newest chapter after it with text left — 四, not
+  // the earlier gap 二 and not the finished 五 — is chosen.
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await expect.poll(active).toBe('四');
+  await expect(page.locator('#chapterList .chapter-row.active')).toContainText('四');
+
+  // 四 still has text left, so coming back keeps it.
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  expect(await active()).toBe('四');
+
+  // Opening the work from Works does the same.
+  await page.evaluate(() => { state.chapters[3].confirmedBlockCount = 2; state.chapters.push({ id: '六', title: '六', draft: '新章。', confirmedBlockCount: 0, parts: [], source: null }); renderAll(); });
+  await page.locator('.nav-item[data-view="projects"]').click();
+  await page.locator('.project-library-card', { hasText: '進場章節測試' }).locator('.project-library-open').click();
+  await expect.poll(active).toBe('六');
   expect(pageErrors).toEqual([]);
 });
