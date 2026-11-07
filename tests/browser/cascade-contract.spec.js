@@ -126,6 +126,35 @@ test('dead-selectors judges whole names, not pieces of longer ones', () => {
   expect(run.stderr).toContain('Names: legacy-only state\n');
 });
 
+// The count of `!important` may only go down: one more is how a fight between two rules gets
+// settled by adding a third. Comments are not counted, and a fall has to be recorded so the
+// next addition cannot take the room back unnoticed.
+test('important-count holds the number of !important where it was recorded', () => {
+  const root = test.info().outputPath('important-count');
+  mkdirSync(root, { recursive: true });
+  writeFileSync(join(root, 'index.html'), '<link rel="stylesheet" href="./style.css">\n');
+  writeFileSync(join(root, 'style.css'), '/* a!important note */\n.a{color:red!important;margin:0 ! important}\n.b{color:blue}\n');
+  const check = recorded => spawnSync(process.execPath, ['scripts/important-count.mjs', '--check', '--root', root, '--recorded', String(recorded)], { encoding: 'utf8' });
+  expect(check(2).status).toBe(0);
+  const up = check(1);
+  expect(up.status).toBe(1);
+  expect(up.stderr).toContain('up from the recorded 1');
+  const down = check(3);
+  expect(down.status).toBe(1);
+  expect(down.stderr).toContain('Lower RECORDED in scripts/important-count.mjs to 2');
+});
+
+// The audit finds a declaration by the offsets its parser recorded; a parser that missed one
+// would leave it unmeasured and uncounted. Every `!important` in the loaded stylesheets has
+// to come out of the parser as a declaration.
+test('the important audit parses every !important the count sees', async () => {
+  const { buildMeta } = await import('../important-audit/lib/meta.mjs');
+  const { meta } = buildMeta(process.cwd());
+  const parsed = meta.flatMap(r => r.decls).filter(d => d.important).length;
+  const counted = spawnSync(process.execPath, ['scripts/important-count.mjs'], { encoding: 'utf8' }).stdout.match(/!important: (\d+) declarations/)[1];
+  expect(parsed).toBe(Number(counted));
+});
+
 test('only the ensureStyleLast tail changes order while the app is used', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await longformWorkspace(page);
