@@ -238,17 +238,13 @@
         </button>
         ${progressMarkup(project.publishProgress)}
         <div class="project-library-actions">
-          <button class="button tiny ghost project-publish-btn" type="button">管理發布</button>
           <button class="button tiny ghost project-library-delete" type="button">刪除</button>
         </div>`;
 
       card.querySelector('.project-library-open').addEventListener('click', () => {
         api.switchProject?.(project.id, { quiet: true });
+        window.StoryFlowSettleOnNewestChapter?.();
         window.StoryFlowNavigate?.('workspace');
-      });
-      card.querySelector('.project-publish-btn').addEventListener('click', () => {
-        api.switchProject?.(project.id, { quiet: true });
-        window.StoryFlowNavigate?.('publishing');
       });
       card.querySelector('.project-library-delete').addEventListener('click', async () => {
         if (await api.deleteProject?.(project.id)) renderProjectsView();

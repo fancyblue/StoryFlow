@@ -148,7 +148,9 @@ test('primary action scale and navigation icon language stay consistent', async 
   await expect(page.locator('.publishing-empty')).toContainText('文章或第一則圖文');
   await expect(page.locator('.publishing-empty .button')).toHaveText('回到工作台');
   await expect(page.locator('.publishing-empty .button')).toBeVisible();
-  expect(await controlStyle(page.locator('.publishing-empty .button'))).toMatchObject({
+  // The empty state is drawn again as Publishing settles, so a one-shot read can land on the
+  // button it just replaced and see an element with no style at all.
+  await expect.poll(() => controlStyle(page.locator('.publishing-empty .button'))).toMatchObject({
     height: 40,
     fontSize: 14,
     backgroundColor: 'rgb(75, 69, 87)',

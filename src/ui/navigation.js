@@ -270,10 +270,35 @@
     return opened;
   }
 
+  // Coming into a longform work's workspace lands where the splitting is. The chapter last
+  // worked on stays chosen while it still has text to split; once it is split to the end,
+  // the newest chapter after it that still has some takes its place — a chapter a source
+  // update added was otherwise left one scroll and one click away. It runs only where the
+  // writer arrives (the menu, a work opened on Works, 切換作品), never while working in the
+  // workspace, and not where a chapter was chosen on purpose (a search result). Choosing a
+  // chapter is not saved here: on a read-only phone a save is refused with a notice.
+  function settleOnNewestChapter() {
+    if (state?.contentMode === 'visual' || !Array.isArray(state?.chapters)) return false;
+    const blocks = chapter => parseBlocks(chapter?.draft || '').length;
+    const unsplit = chapter => blocks(chapter) > (chapter?.confirmedBlockCount || 0);
+    const index = state.chapters.findIndex(chapter => chapter.id === state.activeChapterId);
+    const current = state.chapters[index];
+    if (!current || !blocks(current) || unsplit(current)) return false;
+    for (let i = state.chapters.length - 1; i > index; i -= 1) {
+      if (!unsplit(state.chapters[i])) continue;
+      state.activeChapterId = state.chapters[i].id;
+      suggestion = null;
+      renderAll();
+      return true;
+    }
+    return false;
+  }
+
   nav.addEventListener('click', event => {
     const button = event.target.closest('.nav-item');
     if (!button || !button.dataset.view) return;
     event.preventDefault();
+    if (button.dataset.view === 'workspace' && currentView !== 'workspace') settleOnNewestChapter();
     goTo(button.dataset.view);
   });
 
@@ -288,6 +313,7 @@
   }, true);
 
   window.StoryFlowNavigate = goTo;
+  window.StoryFlowSettleOnNewestChapter = settleOnNewestChapter;
   window.StoryFlowCurrentView = () => currentView;
   window.StoryFlowStartNewWork = startNewWorkFlow;
   window.StoryFlowNewWorkFlow = {

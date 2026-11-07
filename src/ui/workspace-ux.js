@@ -153,6 +153,7 @@
       item.disabled = project.id === activeId;
       item.addEventListener('click', () => {
         window.StoryFlowProjects?.switchProject?.(project.id);
+        window.StoryFlowSettleOnNewestChapter?.();
         closeQuickSwitch();
         setTimeout(syncAll, 0);
       });

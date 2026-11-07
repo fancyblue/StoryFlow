@@ -10,16 +10,6 @@
     });
   }
 
-  function refineLabels(card) {
-    const projectTitle = card.querySelector('.project-library-title-row strong')?.textContent?.trim() || '未命名作品';
-    const publish = card.querySelector('.project-publish-btn');
-    if (publish) {
-      if (publish.textContent !== '管理發布') publish.textContent = '管理發布';
-      publish.setAttribute('aria-label', `管理發布「${projectTitle}」`);
-    }
-
-  }
-
   function ensureOverflow(card) {
     const projectTitle = card.querySelector('.project-library-title-row strong')?.textContent?.trim() || '未命名作品';
     const actions = card.querySelector('.project-library-actions');
@@ -47,9 +37,28 @@
       menu.hidden = true;
       menu.setAttribute('role', 'menu');
 
+      // Works is for seeing the list; going on to a work's publishing queue is occasional,
+      // so it waits in the menu, above the one destructive item.
+      const publish = document.createElement('button');
+      publish.type = 'button';
+      publish.setAttribute('role', 'menuitem');
+      publish.dataset.action = 'publish';
+      publish.innerHTML = '<span aria-hidden="true">↗</span><span>管理發布</span>';
+      publish.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        menu.hidden = true;
+        more.setAttribute('aria-expanded', 'false');
+        window.StoryFlowProjects?.switchProject?.(card.dataset.projectId, { quiet: true });
+        window.StoryFlowNavigate?.('publishing');
+      });
+      menu.appendChild(publish);
+
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.setAttribute('role', 'menuitem');
+      remove.dataset.action = 'delete';
+      remove.className = 'is-destructive';
       remove.innerHTML = '<span aria-hidden="true">×</span><span>刪除作品</span>';
       remove.addEventListener('click', event => {
         event.preventDefault();
@@ -64,7 +73,8 @@
 
     more.title = `更多「${projectTitle}」操作`;
     more.setAttribute('aria-label', `更多「${projectTitle}」操作`);
-    menu.querySelector('[role="menuitem"]')?.setAttribute('aria-label', `刪除作品「${projectTitle}」`);
+    menu.querySelector('[data-action="publish"]')?.setAttribute('aria-label', `管理發布「${projectTitle}」`);
+    menu.querySelector('[data-action="delete"]')?.setAttribute('aria-label', `刪除作品「${projectTitle}」`);
 
     if (more.dataset.worksUxBound !== '1') {
       more.dataset.worksUxBound = '1';
@@ -84,7 +94,6 @@
     const library = document.getElementById('projectsLibrary');
     if (!library) return;
     library.querySelectorAll(':scope > .project-library-card').forEach(card => {
-      refineLabels(card);
       ensureOverflow(card);
     });
   }
