@@ -246,6 +246,18 @@
     header.classList.toggle('visual-workspace-mode', visualMode);
     const title = header.querySelector('h1');
     if (title) title.textContent = visualMode ? '圖文工作台' : '內容發布工作台';
+    // 切換作品 is in the page head for both modes (workspace-ux.js): the visual work's button and
+    // menu move there from the rail, and each mode shows its own.
+    const host = window.StoryFlowWorkspaceTitle?.host?.();
+    const visualSwitch = document.getElementById('visualProjectSwitchBtn');
+    const visualMenu = document.getElementById('visualProjectMenu');
+    if (host && visualSwitch && visualSwitch.parentElement !== host) host.append(visualSwitch, visualMenu);
+    if (visualSwitch) visualSwitch.hidden = !visualMode;
+    const longformSwitch = document.getElementById('quickSwitchProjectBtn');
+    if (longformSwitch) longformSwitch.hidden = visualMode;
+    if (visualMode) document.getElementById('workspaceProjectQuickSwitch')?.setAttribute('hidden', '');
+    else closeProjectMenu();
+    window.StoryFlowWorkspaceTitle?.label?.(visualMode ? visualSwitch : longformSwitch, state.projectTitle);
     const saveStatus = document.getElementById('saveState');
     const save = document.getElementById('saveBtn');
     const generate = document.getElementById('generateBtn');
@@ -272,8 +284,8 @@
               <div class="source-heading-title-row">
                 <h2>作品與圖文</h2>
                 <div class="source-heading-actions">
-                  <button id="visualProjectSwitchBtn" class="quick-switch-project-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="visualProjectMenu">
-                    <span>切換作品</span><span class="sf-chevron" aria-hidden="true"></span>
+                  <button id="visualProjectSwitchBtn" class="workspace-title-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="visualProjectMenu">
+                    <span></span><span class="sf-chevron" aria-hidden="true"></span>
                   </button>
                   <div id="visualProjectMenu" class="workspace-project-quick-switch" role="menu" aria-label="切換作品" hidden></div>
                 </div>
@@ -798,6 +810,7 @@
     const projects = api.list?.() || [];
     const activeId = api.activeId?.();
     if (document.activeElement !== title) title.value = state.projectTitle || '未命名作品';
+    window.StoryFlowWorkspaceTitle?.label?.(document.getElementById('visualProjectSwitchBtn'), state.projectTitle);
     menu.replaceChildren();
     const heading = document.createElement('div');
     heading.className = 'workspace-project-quick-switch-title';

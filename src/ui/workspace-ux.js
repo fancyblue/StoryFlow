@@ -67,6 +67,32 @@
     });
   }
 
+  // 切換作品 lives in the page head for both content modes, as 作品 · <work name> ⌄: the head says
+  // which work is open and switches it, and the rail keeps the work's name (to rename it) and
+  // its chapters or entries. The page's <h1> stays for assistive technology and leaves view.
+  function ensureTitleSwitch() {
+    const head = document.querySelector('#workspaceView > .topbar > div:first-child');
+    if (!head) return null;
+    let crumb = head.querySelector(':scope > .workspace-title-crumb');
+    if (!crumb) {
+      head.querySelector('h1')?.classList.add('sf-visually-hidden');
+      crumb = document.createElement('div');
+      crumb.className = 'workspace-title-crumb';
+      crumb.innerHTML = '<span class="workspace-title-root">作品</span><span class="workspace-title-sep" aria-hidden="true">·</span><span class="workspace-title-switch"></span>';
+      head.appendChild(crumb);
+    }
+    return crumb.querySelector('.workspace-title-switch');
+  }
+
+  // The button names the open work; 切換作品 is what it does, so that is its accessible name.
+  function labelSwitch(button, title) {
+    if (!button) return;
+    const name = String(title || '').trim() || '未命名作品';
+    const label = button.querySelector(':scope > span:first-child');
+    if (label && label.textContent !== name) label.textContent = name;
+    button.setAttribute('aria-label', `切換作品（目前：${name}）`);
+  }
+
   function ensureQuickSwitch() {
     const panel = document.querySelector('.source-panel');
     const head = panel?.querySelector(':scope > .panel-head');
@@ -86,9 +112,9 @@
     if (!button) {
       button = document.createElement('button');
       button.id = 'quickSwitchProjectBtn';
-      button.className = 'quick-switch-project-btn';
+      button.className = 'workspace-title-button';
       button.type = 'button';
-      button.innerHTML = '<span>切換作品</span><span class="sf-chevron" aria-hidden="true"></span>';
+      button.innerHTML = '<span></span><span class="sf-chevron" aria-hidden="true"></span>';
       button.setAttribute('aria-haspopup', 'true');
       button.setAttribute('aria-expanded', 'false');
       button.addEventListener('click', event => {
@@ -106,7 +132,9 @@
       actions.className = 'source-heading-actions';
       row.appendChild(actions);
     }
-    if (button.parentElement !== actions) actions.appendChild(button);
+    const host = ensureTitleSwitch();
+    if (host && button.parentElement !== host) host.prepend(button);
+    labelSwitch(button, state?.projectTitle);
 
     const addChapter = document.getElementById('newChapterBtn');
     if (addChapter) {
@@ -128,10 +156,11 @@
       menu.className = 'workspace-project-quick-switch';
       menu.hidden = true;
     }
-    // The menu is positioned against the button it belongs to, so it has to live beside
-    // it. Hanging it off the panel meant its offset had to restate the heading's height.
-    const host = panel.querySelector('.source-heading-actions') || panel;
-    if (menu.parentElement !== host) host.appendChild(menu);
+    // The menu is positioned against the button it belongs to, so it lives beside it in the
+    // page head.
+    const host = ensureTitleSwitch() || panel;
+    const button = document.getElementById('quickSwitchProjectBtn');
+    if (menu.parentElement !== host) (button?.parentElement === host ? button.after(menu) : host.appendChild(menu));
 
     const projects = projectList();
     const activeId = activeProjectId();
@@ -191,6 +220,13 @@
     const select = document.getElementById('readingPlatformSelect');
     if (select) select.setAttribute('aria-label', '預覽格式');
   }
+
+  window.StoryFlowWorkspaceTitle = { host: ensureTitleSwitch, label: labelSwitch };
+  // Renaming the work in the rail renames it in the head as it is typed.
+  document.addEventListener('input', event => {
+    if (event.target?.id === 'projectTitle') labelSwitch(document.getElementById('quickSwitchProjectBtn'), event.target.value);
+    if (event.target?.id === 'visualProjectTitle') labelSwitch(document.getElementById('visualProjectSwitchBtn'), event.target.value);
+  });
 
   function syncAll() {
     ensureSidebarUtilityIcons();
