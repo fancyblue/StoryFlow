@@ -19,8 +19,9 @@
    `scripts/cascade-order.json`，否則 `tests/browser/cascade-contract.spec.js` 會失敗。
 3. **視覺回歸的涵蓋範圍**（0-3 完成後）：`workspace-long`（1280/1440/1920）、`works-library-1440`、
    `publishing-queue-1440`、`settings-1440`、`publishing-detail-1440`、`platform-preview-1440`、
-   `visual-workspace-1440`。**仍未涵蓋**：手動章節編輯、來源比對、備份中心與其餘對話框，
-   那些地方「像素不變」還是只能人工驗收（`docs/CHROME_ACCEPTANCE.md`）。
+   `visual-workspace-1440`。2026-11-07 補上原本未涵蓋的：作品類型、手動建立作品、內容預覽、編輯章節、
+   來源比對、摘要與 Hashtags、後記、發布紀錄等對話框，以及設定頁摺線下方的備份中心（`dialog-*-1440`、
+   `settings-backup-center-1440`）。仍未涵蓋的是圖文的對話框（新增圖文、照片燈箱、照片資料夾）與手機版面。
 4. **每個改到靜態資產的 PR 都要更新 cache query**，否則 `npm run test:assets` 失敗。
    用 `npm run bump:assets` 依 git diff 自動處理。
 

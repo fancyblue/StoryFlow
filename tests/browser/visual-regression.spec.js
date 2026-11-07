@@ -351,3 +351,172 @@ test('the visual workspace, works actions, publishing actions, and previews stay
   await expectHorizontallyBounded(publishingPreview);
   await expectVisibleChildrenSeparated(publishingPreview.locator('.platform-preview-actions'));
 });
+
+// The dialogs and the backup center had no baselines: a stylesheet change that moved them
+// could only be caught by looking. Each is captured where the app opens it, with the clock
+// fixed so a date default (the publication record) does not differ between runs.
+async function openFixedWorkbench(page) {
+  await page.clock.setFixedTime(new Date('2026-01-05T09:30:00+08:00'));
+  await page.route(/https:\/\/(accounts|apis)\.google\.com\/.*/, route => route.abort());
+  await standInForConnectedFolder(page);
+  await page.goto('/?visual-regression=1');
+  await page.addStyleTag({ content: visualCss });
+  await page.locator('.nav-item[data-view="workspace"]').click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+}
+
+// Dates on these surfaces print in the browser's time zone; fixing it keeps a baseline made
+// in one place valid in another.
+test.describe('dialogs and the backup center', () => {
+test.use({ timezoneId: 'Asia/Taipei' });
+
+test('creation, editing and publishing dialogs keep their composition', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openFixedWorkbench(page);
+
+  await page.locator('#createProjectManually').click();
+  const typeDialog = page.getByRole('dialog', { name: '選擇作品類型' });
+  await expect(typeDialog).toBeVisible();
+  await expectDialogContained(typeDialog);
+  await expect(typeDialog).toHaveScreenshot('dialog-work-type-1440.png');
+
+  await typeDialog.locator('#chooseLongformType').click();
+  await page.locator('#sourceManualBtn').click();
+  await page.locator('#manualProjectTitle').fill('視覺測試');
+  await page.locator('#manualSourceTitle').fill('08、印紋');
+  await page.locator('#manualSourceText').fill([
+    '鐘聲停下後，長廊只剩窗外落雨的聲音。',
+    '她攤開掌心，淡銀色的印紋沿著指節亮起。',
+    '門後沒有回答，只有另一道光在黑暗裡呼應。'
+  ].join('\n\n'));
+  const manualDialog = page.locator('#manualSourceDialog');
+  await expect(manualDialog).toBeVisible();
+  await expect(manualDialog).toHaveScreenshot('dialog-manual-work-1440.png');
+
+  await page.locator('#previewManualSourceBtn').click();
+  const previewDialog = page.locator('#sourcePreviewDialog');
+  await expect(previewDialog).toBeVisible();
+  await expect(previewDialog).toHaveScreenshot('dialog-source-preview-1440.png');
+  await page.locator('#confirmSourcePreviewBtn').click();
+  await expect(page.locator('#suggestionCard')).toBeVisible();
+  await page.evaluate(() => {
+    window.StoryFlowIntegrations.savePart = async () => 'Works/視覺測試/08、印紋/08、印紋（1）.md';
+  });
+
+  await page.locator('#chapterList .chapter-more-button').first().click();
+  await page.getByRole('menuitem', { name: /編輯章節/ }).click();
+  await expect(manualDialog).toBeVisible();
+  await expect(manualDialog).toHaveScreenshot('dialog-edit-chapter-1440.png');
+  await page.locator('#cancelManualChapterEditBtn').click();
+  await expect(manualDialog).toBeHidden();
+
+  await page.locator('#confirmBtn').click();
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await page.locator('.publish-list-item .publish-manage-btn').first().click();
+  const lightbox = page.locator('.publish-lightbox:not([hidden])');
+  await expect(lightbox).toBeVisible();
+
+  await lightbox.getByRole('button', { name: /^摘要與 Hashtags/ }).click();
+  const helperDialog = page.getByRole('dialog', { name: '摘要與 Hashtags' });
+  await expect(helperDialog).toBeVisible();
+  await expect(helperDialog).toHaveScreenshot('dialog-summary-hashtags-1440.png');
+  await helperDialog.getByRole('button', { name: '完成' }).click();
+  await expect(helperDialog).toBeHidden();
+
+  await lightbox.getByRole('button', { name: /^後記/ }).click();
+  const afterwordDialog = page.getByRole('dialog', { name: '後記' });
+  await expect(afterwordDialog).toBeVisible();
+  await expect(afterwordDialog).toHaveScreenshot('dialog-afterword-1440.png');
+  await afterwordDialog.getByRole('button', { name: '完成' }).click();
+  await expect(afterwordDialog).toBeHidden();
+
+  await lightbox.locator('.publish-platform-row:not(.is-default-output) .publish-platform-choose').first().click();
+  await lightbox.locator('#platformPreviewRecordBtn').click();
+  const recordDialog = page.locator('#publicationRecordDialog');
+  await expect(recordDialog).toBeVisible();
+  await expect(recordDialog).toHaveScreenshot('dialog-publication-record-1440.png');
+});
+
+test('the backup center keeps its composition below the settings fold', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openFixedWorkbench(page);
+  // The connected state is the one with content to keep in place. Its figures come from the
+  // folder, so they are stood in for with the same ones tests/backup-center-ui.html uses.
+  await page.evaluate(() => {
+    StoryFlowIntegrations.inspectWorkspaceStorage = async () => ({
+      connected: true,
+      folderName: 'StoryFlow-test',
+      primary: { valid: true, updatedAt: '2026-01-05T01:00:00.000Z', projectCount: 2, chapterCount: 8, partCount: 3 },
+      backup: { valid: true, createdAt: '2026-01-05T00:30:00.000Z', projectCount: 2, chapterCount: 7, partCount: 3 },
+      recoveryArtifacts: [{ name: 'workspace.before-import-2026-01-05.json', lastModified: Date.parse('2026-01-05T00:10:00.000Z') }],
+      storageUsage: {
+        olderThanDays: 30,
+        workspaceScanAvailable: true,
+        categories: {
+          recoverySnapshots: { fileCount: 4, bytes: 18432, candidateCount: 1, candidateBytes: 4096 },
+          recoveryImages: { fileCount: 3, bytes: 5242880, candidateCount: 1, candidateBytes: 1048576 },
+          orphanedImages: { fileCount: 5, bytes: 7340032, candidateCount: 2, candidateBytes: 2097152 }
+        },
+        cleanupPreview: { fileCount: 4, bytes: 3149824, groupCount: 3 }
+      }
+    });
+  });
+  await page.locator('#sidebarSettingsBtn').click();
+  const backup = page.locator('#settingsBackupCenter');
+  await expect(backup).toBeVisible();
+  await backup.getByRole('button', { name: '重新檢查', exact: true }).click();
+  await expect(backup.getByText('2 部作品 · 8 個章節 · 3 篇發布稿')).toBeVisible();
+  await backup.scrollIntoViewIfNeeded();
+  await expectHorizontallyBounded(backup);
+  await expect(backup).toHaveScreenshot('settings-backup-center-1440.png');
+});
+
+test('the source comparison dialog keeps its composition', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route('https://docs.googleapis.com/v1/documents/doc-1?includeTabsContent=true', route => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({
+      title: '測試來源文件',
+      tabs: [{
+        tabProperties: { tabId: 'tab-1', title: '本文', index: 0 },
+        documentTab: {
+          body: {
+            content: [
+              { paragraph: { paragraphStyle: { namedStyleType: 'HEADING_1' }, elements: [{ textRun: { content: '第一章\n', textStyle: {} } }] } },
+              { paragraph: { paragraphStyle: { namedStyleType: 'NORMAL_TEXT' }, elements: [{ textRun: { content: '新貓\n', textStyle: {} } }] } },
+              { paragraph: { paragraphStyle: { namedStyleType: 'HEADING_1' }, elements: [{ textRun: { content: '第二章\n', textStyle: {} } }] } },
+              { paragraph: { paragraphStyle: { namedStyleType: 'NORMAL_TEXT' }, elements: [{ textRun: { content: '新增段落\n', textStyle: {} } }] } }
+            ]
+          },
+          inlineObjects: {}
+        }
+      }]
+    })
+  }));
+  await openFixedWorkbench(page);
+  await page.evaluate(() => {
+    StoryFlowIntegrations.hasGoogleToken = () => true;
+    StoryFlowIntegrations.restoreGoogleAccess = async () => true;
+    sessionStorage.setItem('storyflow.google.access-token.v1', 'test-token');
+    StoryFlowProjects.createProject({ title: '來源比對視覺測試' }, { quiet: true });
+    const linkedId = 'visual-source-linked';
+    state = {
+      ...state,
+      projectSource: { type: 'google', docId: 'doc-1', docName: '測試來源文件' },
+      sourceScopes: [{ docId: 'doc-1', docName: '測試來源文件', docUrl: 'https://docs.google.com/document/d/doc-1/edit', tabId: 'tab-1', tabTitle: '本文' }],
+      chapters: [
+        { id: linkedId, title: '第一章', draft: '舊狗', confirmedBlockCount: 0, parts: [], source: { id: 'doc-1', name: '測試來源文件', url: 'https://docs.google.com/document/d/doc-1/edit', tabId: 'tab-1', tabTitle: '本文', headingOrdinal: 0, headingTitle: '第一章' } },
+        { id: 'visual-source-manual', title: '手動番外', draft: '手動保留內容', confirmedBlockCount: 0, parts: [], source: null }
+      ],
+      activeChapterId: linkedId
+    };
+    renderAll();
+    StoryFlowProjectSourceSync.syncUi();
+  });
+  await page.getByRole('button', { name: '更新作品來源', exact: true }).click();
+  const dialog = page.locator('#projectSourceDiffDialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('1 個內容更新');
+  await expect(dialog).toHaveScreenshot('dialog-source-comparison-1440.png');
+});
+});
