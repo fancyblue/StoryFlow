@@ -579,6 +579,13 @@ test('visual works dialogs keep their composition', async ({ page }) => {
   const photoDialog = page.locator('#visualPhotoDialog');
   await expect(photoDialog).toBeVisible();
   await expect.poll(() => photoDialog.locator('img').first().evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+  // 在 Google Drive 開啟 is a link dressed as a button. A link does not centre its label the
+  // way a <button> does, and the pixel tolerance is too loose to notice the label sitting on
+  // the top edge, so the centring is asserted directly.
+  await expect.poll(() => photoDialog.locator('#visualPhotoOpenDrive').evaluate(link => {
+    const style = getComputedStyle(link);
+    return [style.alignItems, style.justifyContent, style.textDecorationLine].join(' ');
+  })).toBe('center center none');
   await expect(photoDialog).toHaveScreenshot('dialog-visual-photo-1440.png');
   await page.keyboard.press('Escape');
   await expect(photoDialog).toBeHidden();
