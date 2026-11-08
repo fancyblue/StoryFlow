@@ -331,7 +331,7 @@
     return card?.querySelector('.publish-preview-panel') || null;
   }
 
-  async function writeArticleMarkdown(chapter, part) {
+  async function writeArticleMarkdown(chapter, part, projectTitle = state.projectTitle) {
     const folder = await StoryFlowIntegrations.restoreOutputDirectory();
     if (!folder?.connected) return false;
     const sections = outputSections(part, '', part.includeAfterword !== false);
@@ -339,7 +339,7 @@
       ? window.StoryFlowArticleImages.markdownForPart(part, sections)
       : outputFor(part, '');
     await StoryFlowIntegrations.savePart({
-      projectTitle: state.projectTitle,
+      projectTitle,
       chapter,
       part: { ...part, formatted },
       metadata: chapterMetadata(chapter)
@@ -347,11 +347,11 @@
     return true;
   }
 
-  async function writeVisualEntry(entry) {
+  async function writeVisualEntry(entry, projectTitle = state.projectTitle) {
     const folder = await StoryFlowIntegrations.restoreOutputDirectory();
     if (!folder?.connected) return false;
     entry.updatedAt = new Date().toISOString();
-    await StoryFlowIntegrations.saveVisualEntry({ projectTitle: state.projectTitle, entry });
+    await StoryFlowIntegrations.saveVisualEntry({ projectTitle, entry });
     saveState('圖文發布資料已更新');
     return true;
   }
@@ -421,6 +421,40 @@
     window.setTimeout(() => dateInput.focus(), 0);
   }
 
+  // A phone editing the publishing helpers writes to a synced folder where every file
+  // operation takes a moment, and a save that waited on them took seven seconds. There each
+  // article's own file (its Markdown, or a visual entry's files) is written once, when
+  // 管理發布 closes — mobile-safe-mode.js flushes it before returning to read-only — however
+  // many times it was saved; workspace.json is still saved in the background each time.
+  const deferredPartFiles = new Map();
+  async function writePartFile(chapter, part) {
+    if (window.StoryFlowMobileSafeMode?.helpersOnly?.()) {
+      deferredPartFiles.set(partKey(part), { chapter, part, projectTitle: state.projectTitle });
+      return 'deferred';
+    }
+    return isVisualPart(part) ? writeVisualEntry(part) : writeArticleMarkdown(chapter, part);
+  }
+  async function flushDeferredPartFiles() {
+    for (const [key, { chapter, part, projectTitle }] of [...deferredPartFiles]) {
+      try {
+        const written = isVisualPart(part)
+          ? await writeVisualEntry(part, projectTitle)
+          : await writeArticleMarkdown(chapter, part, projectTitle);
+        if (!written) return false;
+      } catch (error) {
+        console.warn('StoryFlow could not write a deferred article file', error);
+        return false;
+      }
+      deferredPartFiles.delete(key);
+    }
+    return true;
+  }
+  window.addEventListener('beforeunload', event => {
+    if (!deferredPartFiles.size) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
+
   async function saveAfterword(chapter, part, textarea, includeControl) {
     const nextAfterword = textarea.value.trim();
     part.afterword = nextAfterword;
@@ -430,7 +464,8 @@
     renderParts();
 
     try {
-      const updated = isVisualPart(part) ? await writeVisualEntry(part) : await writeArticleMarkdown(chapter, part);
+      const updated = await writePartFile(chapter, part);
+      if (updated === 'deferred') return true;
       if (!updated) {
         notify('後記目前只保留在工作區；請重新連接資料夾後再按一次「保存後記」。', true);
         return false;
@@ -452,7 +487,8 @@
     renderParts();
 
     try {
-      const updated = isVisualPart(part) ? await writeVisualEntry(part) : await writeArticleMarkdown(chapter, part);
+      const updated = await writePartFile(chapter, part);
+      if (updated === 'deferred') return true;
       if (!updated) {
         notify('平台標題目前只保留在畫面；請重新連接資料夾後再保存一次。', true);
         return false;
@@ -474,7 +510,8 @@
     renderParts();
 
     try {
-      const updated = isVisualPart(part) ? await writeVisualEntry(part) : await writeArticleMarkdown(chapter, part);
+      const updated = await writePartFile(chapter, part);
+      if (updated === 'deferred') return true;
       if (!updated) {
         notify('平台 Hashtags 目前只保留在工作區；請重新連接資料夾後再保存一次。', true);
         return false;
@@ -500,7 +537,8 @@
     renderParts();
 
     try {
-      const updated = await writeVisualEntry(part);
+      const updated = await writePartFile(null, part);
+      if (updated === 'deferred') return true;
       if (!updated) {
         notify('平台摘要目前只保留在工作區；請重新連接資料夾後再保存一次。', true);
         return false;
@@ -614,7 +652,8 @@
               </div>`;
     }
     if (access === 'open') {
-      return '<div class="publish-helpers-edit is-open"><small>可編輯摘要、Hashtags、後記與平台標題 · 關閉時保存並回到唯讀</small></div>';
+      const saving = window.StoryFlowMobileSafeMode?.helperSaveLabel?.() || '';
+      return `<div class="publish-helpers-edit is-open"><small>可編輯摘要、Hashtags、後記與平台標題 · 關閉時寫入檔案並回到唯讀</small><small class="publish-helpers-save-state" role="status">${escapeHtml(saving)}</small></div>`;
     }
     return '';
   }
@@ -704,7 +743,11 @@
     entry.updatedAt = new Date().toISOString();
     saveState('發布輔助資訊已更新');
     try {
-      const updated = isVisualPart(entry) ? await writeVisualEntry(entry) : await writeArticleMarkdown(chapter, entry);
+      const updated = await writePartFile(chapter, entry);
+      if (updated === 'deferred') {
+        renderParts();
+        return true;
+      }
       if (updated) notify('摘要與 Hashtags 已保存');
       else notify('摘要與 Hashtags 已保留在工作區；連接資料夾後可再保存一次。', true);
     } catch (error) {
@@ -1077,6 +1120,8 @@
       return true;
     },
     persistPart: writeArticleMarkdown,
+    flushDeferredPartFiles,
+    hasDeferredPartFiles: () => deferredPartFiles.size > 0,
     setFilter(key) {
       if (!['all', 'pending', 'partial', 'complete'].includes(key) || currentFilter === key) return false;
       currentFilter = key;

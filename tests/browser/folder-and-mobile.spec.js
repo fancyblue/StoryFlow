@@ -450,23 +450,22 @@ test('a read-only phone edits the publishing helpers for one visit to 管理發�
   const afterword = page.locator('#publishingArticleToolDialog .publish-afterword-input');
   await expect(afterword).toBeEditable();
   await afterword.fill('手機補的後記');
-  // On a phone's synced folder a write takes seconds. One press is one save — the button
-  // says 保存中… meanwhile and a second press is not another — and one save writes the
-  // workspace once, not once for each of two save paths.
+  // On a phone's synced folder every file operation takes a moment. One press is one save,
+  // and it does not wait on them: workspace.json is written in the background, once, and the
+  // article's own Markdown is written when 管理發布 closes.
   const writes = () => page.evaluate(() => window.__folder.writes.slice());
   const before = (await writes()).length;
   await page.evaluate(() => {
     const save = document.querySelector('#publishingArticleToolDialog .publish-afterword-save');
     save.click();
-    window.__busyLabel = save.textContent;
     save.click();
   });
-  expect(await page.evaluate(() => window.__busyLabel)).toBe('保存中…');
   await expect(page.locator('#publishingArticleToolDialog')).not.toHaveAttribute('open');
+  await expect(lightbox.locator('.publish-helpers-save-state')).toHaveText(/^已保存 \d\d:\d\d$/);
   await expect.poll(() => page.evaluate(() => JSON.stringify(window.__folder.workspace))).toContain('手機補的後記');
   expect(await page.evaluate(() => JSON.stringify(window.__folder.workspace))).toContain('桌機寫的後記');
   await page.waitForTimeout(600);
-  expect((await writes()).slice(before).sort()).toEqual(['savePart', 'workspace']);
+  expect((await writes()).slice(before)).toEqual(['workspace']);
 
   // Only the helpers opened: an image import is still refused.
   expect(await page.evaluate(async () => {
@@ -474,11 +473,12 @@ test('a read-only phone edits the publishing helpers for one visit to 管理發�
     catch (error) { return error.code; }
   })).toBe('MOBILE_READ_ONLY');
 
-  // Closing saves only what is still unsaved: here, nothing.
+  // Closing writes the edited article's file, then only what of the workspace is unsaved:
+  // here, nothing more.
   const beforeClose = (await writes()).length;
   await page.keyboard.press('Escape');
   await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-mobile-helpers', 'editing');
-  expect((await writes()).slice(beforeClose)).toEqual([]);
+  expect((await writes()).slice(beforeClose)).toEqual(['savePart']);
   await expect(page.locator('#mobileSafeModeIndicator')).toHaveText('唯讀');
   expect(await page.evaluate(() => saveState('不應保存'))).toBe(false);
   const allWrites = await writes();
