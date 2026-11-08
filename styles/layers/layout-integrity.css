@@ -119,10 +119,13 @@
   margin-top:10px;
 }
 
-/* SMART SPLIT: use the exact same title/action alignment contract. */
+/* SMART SPLIT: use the exact same title/action alignment contract. The head wraps rather
+   than splitting into two grid columns: its toolbar is about 430px wide, and wherever the
+   panel was narrower (a phone, or a desktop window around 900–1024px) the title's column
+   shrank to nothing and 切篇預覽 sat under the format select. */
 .splitter-panel > .panel-head{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto!important;
+  display:flex;
+  flex-wrap:wrap;
   align-items:center;
   gap:12px;
   width:100%;
@@ -289,11 +292,11 @@
   
   
 
-  .source-heading-title-row,
-  .splitter-panel > .panel-head{
+  .source-heading-title-row{
     grid-template-columns:minmax(0,1fr) auto!important;
     gap:10px;
   }
+  .splitter-panel > .panel-head{gap:10px}
   .splitter-panel .smart-split-header-actions #openReadingViewBtn,
   .splitter-panel .smart-split-header-actions #splitSettingsToggle{
     min-height:40px!important;

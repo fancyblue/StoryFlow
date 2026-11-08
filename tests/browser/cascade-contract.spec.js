@@ -539,6 +539,25 @@ test('the workbench heads share one line and both rails head their list alike', 
   expect(longformHead).toEqual(visualHead);
 });
 
+// The split head's toolbar is about 430px wide. Laid out as two grid columns, the title's
+// column shrank to nothing wherever the panel was narrower — on a phone, and in a desktop
+// window around 900–1024px — and 切篇預覽 sat under the format select. It wraps instead.
+test('the split head never lays its toolbar over its title', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await longformWorkspace(page);
+  for (const width of [360, 390, 480, 560, 820, 900, 1024, 1280, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const layout = await page.evaluate(() => {
+      const title = document.querySelector('.splitter-panel > .panel-head h2').getBoundingClientRect();
+      const actions = document.getElementById('smartSplitHeaderActions').getBoundingClientRect();
+      const side = title.right <= actions.left;
+      const below = actions.top >= title.bottom - 1;
+      return { apart: side || below, inside: actions.right <= document.documentElement.clientWidth };
+    });
+    expect(layout, `${width}px`).toEqual({ apart: true, inside: true });
+  }
+});
+
 // A toolbar row is one control height. The split head mixed a 40px format select and a 40px
 // segmented control with 34px buttons, at three radii and two label sizes, because the select's
 // own 34px rule lost to a shared `!important` and the segment's height was its buttons plus

@@ -293,6 +293,9 @@ test('a phone reads a visual work without being offered a change', async ({ page
   });
   await page.locator('.nav-item[data-view="workspace"]').click();
   await expect(page.locator('#visualReadonlyNote')).toBeVisible();
+  // It opens on the article's preview rather than on a form of locked fields.
+  await expect(page.locator('.visual-workspace-layout')).toHaveAttribute('data-pane', 'preview');
+  await expect(page.locator('#visualPreviewPlatform')).toBeEnabled();
   for (const control of ['#visualAddPhotosBtn', '#visualNewEntryBtn', '#visualEntryBody', '#visualEntryTitle', '#visualRemovePhoto', '#visualQuoteFromBody']) {
     await expect(page.locator(control), control).toBeDisabled();
   }
@@ -340,9 +343,17 @@ test('a phone in read-only opens any work and chapter and offers no write', asyn
 
   await page.locator('#chapterList .chapter-item', { hasText: '確認身分' }).click();
   await expect.poll(() => page.evaluate(() => state.activeChapterId)).toBe('phone-ch-2');
-  for (const control of ['#addChapterBtn', '#confirmBtn', '#chapterList .chapter-more-button']) {
+  // A phone does not split either: the scene buttons and the seam view go, the format stays.
+  for (const control of ['#addChapterBtn', '#confirmBtn', '#chapterList .chapter-more-button', '#shrinkBtn', '#expandBtn', '#suggestionCard .boundary-control']) {
     await expect(page.locator(control).first(), control).toBeHidden();
   }
+  await expect(page.locator('#suggestionPlatformSelect')).toBeEnabled();
+  await page.evaluate(() => window.StoryFlowReadingView.open());
+  for (const control of ['#readingViewSwitch', '#readingShrinkBtn', '#readingConfirmBtn']) {
+    await expect(page.locator(control), control).toBeHidden();
+  }
+  await expect(page.locator('#readingPlatformSelect')).toBeEnabled();
+  await page.locator('#closeReadingViewBtn').click();
   await page.locator('.nav-item[data-view="settings"]').click();
   await expect(page.locator('#clearPickerKeyBtn')).toBeHidden();
   await expect(page.getByRole('switch', { name: '允許本次手機編輯', exact: true })).toBeVisible();

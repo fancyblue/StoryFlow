@@ -93,7 +93,7 @@ body.sf-reading-open #workspaceView>.topbar>.top-actions{margin-left:auto!import
    rather than wrapping mid-phrase between two buttons. The whole sentence is its title. */
 .reading-view-controls .suggestion-platform-settings{flex:1 1 0;order:3;display:flex!important;align-items:center!important;min-width:0}
 .reading-view-controls .suggestion-platform-settings .format-summary-text{display:block!important;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap!important}
-.reading-view-switch{display:inline-flex!important;gap:2px;padding:3px!important;border-radius:8px!important;background:var(--paper-2,#f4f1e9)!important}
+.reading-view-switch{display:inline-flex;gap:2px;padding:3px!important;border-radius:8px!important;background:var(--paper-2,#f4f1e9)!important}
 .reading-view-switch button{min-height:calc(var(--sf-control-sm) - 6px)!important;padding:0 13px!important;border:0!important;border-radius:6px;background:transparent!important;color:var(--ink-2,#6a6357)!important;font:inherit!important;font-size:14px!important;font-weight:700!important;cursor:pointer}
 .reading-view-switch button.active{background:var(--paper-1,#fbfaf6)!important;color:var(--dai-700,#4b4557)!important}
 .reading-view-hint{margin-block:0;padding:0!important;border:0!important;background:transparent!important;color:var(--ink-2,#6a6357)!important;font-size:12px!important;font-weight:500!important;line-height:1.5!important}
