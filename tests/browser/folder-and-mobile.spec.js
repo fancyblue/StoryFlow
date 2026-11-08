@@ -323,7 +323,9 @@ test('a phone in read-only opens any work and chapter and offers no write', asyn
   const ids = await page.evaluate(() => {
     StoryFlowProjects.createProject({ title: '確認之書' }, { quiet: true });
     state.chapters = [
-      { id: 'phone-ch-1', title: '序章', draft: '第一段。\n\n第二段。', source: null, confirmedBlockCount: 0, parts: [] },
+      { id: 'phone-ch-1', title: '序章', draft: '第一段。\n\n第二段。', source: null, confirmedBlockCount: 1, parts: [
+        { id: 'phone-part-1', title: '序章（1）', chars: 4, startBlock: 0, endBlock: 1, raw: '第一段。', formatted: '第一段。', summary: '', hashtags: '', afterword: '', images: [], published: false, platformStatus: {} }
+      ] },
       { id: 'phone-ch-2', title: '確認身分', draft: '第三段。\n\n第四段。', source: null, confirmedBlockCount: 0, parts: [] }
     ];
     state.activeChapterId = 'phone-ch-1';
@@ -354,8 +356,15 @@ test('a phone in read-only opens any work and chapter and offers no write', asyn
   }
   await expect(page.locator('#readingPlatformSelect')).toBeEnabled();
   await page.locator('#closeReadingViewBtn').click();
+  // A ⋯ whose menu only deletes is not offered: it used to open empty.
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('.publish-list-item').first()).toBeVisible();
+  expect(await page.locator('.publish-more-btn').count()).toBeGreaterThan(0);
+  for (const more of await page.locator('.publish-more-btn').all()) await expect(more).toBeHidden();
   await page.locator('.nav-item[data-view="settings"]').click();
   await expect(page.locator('#clearPickerKeyBtn')).toBeHidden();
+  expect(await page.locator('.platform-row-more').count()).toBeGreaterThan(0);
+  for (const more of await page.locator('.platform-row-more').all()) await expect(more).toBeHidden();
   await expect(page.getByRole('switch', { name: '允許本次手機編輯', exact: true })).toBeVisible();
   expect(pageErrors).toEqual([]);
 });

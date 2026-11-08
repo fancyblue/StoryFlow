@@ -20,6 +20,11 @@
     // it starts life labelled as a delete button and keeps the mark after it becomes ⋯.
     '.chapter-row > .chapter-more-button',
     '.chapter-row-edit-menu-item',
+    // The other ⋯ whose menus hold only a deletion: an article's in Publishing, an entry's in
+    // the visual rail and a platform's in Settings. With the deletion gone they opened empty.
+    '.publish-more-btn',
+    '.visual-entry-more',
+    '.platform-row-more',
     // A platform's own title, summary and Hashtags open their field with 編輯.
     '#editPlatformTitle',
     '#editPlatformPreviewSummary',
