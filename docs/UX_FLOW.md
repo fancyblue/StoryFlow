@@ -368,7 +368,7 @@ Deleting anything that owns images takes the images with it — an article, a vi
 - Phone detection must not change desktop Chrome behavior.
 - Read-only mode permits reconnecting the folder and importing `settings.json`; these actions load data but do not edit manuscript files.
 - On a read-only phone the workbench is for reading, not splitting: 少一個／多一個場景 and the reading view's 接縫 are not shown, while the preview format and 讀稿檢視 stay usable; a visual work opens on its article's preview.
-- Read-only mode does not show what it cannot do: 新增, a chapter's `⋯`, 確認並存成 Markdown, deleting and the like are absent, not dimmed. Opening any work from Works, choosing any chapter or article and following a search result are reads and always work, whatever their names contain.
+- Read-only mode does not show what it cannot do: 新增, a chapter's `⋯`, 確認並存成 Markdown, deleting and the like are absent, not dimmed. So is a `⋯` whose menu only deletes — an article's in Publishing, an entry's in the visual rail, a platform's in Settings — rather than opening an empty menu. Opening any work from Works, choosing any chapter or article and following a search result are reads and always work, whatever their names contain.
 - The main surface shows only the compact state label; explanation and the editing switch live in Settings.
 - The enable action explicitly warns that unsaved screen state is discarded and that StoryFlow cannot determine Google Drive transfer completion.
 - Switching back to read-only must first flush the current workspace; a failed save leaves editing enabled.
