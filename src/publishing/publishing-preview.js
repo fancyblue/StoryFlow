@@ -342,49 +342,49 @@
       if (!summaryEditable) return;
       setExtraEditorExpanded(editSummary, summaryEditor, summaryEditor.hidden, summaryInput);
     };
-    panel.querySelector('#savePlatformPreviewSummary').onclick = async () => {
+    panel.querySelector('#savePlatformPreviewSummary').onclick = window.StoryFlowShared.whileSaving(async () => {
       if (!summaryEditable) return;
       await savePlatformSummary(part, platform, summaryInput);
       refreshSummaryView();
       setExtraEditorExpanded(editSummary, summaryEditor, false, summaryInput);
-    };
-    resetSummary.onclick = async () => {
+    });
+    resetSummary.onclick = window.StoryFlowShared.whileSaving(async () => {
       if (!summaryEditable) return;
       await savePlatformSummary(part, platform, summaryInput, true);
       refreshSummaryView();
       setExtraEditorExpanded(editSummary, summaryEditor, false, summaryInput);
-    };
+    });
     editHashtags.onclick = () => {
       if (!platformSpecific) return;
       setExtraEditorExpanded(editHashtags, hashtagsEditor, hashtagsEditor.hidden, hashtagsInput);
     };
-    panel.querySelector('#savePlatformPreviewTitle').onclick = async () => {
+    panel.querySelector('#savePlatformPreviewTitle').onclick = window.StoryFlowShared.whileSaving(async () => {
       if (!entry || !platform) return;
       await savePlatformTitle(entry.chapter, part, platform, titleInput);
       titleEditor.hidden = true;
       refreshTitle();
-    };
-    panel.querySelector('#resetPlatformPreviewTitle').onclick = async () => {
+    });
+    panel.querySelector('#resetPlatformPreviewTitle').onclick = window.StoryFlowShared.whileSaving(async () => {
       if (!entry || !platform) return;
       titleInput.value = '';
       await savePlatformTitle(entry.chapter, part, platform, titleInput);
       titleEditor.hidden = true;
       refreshTitle();
-    };
-    panel.querySelector('#savePlatformPreviewHashtags').onclick = async () => {
+    });
+    panel.querySelector('#savePlatformPreviewHashtags').onclick = window.StoryFlowShared.whileSaving(async () => {
       if (!entry || !platformSpecific) return;
       await savePlatformHashtags(entry.chapter, entry.part, platform, hashtagsInput);
       refreshHashtagsView();
       refreshOptionsSummary();
       setExtraEditorExpanded(editHashtags, hashtagsEditor, false, hashtagsInput);
-    };
-    resetHashtags.onclick = async () => {
+    });
+    resetHashtags.onclick = window.StoryFlowShared.whileSaving(async () => {
       if (!entry || !platformSpecific) return;
       await savePlatformHashtags(entry.chapter, entry.part, platform, hashtagsInput, true);
       refreshHashtagsView();
       refreshOptionsSummary();
       setExtraEditorExpanded(editHashtags, hashtagsEditor, false, hashtagsInput);
-    };
+    });
     panel.querySelector('#copyPlatformTitle').onclick = async () => {
       try {
         await writeClipboard(publishTitleFor(part, platform));

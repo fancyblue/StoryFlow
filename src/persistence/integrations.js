@@ -626,6 +626,12 @@ const StoryFlowIntegrations = (() => {
   }
 
   async function maintainRollingWorkspaceBackup(workspace) {
+    // A phone editing an article's publishing helpers writes small changes to a synced
+    // folder where listing Recovery, reading the last backup and writing a new one take
+    // seconds and several copies of the workspace in memory. Every write there still keeps
+    // workspace.backup.json, the copy from before it; the rolling copies are left to the
+    // desktop.
+    if (window.StoryFlowMobileSafeMode?.helpersOnly?.()) return null;
     const contentSignature = workspaceContentSignature(workspace);
     if (contentSignature === lastRollingWorkspaceContent) return null;
     if (lastRollingBackupAt && Date.now() - lastRollingBackupAt < ROLLING_BACKUP_INTERVAL_MS) return null;

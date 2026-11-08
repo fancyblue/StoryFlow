@@ -83,5 +83,31 @@
     }[char]));
   }
 
-  window.StoryFlowShared = { safeName, normalizeTitle, partKey, hasConnectedFolder, platformNames, fillPlatformSelect, pendingMarkCount, esc };
+  // A save button while its save runs. Writing to a phone's synced folder can take seconds,
+  // and a button that answered nothing was pressed again and again, each press queueing
+  // another full write of the workspace. The button says 保存中… and is disabled until the
+  // save ends; a press that still reaches it meanwhile is ignored.
+  function whileSaving(handler) {
+    return async function savingHandler(event) {
+      const button = event?.currentTarget;
+      if (button?.getAttribute?.('aria-busy') === 'true') return undefined;
+      const label = button?.textContent;
+      if (button) {
+        button.setAttribute('aria-busy', 'true');
+        button.disabled = true;
+        button.textContent = '保存中…';
+      }
+      try {
+        return await handler.call(this, event);
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.removeAttribute('aria-busy');
+          button.textContent = label;
+        }
+      }
+    };
+  }
+
+  window.StoryFlowShared = { safeName, normalizeTitle, partKey, hasConnectedFolder, platformNames, fillPlatformSelect, pendingMarkCount, esc, whileSaving };
 })();
