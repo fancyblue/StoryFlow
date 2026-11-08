@@ -640,7 +640,7 @@
   color:#4b4557!important;
 }
 .publish-list-actions > .publish-more-btn{
-  order:99!important;
+  order:99;
   display:grid!important;
   place-items:center!important;
   border-color:#ded9cc!important;
