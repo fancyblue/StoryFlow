@@ -93,9 +93,13 @@
 .mobile-safe-mode-settings-status span{font-size:12px;line-height:1.55}
 .mobile-safe-mode-settings-status.editing-enabled{background:#fbfaf6;color:#4b4557}
 
-body[data-storyflow-mobile-safe-mode="readonly"] [data-mobile-safe-write-control="true"]{
-  opacity:.48!important;
-  cursor:not-allowed!important;
+/* A phone reads. What it cannot do while read-only is not offered at all, rather than
+   shown dimmed: a screen of controls that refuse a tap is not a reading surface. The rule
+   has to beat each control's own display, some of which are `!important` on three classes
+   (`.settings-view .settings-actions .button`); `:not(#…)` matches every element and lends
+   the weight of an id, so no control has to learn about this mode. */
+body[data-storyflow-mobile-safe-mode="readonly"] [data-mobile-safe-write-control="true"]:not(#mobile-safe-mode-hidden){
+  display:none!important;
 }
 body[data-storyflow-mobile-safe-mode="readonly"] [data-mobile-safe-locked="true"]{
   background:#fbfaf6!important;

@@ -58,7 +58,9 @@ test('mobile safe mode blocks file writes until the workspace is reloaded and ed
   expect(blocked.calls.imageImport).toBe(0);
   expect(blocked.calls.imageDelete).toBe(0);
 
-  await page.locator('#generateBtn').click();
+  // Read-only does not offer a write at all; a click that still reaches one is refused.
+  await expect(page.locator('#generateBtn')).toBeHidden();
+  await page.evaluate(() => document.getElementById('generateBtn').click());
   expect(await page.evaluate(() => fixtureCalls.generate)).toBe(0);
 
   const mobileEditSwitch = page.getByRole('switch', { name: '允許本次手機編輯', exact: true });
@@ -297,6 +299,53 @@ test('a phone reads a visual work without being offered a change', async ({ page
   await page.locator('.visual-pane-switch [data-pane="preview"]').click();
   await expect(page.locator('#visualPreviewArticle .visual-article-body')).toHaveText('夜裡的港口。');
   await expect(page.locator('#visualPreviewArticle .visual-article-figure img')).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
+// A phone reads a longform work: choosing a work or a chapter is reading, whatever its text
+// says, and what read-only cannot do is not offered at all. Read-only used to guess writes
+// from a button's text, so a work card reading 「手動建立」 could not be opened, and a
+// chapter whose title held a word such as 確認 could not be chosen.
+test('a phone in read-only opens any work and chapter and offers no write', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      get: () => 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36'
+    });
+  });
+  await page.setViewportSize({ width: 412, height: 915 });
+  await page.goto('/');
+  await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'readonly');
+  const ids = await page.evaluate(() => {
+    StoryFlowProjects.createProject({ title: '確認之書' }, { quiet: true });
+    state.chapters = [
+      { id: 'phone-ch-1', title: '序章', draft: '第一段。\n\n第二段。', source: null, confirmedBlockCount: 0, parts: [] },
+      { id: 'phone-ch-2', title: '確認身分', draft: '第三段。\n\n第四段。', source: null, confirmedBlockCount: 0, parts: [] }
+    ];
+    state.activeChapterId = 'phone-ch-1';
+    renderAll();
+    const first = StoryFlowProjects.activeId();
+    StoryFlowProjects.createProject({ title: '另一部' }, { quiet: true });
+    return { first, second: StoryFlowProjects.activeId() };
+  });
+
+  await page.locator('.nav-item[data-view="projects"]').click();
+  const card = page.getByRole('button', { name: '開啟「確認之書」' });
+  await expect(card).toContainText('手動建立');
+  await expect(page.locator('#projectsNewWorkBtn')).toBeHidden();
+  await card.click();
+  await expect.poll(() => page.evaluate(() => StoryFlowProjects.activeId())).toBe(ids.first);
+  await expect(page.locator('#workspaceView')).toBeVisible();
+
+  await page.locator('#chapterList .chapter-item', { hasText: '確認身分' }).click();
+  await expect.poll(() => page.evaluate(() => state.activeChapterId)).toBe('phone-ch-2');
+  for (const control of ['#addChapterBtn', '#confirmBtn', '#chapterList .chapter-more-button']) {
+    await expect(page.locator(control).first(), control).toBeHidden();
+  }
+  await page.locator('.nav-item[data-view="settings"]').click();
+  await expect(page.locator('#clearPickerKeyBtn')).toBeHidden();
+  await expect(page.getByRole('switch', { name: '允許本次手機編輯', exact: true })).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 

@@ -90,7 +90,7 @@
   vertical-align:1px;
 }
 #chapterList .chapter-row > .chapter-delete-button.chapter-more-button{
-  display:grid!important;
+  display:grid;
   place-items:center!important;
   width:32px!important;
   min-width:32px!important;
