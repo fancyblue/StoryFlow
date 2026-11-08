@@ -161,9 +161,12 @@
     const targetVersion = changeVersion;
     setSaveStatus('保存中…');
     try {
+      // A phone editing only the publishing helpers reloaded workspace.json, not the
+      // settings; its settings may be older than the desktop's, so they are not written.
+      const helpersOnly = Boolean(window.StoryFlowMobileSafeMode?.helpersOnly?.());
       await Promise.all([
         StoryFlowIntegrations.saveWorkspace(workspacePayload()),
-        StoryFlowIntegrations.saveStoryFlowSettings(settingsPayload())
+        helpersOnly ? null : StoryFlowIntegrations.saveStoryFlowSettings(settingsPayload())
       ]);
       persistedVersion = Math.max(persistedVersion, targetVersion);
       setSaveStatus(`已保存 ${syncedTimeLabel()}`);

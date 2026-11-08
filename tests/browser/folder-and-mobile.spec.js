@@ -349,6 +349,109 @@ test('a phone in read-only opens any work and chapter and offers no write', asyn
   expect(pageErrors).toEqual([]);
 });
 
+// A phone edits an article's summary, Hashtags and afterword from 管理發布, and nothing else.
+// 開始編輯 reloads the folder's workspace.json first — so a change made on the desktop since
+// the phone loaded is what gets edited, not overwritten — and closing 管理發布 saves and
+// returns to read-only. settings.json is never written: only the workspace was reloaded.
+test('a read-only phone edits the publishing helpers for one visit to 管理發布', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      get: () => 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36'
+    });
+    // The folder: what loadWorkspace reads and every write that reaches it. Patched under
+    // the app's own wrappers, as the folder stand-in is, so read-only still guards it.
+    window.__folder = { workspace: null, writes: [] };
+    const standIn = Object.getOwnPropertyDescriptor(window, 'StoryFlowIntegrations');
+    Object.defineProperty(window, 'StoryFlowIntegrations', {
+      configurable: true,
+      get: standIn.get,
+      set: next => {
+        standIn.set(next);
+        if (!next || next.__folderRecorder) return;
+        next.__folderRecorder = true;
+        next.loadWorkspace = async () => (window.__folder.workspace ? structuredClone(window.__folder.workspace) : null);
+        next.saveWorkspace = async payload => {
+          window.__folder.workspace = structuredClone(payload);
+          window.__folder.writes.push('workspace');
+          return { name: 'StoryFlow 測試資料夾' };
+        };
+        for (const name of ['savePart', 'saveVisualEntry', 'saveStoryFlowSettings', 'importPartImages']) {
+          next[name] = async () => { window.__folder.writes.push(name); return true; };
+        }
+      }
+    });
+  });
+  await page.setViewportSize({ width: 412, height: 915 });
+  await page.goto('/');
+  await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'readonly');
+
+  await page.evaluate(() => {
+    window.confirm = () => true;
+    StoryFlowProjects.createProject({ title: '手機發布' }, { quiet: true });
+    const part = index => ({
+      id: `phone-pub-${index}`, title: `第一章（${index}）`, chars: 9, startBlock: index - 1, endBlock: index,
+      raw: '雨落在長廊上。', formatted: '雨落在長廊上。', summary: '', hashtags: '', afterword: '',
+      images: [], published: false, platformStatus: {}
+    });
+    state.chapters = [{ id: 'phone-pub-ch', title: '第一章', draft: '雨落在長廊上。\n\n風吹過窗。', source: null, confirmedBlockCount: 2, parts: [part(1), part(2)] }];
+    state.activeChapterId = 'phone-pub-ch';
+    renderAll();
+    // Since the phone loaded, the desktop wrote an afterword for the second part.
+    const folderState = structuredClone(state);
+    folderState.chapters[0].parts[1].afterword = '桌機寫的後記';
+    window.__folder.workspace = {
+      schemaVersion: 2, updatedAt: new Date().toISOString(), activeProjectId: StoryFlowProjects.activeId(),
+      projects: [{ id: StoryFlowProjects.activeId(), title: '手機發布', placeholder: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), state: folderState }]
+    };
+  });
+
+  await page.locator('.nav-item[data-view="publishing"]').click();
+  await expect(page.locator('#publishingFilters .publishing-filter.active')).toHaveText(/待發布/);
+  await page.locator('.publish-list-item', { hasText: '第一章（1）' }).locator('.publish-manage-btn').click();
+  const lightbox = page.locator('.publish-lightbox:not([hidden])');
+  await expect(lightbox.locator('.publish-helpers-edit-start')).toBeVisible();
+
+  await lightbox.locator('.publish-helpers-edit-start').click();
+  await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-helpers', 'editing');
+  await expect(page.locator('#mobileSafeModeIndicator')).toHaveText('編輯發布資料');
+  await expect(lightbox.locator('.publish-helpers-edit.is-open')).toBeVisible();
+  // The reload happened: the desktop's afterword is in the phone's copy now.
+  expect(await page.evaluate(() => state.chapters[0].parts[1].afterword)).toBe('桌機寫的後記');
+  // A platform's title opens for editing; publishing it does not, and the split stays shut.
+  await lightbox.getByRole('button', { name: '顯示「方格子」版本' }).click();
+  await expect(lightbox.locator('#editPlatformTitle')).toBeVisible();
+  await expect(lightbox.locator('#togglePlatformPublished')).toBeHidden();
+  await expect(lightbox.locator('#platformPreviewRecordBtn')).toBeHidden();
+  await expect(lightbox.locator('#platformPreviewIncludeTitle')).toBeDisabled();
+
+  await lightbox.locator('.publish-afterword-tool-btn').click();
+  const afterword = page.locator('#publishingArticleToolDialog .publish-afterword-input');
+  await expect(afterword).toBeEditable();
+  await afterword.fill('手機補的後記');
+  await page.locator('#publishingArticleToolDialog .publishing-article-tool-actions [data-article-tool-close]').click();
+  await expect(page.locator('#publishingArticleToolDialog')).not.toHaveAttribute('open');
+  await expect.poll(() => page.evaluate(() => window.__folder.writes.includes('savePart'))).toBe(true);
+  await expect.poll(() => page.evaluate(() => JSON.stringify(window.__folder.workspace))).toContain('手機補的後記');
+  expect(await page.evaluate(() => JSON.stringify(window.__folder.workspace))).toContain('桌機寫的後記');
+
+  // Only the helpers opened: an image import is still refused.
+  expect(await page.evaluate(async () => {
+    try { await StoryFlowIntegrations.importPartImages({ files: [] }); return 'written'; }
+    catch (error) { return error.code; }
+  })).toBe('MOBILE_READ_ONLY');
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('body')).not.toHaveAttribute('data-storyflow-mobile-helpers', 'editing');
+  await expect(page.locator('#mobileSafeModeIndicator')).toHaveText('唯讀');
+  expect(await page.evaluate(() => saveState('不應保存'))).toBe(false);
+  const writes = await page.evaluate(() => window.__folder.writes);
+  expect(writes).not.toContain('saveStoryFlowSettings');
+  expect(writes).not.toContain('importPartImages');
+  expect(pageErrors).toEqual([]);
+});
+
 test('the sidebar connection row shows where the pointer and the keyboard are', async ({ page }) => {
   // The desktop rail is paper-coloured ground. Its hover and focus wash was written for the
   // old dark rail, white at 6%, and could not be seen: a keyboard user tabbing onto this row

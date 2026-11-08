@@ -45,8 +45,12 @@
     return state?.contentMode === StoryFlowContentModel.CONTENT_MODES.VISUAL;
   }
 
+  // The visual editor changes the source, which a phone edits only after the full unlock in
+  // Settings — not while 管理發布 has its publishing helpers open.
   function isReadOnly() {
-    return Boolean(window.StoryFlowMobileSafeMode?.isReadOnly?.());
+    const mode = window.StoryFlowMobileSafeMode;
+    if (!mode) return false;
+    return typeof mode.canEditContent === 'function' ? !mode.canEditContent() : Boolean(mode.isReadOnly?.());
   }
 
   function entries() {
