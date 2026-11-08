@@ -204,6 +204,7 @@
 .publish-helpers-edit{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:8px}
 .publish-helpers-edit small{color:#6a6357;font-size:11px;line-height:1.45}
 .publish-helpers-edit.is-open small{color:var(--sf-text);font-weight:700}
+.publish-helpers-edit.is-open .publish-helpers-save-state{color:#6a6357;font-weight:500}
 .publish-article-tool-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .publish-article-tool-actions .button{width:100%;white-space:nowrap}
 .publish-afterword-editor{

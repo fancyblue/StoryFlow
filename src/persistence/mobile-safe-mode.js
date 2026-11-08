@@ -129,6 +129,19 @@
   // reload: the next tab, and the next lightbox, start read-only again.
   let helpersOnly = false;
   let helpersStarting = false;
+  // What 管理發布 says about saving while the helpers are open: a save returns at once and
+  // writes in the background, so the state is said where the editing happens.
+  let helperSaveLabel = '';
+  function setHelperSaveLabel(label) {
+    helperSaveLabel = label;
+    document.querySelectorAll('.publish-helpers-save-state').forEach(node => { node.textContent = label; });
+  }
+  window.addEventListener('storyflow:workspace-persisted', () => {
+    if (!helpersOnly) return;
+    if (window.StoryFlowPersistenceStatus?.dirty?.()) return;
+    const time = new Intl.DateTimeFormat('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+    setHelperSaveLabel(`已保存 ${time}`);
+  });
 
   function readonlyError() {
     const error = new Error('手機目前是唯讀模式。請先確認 Google Drive 已同步，再到「設定 → 手機使用模式」開啟本次編輯。');
@@ -395,6 +408,16 @@
     if (!helpersOnly || helpersStarting || modeChangeInProgress) return true;
     modeChangeInProgress = true;
     try {
+      // Each edited article's own file was left for now (publishing-flow.js); write them,
+      // then whatever of workspace.json is still unsaved.
+      const publishing = window.StoryFlowPublishing;
+      if (publishing?.hasDeferredPartFiles?.()) {
+        window.notify?.('正在寫入發布資料…');
+        if (!(await publishing.flushDeferredPartFiles())) {
+          window.notify?.('文章檔案尚未寫入，仍可編輯；請確認資料夾連線後再關閉一次。', true);
+          return false;
+        }
+      }
       const status = window.StoryFlowPersistenceStatus;
       const saved = typeof status?.settle === 'function'
         ? await status.settle()
@@ -404,6 +427,7 @@
         return false;
       }
       helpersOnly = false;
+      setHelperSaveLabel('');
       applyMode();
       window.renderParts?.();
       window.notify?.('發布資料已保存，手機已回到唯讀。');
@@ -444,6 +468,7 @@
   try {
     const baseSaveState = saveState;
     saveState = function mobileSafeSaveState(...args) {
+      if (helpersOnly) setHelperSaveLabel('保存中…');
       if (readOnly && !helpersOnly) {
         notifyBlocked();
         return false;
@@ -500,6 +525,7 @@
     // full unlock in Settings, never for the publishing helpers alone.
     canEditContent: () => !readOnly,
     helpersOnly: () => helpersOnly,
+    helperSaveLabel: () => helperSaveLabel,
     // What 管理發布 offers: 'locked' (開始編輯 is available), 'open' (the helpers are
     // editable) or '' (the full unlock is on; nothing to offer).
     helperAccess: () => (!readOnly ? '' : helpersOnly ? 'open' : 'locked'),
