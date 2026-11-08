@@ -22,7 +22,9 @@
   let photoFilter = 'all';
   let previewWidth = 'phone';
   let previewPlatform = '';
-  let narrowPane = 'edit';
+  // A phone that may not edit the source opens an article on its preview, not on a form of
+  // locked fields (UX_FLOW 〈Phone editing〉). The switch still offers 編輯 to look at them.
+  let narrowPane = window.StoryFlowMobileSafeMode && window.StoryFlowMobileSafeMode.canEditContent?.() === false ? 'preview' : 'edit';
   let replacing = false;
   let libraryOpen = true;
   let lightboxIndex = -1;

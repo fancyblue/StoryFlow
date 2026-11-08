@@ -25,7 +25,13 @@
     '#editPlatformPreviewSummary',
     '#editPlatformPreviewHashtags',
     // A phone does not publish (UX_FLOW 〈Phone editing〉), so it does not record publishing.
-    '#platformPreviewRecordBtn'
+    '#platformPreviewRecordBtn',
+    // Nor does it split: moving the next part's end only leads to 確認並存成 Markdown.
+    '#shrinkBtn',
+    '#expandBtn',
+    '#readingShrinkBtn',
+    '#readingExpandBtn',
+    '#readingViewSwitch [data-reading-view="seam"]'
   ].join(',');
   // What a phone may edit after 開始編輯 in 管理發布: an article's summary, Hashtags and
   // afterword, and a platform's own title, summary and Hashtags. Nothing here touches the
@@ -48,6 +54,7 @@
     'backupWorkspace',
     'createWorkspaceRecoverySnapshot'
   ]);
+  const SPLIT_GROUP_SELECTOR = '#suggestionCard .boundary-control, .reading-view-actions .sf-button-group, #readingViewSwitch';
   // Rows whose text is the writer's own: a work, a chapter, an article, a search result.
   // Choosing one is reading. Guessing from their text locked any work whose card said
   // 「手動建立」, and would lock a chapter called 「確認身分」.
@@ -143,7 +150,7 @@
 
   function isUiOnlyControl(control) {
     return Boolean(control?.closest?.(
-      '.publishing-project-filter-control, #publishingFilters, .preview-mode-toggle, .source-preview-tabs, .mobile-safe-mode-settings'
+      '.publishing-project-filter-control, #publishingFilters, .preview-mode-toggle, .source-preview-tabs, .mobile-safe-mode-settings, #suggestionPlatformSelect, #readingPlatformSelect, #visualPreviewPlatform'
     ));
   }
 
@@ -166,6 +173,8 @@
     root.querySelectorAll?.('button').forEach(button => {
       if (isWriteButton(button) && !inHelperScope(button)) button.dataset.mobileSafeWriteControl = 'true';
     });
+    // The groups that hold only split controls go with them rather than standing empty.
+    root.querySelectorAll?.(SPLIT_GROUP_SELECTOR).forEach(group => { group.dataset.mobileSafeWriteControl = 'true'; });
     root.querySelectorAll?.('input, textarea, select, [contenteditable="true"]').forEach(control => {
       if (control.dataset.mobileSafeLocked === 'true' || isUiOnlyControl(control) || inHelperScope(control)) return;
       if (isSafeReadInput(control)) return;
