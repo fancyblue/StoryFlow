@@ -81,7 +81,11 @@
     document.documentElement.classList.toggle('sf-publish-lightbox-open', Boolean(box));
     const memory = lightboxMemory;
     lightboxMemory = null;
-    if (!box) return;
+    // A phone edits the publishing helpers for one visit to 管理發布; closing it ends that.
+    if (!box) {
+      if (window.StoryFlowMobileSafeMode?.helpersOnly?.()) window.StoryFlowMobileSafeMode.endHelperEditing();
+      return;
+    }
     const key = box.closest('.publish-list-item')?.dataset.partKey || '';
     const order = lightboxOrder();
     const index = order.indexOf(key);

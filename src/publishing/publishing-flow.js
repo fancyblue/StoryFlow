@@ -599,6 +599,22 @@
     }));
   }
 
+  // A read-only phone may still edit an article's summary, Hashtags and afterword, after
+  // reloading the folder's workspace (mobile-safe-mode.js). Said where those tools are.
+  function helperEditingNote() {
+    const access = window.StoryFlowMobileSafeMode?.helperAccess?.() || '';
+    if (access === 'locked') {
+      return `<div class="publish-helpers-edit">
+                <button class="button tiny ghost publish-helpers-edit-start" type="button">開始編輯</button>
+                <small>手機唯讀中；摘要、Hashtags、後記與平台標題可在重新載入後編輯</small>
+              </div>`;
+    }
+    if (access === 'open') {
+      return '<div class="publish-helpers-edit is-open"><small>可編輯摘要、Hashtags、後記與平台標題 · 關閉時保存並回到唯讀</small></div>';
+    }
+    return '';
+  }
+
   function openArticleTool(chapter, part, tool) {
     articleToolContext = { chapter, part, tool };
     const isImages = tool === 'images';
@@ -796,6 +812,7 @@
             <div class="publish-article-tools-copy">
               <strong>發布補充內容</strong>
               <span>${visual ? `文字 ${bodyChars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張` : `正文 ${part.chars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張`} · 後記 ${afterwordCount.toLocaleString()} 字</span>
+              ${helperEditingNote()}
             </div>
             <div class="publish-article-tool-actions">
               <button class="button tiny ghost publish-helper-tool-btn" type="button">摘要與 Hashtags${summaryText || hashtagsText ? ' · 已設定' : ''}</button>
@@ -882,6 +899,10 @@
       lightbox.querySelector('.publish-lightbox-size').addEventListener('click', event => {
         event.stopPropagation();
         Lightbox.setMaximized(!Lightbox.isMaximized());
+      });
+      card.querySelector('.publish-helpers-edit-start')?.addEventListener('click', event => {
+        event.stopPropagation();
+        window.StoryFlowMobileSafeMode?.startHelperEditing?.();
       });
       card.querySelector('.publish-helper-tool-btn')?.addEventListener('click', event => {
         event.stopPropagation();
@@ -1049,6 +1070,12 @@
       return true;
     },
     persistPart: writeArticleMarkdown,
+    setFilter(key) {
+      if (!['all', 'pending', 'partial', 'complete'].includes(key) || currentFilter === key) return false;
+      currentFilter = key;
+      renderParts();
+      return true;
+    },
     openPart(key, { preview = false } = {}) {
       const entry = allEntries().find(item => partKey(item.part) === key);
       if (!entry) return false;

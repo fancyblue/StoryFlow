@@ -17,7 +17,7 @@
     { src: './src/connection/folder-session.js?v=20260825-p1e', owner: 'connection' },
     { src: './src/ui/ui-bootstrap.js?v=20260824-p1c', owner: 'ui' },
     { src: './src/ui/workspace-interactions.js?v=20261016-a2', owner: 'ui' },
-    { src: './src/persistence/settings-sync.js?v=20260919-a2', owner: 'persistence' },
+    { src: './src/persistence/settings-sync.js?v=20261108-a2', owner: 'persistence' },
     { src: './src/persistence/workspace-safety.js?v=20261016-a7', owner: 'persistence' },
     { src: './src/split/smart-split-ui.js?v=20261016-a9', owner: 'split' },
     { src: './src/publishing/platform-lock.js?v=20260925-a5', owner: 'publishing' },
@@ -28,8 +28,8 @@
     { src: './src/split/boundary-engine.js?v=20260925-a5', owner: 'split' },
     { src: './src/publishing/publishing-output.js?v=20261106-a1', owner: 'publishing' },
     { id: 'storyflowPublishingPreviewJs', src: './src/publishing/publishing-preview.js?v=20261106-a1', owner: 'publishing' },
-    { id: 'storyflowPublishingLightboxJs', src: './src/publishing/publishing-lightbox.js?v=20261104-a11', owner: 'publishing' },
-    { src: './src/publishing/publishing-flow.js?v=20261106-a1', owner: 'publishing' },
+    { id: 'storyflowPublishingLightboxJs', src: './src/publishing/publishing-lightbox.js?v=20261108-a2', owner: 'publishing' },
+    { src: './src/publishing/publishing-flow.js?v=20261108-a2', owner: 'publishing' },
     { id: 'storyflowPublishingDisclosureJs', src: './src/publishing/publishing-disclosure.js?v=20260925-a5', owner: 'publishing' },
     { src: './src/publishing/publishing-project-switcher.js?v=20260925-a5', owner: 'publishing' },
     { id: 'storyflowPublishingProjectFilterJs', src: './src/publishing/publishing-project-filter.js?v=20261103-a5', owner: 'publishing' },
@@ -55,7 +55,7 @@
     { src: './src/ui/ui-system.js?v=20260924-a1', owner: 'ui' },
     { id: 'storyflowPublishingDeleteJs', src: './src/publishing/publishing-delete.js?v=20261017-a10', owner: 'publishing' },
     { id: 'storyflowProjectPersistenceGuardJs', src: './src/persistence/project-persistence-guard.js?v=20261103-a8', owner: 'persistence' },
-    { id: 'storyflowMobileSafeModeJs', src: './src/persistence/mobile-safe-mode.js?v=20261108-a1', owner: 'persistence' },
+    { id: 'storyflowMobileSafeModeJs', src: './src/persistence/mobile-safe-mode.js?v=20261108-a2', owner: 'persistence' },
     { id: 'storyflowProjectSourceSyncJs', src: './src/source/project-source-sync.js?v=20261104-a12', owner: 'source', attributes: { 'data-storyflow-project-source-sync': '' } },
     { id: 'storyflowSourceArticleUxJs', src: './src/source/source-article-ux.js?v=20260925-a5', owner: 'source' },
     { id: 'storyflowChapterManagementJs', src: './src/projects/chapter-management.js?v=20261103-a12', owner: 'projects' },
@@ -68,7 +68,7 @@
     { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20261016-a7', owner: 'publishing' },
     { id: 'storyflowVisualPhotoCacheJs', src: './src/projects/visual-photo-cache.js?v=20261104-a12', owner: 'projects' },
     { id: 'storyflowVisualFolderBrowserJs', src: './src/projects/visual-folder-browser.js?v=20261104-a12', owner: 'projects' },
-    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20261107-a5', owner: 'projects' }
+    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20261108-a2', owner: 'projects' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));

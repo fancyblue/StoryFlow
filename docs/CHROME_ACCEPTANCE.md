@@ -166,6 +166,7 @@ The one-hour interval and three-file limit for `workspace.auto-*` rolling backup
 - [ ] Reconnect the disposable folder, ensure its cloud provider reports no pending upload/download, then enable editing from Settings. Confirm StoryFlow reloads the workspace before unlocking and the compact label changes to “可編輯”.
 - [ ] Simulate an unreadable or conflicting workspace and confirm the page remains read-only.
 - [ ] Switch back to read-only and confirm StoryFlow saves first; when saving fails, confirm editing remains enabled.
+- [ ] Open Publishing on the phone and confirm it starts on 待發布. Open an article's 管理發布 and choose 開始編輯; confirm StoryFlow asks about Drive, reloads the workspace (a change made on the desktop since appears), and the label reads “編輯發布資料”. Edit the afterword, the summary and Hashtags, and a platform's title, and confirm each saves; confirm 文章圖片, 標註已發布, 記錄發布 and the copy-title setting stay unavailable. Close 管理發布 and confirm it saves, the label returns to “唯讀” and `settings.json` was not rewritten.
 - [ ] Close the phone tab, reopen StoryFlow and confirm it starts read-only again.
 - [ ] On desktop Chrome, confirm the phone state label and Settings control are absent and normal editing is unchanged.
 

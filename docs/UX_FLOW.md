@@ -357,6 +357,12 @@ Deleting anything that owns images takes the images with it — an article, a vi
        → 重新載入 workspace.json → 成功且無 Recovery 衝突 → 解鎖
                                 ↘ 失敗／衝突 → 保持唯讀
        → 結束本次手機編輯 → 保存成功 → 唯讀
+
+發布 → （預設）待發布 → 管理發布 → 開始編輯 → 確認 Drive 已完成傳輸
+       → 重新載入 workspace.json → 成功且無 Recovery 衝突 → 只開放摘要、Hashtags、後記與平台標題
+                                ↘ 失敗／衝突 → 保持唯讀
+       → 關閉管理發布 → 保存成功 → 唯讀
+                      ↘ 保存失敗 → 仍可編輯，再關閉一次
 ```
 
 - Phone detection must not change desktop Chrome behavior.
@@ -366,3 +372,6 @@ Deleting anything that owns images takes the images with it — an article, a vi
 - The enable action explicitly warns that unsaved screen state is discarded and that StoryFlow cannot determine Google Drive transfer completion.
 - Switching back to read-only must first flush the current workspace; a failed save leaves editing enabled.
 - Closing the tab ends the editing grant. A later phone session starts read-only again.
+- The phone reviews what is split and not yet published, and adjusts what is not manuscript. Publishing opens on 待發布. In 管理發布, 開始編輯 runs the same reload and Recovery check as the Settings switch, then opens only that visit's summary, Hashtags, afterword and a platform's own title, summary and Hashtags. The manuscript, the split, article images, 標註已發布 and 記錄發布 stay unavailable: a phone does not publish. If the folder's workspace has another work active, the article stays open.
+- These edits write `workspace.json` and the article's own Markdown or entry file, never `settings.json`: the reload reloaded the workspace only, so the phone's settings may be older than the desktop's.
+- Closing 管理發布, or leaving Publishing, saves and returns to read-only; a failed save keeps the helpers editable so nothing typed is lost. Every visit starts read-only again.

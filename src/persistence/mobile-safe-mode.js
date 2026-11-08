@@ -19,8 +19,35 @@
     // A chapter's ⋯ holds only 編輯章節 and 刪除章節. It was caught by accident before:
     // it starts life labelled as a delete button and keeps the mark after it becomes ⋯.
     '.chapter-row > .chapter-more-button',
-    '.chapter-row-edit-menu-item'
+    '.chapter-row-edit-menu-item',
+    // A platform's own title, summary and Hashtags open their field with 編輯.
+    '#editPlatformTitle',
+    '#editPlatformPreviewSummary',
+    '#editPlatformPreviewHashtags',
+    // A phone does not publish (UX_FLOW 〈Phone editing〉), so it does not record publishing.
+    '#platformPreviewRecordBtn'
   ].join(',');
+  // What a phone may edit after 開始編輯 in 管理發布: an article's summary, Hashtags and
+  // afterword, and a platform's own title, summary and Hashtags. Nothing here touches the
+  // manuscript, the split or a file other than the article's own Markdown or entry.
+  const HELPER_SCOPE_SELECTOR = [
+    '.visual-publish-helpers',
+    '.publish-afterword-editor',
+    '#editPlatformTitle',
+    '#platformPreviewTitleEditor',
+    '#platformPreviewSummaryBlock',
+    '#platformPreviewHashtagsBlock'
+  ].join(',');
+  // The writes those editors make. settings.json is not among them: the reload before
+  // editing reloads workspace.json only, so the phone's copy of the settings may be older
+  // than the desktop's, and writing it back would undo the newer one.
+  const HELPER_WRITE_METHODS = new Set([
+    'saveWorkspace',
+    'savePart',
+    'saveVisualEntry',
+    'backupWorkspace',
+    'createWorkspaceRecoverySnapshot'
+  ]);
   // Rows whose text is the writer's own: a work, a chapter, an article, a search result.
   // Choosing one is reading. Guessing from their text locked any work whose card said
   // 「手動建立」, and would lock a chapter called 「確認身分」.
@@ -39,7 +66,8 @@
     '#quickReconnectFolderBtn',
     '#importSettingsJsonBtn',
     '#reimportStoryFlowSettingsBtn',
-    '#quickImportSettingsBtn'
+    '#quickImportSettingsBtn',
+    '.publish-helpers-edit-start'
   ].join(',');
   // The file inputs those import buttons open. Allowing the button but intercepting the
   // change event that follows it let the user start an import that could never finish:
@@ -85,6 +113,10 @@
   let observer = null;
   let lastBlockedNoticeAt = 0;
   let modeChangeInProgress = false;
+  // Editing limited to the publishing helpers, for one visit to 管理發布. Never kept across a
+  // reload: the next tab, and the next lightbox, start read-only again.
+  let helpersOnly = false;
+  let helpersStarting = false;
 
   function readonlyError() {
     const error = new Error('手機目前是唯讀模式。請先確認 Google Drive 已同步，再到「設定 → 手機使用模式」開啟本次編輯。');
@@ -93,8 +125,12 @@
   }
 
   function setSaveStatus() {
-    if (!readOnly) return;
+    if (!readOnly || helpersOnly) return;
     window.StoryFlowSaveStatus?.set?.('手機唯讀 · 不會寫入資料夾');
+  }
+
+  function inHelperScope(control) {
+    return helpersOnly && Boolean(control?.closest?.(HELPER_SCOPE_SELECTOR));
   }
 
   function notifyBlocked() {
@@ -128,10 +164,10 @@
   function decorateControls(root = document) {
     if (!readOnly) return;
     root.querySelectorAll?.('button').forEach(button => {
-      if (isWriteButton(button)) button.dataset.mobileSafeWriteControl = 'true';
+      if (isWriteButton(button) && !inHelperScope(button)) button.dataset.mobileSafeWriteControl = 'true';
     });
     root.querySelectorAll?.('input, textarea, select, [contenteditable="true"]').forEach(control => {
-      if (control.dataset.mobileSafeLocked === 'true' || isUiOnlyControl(control)) return;
+      if (control.dataset.mobileSafeLocked === 'true' || isUiOnlyControl(control) || inHelperScope(control)) return;
       if (isSafeReadInput(control)) return;
       control.dataset.mobileSafeLocked = 'true';
       control.setAttribute('aria-readonly', 'true');
@@ -176,9 +212,9 @@
       const main = document.querySelector('.main');
       (main || document.body).insertBefore(indicator, main?.firstChild || document.body.firstChild);
     }
-    indicator.classList.toggle('editing-enabled', !readOnly);
-    indicator.textContent = readOnly ? '唯讀' : '可編輯';
-    indicator.setAttribute('aria-label', readOnly ? '手機模式：唯讀' : '手機模式：本次可編輯');
+    indicator.classList.toggle('editing-enabled', !readOnly || helpersOnly);
+    indicator.textContent = helpersOnly ? '編輯發布資料' : readOnly ? '唯讀' : '可編輯';
+    indicator.setAttribute('aria-label', helpersOnly ? '手機模式：編輯發布資料' : readOnly ? '手機模式：唯讀' : '手機模式：本次可編輯');
     indicator.title = readOnly ? '手機預設唯讀；可到設定開啟本次編輯。' : '本頁籤目前允許手機編輯。';
   }
 
@@ -214,9 +250,13 @@
 
   function applyMode() {
     document.body.dataset.storyflowMobileSafeMode = readOnly ? 'readonly' : 'editing';
+    if (helpersOnly) document.body.dataset.storyflowMobileHelpers = 'editing';
+    else delete document.body.dataset.storyflowMobileHelpers;
     renderIndicator();
     renderSettingsControl();
     if (readOnly) {
+      // Entering or leaving the helpers changes what is in scope, so marks start over.
+      unlockControls();
       decorateControls();
       setSaveStatus();
     } else {
@@ -224,8 +264,9 @@
     }
   }
 
-  async function enableEditing() {
-    if (!readOnly) return true;
+  // Every way into editing on a phone starts from the folder's latest workspace.json, and
+  // stops at the first thing that could let an older copy overwrite a newer one.
+  async function reloadBeforeEditing(confirmText) {
     if (!navigator.onLine) {
       window.notify?.('目前沒有網路連線；為避免舊檔覆蓋，暫時不能開啟手機編輯。', true);
       return false;
@@ -235,22 +276,28 @@
       window.notify?.('請先重新連接 StoryFlow 資料夾，再開啟本次編輯。', true);
       return false;
     }
-    const confirmed = window.confirm(
-      '請先確認手機已連上網路，而且 Google Drive 沒有等待上傳或下載的檔案。\n\nStoryFlow 會重新載入 workspace.json，捨棄尚未保存的畫面變更，然後只在本分頁開啟編輯。\n\n要繼續嗎？'
-    );
-    if (!confirmed) return false;
+    if (!window.confirm(confirmText)) return false;
+    const reloaded = await window.StoryFlowProjectPersistence?.rehydrate?.();
+    if (!reloaded) {
+      window.notify?.('無法從資料夾重新載入 workspace.json；為避免覆蓋檔案，手機仍維持唯讀。', true);
+      setSaveStatus();
+      return false;
+    }
+    if (StoryFlowIntegrations.getWorkspaceRecovery?.()) {
+      window.notify?.('工作區需要先處理 Recovery／版本衝突，尚未開啟手機編輯。', true);
+      return false;
+    }
+    return true;
+  }
 
+  async function enableEditing() {
+    if (!readOnly) return true;
     try {
-      const reloaded = await window.StoryFlowProjectPersistence?.rehydrate?.();
-      if (!reloaded) {
-        window.notify?.('無法從資料夾重新載入 workspace.json；為避免覆蓋檔案，手機仍維持唯讀。', true);
-        setSaveStatus();
-        return false;
-      }
-      if (StoryFlowIntegrations.getWorkspaceRecovery?.()) {
-        window.notify?.('工作區需要先處理 Recovery／版本衝突，尚未開啟手機編輯。', true);
-        return false;
-      }
+      const ready = await reloadBeforeEditing(
+        '請先確認手機已連上網路，而且 Google Drive 沒有等待上傳或下載的檔案。\n\nStoryFlow 會重新載入 workspace.json，捨棄尚未保存的畫面變更，然後只在本分頁開啟編輯。\n\n要繼續嗎？'
+      );
+      if (!ready) return false;
+      helpersOnly = false;
       sessionStorage.setItem(SESSION_EDIT_KEY, '1');
       readOnly = false;
       observer?.disconnect();
@@ -288,6 +335,71 @@
     }
   }
 
+  function openLightboxKey() {
+    const box = document.querySelector('#partsList .publish-lightbox:not([hidden])');
+    return box && box.getClientRects().length ? box.closest('.publish-list-item')?.dataset.partKey || '' : '';
+  }
+
+  // 開始編輯 in 管理發布: reload, then unlock the summary, Hashtags and afterword of this visit
+  // only. The article stays open across the reload, even when the folder's workspace had
+  // another work active.
+  async function startHelperEditing() {
+    if (!readOnly || helpersOnly || modeChangeInProgress) return helpersOnly;
+    const key = openLightboxKey();
+    const projectId = window.StoryFlowProjects?.activeId?.();
+    if (!key) return false;
+    modeChangeInProgress = true;
+    helpersStarting = true;
+    try {
+      const ready = await reloadBeforeEditing(
+        '請先確認手機已連上網路，而且 Google Drive 沒有等待上傳或下載的檔案。\n\nStoryFlow 會重新載入 workspace.json，然後開放這次「管理發布」裡的摘要、Hashtags、後記與平台標題。關閉「管理發布」時會保存並回到唯讀。\n\n要繼續嗎？'
+      );
+      if (!ready) return false;
+      if (projectId && window.StoryFlowProjects?.activeId?.() !== projectId) {
+        window.StoryFlowProjects?.switchProject?.(projectId, { quiet: true });
+      }
+      helpersOnly = true;
+      applyMode();
+      if (openLightboxKey() !== key) window.StoryFlowPublishing?.openPart?.(key);
+      else window.renderParts?.();
+      window.StoryFlowSaveStatus?.set?.('編輯發布資料 · 關閉時保存');
+      window.notify?.('已重新載入 workspace.json；可以編輯摘要、Hashtags、後記與平台標題。');
+      return true;
+    } catch (error) {
+      console.warn('StoryFlow could not open the publishing helpers for editing', error);
+      window.notify?.(`尚未開啟編輯：${error.message}`, true);
+      return false;
+    } finally {
+      helpersStarting = false;
+      modeChangeInProgress = false;
+    }
+  }
+
+  // Closing 管理發布 (or leaving Publishing) saves, then returns to read-only. A failed save
+  // keeps the helpers editable so nothing typed is lost; the next close tries again.
+  async function endHelperEditing() {
+    if (!helpersOnly || helpersStarting || modeChangeInProgress) return true;
+    modeChangeInProgress = true;
+    try {
+      const saved = await window.StoryFlowProjectPersistence?.flush?.('mobile-helpers');
+      if (!saved) {
+        window.notify?.('發布資料尚未保存，仍可編輯；請確認資料夾連線後再關閉一次。', true);
+        return false;
+      }
+      helpersOnly = false;
+      applyMode();
+      window.renderParts?.();
+      window.notify?.('發布資料已保存，手機已回到唯讀。');
+      return true;
+    } catch (error) {
+      console.warn('StoryFlow could not save the publishing helpers', error);
+      window.notify?.(`發布資料尚未保存，仍可編輯：${error.message}`, true);
+      return false;
+    } finally {
+      modeChangeInProgress = false;
+    }
+  }
+
   async function toggleEditing() {
     if (modeChangeInProgress) return false;
     modeChangeInProgress = true;
@@ -305,7 +417,7 @@
     const base = integrations?.[name];
     if (typeof base !== 'function' || base.__mobileSafeMode) return;
     const wrapped = async function mobileSafeWriteGuard(...args) {
-      if (readOnly) throw readonlyError();
+      if (readOnly && !(helpersOnly && HELPER_WRITE_METHODS.has(name))) throw readonlyError();
       return base.apply(integrations, args);
     };
     wrapped.__mobileSafeMode = true;
@@ -315,7 +427,7 @@
   try {
     const baseSaveState = saveState;
     saveState = function mobileSafeSaveState(...args) {
-      if (readOnly) {
+      if (readOnly && !helpersOnly) {
         notifyBlocked();
         return false;
       }
@@ -326,19 +438,19 @@
   document.addEventListener('click', event => {
     if (!readOnly) return;
     const button = event.target.closest?.('button');
-    if (!button || !isWriteButton(button)) return;
+    if (!button || !isWriteButton(button) || inHelperScope(button)) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     notifyBlocked();
   }, true);
   document.addEventListener('beforeinput', event => {
-    if (!readOnly || isUiOnlyControl(event.target)) return;
+    if (!readOnly || isUiOnlyControl(event.target) || inHelperScope(event.target)) return;
     if (!event.target.matches?.('input, textarea, [contenteditable]')) return;
     event.preventDefault();
     notifyBlocked();
   }, true);
   document.addEventListener('change', event => {
-    if (!readOnly || isUiOnlyControl(event.target) || isSafeReadInput(event.target)) return;
+    if (!readOnly || isUiOnlyControl(event.target) || isSafeReadInput(event.target) || inHelperScope(event.target)) return;
     if (!event.target.matches?.('input, textarea, select')) return;
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -354,7 +466,7 @@
           if (node.nodeType !== Node.ELEMENT_NODE) return;
           if (node.matches?.('input, textarea, select, [contenteditable="true"]')) decorateControls(node.parentElement || document);
           decorateControls(node);
-          if (node.matches?.('button') && isWriteButton(node)) node.dataset.mobileSafeWriteControl = 'true';
+          if (node.matches?.('button') && isWriteButton(node) && !inHelperScope(node)) node.dataset.mobileSafeWriteControl = 'true';
         }));
       });
     }
@@ -364,11 +476,22 @@
 
   window.StoryFlowMobileSafeMode = {
     applies: () => true,
-    isReadOnly: () => readOnly,
+    // Whether writes to the folder are refused. False while the publishing helpers are
+    // open for editing, so their saves and the workspace flush go through.
+    isReadOnly: () => readOnly && !helpersOnly,
+    // Whether the manuscript, the split and the visual editor may change: only after the
+    // full unlock in Settings, never for the publishing helpers alone.
+    canEditContent: () => !readOnly,
+    helpersOnly: () => helpersOnly,
+    // What 管理發布 offers: 'locked' (開始編輯 is available), 'open' (the helpers are
+    // editable) or '' (the full unlock is on; nothing to offer).
+    helperAccess: () => (!readOnly ? '' : helpersOnly ? 'open' : 'locked'),
+    startHelperEditing,
+    endHelperEditing,
     enableEditing,
     disableEditing,
     assertWritable: () => {
-      if (readOnly) throw readonlyError();
+      if (readOnly && !helpersOnly) throw readonlyError();
       return true;
     }
   };
@@ -377,5 +500,8 @@
   window.addEventListener('storyflow:workspace-persisted', setSaveStatus);
   applyMode();
   observeNewControls();
+  // A phone opens Publishing on what is still to be published (UX_FLOW 〈Phone editing〉).
+  window.StoryFlowPublishing?.setFilter?.('pending');
+  window.renderParts?.();
   window.setTimeout(setSaveStatus, 120);
 })();
