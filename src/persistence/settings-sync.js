@@ -467,6 +467,17 @@
   window.StoryFlowPersistenceStatus = {
     dirty: () => Boolean(saveTimer || changeVersion > persistedVersion || StoryFlowIntegrations.workspaceSavePending?.()),
     flush: () => persistAll({ quiet: true }),
+    // Waits for the save already under way, then writes only what is still unsaved. A phone
+    // closing 管理發布 used to write the whole workspace once more after every edit had
+    // already been saved, on a folder where each write takes seconds.
+    settle: async () => {
+      await persistQueue;
+      if (saveTimer) {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+      }
+      return changeVersion > persistedVersion ? persistAll({ quiet: true }) : true;
+    },
     markClean: () => {
       clearTimeout(saveTimer);
       saveTimer = null;

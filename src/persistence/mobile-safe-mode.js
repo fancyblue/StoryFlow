@@ -390,7 +390,10 @@
     if (!helpersOnly || helpersStarting || modeChangeInProgress) return true;
     modeChangeInProgress = true;
     try {
-      const saved = await window.StoryFlowProjectPersistence?.flush?.('mobile-helpers');
+      const status = window.StoryFlowPersistenceStatus;
+      const saved = typeof status?.settle === 'function'
+        ? await status.settle()
+        : await window.StoryFlowProjectPersistence?.flush?.('mobile-helpers');
       if (!saved) {
         window.notify?.('發布資料尚未保存，仍可編輯；請確認資料夾連線後再關閉一次。', true);
         return false;

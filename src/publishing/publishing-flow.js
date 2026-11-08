@@ -540,18 +540,22 @@
       includeControl.disabled = chars === 0;
       if (chars > 0 && !part.afterword.trim()) includeControl.checked = true;
     });
-    section.querySelector('.publish-afterword-save').addEventListener('click', async event => {
+    const saveButton = section.querySelector('.publish-afterword-save');
+    let saving = null;
+    const save = () => (saving ||= saveAfterword(chapter, part, textarea, includeControl).finally(() => { saving = null; }));
+    saveButton.addEventListener('click', window.StoryFlowShared.whileSaving(async event => {
       event.stopPropagation();
-      const saved = await saveAfterword(chapter, part, textarea, includeControl);
+      const saved = await save();
       onSaved?.(saved);
-    });
+    }));
     // Closing the tool keeps what was typed. saveAfterword writes the workspace before the
     // Markdown file, so the text is kept even when the file write fails (it says so).
     section.flushPending = async () => {
+      if (saving) await saving;
       const next = textarea.value.trim();
       const include = next ? includeControl.checked : true;
       if (next === (part.afterword || '').trim() && include === (part.includeAfterword !== false)) return true;
-      await saveAfterword(chapter, part, textarea, includeControl);
+      await save();
       return true;
     };
     section.addEventListener('click', event => event.stopPropagation());
@@ -731,16 +735,19 @@
     const hashtagsInput = section.querySelector('.visual-publish-hashtags-input');
     summaryInput.value = entry.summary || '';
     hashtagsInput.value = entry.hashtags || '';
-    section.querySelector('.visual-publish-save-helpers').addEventListener('click', async event => {
+    let saving = null;
+    const save = () => (saving ||= savePublishingHelpers(chapter, entry, summaryInput, hashtagsInput).finally(() => { saving = null; }));
+    section.querySelector('.visual-publish-save-helpers').addEventListener('click', window.StoryFlowShared.whileSaving(async event => {
       event.stopPropagation();
-      const saved = await savePublishingHelpers(chapter, entry, summaryInput, hashtagsInput);
+      const saved = await save();
       if (saved) onSaved?.();
-    });
+    }));
     section.flushPending = async () => {
+      if (saving) await saving;
       const unchanged = summaryInput.value.trim() === String(entry.summary || '').trim()
         && hashtagsInput.value.trim() === String(entry.hashtags || '').trim();
       if (unchanged) return true;
-      return savePublishingHelpers(chapter, entry, summaryInput, hashtagsInput);
+      return save();
     };
     section.addEventListener('click', event => event.stopPropagation());
     return section;

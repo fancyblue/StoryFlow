@@ -111,6 +111,18 @@
     persistTimer = window.setTimeout(() => persistWorkspaceNow(reason), 30);
   }
 
+  // A critical saveState() is already one of settings-sync's scheduled saves. Writing it here
+  // as well wrote the whole workspace twice for every such change — an afterword, a
+  // publication mark — which a desktop never noticed and a phone's synced folder did, in
+  // seconds and in memory. Bringing settings-sync's own save forward writes it once.
+  function persistSaveStateNow(reason) {
+    const status = window.StoryFlowPersistenceStatus;
+    if (typeof status?.settle !== 'function') return scheduleImmediatePersist(reason);
+    clearTimeout(persistTimer);
+    persistTimer = window.setTimeout(() => { status.settle(); }, 30);
+    return undefined;
+  }
+
   async function rehydrateMultiProjectWorkspace() {
     if (hydrating) return false;
     const folder = await connectedFolder();
@@ -159,7 +171,7 @@
     const baseSaveState = saveState;
     saveState = function guardedSaveState(label = '準備保存') {
       const result = baseSaveState(label);
-      if (CRITICAL_SAVE_LABELS.has(label)) scheduleImmediatePersist(label);
+      if (CRITICAL_SAVE_LABELS.has(label)) persistSaveStateNow(label);
       return result;
     };
   } catch (_) {}
