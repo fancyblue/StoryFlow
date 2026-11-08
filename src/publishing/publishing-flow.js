@@ -815,9 +815,12 @@
       </header>` : ''}
       <div class="publish-platform-details" ${expanded ? '' : 'hidden'}>
         <div class="publish-manuscript-column">
-          <div class="publish-article-tools ${visual ? 'visual-publish-summary' : ''}">
+          <div class="publish-preview-host"></div>
+        </div>
+        <aside class="publish-platform-rail" aria-label="發布平台">
+          <section class="publish-article-tools ${visual ? 'visual-publish-summary' : ''}" aria-label="這篇文章：所有平台共用">
             <div class="publish-article-tools-copy">
-              <strong>發布補充內容</strong>
+              <strong>這篇文章 · 所有平台共用</strong>
               <span>${visual ? `文字 ${bodyChars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張` : `正文 ${part.chars.toLocaleString()} 字 · 圖片 ${imageCount.toLocaleString()} 張`} · 後記 ${afterwordCount.toLocaleString()} 字</span>
               ${helperEditingNote()}
             </div>
@@ -826,10 +829,7 @@
               ${visual ? '' : `<button class="button tiny ghost publish-images-tool-btn" type="button">文章圖片${imageCount ? ` ${imageCount.toLocaleString()}` : ''}</button>`}
               <button class="button tiny ghost publish-afterword-tool-btn" type="button">後記${afterwordCount ? ` ${afterwordCount.toLocaleString()} 字` : ''}</button>
             </div>
-          </div>
-          <div class="publish-preview-host"></div>
-        </div>
-        <aside class="publish-platform-rail" aria-label="發布平台">
+          </section>
           <div class="publish-platform-details-head">
             <strong>發布平台</strong>
             <span class="muted">選一個，預覽就換成它的版本</span>

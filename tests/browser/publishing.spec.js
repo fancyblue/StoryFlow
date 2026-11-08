@@ -179,6 +179,10 @@ test('published articles keep an independent afterword and can exclude it from o
   await card.getByRole('button', { name: /展開.*發布平台/ }).click();
   await expect(card.locator('.publish-article-tools')).toContainText('圖片 1 張 · 後記 0 字');
   await expect(card.locator('.publish-platform-row').first()).toBeVisible();
+  // What every platform shares heads the rail, above the platforms; it does not sit over a
+  // platform's version, where it read as that platform's own settings.
+  await expect(card.locator('.publish-platform-rail > .publish-article-tools')).toContainText('所有平台共用');
+  await expect(card.locator('.publish-manuscript-column .publish-article-tools')).toHaveCount(0);
 
   await card.getByRole('button', { name: '文章圖片 1', exact: true }).click();
   let toolDialog = page.locator('#publishingArticleToolDialog');

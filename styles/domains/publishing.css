@@ -183,13 +183,14 @@
   background:transparent;
   overflow:visible;
 }
+/* What belongs to the article whichever platform it goes to — summary, Hashtags, images,
+   afterword — heads the rail, above the platforms that each make a version of it. It used to
+   sit over the selected platform's preview, where it read as that platform's settings. */
 .publish-article-tools{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  margin:6px 0 0;
-  padding:0 0 11px;
+  display:grid;
+  gap:9px;
+  margin:0 0 4px;
+  padding:11px 12px 12px;
   border:0;
   border-bottom:1px solid var(--rule-1,#ded9cc);
   border-radius:0;
@@ -203,8 +204,8 @@
 .publish-helpers-edit{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:8px}
 .publish-helpers-edit small{color:#6a6357;font-size:11px;line-height:1.45}
 .publish-helpers-edit.is-open small{color:var(--sf-text);font-weight:700}
-.publish-article-tool-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}
-.publish-article-tool-actions .button{white-space:nowrap}
+.publish-article-tool-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.publish-article-tool-actions .button{width:100%;white-space:nowrap}
 .publish-afterword-editor{
   padding:13px 14px;
   border:1px solid #ded9cc;
@@ -572,9 +573,6 @@
   .publish-list-actions{display:grid;width:100%}
   .publish-list-actions .button{width:100%}
   .publish-platform-details-head{padding:9px 12px 6px}
-  .publish-article-tools{align-items:stretch;flex-direction:column;gap:9px;margin:9px 10px 2px}
-  .publish-article-tool-actions{display:grid;grid-template-columns:1fr 1fr}
-  .publish-article-tool-actions .button{width:100%}
   .publish-afterword-editor{padding:12px}
   .publish-afterword-head{display:grid;gap:8px}
   .publish-afterword-include{justify-self:start}
@@ -590,8 +588,7 @@
      action all start where the column does. They sat at three different insets here (the
      body's own inset is set with the panel's later phone rule below). */
   .platform-preview-body{padding:14px 0 16px}
-  .publish-article-tools{margin-inline:0}
-  .publish-platform-details-head{padding-inline:0}
+  .publish-platform-details-head,.publish-article-tools{padding-inline:0}
   .platform-preview-title-copy{align-items:stretch;flex-direction:column}
   .platform-preview-title-actions{display:grid;grid-template-columns:1fr 1fr}
   .platform-preview-title-copy .button{width:100%}
