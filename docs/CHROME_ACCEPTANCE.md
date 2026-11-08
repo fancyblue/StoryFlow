@@ -153,7 +153,7 @@ The one-hour interval and three-file limit for `workspace.auto-*` rolling backup
 
 - [ ] Use Chrome device emulation or a phone with a disposable cloud-backed StoryFlow folder; never use real manuscript data.
 - [ ] Open a new phone tab and confirm the main surface shows only the compact “唯讀” label before any edit.
-- [ ] Confirm navigation, previews, folder reconnect and `settings.json` import remain available while text fields and mutating actions stay locked.
+- [ ] Confirm navigation, previews, folder reconnect and `settings.json` import remain available while text fields stay locked and mutating actions are not shown at all (no 新增作品, 新增文章, chapter `⋯` or 確認並存成 Markdown). Open a longform work from Works — its card reads 「手動建立」 — and choose a chapter, and confirm both open.
 - [ ] Walk the whole reading route (UX_FLOW O-07) on Chrome for Android: import
       `settings.json`, sign in to Google, connect the disposable folder, open an existing
       work and read it. Every step is a read and all of them must work while read-only.

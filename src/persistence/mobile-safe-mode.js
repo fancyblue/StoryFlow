@@ -15,7 +15,21 @@
     '#createProjectManually',
     '#createProjectFromGoogle',
     '#workspaceLoadSourceBtn',
-    '#resetWorkspaceBtn'
+    '#resetWorkspaceBtn',
+    // A chapter's ⋯ holds only 編輯章節 and 刪除章節. It was caught by accident before:
+    // it starts life labelled as a delete button and keeps the mark after it becomes ⋯.
+    '.chapter-row > .chapter-more-button',
+    '.chapter-row-edit-menu-item'
+  ].join(',');
+  // Rows whose text is the writer's own: a work, a chapter, an article, a search result.
+  // Choosing one is reading. Guessing from their text locked any work whose card said
+  // 「手動建立」, and would lock a chapter called 「確認身分」.
+  const NAVIGATION_CONTROL_SELECTOR = [
+    '.project-library-main',
+    '.chapter-item',
+    '.visual-entry-select',
+    '.workspace-project-quick-switch-item',
+    '.global-search-result'
   ].join(',');
   const SAFE_READ_CONTROL_SELECTOR = [
     '#folderBtn',
@@ -103,10 +117,12 @@
 
   function isWriteButton(button) {
     if (!button || button.id === 'mobileSafeModeToggle') return false;
-    if (button.matches(SAFE_READ_CONTROL_SELECTOR)) return false;
+    if (button.matches(SAFE_READ_CONTROL_SELECTOR) || button.matches(NAVIGATION_CONTROL_SELECTOR)) return false;
     if (button.matches(EXPLICIT_WRITE_CONTROL_SELECTOR)) return true;
-    const label = `${button.getAttribute('aria-label') || ''} ${button.title || ''} ${button.textContent || ''}`.trim();
-    return WRITE_ACTION_PATTERN.test(label);
+    // An accessible name, when there is one, says what the button does; its text may also
+    // carry the writer's content. Names quoted in 「」 are content, never the action.
+    const name = button.getAttribute('aria-label') || `${button.title || ''} ${button.textContent || ''}`;
+    return WRITE_ACTION_PATTERN.test(name.replace(/「[^」]*」/g, ''));
   }
 
   function decorateControls(root = document) {
