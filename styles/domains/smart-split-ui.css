@@ -110,16 +110,16 @@
 .splitter-panel .smart-split-mini-settings {
   align-items:flex-end !important;
   border:0 !important;
-  border-radius:0 !important;
+  border-radius:0;
   background:transparent !important;
   box-shadow:none !important;
 }
-.splitter-panel .smart-split-mini-settings .range-grid { gap:10px !important; }
+.splitter-panel .smart-split-mini-settings .range-grid { gap:10px; }
 .splitter-panel .smart-split-mini-settings .range-grid label,
 .splitter-panel .scene-marker-compact {
-  width:86px !important;
+  width:86px;
   min-width:86px !important;
-  gap:5px !important;
+  gap:5px;
   color:#6a6357 !important;
   font-size:10.5px !important;
   font-weight:500 !important;
@@ -143,9 +143,9 @@
 .splitter-panel .scene-marker-compact #sceneMarker:hover { background:#f4f1e9 !important; }
 .splitter-panel .smart-split-mini-settings .range-grid input:focus,
 .splitter-panel .scene-marker-compact #sceneMarker:focus {
-  border-color:#c8c1b0 !important;
+  border-color:#c8c1b0;
   background:#fbfaf6;
-  box-shadow:0 0 0 3px rgba(34,31,26,.12) !important;
+  box-shadow:0 0 0 3px rgba(34,31,26,.12);
 }
 
 .splitter-panel .suggestion-platform-bar .platform-select-field {
@@ -226,7 +226,7 @@
   .splitter-panel .smart-split-mini-settings .range-grid { flex:0 0 auto; }
   .splitter-panel .smart-split-mini-settings .range-grid label,
   .splitter-panel .scene-marker-compact {
-    width:82px !important;
+    width:82px;
     min-width:82px !important;
   }
   .splitter-panel .smart-split-mini-settings .range-grid input,
