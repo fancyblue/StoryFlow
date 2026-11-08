@@ -77,7 +77,7 @@ The Publishing page separates queue navigation from the actual publishing commit
 | ID | User goal | Main action | Supporting actions | Visual priority |
 | --- | --- | --- | --- | --- |
 | P-01 | Resume the latest unfinished publication | 繼續發布 | Filters and project selector | One solid page action, visible only when pending or partial work exists |
-| P-02 | Choose a specific article or visual entry to process | 管理發布 | 預覽、`⋯` | Same labels and order for longform and visual content; it opens a lightbox over the queue with two columns — the manuscript on the left, its versions on the right — ‹ › to step through the queue and 放大／縮小 |
+| P-02 | Choose a specific article or visual entry to process | 管理發布 | 預覽、`⋯` | Same labels and order for longform and visual content; it opens a lightbox over the queue with two columns — the selected version on the left; on the right the article's shared 摘要與 Hashtags, 文章圖片 and 後記, then the platforms — ‹ › to step through the queue and 放大／縮小 |
 | P-03 | Verify platform formatting | Pick the platform in the rail | One compact title/content settings card, then body/images, shared summary and effective platform Hashtags | The left column switches in place; nothing opens over the row already open. Platform title style and optional publishing helpers exist only once a platform is picked |
 | P-04 | Copy content to a platform | 複製內容 | Optionally prepend title as heading or bold, 複製標題 | The single solid action at the foot of the left column |
 | P-05 | Store publication time and URL | 保存發布紀錄 | 取消、開啟文章 | The single solid action in the record dialog |

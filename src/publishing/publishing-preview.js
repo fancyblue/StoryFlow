@@ -91,10 +91,10 @@
         </section>
         <div class="platform-preview-content-head"><strong>內容預覽</strong><span>主要內容</span></div>
         <div id="platformPreviewContent" class="platform-preview-content"></div>
-        <section id="platformPreviewVisualExtras" class="platform-preview-visual-extras" aria-label="選填發布資訊" hidden>
+        <section id="platformPreviewVisualExtras" class="platform-preview-visual-extras" aria-label="此平台的摘要與 Hashtags" hidden>
           <div class="platform-preview-visual-extras-head">
-            <strong>選填發布資訊</strong>
-            <span>主要內容與圖片確認後，再依需要複製或調整。</span>
+            <strong id="platformPreviewExtrasTitle">此平台的摘要與 Hashtags</strong>
+            <span>未另外調整時，沿用「這篇文章」的共用設定。</span>
           </div>
           <div id="platformPreviewSummaryBlock" class="platform-preview-extra-block" hidden>
             <div class="platform-preview-extra-row">
@@ -275,7 +275,7 @@
       panel.querySelector('#platformPreviewSummary').textContent = summaryText || '尚未設定';
       // Both content types write their shared summary in one place: 摘要與 Hashtags, beside the
       // text rather than in the editor of it. A visual platform may then write its own here.
-      summaryCard.querySelector('small').textContent = summaryText ? '點一下複製' : summaryEditable ? '' : '在「摘要與 Hashtags」設定';
+      summaryCard.querySelector('small').textContent = summaryText ? '點一下複製' : summaryEditable ? '' : '在「這篇文章」的摘要與 Hashtags 設定';
       summaryInput.value = summaryText;
       summaryState.textContent = ownSummary ? '此平台自訂' : '沿用共用';
       resetSummary.disabled = !ownSummary;
@@ -298,6 +298,9 @@
       hashtagsCard.disabled = !hashtagsText;
       visualExtras.hidden = !platformSpecific;
       visualExtras.classList.toggle('hidden', !platformSpecific);
+      // Named for the platform it belongs to: these rows sit in that platform's version, while
+      // the article's own summary and Hashtags are set once for every platform in the rail.
+      if (platformSpecific) panel.querySelector('#platformPreviewExtrasTitle').textContent = `「${platform}」的摘要與 Hashtags`;
       panel.querySelector('#platformPreviewHashtags').textContent = hashtagsText || '尚未設定';
       // Empty, the value already reads 尚未設定 and 編輯 sits beside it; a hint repeating it adds nothing.
       hashtagsCard.querySelector('small').textContent = hashtagsText ? '點一下複製' : '';

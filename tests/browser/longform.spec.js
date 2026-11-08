@@ -725,7 +725,7 @@ test('a finished chapter says so, and the reading view centres its scene markers
   const row = page.locator('.publish-list-item').first();
   await row.locator('.publish-manage-btn').click();
   await row.locator('.publish-platform-choose').filter({ hasText: '巴哈小屋' }).click();
-  await expect(row.locator('#copyPlatformSummary small')).toHaveText('在「摘要與 Hashtags」設定');
+  await expect(row.locator('#copyPlatformSummary small')).toHaveText('在「這篇文章」的摘要與 Hashtags 設定');
   await row.getByRole('button', { name: '摘要與 Hashtags', exact: true }).click();
   await expect(page.locator('.visual-publish-summary-input')).toHaveAttribute('placeholder', '簡短介紹這篇文章');
   expect(pageErrors).toEqual([]);

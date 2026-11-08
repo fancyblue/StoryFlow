@@ -105,8 +105,11 @@ html.sf-publish-lightbox-open{overflow:hidden}
    platforms above the manuscript and scrolls as one column. */
 @container publish-lightbox (max-width:760px){
   .publish-lightbox .publish-platform-details{grid-template-columns:minmax(0,1fr);align-content:start;overflow:auto;overscroll-behavior:contain}
-  .publish-lightbox .publish-manuscript-column{overflow:visible;padding:0 16px}
-  .publish-lightbox .publish-platform-rail{order:-1;overflow:visible;padding:10px 16px 12px;border-left:0;border-bottom:1px solid var(--rule-1,#ded9cc)}
+  /* Stacked, the window scrolls as one column, so each part keeps its own height. The
+     min-height:0 that lets the side-by-side panes scroll on their own let the stacked rail
+     shrink under its content and run over the version below it. */
+  .publish-lightbox .publish-manuscript-column{min-height:auto;overflow:visible;padding:0 16px}
+  .publish-lightbox .publish-platform-rail{order:-1;min-height:auto;overflow:visible;padding:10px 16px 12px;border-left:0;border-bottom:1px solid var(--rule-1,#ded9cc)}
   .publish-lightbox-chars{display:none}
   .publish-lightbox-head{padding-left:16px}
 }
