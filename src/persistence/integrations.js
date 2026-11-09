@@ -160,7 +160,15 @@ const StoryFlowIntegrations = (() => {
     };
   }
 
-  async function chooseOutputDirectory(options = {}) {
+  // Whoever asks while a choice is under way waits for that one: the browser opens a single
+  // picker at a time and refuses a second with "File picker already active".
+  let choosingDirectory = null;
+  function chooseOutputDirectory(options = {}) {
+    choosingDirectory ||= chooseOutputDirectoryOnce(options).finally(() => { choosingDirectory = null; });
+    return choosingDirectory;
+  }
+
+  async function chooseOutputDirectoryOnce(options = {}) {
     if (!('showDirectoryPicker' in window)) throw new Error('此瀏覽器不支援資料夾直接寫入，請使用 Chrome 或 Edge。');
     await hydrateOutputDirectoryHandle();
 

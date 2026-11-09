@@ -159,6 +159,7 @@ The one-hour interval and three-file limit for `workspace.auto-*` rolling backup
       work and read it. Every step is a read and all of them must work while read-only.
       Choosing the settings file must actually load it — a read-only notice in response
       to a chosen file is the failure this step exists to catch.
+- [ ] Tap 連接資料夾 twice quickly and confirm one folder picker opens and no “File picker already active” error appears.
 - [ ] Confirm the folder button reads “選擇資料夾”, not “需 Chrome / Edge”: Android Chrome
       does have folder access, and treating a phone as incapable would close this route.
 - [ ] Open Settings and confirm the explanation and editing switch appear under “手機使用模式”, not on the main work surface.

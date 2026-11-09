@@ -491,6 +491,32 @@ test('a read-only phone edits the publishing helpers for one visit to 管理發�
   expect(pageErrors).toEqual([]);
 });
 
+// A phone's folder picker takes a moment to appear, and a second tap meanwhile asked for
+// another; the browser refused it with "File picker already active", shown as an error
+// while the first choice was still under way. A second tap now waits for the first.
+test('a second tap on 連接資料夾 waits for the folder choice already under way', async ({ page }) => {
+  const pageErrors = await prepare(page);
+  await page.goto('/');
+  await page.evaluate(() => {
+    window.__choices = 0;
+    window.__notices = [];
+    const notify = window.notify;
+    window.notify = (message, isError) => { window.__notices.push(`${isError ? 'error:' : ''}${message}`); return notify?.(message, isError); };
+    StoryFlowIntegrations.chooseOutputDirectory = () => {
+      window.__choices += 1;
+      return new Promise(resolve => setTimeout(() => resolve({ name: 'StoryFlow 測試資料夾' }), 400));
+    };
+  });
+  await page.evaluate(() => window.StoryFlowNavigate('settings'));
+  const connect = page.locator('#settingsFolderBtn');
+  await connect.click();
+  await connect.click();
+  await expect.poll(() => page.evaluate(() => window.__notices.some(notice => notice.includes('已連接')))).toBe(true);
+  expect(await page.evaluate(() => window.__choices)).toBe(1);
+  expect(await page.evaluate(() => window.__notices.filter(notice => notice.startsWith('error:')))).toEqual([]);
+  expect(pageErrors).toEqual([]);
+});
+
 test('the sidebar connection row shows where the pointer and the keyboard are', async ({ page }) => {
   // The desktop rail is paper-coloured ground. Its hover and focus wash was written for the
   // old dark rail, white at 6%, and could not be seen: a keyboard user tabbing onto this row

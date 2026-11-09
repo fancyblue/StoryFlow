@@ -660,7 +660,16 @@ async function applyFolderStatus() {
   }
 }
 
-async function chooseFolder(options = {}) {
+// One folder choice at a time. A phone's picker takes a moment to appear, and a second tap
+// meanwhile asked the browser for another one, which it refuses with "File picker already
+// active" — shown as an error although the first choice was still under way.
+let choosingFolder = null;
+function chooseFolder(options = {}) {
+  choosingFolder ||= chooseFolderOnce(options).finally(() => { choosingFolder = null; });
+  return choosingFolder;
+}
+
+async function chooseFolderOnce(options) {
   try {
     const result = await StoryFlowIntegrations.chooseOutputDirectory(options);
     notify(`已連接 ${result.name}`);
