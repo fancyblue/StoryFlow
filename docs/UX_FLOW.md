@@ -1,6 +1,6 @@
 # StoryFlow UX flows
 
-> 狀態：現行 UX 流程規範（已落地，持續維護；最後同步：2026-11-06）
+> 狀態：現行 UX 流程規範（已落地，持續維護；最後同步：2026-11-09）
 
 StoryFlow is a personal desktop writing tool. Flows should stay short, preserve the current work until an action is confirmed, and avoid account-style ceremony that does not protect the user's files.
 

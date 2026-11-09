@@ -1,6 +1,6 @@
 # StoryFlow Chrome acceptance checklist
 
-> 狀態：現行、可重複執行的人工驗收清單（最後同步：2026-11-06）。未勾選的方框表示每次驗收應重新執行，不代表功能尚未完成。
+> 狀態：現行、可重複執行的人工驗收清單（最後同步：2026-11-09）。未勾選的方框表示每次驗收應重新執行，不代表功能尚未完成。
 
 Use this checklist before treating a release as ready for daily writing. It exercises Chrome's real File System Access behavior, which CI replaces with safe in-memory fixtures.
 

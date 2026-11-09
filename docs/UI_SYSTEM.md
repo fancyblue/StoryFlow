@@ -1,6 +1,6 @@
 # StoryFlow UI system
 
-> 狀態：現行 UI 規範（已落地，持續維護；最後同步：2026-11-06）
+> 狀態：現行 UI 規範（已落地，持續維護；最後同步：2026-11-09）
 
 This is the small shared UI contract for StoryFlow's desktop-first interface. Prefer these patterns over page-specific variants.
 
