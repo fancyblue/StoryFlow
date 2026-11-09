@@ -538,63 +538,6 @@ test('a second tap on 連接資料夾 waits for the folder choice already under 
   expect(pageErrors).toEqual([]);
 });
 
-// A phone's folder sits in Drive behind the Drive app, one slow round trip per step. Named in
-// Settings, the Drive copy of workspace.json is read straight from the Drive API — on opening
-// and on 開始編輯's reload — and Settings says where the last load came from and how long it
-// took. Only a phone does this; the desktop reads its folder whatever is stored.
-test('a phone reads workspace.json from Drive once it is named, and says how long it took', async ({ page }) => {
-  const pageErrors = await prepare(page);
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, 'userAgent', {
-      configurable: true,
-      get: () => 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36'
-    });
-  });
-  await page.setViewportSize({ width: 412, height: 915 });
-  await page.goto('/');
-  await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-safe-mode', 'readonly');
-
-  const reads = await page.evaluate(async () => {
-    StoryFlowProjects.createProject({ title: '手機上的舊版' }, { quiet: true });
-    const driveState = structuredClone(state);
-    driveState.projectTitle = 'Drive 上的最新版';
-    const driveWorkspace = {
-      schemaVersion: 2, updatedAt: new Date().toISOString(), activeProjectId: StoryFlowProjects.activeId(),
-      projects: [{ id: StoryFlowProjects.activeId(), title: 'Drive 上的最新版', placeholder: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), state: driveState }]
-    };
-    window.__driveReads = [];
-    StoryFlowIntegrations.readDriveFileText = async fileId => { window.__driveReads.push(fileId); return JSON.stringify(driveWorkspace); };
-    await StoryFlowIntegrations.setDriveWorkspaceSource({ id: 'drive-workspace', name: 'workspace.json' });
-    await StoryFlowProjectPersistence.rehydrate();
-    return window.__driveReads;
-  });
-  expect(reads).toEqual(['drive-workspace']);
-  await expect.poll(() => page.evaluate(() => state.projectTitle)).toBe('Drive 上的最新版');
-  expect(await page.evaluate(() => StoryFlowIntegrations.lastWorkspaceLoad().source)).toBe('drive');
-
-  await page.evaluate(() => window.StoryFlowNavigate('settings'));
-  const driveSource = page.locator('#mobileDriveSource');
-  await expect(driveSource).toContainText('直接從 Drive 讀取「workspace.json」');
-  await expect(driveSource.locator('.mobile-drive-source-timing')).toHaveText(/^上次載入：Google Drive · \d+\.\d 秒$/);
-  await expect(driveSource.getByRole('button', { name: '改回從資料夾讀取' })).toBeVisible();
-  expect(pageErrors).toEqual([]);
-});
-
-test('the desktop reads its folder even with a Drive copy named', async ({ page }) => {
-  const pageErrors = await prepare(page);
-  await page.goto('/');
-  const reads = await page.evaluate(async () => {
-    window.__driveReads = [];
-    StoryFlowIntegrations.readDriveFileText = async fileId => { window.__driveReads.push(fileId); return null; };
-    await StoryFlowIntegrations.setDriveWorkspaceSource({ id: 'drive-workspace', name: 'workspace.json' });
-    await StoryFlowProjectPersistence.rehydrate();
-    return window.__driveReads;
-  });
-  expect(reads).toEqual([]);
-  await expect(page.locator('#mobileDriveSource')).toHaveCount(0);
-  expect(pageErrors).toEqual([]);
-});
-
 test('the sidebar connection row shows where the pointer and the keyboard are', async ({ page }) => {
   // The desktop rail is paper-coloured ground. Its hover and focus wash was written for the
   // old dark rail, white at 6%, and could not be seen: a keyboard user tabbing onto this row

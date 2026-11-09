@@ -13,11 +13,6 @@ const StoryFlowIntegrations = (() => {
   const CONNECTION_DB = 'storyflow-connections-v1';
   const CONNECTION_STORE = 'handles';
   const OUTPUT_HANDLE_KEY = 'storyflow-output-directory';
-  // A phone's StoryFlow folder sits in Google Drive behind the Drive app, where every folder
-  // operation is a slow round trip. The phone can name the folder's workspace.json in Drive
-  // (picked in the Google Picker, so drive.file covers it) and read it straight from the Drive
-  // API instead. Only the reading moves: writes still go to the folder.
-  const DRIVE_WORKSPACE_KEY = 'storyflow-drive-workspace';
   const LEGACY_BROWSER_STORAGE_KEYS = Object.freeze([
     'storyflow.state.v1',
     'storyflow.state.v2',
@@ -47,37 +42,18 @@ const StoryFlowIntegrations = (() => {
     });
   }
 
-  async function readConnection(key) {
-    const db = await openConnectionDb();
-    if (!db) return null;
-    const value = await new Promise((resolve, reject) => {
-      const tx = db.transaction(CONNECTION_STORE, 'readonly');
-      const request = tx.objectStore(CONNECTION_STORE).get(key);
-      request.onsuccess = () => resolve(request.result || null);
-      request.onerror = () => reject(request.error);
-    });
-    db.close();
-    return value;
-  }
-
-  async function writeConnection(key, value) {
-    const db = await openConnectionDb();
-    if (!db) return;
-    await new Promise((resolve, reject) => {
-      const tx = db.transaction(CONNECTION_STORE, 'readwrite');
-      const store = tx.objectStore(CONNECTION_STORE);
-      if (value == null) store.delete(key);
-      else store.put(value, key);
-      tx.oncomplete = resolve;
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error);
-    });
-    db.close();
-  }
-
   async function readPersistedDirectoryHandle() {
     try {
-      return await readConnection(OUTPUT_HANDLE_KEY);
+      const db = await openConnectionDb();
+      if (!db) return null;
+      const handle = await new Promise((resolve, reject) => {
+        const tx = db.transaction(CONNECTION_STORE, 'readonly');
+        const request = tx.objectStore(CONNECTION_STORE).get(OUTPUT_HANDLE_KEY);
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => reject(request.error);
+      });
+      db.close();
+      return handle;
     } catch (error) {
       console.warn('StoryFlow could not restore the saved folder handle', error);
       return null;
@@ -87,62 +63,18 @@ const StoryFlowIntegrations = (() => {
   async function persistDirectoryHandle(handle) {
     if (!handle) return;
     try {
-      await writeConnection(OUTPUT_HANDLE_KEY, handle);
+      const db = await openConnectionDb();
+      if (!db) return;
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(CONNECTION_STORE, 'readwrite');
+        tx.objectStore(CONNECTION_STORE).put(handle, OUTPUT_HANDLE_KEY);
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+      db.close();
     } catch (error) {
       console.warn('StoryFlow could not remember the folder handle', error);
-    }
-  }
-
-  // The Drive copy of workspace.json a phone reads from: { id, name, pickedAt }, or null.
-  let driveWorkspace;
-  async function driveWorkspaceSource() {
-    if (driveWorkspace === undefined) {
-      try { driveWorkspace = await readConnection(DRIVE_WORKSPACE_KEY); }
-      catch (_) { driveWorkspace = null; }
-    }
-    return driveWorkspace;
-  }
-
-  async function setDriveWorkspaceSource(file) {
-    const next = file?.id ? { id: String(file.id), name: String(file.name || 'workspace.json'), pickedAt: new Date().toISOString() } : null;
-    await writeConnection(DRIVE_WORKSPACE_KEY, next);
-    driveWorkspace = next;
-    return next;
-  }
-
-  // How the last workspace.json load went: where it was read from, how long it took, and why
-  // Drive was passed over when it was. Settings shows it, so the two routes can be compared.
-  let lastWorkspaceLoad = null;
-  function noteWorkspaceLoad(source, startedAt, fallback = '') {
-    lastWorkspaceLoad = { source, ms: Math.round(performance.now() - startedAt), at: new Date().toISOString(), fallback };
-    window.dispatchEvent(new CustomEvent('storyflow:workspace-load-timed', { detail: { ...lastWorkspaceLoad } }));
-  }
-
-  // workspace.json from Drive, or null to read the folder instead. Only on a phone that picked
-  // a Drive copy, only with a token this session already holds (opening StoryFlow must not
-  // meet a sign-in prompt), and only when the text is a readable workspace: anything else
-  // falls back to the folder, which keeps its own recovery path.
-  let driveFallbackReason = '';
-  async function readWorkspaceFromDrive() {
-    driveFallbackReason = '';
-    if (!window.StoryFlowMobileSafeMode?.applies?.()) return null;
-    const source = await driveWorkspaceSource();
-    const reader = window.StoryFlowIntegrations?.readDriveFileText;
-    if (!source || typeof reader !== 'function') return null;
-    const startedAt = performance.now();
-    try {
-      const text = await reader(source.id);
-      if (!text) {
-        driveFallbackReason = '尚未登入 Google';
-        return null;
-      }
-      const workspace = JSON.parse(text);
-      if (!validWorkspace(workspace)) throw new Error('Drive 上的 workspace.json 缺少可辨識的工作區資料');
-      return { workspace, startedAt };
-    } catch (error) {
-      console.warn('StoryFlow could not read workspace.json from Drive; reading the folder', error);
-      driveFallbackReason = error.status === 404 || error.status === 403 ? 'Drive 上找不到選取的 workspace.json' : 'Drive 讀取失敗';
-      return null;
     }
   }
 
@@ -832,20 +764,9 @@ const StoryFlowIntegrations = (() => {
   const loadStoryFlowSettings = () => readJsonFile(SETTINGS_FILENAME);
 
   async function loadWorkspace() {
-    if (pendingWorkspaceRecovery?.kind !== 'corrupt') {
-      const fromDrive = await readWorkspaceFromDrive();
-      if (fromDrive) {
-        workspaceRevision = workspaceSignature(fromDrive.workspace);
-        pendingWorkspaceRecovery = null;
-        noteWorkspaceLoad('drive', fromDrive.startedAt);
-        return fromDrive.workspace;
-      }
-    }
-    const startedAt = performance.now();
     if (!(await ensureOutputPermission())) return null;
     if (pendingWorkspaceRecovery?.kind === 'corrupt') return null;
     const text = await readTextFile(outputDirectoryHandle, WORKSPACE_FILENAME);
-    noteWorkspaceLoad('folder', startedAt, driveFallbackReason);
     if (!text) {
       workspaceRevision = null;
       pendingWorkspaceRecovery = null;
@@ -1087,7 +1008,7 @@ const StoryFlowIntegrations = (() => {
 
   // Browser startup is intentionally non-destructive. Legacy data remains available
   // until a future explicit, Recovery-backed migration is designed.
-  const api = { driveWorkspaceSource, setDriveWorkspaceSource, lastWorkspaceLoad: () => lastWorkspaceLoad, supportsFolderAccess, restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, cleanupWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, inspectLegacyBrowserStorage, purgeLegacyBrowserStorage, LARGE_IMAGE_BYTES, STORAGE_CLEANUP_DEFAULT_DAYS };
+  const api = { supportsFolderAccess, restoreOutputDirectory, inspectRememberedOutputDirectory, chooseOutputDirectory, ensureOutputPermission, saveStoryFlowSettings, loadStoryFlowSettings, saveWorkspace, loadWorkspace, backupWorkspace, createWorkspaceRecoverySnapshot, inspectWorkspaceStorage, cleanupWorkspaceStorage, summarizeWorkspace, exportWorkspaceFile, restoreLatestWorkspaceBackup, getWorkspaceRecovery, restoreWorkspaceRecovery, importWorkspace, workspaceSavePending, savePart, inspectLegacyBrowserStorage, purgeLegacyBrowserStorage, LARGE_IMAGE_BYTES, STORAGE_CLEANUP_DEFAULT_DAYS };
   window.StoryFlowIntegrations = api;
   // The folder primitives src/persistence/folder-assets.js builds on, which adds the image
   // and visual-entry file functions to the api above. Only persistence modules may use it

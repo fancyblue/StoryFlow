@@ -92,12 +92,6 @@
 .mobile-safe-mode-settings-status strong{font-size:13px}
 .mobile-safe-mode-settings-status span{font-size:12px;line-height:1.55}
 .mobile-safe-mode-settings-status.editing-enabled{background:#fbfaf6;color:#4b4557}
-.mobile-drive-source{display:grid;gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
-.mobile-drive-source strong{font-size:14px}
-.mobile-drive-source p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
-.mobile-drive-source-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.mobile-drive-source-timing{color:var(--muted);font-size:12px}
-.mobile-drive-source-timing:empty{display:none}
 
 /* A phone reads. What it cannot do while read-only is not offered at all, rather than
    shown dimmed: a screen of controls that refuse a tap is not a reading surface. The rule
