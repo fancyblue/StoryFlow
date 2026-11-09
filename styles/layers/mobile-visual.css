@@ -50,9 +50,9 @@
   }
   .sidebar .nav-item:hover,
   .sidebar .nav-item:focus-visible {
-    background:#4b4557 !important;
+    background:#4b4557;
     color:#fbfaf6 !important;
-    box-shadow:none !important;
+    box-shadow:none;
   }
   .sidebar .nav-item.active {
     background:#4b4557 !important;
@@ -117,7 +117,7 @@
   .sidebar-connection-row.connected .sidebar-status-dot,
   .sidebar-connection-row.restoring .sidebar-status-dot {
     width:7px !important;
-    height:7px !important;
+    height:7px;
     flex:0 0 auto !important;
     background:#5e5769 !important;
     box-shadow:none !important;
@@ -196,7 +196,7 @@
 @media (max-width:390px) {
   .sidebar-connection-copy b { display:none !important; }
   .sidebar-utility-actions {
-    gap:4px !important;
+    gap:4px;
   }
   .sidebar-settings-button,
   .sidebar-logout {

@@ -89,11 +89,11 @@ input.text-input:focus{
   height:40px!important;
   min-height:40px!important;
   padding:0 14px!important;
-  border-radius:10px!important;
+  border-radius:10px;
   font-size:14px!important;
   display:inline-flex!important;
   align-items:center!important;
-  justify-content:center!important;
+  justify-content:center;
 }
 
 /* Empty-state and workflow CTAs advance the page's primary task. Keep the standard
@@ -167,7 +167,7 @@ input.text-input:focus{
   padding:0 10px!important;
   display:inline-flex!important;
   align-items:center!important;
-  justify-content:center!important;
+  justify-content:center;
 }
 
 /* Compact segment/filter controls use a smaller text/control ratio than primary buttons. */
@@ -185,7 +185,7 @@ input.text-input:focus{
 /* Sidebar settings is intentionally a larger icon target and should not inherit the
    compact button scale. */
 .sidebar-settings-button{
-  width:42px!important;
+  width:42px;
   min-height:42px!important;
   padding:0!important;
   font-size:20px!important;
