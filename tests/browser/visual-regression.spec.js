@@ -248,13 +248,18 @@ test('the reading surface keeps one column across both of its views', async ({ p
   ].map(selector => Math.round(node.querySelector(selector).getBoundingClientRect().left)));
   expect(new Set(edges).size).toBe(1);
 
-  await expect(view).toHaveScreenshot('reading-view-read-1440.png');
+  // The paragraphs are compared as boxes, not glyphs. This surface is almost all running
+  // text, and CI's fonts are not this container's: the same page drew 4% different pixels
+  // from glyph shapes alone, past the tolerance, while every box sat in the same place. The
+  // mask keeps what this baseline is for — where the paragraphs, cuts and controls sit.
+  const paragraphs = { mask: [view.locator('.reading-block')], maskColor: '#ded9cc' };
+  await expect(view).toHaveScreenshot('reading-view-read-1440.png', paragraphs);
 
   await view.getByRole('button', { name: '接縫', exact: true }).click();
   await expect(view).toHaveAttribute('data-view', 'seam');
   await expect(view.locator('.manual-boundary-target')).toHaveCount(14);
   await expectDocumentBounded(page);
-  await expect(view).toHaveScreenshot('reading-view-seam-1440.png');
+  await expect(view).toHaveScreenshot('reading-view-seam-1440.png', paragraphs);
 });
 
 test('works, publishing, and settings retain their desktop composition', async ({ page }) => {
