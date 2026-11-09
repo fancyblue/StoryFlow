@@ -1,6 +1,6 @@
 # StoryFlow architecture
 
-> 狀態：現行架構規範（已落地，持續維護；最後同步：2026-11-06）
+> 狀態：現行架構規範（已落地，持續維護；最後同步：2026-11-09）
 
 StoryFlow is a build-free static site. GitHub Pages serves the repository root, while all personal content stays in the user-selected StoryFlow folder.
 
