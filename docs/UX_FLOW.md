@@ -230,7 +230,7 @@ Rules:
 - **The editor names the photo; the preview shows it.** The 圖片 field is a thumbnail (click to look closer) with the file name, taken time and 換一張／移除圖片 beside it. The photo is seen at size only in the preview, so it is not drawn large twice.
 - **從正文第一句帶入** fills the quote with the body's first sentence; it never fills itself.
 - **Publishing.** The article joins the shared queue. Its preview is the same renderer; the copy marks the photo as `〔圖片：<file name>〕` between the quote and the caption, and 下載圖片 saves the photo from Drive for uploading on the platform. StoryFlow does not upload images.
-- **Phone.** Read-only shows the articles, the library and the preview (signing in to Google shows the photos); adding, choosing, editing and deleting are unavailable.
+- **Phone.** Read-only opens an article on its preview and shows the articles and the library (signing in to Google shows the photos); adding, choosing, editing and deleting are not shown at all, and an article with no photo says 沒有圖片.
 
 ## Switching works
 

@@ -299,6 +299,10 @@ test('a phone reads a visual work without being offered a change', async ({ page
   for (const control of ['#visualAddPhotosBtn', '#visualNewEntryBtn', '#visualEntryBody', '#visualEntryTitle', '#visualRemovePhoto', '#visualQuoteFromBody']) {
     await expect(page.locator(control), control).toBeDisabled();
   }
+  // …and the ones that only add or change are not shown at all, not left grey in place.
+  for (const control of ['#visualAddPhotosBtn', '#visualChooseFolderBtn', '#visualNewEntryBtn', '#visualRemovePhoto', '#visualReplacePhoto', '#visualQuoteFromBody']) {
+    await expect(page.locator(control), control).toBeHidden();
+  }
   await page.locator('.visual-pane-switch [data-pane="preview"]').click();
   await expect(page.locator('#visualPreviewArticle .visual-article-body')).toHaveText('夜裡的港口。');
   await expect(page.locator('#visualPreviewArticle .visual-article-figure img')).toBeVisible();

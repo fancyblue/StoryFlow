@@ -25,6 +25,18 @@
     '.publish-more-btn',
     '.visual-entry-more',
     '.platform-row-more',
+    // A visual work's controls that only add or change: they were left disabled in place,
+    // which on a phone is a page of grey buttons around the article being read.
+    '#visualNewEntryBtn',
+    '#visualEmptyNewEntry',
+    '#visualAddPhotosBtn',
+    '#visualChooseFolderBtn',
+    '#visualRefreshFolderBtn',
+    '.visual-entry-photo-pick',
+    '.visual-entry-photo-actions button',
+    '#visualQuoteFromBody',
+    '#visualPhotoUse',
+    '#visualPhotoRemove',
     // A platform's own title, summary and Hashtags open their field with 編輯.
     '#editPlatformTitle',
     '#editPlatformPreviewSummary',

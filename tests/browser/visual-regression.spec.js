@@ -222,8 +222,12 @@ test('the reading surface keeps one column across both of its views', async ({ p
   await openManualWork(page);
   await page.evaluate(() => {
     const chapter = activeChapter();
+    // Each paragraph fits one line with room to spare. A paragraph that filled its line to
+    // within a character wrapped one character later on another Chromium build — the local
+    // one fits 指 where CI's does not — and shifted every line after it, so this baseline
+    // failed everywhere but CI and taught that a red reading surface could be ignored.
     chapter.draft = Array.from({ length: 14 }, (_, index) =>
-      `第 ${index + 1} 段，鐘聲停下後長廊只剩窗外落雨的聲音，她攤開掌心看著淡銀色的印紋沿指節亮起。`
+      `第 ${index + 1} 段，鐘聲停下後，長廊只剩窗外落雨的聲音。`
     ).join('\n');
     chapter.confirmedBlockCount = 0;
     chapter.parts = [];
@@ -244,13 +248,18 @@ test('the reading surface keeps one column across both of its views', async ({ p
   ].map(selector => Math.round(node.querySelector(selector).getBoundingClientRect().left)));
   expect(new Set(edges).size).toBe(1);
 
-  await expect(view).toHaveScreenshot('reading-view-read-1440.png');
+  // The paragraphs are compared as boxes, not glyphs. This surface is almost all running
+  // text, and CI's fonts are not this container's: the same page drew 4% different pixels
+  // from glyph shapes alone, past the tolerance, while every box sat in the same place. The
+  // mask keeps what this baseline is for — where the paragraphs, cuts and controls sit.
+  const paragraphs = { mask: [view.locator('.reading-block')], maskColor: '#ded9cc' };
+  await expect(view).toHaveScreenshot('reading-view-read-1440.png', paragraphs);
 
   await view.getByRole('button', { name: '接縫', exact: true }).click();
   await expect(view).toHaveAttribute('data-view', 'seam');
   await expect(view.locator('.manual-boundary-target')).toHaveCount(14);
   await expectDocumentBounded(page);
-  await expect(view).toHaveScreenshot('reading-view-seam-1440.png');
+  await expect(view).toHaveScreenshot('reading-view-seam-1440.png', paragraphs);
 });
 
 test('works, publishing, and settings retain their desktop composition', async ({ page }) => {

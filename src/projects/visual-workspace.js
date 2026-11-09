@@ -951,7 +951,11 @@
       slot.innerHTML = `<button type="button" class="visual-entry-photo-open" aria-label="放大檢視圖片"><span class="visual-photo-thumb" data-photo-slot="${esc(entry.photoId)}"></span></button>`;
       fillPhotoSlots(slot);
     } else {
-      slot.innerHTML = `<button type="button" class="visual-entry-photo-pick" ${isReadOnly() ? 'disabled' : ''}>${photos().length ? '從照片庫選一張，或把照片拖到這裡' : '選擇照片資料夾'}</button>`;
+      // A phone that cannot choose a photo says there is none, rather than leaving the slot an
+      // empty frame where the (hidden) chooser was.
+      slot.innerHTML = isReadOnly()
+        ? '<p class="visual-entry-photo-none">沒有圖片</p>'
+        : `<button type="button" class="visual-entry-photo-pick">${photos().length ? '從照片庫選一張，或把照片拖到這裡' : '選擇照片資料夾'}</button>`;
     }
     const others = photo ? (usage().get(photo.id) || []).filter(item => item.id !== entry.id) : [];
     root.querySelector('#visualEntryPhotoMeta').textContent = photo
