@@ -138,6 +138,7 @@
 .visual-entry-photo-open { display: block; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
 .visual-entry-photo-open .visual-photo-thumb { aspect-ratio: 4 / 3; }
 .visual-entry-photo-pick { min-height: 96px; padding: 18px; border: 0; background: transparent; color: #4b4557; font: inherit; font-weight: 700; cursor: pointer; }
+.visual-entry-photo-none { display: grid; place-items: center; min-height: 96px; margin: 0; padding: 18px; color: #6a6357; }
 .visual-entry-photo-pick:disabled { color: #968f80; cursor: default; }
 .visual-entry-photo-actions { display: grid; gap: 8px; min-width: 0; }
 .visual-entry-photo-buttons { display: flex; flex-wrap: wrap; gap: 8px; }

@@ -222,8 +222,12 @@ test('the reading surface keeps one column across both of its views', async ({ p
   await openManualWork(page);
   await page.evaluate(() => {
     const chapter = activeChapter();
+    // Each paragraph fits one line with room to spare. A paragraph that filled its line to
+    // within a character wrapped one character later on another Chromium build — the local
+    // one fits 指 where CI's does not — and shifted every line after it, so this baseline
+    // failed everywhere but CI and taught that a red reading surface could be ignored.
     chapter.draft = Array.from({ length: 14 }, (_, index) =>
-      `第 ${index + 1} 段，鐘聲停下後長廊只剩窗外落雨的聲音，她攤開掌心看著淡銀色的印紋沿指節亮起。`
+      `第 ${index + 1} 段，鐘聲停下後，長廊只剩窗外落雨的聲音。`
     ).join('\n');
     chapter.confirmedBlockCount = 0;
     chapter.parts = [];
