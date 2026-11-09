@@ -104,7 +104,7 @@
 
 /* Overflow is always the final visible action. */
 .project-library-more-btn{
-  order:99!important;
+  order:99;
   display:grid!important;
   place-items:center!important;
   border-color:#ded9cc!important;
@@ -220,7 +220,7 @@
     align-items:stretch!important;
     gap:14px!important;
   }
-  .project-library-more-btn{flex:0 0 40px!important}
+  .project-library-more-btn{flex:0 0 40px}
 }
 @media(max-width:560px){
   /* ⋯ in the phone row's square column (the grid itself is ui-system.css's phone row). */
