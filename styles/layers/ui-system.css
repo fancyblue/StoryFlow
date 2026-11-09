@@ -243,7 +243,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .source-change-status{min-height:28px;padding:4px 9px;font-size:12px;font-weight:700}
 
 /* Smart Split: controls are tools; preview content remains the strongest frame. */
-.splitter-panel .smart-split-mini-settings{gap:12px!important;padding:0!important;margin:0;border-bottom:0!important}
+.splitter-panel .smart-split-mini-settings{gap:12px;padding:0!important;margin:0;border-bottom:0!important}
 .splitter-panel .smart-split-mini-settings .range-grid label,.splitter-panel .scene-marker-compact,.splitter-panel .suggestion-platform-bar .platform-select-field>span{color:var(--sf-muted);font-size:13px!important;font-weight:700!important;line-height:1.2!important}
 .splitter-panel .smart-split-mini-settings .range-grid input,.splitter-panel .scene-marker-compact #sceneMarker{height:40px!important;min-height:40px!important;border:1px solid var(--sf-border)!important;background:#fbfaf6;color:var(--sf-text);font-size:14px!important;border-radius:10px!important}
 .splitter-panel .smart-split-mini-settings .range-grid input:focus,.splitter-panel .scene-marker-compact #sceneMarker:focus{border-color:var(--sf-primary)!important;background:#fbfaf6;box-shadow:var(--sf-focus)!important}
@@ -271,7 +271,7 @@ textarea{border-radius:12px!important;font-size:15px!important;line-height:1.8!i
 .sf-button-group>.button.tiny:hover:not(:disabled){background:#fbfaf6!important}
 .sf-button-group>.button.tiny+.button.tiny::before{content:"";position:absolute;left:-2px;top:6px;bottom:6px;width:1px;background:#c8c1b0}
 /* A name for assistive technology that the layout already shows another way. */
-.sf-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}
+.sf-visually-hidden{position:absolute!important;width:1px!important;height:1px;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0);white-space:nowrap!important;border:0!important}
 /* The third tier: a control that is used rarely enough to sit as text until it is pointed at,
    so the row's one framed control is the one that leaves or advances the task. */
 /* A toolbar's controls are one family: the segment's fill, no frame, a lighter fill under the
@@ -358,20 +358,20 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
   .sidebar{background:var(--sf-text)}
   .sidebar .nav-item{border-radius:11px;font-size:18px}
   .sidebar .nav-item span{font-size:13.5px;font-weight:700}
-  .sidebar-connection-status{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 74px!important;padding-top:3px!important}
+  .sidebar-connection-status{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 74px;padding-top:3px!important}
   .sidebar-connection-row{height:32px;min-height:32px!important;padding:0 4px!important;border-radius:7px!important}
   .sidebar-connection-copy small{font-size:11.5px!important;font-weight:700}
   .sidebar-status-dot{width:7px!important;height:7px;flex:0 0 7px!important}
   .sidebar-utility-actions{grid-template-columns:repeat(2,34px);gap:3px!important;width:71px}
-  .sidebar-settings-button,.sidebar-logout{width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;border-radius:8px!important}
+  .sidebar-settings-button,.sidebar-logout{width:34px!important;min-width:34px!important;height:34px;min-height:34px!important;border-radius:8px!important}
   .sidebar-settings-button>.sidebar-utility-icon,.sidebar-logout>.sidebar-utility-icon,.sidebar-settings-button svg,.sidebar-logout svg{width:18px!important;height:18px!important}
   .splitter-panel .smart-split-header-actions #openReadingViewBtn{height:40px!important;min-height:40px!important;font-size:14px!important}
-  .splitter-panel .smart-split-mini-settings{overflow-x:auto;flex-wrap:nowrap;gap:10px!important}
+  .splitter-panel .smart-split-mini-settings{overflow-x:auto;flex-wrap:nowrap;gap:10px}
   .splitter-panel .smart-split-mini-settings .range-grid label,.splitter-panel .scene-marker-compact{font-size:12px!important}
   .splitter-panel .smart-split-mini-settings .range-grid input,.splitter-panel .scene-marker-compact #sceneMarker{height:42px!important;min-height:42px!important}
   .splitter-panel .suggestion-title-row{grid-template-columns:minmax(0,1fr) auto!important;row-gap:8px!important}
   .splitter-panel .suggestion-title-row #suggestionStatus{grid-column:1;justify-self:start}
-  .splitter-panel .suggestion-title-row .preview-boundary-controls{grid-column:2!important;justify-self:end!important}
+  .splitter-panel .suggestion-title-row .preview-boundary-controls{grid-column:2;justify-self:end}
   .project-library-card{padding:16px}
   .project-library-actions{display:grid!important;grid-template-columns:minmax(0,1fr) 40px;width:100%}
   .project-library-actions .project-library-delete{grid-column:1/-1}
@@ -385,7 +385,7 @@ dialog::backdrop{background:rgba(43,40,34,.38)!important}
 
 @media(max-width:390px){
   .sidebar-connection-copy small{font-size:11px!important}
-  .sidebar-connection-status{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 68px!important}
+  .sidebar-connection-status{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 68px}
   .sidebar-utility-actions{grid-template-columns:repeat(2,32px);width:67px}
   .sidebar-settings-button,.sidebar-logout{width:32px!important;min-width:32px!important;height:32px;min-height:32px!important}
 }
