@@ -205,6 +205,8 @@
 .publish-helpers-edit small{color:#6a6357;font-size:11px;line-height:1.45}
 .publish-helpers-edit.is-open small{color:var(--sf-text);font-weight:700}
 .publish-helpers-edit.is-open .publish-helpers-save-state{color:#6a6357;font-weight:500}
+.publish-tool-readonly{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#f5eddc;color:#8a6526}
+.publish-tool-readonly p{margin:0;font-size:13px;line-height:1.5}
 .publish-article-tool-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .publish-article-tool-actions .button{width:100%;white-space:nowrap}
 .publish-afterword-editor{

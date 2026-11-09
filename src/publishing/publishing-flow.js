@@ -618,6 +618,20 @@
     syncArticleToolMeta(part, tool);
     const body = articleToolDialog.querySelector('#publishingArticleToolBody');
     body.replaceChildren();
+    // A read-only phone opens these tools with their fields locked. Said there, with the way to
+    // unlock them, instead of a form that does not take a tap and does not say why.
+    const access = tool === 'images' ? '' : window.StoryFlowMobileSafeMode?.helperAccess?.() || '';
+    if (access === 'locked' || access === 'reloading') {
+      const note = document.createElement('div');
+      note.className = 'publish-tool-readonly';
+      note.setAttribute('role', 'status');
+      note.innerHTML = access === 'reloading'
+        ? '<p>正在重新載入最新資料…完成後這裡會自動解鎖。</p>'
+        : '<p>手機唯讀中，欄位已鎖定。開始編輯會先重新載入最新資料。</p><button class="button tiny primary publish-tool-edit-start" type="button">開始編輯</button>';
+      // The tool opens again on its own once the helpers are open (below).
+      note.querySelector('button')?.addEventListener('click', () => window.StoryFlowMobileSafeMode.startHelperEditing());
+      body.appendChild(note);
+    }
     if (tool === 'publishing-helpers') {
       body.appendChild(createPublishingHelpers(chapter, part, {
         onSaved: () => articleToolDialog.close()
@@ -645,6 +659,9 @@
   // reloading the folder's workspace (mobile-safe-mode.js). Said where those tools are.
   function helperEditingNote() {
     const access = window.StoryFlowMobileSafeMode?.helperAccess?.() || '';
+    if (access === 'reloading') {
+      return '<div class="publish-helpers-edit"><small role="status">正在重新載入最新資料…完成後即可編輯</small></div>';
+    }
     if (access === 'locked') {
       return `<div class="publish-helpers-edit">
                 <button class="button tiny ghost publish-helpers-edit-start" type="button">開始編輯</button>
@@ -657,6 +674,22 @@
     }
     return '';
   }
+
+  // A tool open while the helpers unlock — or while the reload is under way — shows the old,
+  // locked article. The reload replaced it, so the same tool is opened again from the
+  // lightbox; a tool open when the reload starts is redrawn to say so.
+  window.addEventListener('storyflow:helper-access-changed', event => {
+    const tool = articleToolContext?.tool;
+    if (!articleToolDialog.open || !tool || tool === 'images') return;
+    const access = event.detail?.access;
+    if (access !== 'open') {
+      renderArticleToolBody();
+      return;
+    }
+    articleToolDialog.close();
+    const reopen = tool === 'afterword' ? '.publish-afterword-tool-btn' : '.publish-helper-tool-btn';
+    document.querySelector(`#partsList .publish-lightbox:not([hidden]) ${reopen}`)?.click();
+  });
 
   function openArticleTool(chapter, part, tool) {
     articleToolContext = { chapter, part, tool };

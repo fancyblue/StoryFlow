@@ -305,7 +305,7 @@
 
   // Every way into editing on a phone starts from the folder's latest workspace.json, and
   // stops at the first thing that could let an older copy overwrite a newer one.
-  async function reloadBeforeEditing(confirmText) {
+  async function reloadBeforeEditing(confirmText, onConfirmed = () => {}) {
     if (!navigator.onLine) {
       window.notify?.('目前沒有網路連線；為避免舊檔覆蓋，暫時不能開啟手機編輯。', true);
       return false;
@@ -316,6 +316,7 @@
       return false;
     }
     if (!window.confirm(confirmText)) return false;
+    onConfirmed();
     const reloaded = await window.StoryFlowProjectPersistence?.rehydrate?.();
     if (!reloaded) {
       window.notify?.('無法從資料夾重新載入 workspace.json；為避免覆蓋檔案，手機仍維持唯讀。', true);
@@ -382,8 +383,31 @@
   // 開始編輯 in 管理發布: reload, then unlock the summary, Hashtags and afterword of this visit
   // only. The article stays open across the reload, even when the folder's workspace had
   // another work active.
-  async function startHelperEditing() {
-    if (!readOnly || helpersOnly || modeChangeInProgress) return helpersOnly;
+  // One start at a time: on a phone the reload takes seconds, and a second 開始編輯 — from
+  // 管理發布 or from inside a tool opened meanwhile — waits for the same one instead of being
+  // ignored. While it reloads, 管理發布 and the tools say so (helperAccess() is 'reloading').
+  let helperStart = null;
+  let helperReloading = false;
+  function startHelperEditing() {
+    if (helpersOnly) return Promise.resolve(true);
+    if (!readOnly) return Promise.resolve(false);
+    helperStart ||= startHelperEditingOnce().finally(() => {
+      helperStart = null;
+      helperReloading = false;
+      window.renderParts?.();
+      window.dispatchEvent(new CustomEvent('storyflow:helper-access-changed', { detail: { access: helperAccess() } }));
+    });
+    return helperStart;
+  }
+
+  function helperAccess() {
+    if (!readOnly) return '';
+    if (helpersOnly) return 'open';
+    return helperReloading ? 'reloading' : 'locked';
+  }
+
+  async function startHelperEditingOnce() {
+    if (modeChangeInProgress) return false;
     const key = openLightboxKey();
     const projectId = window.StoryFlowProjects?.activeId?.();
     if (!key) return false;
@@ -391,7 +415,12 @@
     helpersStarting = true;
     try {
       const ready = await reloadBeforeEditing(
-        '請先確認手機已連上網路，而且 Google Drive 沒有等待上傳或下載的檔案。\n\nStoryFlow 會重新載入 workspace.json，然後開放這次「管理發布」裡的摘要、Hashtags、後記與平台標題。關閉「管理發布」時會保存並回到唯讀。\n\n要繼續嗎？'
+        '請先確認手機已連上網路，而且 Google Drive 沒有等待上傳或下載的檔案。\n\nStoryFlow 會重新載入 workspace.json，然後開放這次「管理發布」裡的摘要、Hashtags、後記與平台標題。關閉「管理發布」時會保存並回到唯讀。\n\n要繼續嗎？',
+        () => {
+          helperReloading = true;
+          window.renderParts?.();
+          window.dispatchEvent(new CustomEvent('storyflow:helper-access-changed', { detail: { access: 'reloading' } }));
+        }
       );
       if (!ready) return false;
       if (projectId && window.StoryFlowProjects?.activeId?.() !== projectId) {
@@ -540,7 +569,7 @@
     helperSaveLabel: () => helperSaveLabel,
     // What 管理發布 offers: 'locked' (開始編輯 is available), 'open' (the helpers are
     // editable) or '' (the full unlock is on; nothing to offer).
-    helperAccess: () => (!readOnly ? '' : helpersOnly ? 'open' : 'locked'),
+    helperAccess,
     startHelperEditing,
     endHelperEditing,
     enableEditing,
