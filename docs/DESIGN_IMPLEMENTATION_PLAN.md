@@ -4,9 +4,10 @@
 > 現行行為以 [`UI_SYSTEM.md`](UI_SYSTEM.md)、[`UX_FLOW.md`](UX_FLOW.md) 與 [`ARCHITECTURE.md`](ARCHITECTURE.md) 為準。
 > 日常修改不需要讀這份文件，只有要查某個決定的來由時才讀相關段落。
 >
-> **仍然開放的只有兩件，都不是排定的工作：**
-> - 其餘 1,756 個 `!important`（全站，2026-11-07）：不排期，改到哪個樣式表就用 `npm run css:important -- <樣式表>` 順手清（`tests/README.md`）；數量只能減少，`npm run test:css` 會擋下新增。剩下的多數是真的在打仗；見插曲 C 段。
-> - [`DESIGN_DATA_GAPS.md`](DESIGN_DATA_GAPS.md) 的第 4、6、7 項：仍是候選，動工前要逐項確認（第 2、3 項已於 2026-11-06 完成）。
+> **仍然開放的只有一件，不是排定的工作：**
+> - 其餘的 `!important`（全站，數量以 `scripts/important-count.mjs` 的 `RECORDED` 為準）：不排期，改到哪個樣式表就用 `npm run css:important -- <樣式表>` 順手清（`tests/README.md`）；數量只能減少，`npm run test:css` 會擋下新增。剩下的多數是真的在打仗；見插曲 C 段。
+>
+> [`DESIGN_DATA_GAPS.md`](DESIGN_DATA_GAPS.md) 的每一項都已在 2026-11-07 前由作者決定，那份文件已改為已完成設計紀錄。
 
 ## 排序原則
 
@@ -726,15 +727,14 @@ Hashtags **不跟著搬**：平台可以覆寫它，所以它留在發布那一�
 
 ---
 
-## 被決策擋住的
+## 被決策擋住的（已全部解除）
 
-以下在 [`DESIGN_DATA_GAPS.md`](DESIGN_DATA_GAPS.md) 逐項確認之前**不要開工**：
+當時以下項目在 [`DESIGN_DATA_GAPS.md`](DESIGN_DATA_GAPS.md) 逐項確認之前不開工；現在都已決定：
 
-- 分平台的「複製時附上標題」「摘要」（GAPS 2–3）
-- `confirmedAt`（GAPS 4，階段 0-2 只改文案不碰這個）
-- 「未切」的計算方式，以及「最新那一個還沒切的章」的定義（GAPS 6，擋住作品列的進度與主要動作）
-
-已解除：分平台的「附上後記」（GAPS 1）由 4-19 完成；發布佇列排序偏好（GAPS 5）由 4-5 完成，未動資料模型。
+- 分平台的「複製時附上標題」「摘要」（GAPS 2–3）：2026-11-06 完成（標題記在平台排版設定 `copyTitle`；摘要只有圖文）。
+- `confirmedAt`（GAPS 4）：作者決定不做。
+- 「最新那一個還沒切的章」（GAPS 6）：2026-11-07 定為「最新」並實作；作品頁以文字顯示「未切」決定不做。作品列的主要動作「繼續切篇」不採用。
+- 分平台的「附上後記」（GAPS 1）由 4-19 完成；發布佇列排序偏好（GAPS 5）由 4-5 完成，未動資料模型。
 
 **來源相關維持現狀**：`project.sourceDocId` 的推導行為與作品列的來源顯示不在本次範圍內。
 
