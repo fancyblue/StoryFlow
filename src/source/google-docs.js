@@ -458,7 +458,55 @@
     return response.blob();
   }
 
+  // A phone's workspace.json, read straight from Drive (integrations.js decides when). It
+  // uses only a token this session already holds and never prompts: StoryFlow opening on a
+  // phone must not be met by a sign-in popup. null means "not signed in"; the caller then
+  // reads the folder. The file was picked in the Picker, so drive.file covers it.
+  async function readDriveFileText(fileId) {
+    if (!accessToken && !(await StoryFlowIntegrations.restoreGoogleAccess())) return null;
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: 'no-store'
+    });
+    if (response.status === 401) {
+      window.StoryFlowSessionAuth?.forgetSession?.();
+      accessToken = null;
+      return null;
+    }
+    if (!response.ok) {
+      const error = new Error(`Google Drive 讀取失敗（${response.status}）`);
+      error.status = response.status;
+      throw error;
+    }
+    return response.text();
+  }
+
+  // The workspace.json in the phone's StoryFlow folder, chosen once in the Picker. Picking it
+  // is what lets drive.file read it, and later write it, without a wider scope.
+  async function pickDriveWorkspaceFile() {
+    const key = pickerApiKey();
+    if (!key) throw new Error('請先匯入 settings.json，讓 StoryFlow 取得 Google Picker API Key。');
+    await ensureGoogleAccess();
+    await loadPickerApi();
+    return new Promise((resolve, reject) => {
+      const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
+        .setMimeTypes('application/json')
+        .setQuery('workspace.json')
+        .setIncludeFolders(true).setSelectFolderEnabled(false);
+      const picker = new google.picker.PickerBuilder()
+        .setAppId(window.STORYFLOW_CONFIG.googleProjectNumber)
+        .setOAuthToken(accessToken).setDeveloperKey(key).addView(view)
+        .setTitle('選擇 StoryFlow 資料夾裡的 workspace.json')
+        .setCallback(data => {
+          if (data.action === google.picker.Action.PICKED) resolve({ id: data.docs[0].id, name: data.docs[0].name });
+          else if (data.action === google.picker.Action.CANCEL) reject(new Error('已取消選取檔案。'));
+        }).build();
+      picker.setVisible(true);
+    });
+  }
+
   Object.assign(StoryFlowIntegrations, {
+    readDriveFileText, pickDriveWorkspaceFile,
     requestAccessToken, restoreGoogleAccess, inspectGoogleDoc, refreshChapterSource,
     pickerApiKey, setPickerApiKey, hasGoogleToken: () => Boolean(accessToken),
     pickDrivePhotos, fetchDrivePhoto, listDriveFolders, describeDriveFolder, listDriveFolderPhotos,

@@ -159,6 +159,7 @@ The one-hour interval and three-file limit for `workspace.auto-*` rolling backup
       work and read it. Every step is a read and all of them must work while read-only.
       Choosing the settings file must actually load it — a read-only notice in response
       to a chosen file is the failure this step exists to catch.
+- [ ] On the phone, note Settings' 上次載入 time from the folder, then choose 選擇 Drive 上的 workspace.json, pick the StoryFlow folder's file, reload, and confirm 上次載入 reads Google Drive with a shorter time and the works are the same. Choose 改回從資料夾讀取 and confirm the next load reads the folder.
 - [ ] Tap 連接資料夾 twice quickly and confirm one folder picker opens and no “File picker already active” error appears.
 - [ ] Confirm the folder button reads “選擇資料夾”, not “需 Chrome / Edge”: Android Chrome
       does have folder access, and treating a phone as incapable would close this route.

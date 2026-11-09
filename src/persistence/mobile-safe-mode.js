@@ -91,7 +91,10 @@
     '#importSettingsJsonBtn',
     '#reimportStoryFlowSettingsBtn',
     '#quickImportSettingsBtn',
-    '.publish-helpers-edit-start'
+    '.publish-helpers-edit-start',
+    // Choosing where workspace.json is read from writes nothing to the folder.
+    '#mobileDriveSourcePick',
+    '#mobileDriveSourceClear'
   ].join(',');
   // The file inputs those import buttons open. Allowing the button but intercepting the
   // change event that follows it let the user start an import that could never finish:
@@ -283,9 +286,65 @@
       <div class="mobile-safe-mode-settings-status ${readOnly ? '' : 'editing-enabled'}">
         <strong>${readOnly ? '目前：唯讀' : '目前：可編輯'}</strong>
         <span>${readOnly ? '不會寫入 workspace、settings 或作品 Markdown。' : '只在本頁籤有效；儲存時仍會檢查 workspace 版本衝突。'}</span>
-      </div>`;
+      </div>
+      <div id="mobileDriveSource" class="mobile-drive-source"></div>`;
     section.querySelector('#mobileSafeModeToggle')?.addEventListener('click', toggleEditing);
+    renderDriveSource();
   }
+
+  // 從 Google Drive 讀取: a phone whose folder sits in Drive reads workspace.json through the
+  // Drive app, one slow round trip per step. Naming the Drive copy lets StoryFlow read it
+  // straight from the Drive API; saving still writes to the folder. The last load's source and
+  // time are shown so the two routes can be compared on the phone itself.
+  function loadLabel(load) {
+    if (!load) return '';
+    const seconds = (load.ms / 1000).toFixed(1);
+    const where = load.source === 'drive' ? 'Google Drive' : '資料夾';
+    return `上次載入：${where} · ${seconds} 秒${load.fallback ? `（${load.fallback}，改讀資料夾）` : ''}`;
+  }
+
+  async function renderDriveSource() {
+    const box = document.getElementById('mobileDriveSource');
+    if (!box) return;
+    const source = await StoryFlowIntegrations.driveWorkspaceSource?.();
+    const load = StoryFlowIntegrations.lastWorkspaceLoad?.();
+    box.innerHTML = `
+      <strong>從 Google Drive 讀取工作資料</strong>
+      <p>${source
+        ? `開啟與「開始編輯」前的重新載入，直接從 Drive 讀取「${escapeText(source.name)}」；存檔仍寫入資料夾。`
+        : '資料夾在雲端硬碟時，經由手機的雲端硬碟 App 讀取很慢。選擇 Drive 上 StoryFlow 資料夾裡的 workspace.json，開啟與重新載入就會直接從 Drive 讀取；存檔仍寫入資料夾。'}</p>
+      <div class="mobile-drive-source-actions">
+        <button id="mobileDriveSourcePick" class="button tiny ${source ? 'ghost' : 'primary'}" type="button">${source ? '重新選擇' : '選擇 Drive 上的 workspace.json'}</button>
+        ${source ? '<button id="mobileDriveSourceClear" class="button tiny ghost" type="button">改回從資料夾讀取</button>' : ''}
+      </div>
+      <small class="mobile-drive-source-timing" role="status">${escapeText(loadLabel(load))}</small>`;
+    box.querySelector('#mobileDriveSourcePick')?.addEventListener('click', pickDriveSource);
+    box.querySelector('#mobileDriveSourceClear')?.addEventListener('click', async () => {
+      await StoryFlowIntegrations.setDriveWorkspaceSource(null);
+      window.notify?.('之後改回從資料夾讀取 workspace.json。');
+      renderDriveSource();
+    });
+  }
+
+  function escapeText(value) {
+    return window.StoryFlowShared?.esc ? window.StoryFlowShared.esc(value) : String(value ?? '');
+  }
+
+  async function pickDriveSource() {
+    try {
+      const file = await StoryFlowIntegrations.pickDriveWorkspaceFile();
+      if (file.name !== 'workspace.json') {
+        window.notify?.(`選到的是「${file.name}」，請選 StoryFlow 資料夾裡的 workspace.json。`, true);
+        return;
+      }
+      await StoryFlowIntegrations.setDriveWorkspaceSource(file);
+      window.notify?.('之後從 Google Drive 讀取 workspace.json；下次開啟或重新載入時生效。');
+      renderDriveSource();
+    } catch (error) {
+      if (!/取消/.test(error.message)) window.notify?.(error.message, true);
+    }
+  }
+  window.addEventListener('storyflow:workspace-load-timed', () => renderDriveSource());
 
   function applyMode() {
     document.body.dataset.storyflowMobileSafeMode = readOnly ? 'readonly' : 'editing';
