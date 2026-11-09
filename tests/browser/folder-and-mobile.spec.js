@@ -437,8 +437,19 @@ test('a read-only phone edits the publishing helpers for one visit to 管理發�
   const lightbox = page.locator('.publish-lightbox:not([hidden])');
   await expect(lightbox.locator('.publish-helpers-edit-start')).toBeVisible();
 
-  await lightbox.locator('.publish-helpers-edit-start').click();
+  // Opened while read-only, a tool says its fields are locked and offers 開始編輯 there,
+  // which unlocks and opens the same tool again on the reloaded article.
+  await lightbox.locator('.publish-helper-tool-btn').click();
+  const toolDialog = page.locator('#publishingArticleToolDialog');
+  await expect(toolDialog.locator('.publish-tool-readonly')).toContainText('欄位已鎖定');
+  await expect(toolDialog.locator('.visual-publish-summary-input')).not.toBeEditable();
+  await toolDialog.locator('.publish-tool-edit-start').click();
   await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-helpers', 'editing');
+  await expect(toolDialog).toHaveAttribute('open', '');
+  await expect(toolDialog.locator('.publish-tool-readonly')).toHaveCount(0);
+  await expect(toolDialog.locator('.visual-publish-summary-input')).toBeEditable();
+  await toolDialog.locator('[data-article-tool-close]').first().click();
+  await expect(toolDialog).not.toHaveAttribute('open');
   await expect(page.locator('#mobileSafeModeIndicator')).toHaveText('編輯發布資料');
   await expect(lightbox.locator('.publish-helpers-edit.is-open')).toBeVisible();
   // The reload happened: the desktop's afterword is in the phone's copy now.

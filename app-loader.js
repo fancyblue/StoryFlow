@@ -29,7 +29,7 @@
     { src: './src/publishing/publishing-output.js?v=20261106-a1', owner: 'publishing' },
     { id: 'storyflowPublishingPreviewJs', src: './src/publishing/publishing-preview.js?v=20261108-a6', owner: 'publishing' },
     { id: 'storyflowPublishingLightboxJs', src: './src/publishing/publishing-lightbox.js?v=20261108-a2', owner: 'publishing' },
-    { src: './src/publishing/publishing-flow.js?v=20261108-a7', owner: 'publishing' },
+    { src: './src/publishing/publishing-flow.js?v=20261109-a6', owner: 'publishing' },
     { id: 'storyflowPublishingDisclosureJs', src: './src/publishing/publishing-disclosure.js?v=20260925-a5', owner: 'publishing' },
     { src: './src/publishing/publishing-project-switcher.js?v=20260925-a5', owner: 'publishing' },
     { id: 'storyflowPublishingProjectFilterJs', src: './src/publishing/publishing-project-filter.js?v=20261103-a5', owner: 'publishing' },

@@ -618,6 +618,21 @@
     syncArticleToolMeta(part, tool);
     const body = articleToolDialog.querySelector('#publishingArticleToolBody');
     body.replaceChildren();
+    // A read-only phone opens these tools with their fields locked. Said there, with the way to
+    // unlock them, instead of a form that does not take a tap and does not say why.
+    if (tool !== 'images' && window.StoryFlowMobileSafeMode?.helperAccess?.() === 'locked') {
+      const note = document.createElement('div');
+      note.className = 'publish-tool-readonly';
+      note.innerHTML = '<p>手機唯讀中，欄位已鎖定。開始編輯會先重新載入最新資料。</p><button class="button tiny primary publish-tool-edit-start" type="button">開始編輯</button>';
+      note.querySelector('button').addEventListener('click', async () => {
+        const reopen = tool === 'afterword' ? '.publish-afterword-tool-btn' : '.publish-helper-tool-btn';
+        articleToolDialog.close();
+        if (!(await window.StoryFlowMobileSafeMode.startHelperEditing())) return;
+        // The reload replaced the article, so the tool is opened again from the lightbox.
+        document.querySelector(`#partsList .publish-lightbox:not([hidden]) ${reopen}`)?.click();
+      });
+      body.appendChild(note);
+    }
     if (tool === 'publishing-helpers') {
       body.appendChild(createPublishingHelpers(chapter, part, {
         onSaved: () => articleToolDialog.close()
