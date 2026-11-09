@@ -213,6 +213,8 @@ test('deleting an article is Recovery-first, stops when Recovery fails and keeps
   const row = page.locator('#visualEntryList .visual-entry-row').first();
   await row.hover();
   await row.locator('.visual-entry-more').click();
+  // Choosing an entry already opens it in the editor; the menu holds only its deletion.
+  await expect(row.getByRole('menuitem')).toHaveText([/刪除圖文/]);
   await row.getByRole('menuitem', { name: /刪除圖文/ }).click();
   await expect.poll(() => page.evaluate(() => state.visualEntries.length)).toBe(1);
   expect(await page.evaluate(() => window.__removed.length)).toBe(0);
