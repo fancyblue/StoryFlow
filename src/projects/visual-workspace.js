@@ -873,7 +873,6 @@
         </button>
         <button type="button" class="chapter-delete-button chapter-more-button visual-entry-more" aria-label="更多「${esc(entry.title || '未命名圖文')}」操作" aria-haspopup="menu" aria-expanded="false" ${isReadOnly() ? 'disabled' : ''}>⋯</button>
         <div class="chapter-row-action-menu visual-entry-action-menu" role="menu" hidden>
-          <button type="button" class="chapter-row-edit-menu-item" role="menuitem" data-edit-entry="${esc(entry.id)}"><span aria-hidden="true">✎</span><span>編輯圖文</span></button>
           <button type="button" class="chapter-row-delete-menu-item" role="menuitem" data-delete-entry="${esc(entry.id)}"><span aria-hidden="true">×</span><span>刪除圖文</span></button>
         </div>
       </div>`;
@@ -1143,10 +1142,12 @@
         }
         return;
       }
-      const edit = event.target.closest('[data-edit-entry]');
+      // Choosing an article is editing it: the editor beside the list is always the chosen
+      // article's. The menu held a 編輯圖文 that chose it and focused its title — the same as a
+      // click on its name — so the menu holds only 刪除圖文, like every ⋯ that only deletes.
       const remove = event.target.closest('[data-delete-entry]');
       const select = event.target.closest('.visual-entry-select[data-entry-id]');
-      const targetId = edit?.dataset.editEntry || select?.dataset.entryId;
+      const targetId = select?.dataset.entryId;
       if (remove) {
         event.preventDefault();
         closeEntryMenus();
@@ -1160,7 +1161,6 @@
       activeEntryId = targetId;
       replacing = false;
       render();
-      if (edit) requestAnimationFrame(() => document.getElementById('visualEntryTitle')?.focus({ preventScroll: true }));
     });
 
     root.querySelector('#visualProjectTitle').addEventListener('input', event => {

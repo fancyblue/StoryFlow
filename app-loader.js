@@ -68,7 +68,7 @@
     { id: 'storyflowArticleImagesJs', src: './src/publishing/article-images.js?v=20261016-a7', owner: 'publishing' },
     { id: 'storyflowVisualPhotoCacheJs', src: './src/projects/visual-photo-cache.js?v=20261104-a12', owner: 'projects' },
     { id: 'storyflowVisualFolderBrowserJs', src: './src/projects/visual-folder-browser.js?v=20261104-a12', owner: 'projects' },
-    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20261108-a3', owner: 'projects' }
+    { id: 'storyflowVisualWorkspaceJs', src: './src/projects/visual-workspace.js?v=20261109-a1', owner: 'projects' }
   ];
 
   window.StoryFlowAssetManifest = Object.freeze(scripts.map(entry => Object.freeze({ ...entry })));
