@@ -443,7 +443,17 @@ test('a read-only phone edits the publishing helpers for one visit to 管理發�
   const toolDialog = page.locator('#publishingArticleToolDialog');
   await expect(toolDialog.locator('.publish-tool-readonly')).toContainText('欄位已鎖定');
   await expect(toolDialog.locator('.visual-publish-summary-input')).not.toBeEditable();
+  // A phone's reload takes seconds: the tool says it is reloading, and unlocks by itself.
+  await page.evaluate(() => {
+    const rehydrate = StoryFlowProjectPersistence.rehydrate;
+    StoryFlowProjectPersistence.rehydrate = async (...args) => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return rehydrate(...args);
+    };
+  });
   await toolDialog.locator('.publish-tool-edit-start').click();
+  await expect(toolDialog.locator('.publish-tool-readonly')).toContainText('正在重新載入');
+  await expect(lightbox.locator('.publish-helpers-edit')).toContainText('正在重新載入');
   await expect(page.locator('body')).toHaveAttribute('data-storyflow-mobile-helpers', 'editing');
   await expect(toolDialog).toHaveAttribute('open', '');
   await expect(toolDialog.locator('.publish-tool-readonly')).toHaveCount(0);
