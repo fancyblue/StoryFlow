@@ -38,7 +38,7 @@
 
 最後確認目前 default branch、開啟中的 PR、最近 Actions 與必要時的 Pages deployment。
 
-`docs/DESIGN_IMPLEMENTATION_PLAN.md` 是已完成設計紀錄，`docs/REDESIGN_PROPOSAL.md`（全站調整與圖文重新設計）也是已完成設計紀錄，`docs/DESIGN_DATA_GAPS.md` 是候選需求；日常修改不需要讀，只在查某個決定的來由或要動工其中一項時讀相關段落。
+`docs/DESIGN_IMPLEMENTATION_PLAN.md` 是已完成設計紀錄，`docs/REDESIGN_PROPOSAL.md`（全站調整與圖文重新設計）也是已完成設計紀錄，`docs/DESIGN_DATA_GAPS.md` 也是已完成設計紀錄，`docs/PHONE_DRIVE_ACCESS_PLAN.md`（手機直接讀寫 Google Drive）是候選／待驗證、尚未授權實作；日常修改不需要讀，只在查某個決定的來由或要動工其中一項時讀相關段落。
 
 不要把本文件中的摘要當成即時 GitHub 狀態。branch、PR、CI 與 deployment 必須在接手當下重新查詢。
 
